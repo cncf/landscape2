@@ -1,0 +1,8 @@
+.DS_Store
+.vscode
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+target
+web/node_modules
+web/build
