@@ -13,6 +13,9 @@ use std::{
 };
 use tracing::{debug, info, instrument};
 
+/// Path where the datasets will be written to in the output directory.
+const DATASETS_PATH: &str = "data";
+
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
 
@@ -30,7 +33,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     prepare_output_dir(&args.output_dir)?;
     let mut landscape = get_landscape(&args.data_source).await?;
     prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
-    let datasets = generate_datasets(&landscape)?;
+    let datasets = generate_datasets(&landscape, &args.output_dir)?;
     render_index(&datasets, &args.output_dir)?;
     copy_static_assets(&args.output_dir)?;
 
@@ -45,6 +48,10 @@ fn prepare_output_dir(output_dir: &Path) -> Result<()> {
     if !output_dir.exists() {
         debug!("creating output directory");
         create_dir_all(output_dir)?;
+    }
+    let datasets_path = output_dir.join(DATASETS_PATH);
+    if !datasets_path.exists() {
+        create_dir(datasets_path)?;
     }
     let logos_path = output_dir.join(LOGOS_PATH);
     if !logos_path.exists() {
@@ -124,9 +131,14 @@ async fn prepare_logos(
 
 /// Generate datasets.
 #[instrument(skip_all, err)]
-fn generate_datasets(landscape: &Landscape) -> Result<Datasets> {
+fn generate_datasets(landscape: &Landscape, output_dir: &Path) -> Result<Datasets> {
     debug!("generating datasets");
     let datasets = Datasets::new(landscape)?;
+
+    debug!("copying datasets to output directory");
+    let mut base_file = File::create(output_dir.join(DATASETS_PATH).join("base.json"))?;
+    base_file.write_all(&serde_json::to_vec(&datasets.base)?)?;
+
     Ok(datasets)
 }
 
