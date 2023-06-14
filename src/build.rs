@@ -1,18 +1,24 @@
 use crate::{
     datasets::{Datasets, JsonString},
     landscape::Landscape,
-    tmpl, BuildArgs, Datasource,
+    tmpl, BuildArgs, DataSource, LogosSource,
 };
 use anyhow::Result;
 use askama::Template;
+use lazy_static::lazy_static;
+use regex::Regex;
 use rust_embed::RustEmbed;
+use sha2::{Digest, Sha256};
 use std::{
-    fs::{create_dir_all, File},
+    fs::{self, create_dir, create_dir_all, File},
     io::Write,
     path::Path,
     time::Instant,
 };
 use tracing::{debug, info, instrument};
+
+/// Path where the logos will be written to in the output directory.
+const LOGOS_PATH: &str = "logos";
 
 /// Embed static assets into binary.
 #[derive(RustEmbed)]
@@ -26,9 +32,10 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let start = Instant::now();
 
     prepare_output_dir(&args.output_dir)?;
-    let landscape = get_landscape(&args.ds).await?;
+    let mut landscape = get_landscape(&args.data_source).await?;
+    prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
     let datasets = generate_datasets(&landscape)?;
-    render_index(&args.output_dir, &datasets.base)?;
+    render_index(&datasets.base, &args.output_dir)?;
     copy_static_assets(&args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
@@ -43,20 +50,80 @@ fn prepare_output_dir(output_dir: &Path) -> Result<()> {
         debug!("creating output directory");
         create_dir_all(output_dir)?;
     }
+    let logos_path = output_dir.join(LOGOS_PATH);
+    if !logos_path.exists() {
+        create_dir(logos_path)?;
+    }
     Ok(())
 }
 
 /// Create a new landscape instance from the datasource provided.
 #[instrument(skip_all, err)]
-async fn get_landscape(ds: &Datasource) -> Result<Landscape> {
-    let landscape = if let Some(file) = &ds.datasource_file {
+async fn get_landscape(data_source: &DataSource) -> Result<Landscape> {
+    let landscape = if let Some(file) = &data_source.data_file {
         debug!(?file, "getting landscape information from file");
         Landscape::new_from_file(file)
     } else {
-        debug!(url = ?ds.datasource_url.as_ref().unwrap(), "getting landscape information from url");
-        Landscape::new_from_url(ds.datasource_url.as_ref().unwrap()).await
+        debug!(url = ?data_source.data_url.as_ref().unwrap(), "getting landscape information from url");
+        Landscape::new_from_url(data_source.data_url.as_ref().unwrap()).await
     }?;
     Ok(landscape)
+}
+
+lazy_static! {
+    /// Regular expression used to clean SVG logos' title.
+    static ref SVG_TITLE: Regex = Regex::new("<title>.*</title>",).expect("exprs in SVG_TITLE to be valid");
+}
+
+/// Prepare logos and copy them to the output directory.
+#[instrument(skip_all, err)]
+async fn prepare_logos(
+    logos_source: &LogosSource,
+    landscape: &mut Landscape,
+    output_dir: &Path,
+) -> Result<()> {
+    // Helper function to get the logo content from the corresponding source.
+    #[instrument(fields(?file_name), skip_all, err)]
+    async fn get_logo_svg(logos_source: &LogosSource, file_name: &str) -> Result<String> {
+        let svg = if let Some(path) = &logos_source.logos_path {
+            fs::read_to_string(path.join(file_name))?
+        } else {
+            reqwest::get(logos_source.logos_url.as_ref().unwrap()).await?.text().await?
+        };
+        Ok(svg)
+    }
+
+    debug!("preparing logos");
+    for category in landscape.categories.iter_mut() {
+        for subcategory in category.subcategories.iter_mut() {
+            for item in subcategory.items.iter_mut() {
+                // Get logo SVG
+                let svg = match get_logo_svg(logos_source, &item.logo).await {
+                    Ok(svg) => svg,
+                    Err(_) => {
+                        item.logo = "".to_string();
+                        continue;
+                    }
+                };
+
+                // Remove title if present
+                let svg = SVG_TITLE.replace(&svg, "");
+
+                // Calculate logo digest
+                let digest = hex::encode(Sha256::digest(svg.as_bytes()));
+
+                // Copy logo to output dir using the digest as filename
+                let logo = format!("{}.svg", digest);
+                let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
+                file.write_all(svg.as_bytes())?;
+
+                // Update logo reference in landscape to digest
+                item.logo = logo;
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// Generate datasets.
@@ -69,7 +136,7 @@ fn generate_datasets(landscape: &Landscape) -> Result<Datasets> {
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(output_dir: &Path, base_dataset: &JsonString) -> Result<()> {
+fn render_index(base_dataset: &JsonString, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
     let index = tmpl::Index { base_dataset }.render()?;
     let mut file = File::create(output_dir.join("index.html"))?;

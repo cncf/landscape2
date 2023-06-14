@@ -25,7 +25,11 @@ enum Command {
 struct BuildArgs {
     /// Datasource.
     #[command(flatten)]
-    ds: Datasource,
+    data_source: DataSource,
+
+    /// Logos source
+    #[command(flatten)]
+    logos_source: LogosSource,
 
     /// Output directory to write files to.
     #[arg(long)]
@@ -34,14 +38,26 @@ struct BuildArgs {
 
 #[derive(Args)]
 #[group(required = true, multiple = false)]
-struct Datasource {
-    /// Landscape YAML file path.
+struct DataSource {
+    /// Landscape YAML local file path.
     #[arg(long)]
-    datasource_file: Option<PathBuf>,
+    data_file: Option<PathBuf>,
 
     /// Landscape YAML file url.
     #[arg(long)]
-    datasource_url: Option<String>,
+    data_url: Option<String>,
+}
+
+#[derive(Args)]
+#[group(required = true, multiple = false)]
+struct LogosSource {
+    /// Local path where the logos are stored.
+    #[arg(long)]
+    logos_path: Option<PathBuf>,
+
+    /// Base URL where the logos are hosted.
+    #[arg(long)]
+    logos_url: Option<String>,
 }
 
 #[tokio::main]
