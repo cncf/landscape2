@@ -77,6 +77,8 @@ dependencies = [
  "humansize",
  "num-traits",
  "percent-encoding",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

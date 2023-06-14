@@ -1,26 +1,24 @@
+use self::{base::Base, logos::Logos};
 use crate::landscape::Landscape;
 use anyhow::{Ok, Result};
-pub(crate) use base::Base;
 
 /// Datasets collection.
 #[derive(Debug, Clone)]
 pub(crate) struct Datasets {
-    pub base: JsonString,
+    pub base: Base,
+    pub logos: Logos,
 }
 
 impl Datasets {
     /// Create a new datasets instance from the landscape provided.
     pub(crate) fn new(landscape: &Landscape) -> Result<Self> {
-        let base: Base = landscape.into();
         let datasets = Datasets {
-            base: serde_json::to_string(&base)?,
+            base: landscape.into(),
+            logos: landscape.into(),
         };
         Ok(datasets)
     }
 }
-
-/// Type alias to represent a json string.
-pub(crate) type JsonString = String;
 
 /// Base dataset.
 mod base {
@@ -81,6 +79,33 @@ mod base {
             }
 
             base
+        }
+    }
+}
+
+/// Logos dataset.
+mod logos {
+    use crate::landscape::Landscape;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Logos {
+        pub files: Vec<String>,
+    }
+
+    impl From<&Landscape> for Logos {
+        fn from(landscape: &Landscape) -> Self {
+            let mut logos = Logos::default();
+
+            for category in &landscape.categories {
+                for subcategory in &category.subcategories {
+                    for item in &subcategory.items {
+                        logos.files.push(item.logo.clone());
+                    }
+                }
+            }
+
+            logos
         }
     }
 }

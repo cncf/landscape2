@@ -1,8 +1,4 @@
-use crate::{
-    datasets::{Datasets, JsonString},
-    landscape::Landscape,
-    tmpl, BuildArgs, DataSource, LogosSource,
-};
+use crate::{datasets::Datasets, landscape::Landscape, tmpl, BuildArgs, DataSource, LogosSource};
 use anyhow::Result;
 use askama::Template;
 use lazy_static::lazy_static;
@@ -35,7 +31,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let mut landscape = get_landscape(&args.data_source).await?;
     prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
     let datasets = generate_datasets(&landscape)?;
-    render_index(&datasets.base, &args.output_dir)?;
+    render_index(&datasets, &args.output_dir)?;
     copy_static_assets(&args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
@@ -106,19 +102,19 @@ async fn prepare_logos(
                     }
                 };
 
-                // Remove title if present
+                // Remove SVG title if present
                 let svg = SVG_TITLE.replace(&svg, "");
 
-                // Calculate logo digest
+                // Calculate SVG file digest
                 let digest = hex::encode(Sha256::digest(svg.as_bytes()));
 
-                // Copy logo to output dir using the digest as filename
+                // Copy logo to output dir using the digest(+.svg) as filename
                 let logo = format!("{}.svg", digest);
                 let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
                 file.write_all(svg.as_bytes())?;
 
-                // Update logo reference in landscape to digest
-                item.logo = logo;
+                // Update logo field in landscape entry (to digest)
+                item.logo = format!("{}/{}", LOGOS_PATH, logo);
             }
         }
     }
@@ -136,9 +132,9 @@ fn generate_datasets(landscape: &Landscape) -> Result<Datasets> {
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(base_dataset: &JsonString, output_dir: &Path) -> Result<()> {
+fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
-    let index = tmpl::Index { base_dataset }.render()?;
+    let index = tmpl::Index { datasets }.render()?;
     let mut file = File::create(output_dir.join("index.html"))?;
     file.write_all(index.as_bytes())?;
     Ok(())

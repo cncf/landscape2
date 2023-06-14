@@ -1,9 +1,9 @@
-use crate::datasets::JsonString;
+use crate::datasets::Datasets;
 use askama::Template;
 
 /// Template for the index document.
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
 pub(crate) struct Index<'a> {
-    pub base_dataset: &'a JsonString,
+    pub datasets: &'a Datasets,
 }

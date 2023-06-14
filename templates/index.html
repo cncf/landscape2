@@ -2,8 +2,12 @@
 
 <head>
     <script>
-        var baseDS = String.raw`{{ base_dataset }}`;
+        var baseDS = {{ datasets.base|json|safe }};
     </script>
+
+    {%~ for url in datasets.logos.files %}
+    <link rel="preload" as="image" href="{{ url }}">
+    {%- endfor %}
 </head>
 
 <body>
