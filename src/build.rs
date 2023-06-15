@@ -1,5 +1,5 @@
 use crate::{datasets::Datasets, landscape::Landscape, tmpl, BuildArgs, DataSource, LogosSource};
-use anyhow::Result;
+use anyhow::{format_err, Result};
 use askama::Template;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -30,6 +30,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     info!("building landscape site..");
     let start = Instant::now();
 
+    check_web_assets()?;
     prepare_output_dir(&args.output_dir)?;
     let mut landscape = get_landscape(&args.data_source).await?;
     prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
@@ -39,6 +40,17 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape site built! (took: {:.3}s)", duration);
+    Ok(())
+}
+
+/// Check web assets are present.
+#[instrument(skip_all, err)]
+fn check_web_assets() -> Result<()> {
+    if !WebAssets::iter().any(|path| path.starts_with("assets/")) {
+        return Err(format_err!(
+            "web assets not found, please make sure they have been built"
+        ));
+    }
     Ok(())
 }
 
