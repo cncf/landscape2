@@ -19,10 +19,10 @@ const DATASETS_PATH: &str = "data";
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
 
-/// Embed static assets into binary.
+/// Embed web assets into binary.
 #[derive(RustEmbed)]
-#[folder = "assets"]
-struct StaticAssets;
+#[folder = "web/dist"]
+struct WebAssets;
 
 /// Build landscape static site.
 #[instrument(skip_all, err)]
@@ -35,7 +35,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
     let datasets = generate_datasets(&landscape, &args.output_dir)?;
     render_index(&datasets, &args.output_dir)?;
-    copy_static_assets(&args.output_dir)?;
+    copy_web_assets(&args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape site built! (took: {:.3}s)", duration);
@@ -152,11 +152,15 @@ fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Copy static assets files to the output directory.
+/// Copy web assets files to the output directory.
 #[instrument(skip_all, err)]
-fn copy_static_assets(output_dir: &Path) -> Result<()> {
-    for asset_path in StaticAssets::iter() {
-        if let Some(embedded_file) = StaticAssets::get(&asset_path) {
+fn copy_web_assets(output_dir: &Path) -> Result<()> {
+    for asset_path in WebAssets::iter() {
+        if asset_path == "index.html" || asset_path == ".keep" {
+            continue;
+        }
+
+        if let Some(embedded_file) = WebAssets::get(&asset_path) {
             debug!(?asset_path, "copying file");
             if let Some(parent_path) = Path::new(asset_path.as_ref()).parent() {
                 create_dir_all(output_dir.join(parent_path))?;
