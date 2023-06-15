@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
@@ -66,7 +68,7 @@ async fn main() -> Result<()> {
 
     // Setup logging
     if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "landscape2=debug")
+        std::env::set_var("RUST_LOG", "landscape2=debug");
     }
     tracing_subscriber::fmt::init();
 

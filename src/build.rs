@@ -109,16 +109,13 @@ async fn prepare_logos(
     }
 
     debug!("preparing logos");
-    for category in landscape.categories.iter_mut() {
-        for subcategory in category.subcategories.iter_mut() {
-            for item in subcategory.items.iter_mut() {
+    for category in &mut landscape.categories {
+        for subcategory in &mut category.subcategories {
+            for item in &mut subcategory.items {
                 // Get logo SVG
-                let svg = match get_logo_svg(logos_source, &item.logo).await {
-                    Ok(svg) => svg,
-                    Err(_) => {
-                        item.logo = "".to_string();
-                        continue;
-                    }
+                let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
+                    item.logo = String::new();
+                    continue;
                 };
 
                 // Remove SVG title if present
@@ -128,12 +125,12 @@ async fn prepare_logos(
                 let digest = hex::encode(Sha256::digest(svg.as_bytes()));
 
                 // Copy logo to output dir using the digest(+.svg) as filename
-                let logo = format!("{}.svg", digest);
+                let logo = format!("{digest}.svg");
                 let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
                 file.write_all(svg.as_bytes())?;
 
                 // Update logo field in landscape entry (to digest)
-                item.logo = format!("{}/{}", LOGOS_PATH, logo);
+                item.logo = format!("{LOGOS_PATH}/{logo}");
             }
         }
     }

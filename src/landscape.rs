@@ -189,21 +189,22 @@ impl Landscape {
 }
 
 impl From<legacy::Landscape> for Landscape {
+    #[allow(clippy::too_many_lines)]
     fn from(legacy: legacy::Landscape) -> Self {
         let mut landscape = Landscape::default();
 
         // Prepare items from the legacy items available in the landscape file
-        for legacy_category in legacy.landscape.into_iter() {
+        for legacy_category in legacy.landscape {
             let mut category = Category {
                 name: legacy_category.name,
                 subcategories: vec![],
             };
-            for legacy_subcategory in legacy_category.subcategories.into_iter() {
+            for legacy_subcategory in legacy_category.subcategories {
                 let mut subcategory = SubCategory {
                     name: legacy_subcategory.name,
                     items: vec![],
                 };
-                for legacy_item in legacy_subcategory.items.into_iter() {
+                for legacy_item in legacy_subcategory.items {
                     // Base legacy item information
                     let mut item = Item {
                         name: legacy_item.name,
