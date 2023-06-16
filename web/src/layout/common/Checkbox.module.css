@@ -1,0 +1,6 @@
+@media (hover: hover) {
+  .checkbox:not([disabled]),
+  .checkbox:not([disabled]) + label {
+    cursor: pointer;
+  }
+}

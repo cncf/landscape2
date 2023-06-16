@@ -1,0 +1,35 @@
+.filters {
+  min-width: 250px;
+}
+
+.catTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+.subcatTitle {
+  font-size: 0.7rem;
+  line-height: 0.8rem;
+  height: 2rem;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.itemsContainer {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 44px);
+  grid-auto-rows: 40px;
+  gap: 2px;
+  /* justify-content: center; */
+}

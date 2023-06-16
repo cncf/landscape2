@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landscape</title>
+    <% if (isDev){ %>
+      <script>
+        fetch("./static/base.json")
+        .then(res => res.json())
+        .then(data => window.baseDS = data);
+      </script>
+    <% } else { %>
+      <script>
+        window.baseDS = {{ datasets.base|json|safe }};
+      </script>
+
+      {%~ for url in datasets.logos.files %}
+        <link rel="preload" as="image" href="{{ url }}">
+      {%- endfor %}
+    <% } %>
+  </head>
+  <body>
+    <div id="landscape"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+

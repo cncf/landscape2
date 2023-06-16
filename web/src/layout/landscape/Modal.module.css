@@ -1,0 +1,59 @@
+.active {
+  animation: fadeIn 0.25s 1 ease-in-out forwards;
+  z-index: 1080;
+}
+
+.modal {
+  overflow-y: auto;
+}
+
+.header {
+  background-color: var(--rm-secondary-15);
+  color: var(--rm-secondary);
+}
+
+.content {
+  border-color: var(--solid-border) !important;
+  box-shadow: none !important;
+}
+
+.visibleContentBackdrop::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: var(--color-black-25);
+  z-index: 10;
+}
+
+.activeBackdrop {
+  animation: fadeIn50 0.15s 1 ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn50 {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .content {
+    height: calc(90% - 1rem);
+    width: 90%;
+    margin: auto;
+  }
+}

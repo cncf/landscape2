@@ -5,5 +5,5 @@ yarn-debug.log*
 yarn-error.log*
 target
 web/node_modules
-web/dist/*
-!web/dist/.keep
+web/dist
+web/static/*
