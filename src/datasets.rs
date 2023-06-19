@@ -104,6 +104,8 @@ mod logos {
                     }
                 }
             }
+            logos.files.sort();
+            logos.files.dedup();
 
             logos
         }
