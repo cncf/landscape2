@@ -4,31 +4,31 @@ use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 use time::{format_description::FormatItem, Date};
 
-/// Format used for dates across the landscape datasource file.
+/// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &[FormatItem<'_>] = time::macros::format_description!("[year]-[month]-[day]");
 time::serde::format_description!(date_format, Date, DATE_FORMAT);
 
-/// Landscape information.
+/// Landscape data.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Landscape {
+pub(crate) struct Data {
     pub categories: Vec<Category>,
+    pub items: Vec<Item>,
 }
 
 /// Landscape category.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
     pub name: String,
-    pub subcategories: Vec<SubCategory>,
+    pub subcategories: Vec<SubCategoryName>,
 }
 
-/// Landscape subcategory.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct SubCategory {
-    pub name: String,
-    pub items: Vec<Item>,
-}
+/// Type alias to represent a category name.
+pub(crate) type CategoryName = String;
 
-/// Landscape item information (project, product, etc).
+/// Type alias to represent a sub category name.
+pub(crate) type SubCategoryName = String;
+
+/// Landscape item (project, product, member, etc).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Item {
     pub category: String,
@@ -159,57 +159,53 @@ pub(crate) struct Repository {
     pub primary: Option<bool>,
 }
 
-impl Landscape {
-    /// Create a new landscape instance from the information available in the
-    /// datasource file provided.
+impl Data {
+    /// Create a new landscape data instance from the file provided.
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
-        let data = fs::read_to_string(file)?;
-        let legacy_landscape: legacy::Landscape = serde_yaml::from_str(&data)?;
-        let landscape = Landscape::from(legacy_landscape);
+        let raw_data = fs::read_to_string(file)?;
+        let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
+        let data = Data::from(legacy_data);
 
-        Ok(landscape)
+        Ok(data)
     }
 
-    /// Create a new landscape instance from the information available in the
-    /// datasource url provided.
+    /// Create a new landscape data instance from the url provided.
     pub(crate) async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
             return Err(format_err!(
-                "unexpected status code getting landscape datasource file: {}",
+                "unexpected status code getting landscape data file: {}",
                 resp.status()
             ));
         }
-        let data = resp.text().await?;
-        let legacy_landscape: legacy::Landscape = serde_yaml::from_str(&data)?;
-        let landscape = Landscape::from(legacy_landscape);
+        let raw_data = resp.text().await?;
+        let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
+        let data = Data::from(legacy_data);
 
-        Ok(landscape)
+        Ok(data)
     }
 }
 
-impl From<legacy::Landscape> for Landscape {
+impl From<legacy::Data> for Data {
     #[allow(clippy::too_many_lines)]
-    fn from(legacy: legacy::Landscape) -> Self {
-        let mut landscape = Landscape::default();
+    fn from(legacy_data: legacy::Data) -> Self {
+        let mut data = Data::default();
 
-        // Prepare items from the legacy items available in the landscape file
-        for legacy_category in legacy.landscape {
+        for legacy_category in legacy_data.landscape {
             let mut category = Category {
-                name: legacy_category.name,
+                name: legacy_category.name.clone(),
                 subcategories: vec![],
             };
+
             for legacy_subcategory in legacy_category.subcategories {
-                let mut subcategory = SubCategory {
-                    name: legacy_subcategory.name,
-                    items: vec![],
-                };
+                category.subcategories.push(legacy_subcategory.name.clone());
+
                 for legacy_item in legacy_subcategory.items {
-                    // Base legacy item information
+                    // Base item information
                     let mut item = Item {
                         name: legacy_item.name,
-                        category: category.name.clone(),
-                        subcategory: subcategory.name.clone(),
+                        category: legacy_category.name.clone(),
+                        subcategory: legacy_subcategory.name.clone(),
                         crunchbase_url: legacy_item.crunchbase,
                         enduser: legacy_item.enduser,
                         homepage_url: legacy_item.homepage_url,
@@ -248,7 +244,7 @@ impl From<legacy::Landscape> for Landscape {
                         item.repositories = Some(repositories);
                     }
 
-                    // Additional information in legacy extra field
+                    // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.artwork_url = extra.artwork_url;
                         item.blog_url = extra.blog_url;
@@ -312,28 +308,23 @@ impl From<legacy::Landscape> for Landscape {
                         }
                     }
 
-                    // Add item to subcategory
-                    subcategory.items.push(item);
+                    data.items.push(item);
                 }
-
-                // Add subcategory to category
-                category.subcategories.push(subcategory);
             }
 
-            // Add category to landscape
-            landscape.categories.push(category);
+            data.categories.push(category);
         }
 
-        landscape
+        data
     }
 }
 
 mod legacy {
     use serde::{Deserialize, Serialize};
 
-    /// Landscape information (legacy format).
+    /// Landscape data (legacy format).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct Landscape {
+    pub(super) struct Data {
         pub landscape: Vec<Category>,
     }
 
@@ -351,7 +342,7 @@ mod legacy {
         pub items: Vec<Item>,
     }
 
-    /// Landscape item (project, product, etc).
+    /// Landscape item (project, product, member, etc).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(super) struct Item {
         pub name: String,
