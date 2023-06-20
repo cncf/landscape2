@@ -6,10 +6,12 @@ use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
 
 mod build;
+mod data;
 mod datasets;
-mod landscape;
+mod settings;
 mod tmpl;
 
+/// CLI arguments.
 #[derive(Parser)]
 #[command(about, version)]
 struct Cli {
@@ -17,15 +19,17 @@ struct Cli {
     command: Command,
 }
 
+/// Commands available.
 #[derive(Subcommand)]
 enum Command {
     /// Build landscape static site.
     Build(BuildArgs),
 }
 
+/// Build command arguments.
 #[derive(Args)]
 struct BuildArgs {
-    /// Datasource.
+    /// Data source.
     #[command(flatten)]
     data_source: DataSource,
 
@@ -36,20 +40,26 @@ struct BuildArgs {
     /// Output directory to write files to.
     #[arg(long)]
     output_dir: PathBuf,
+
+    /// Settings source.
+    #[command(flatten)]
+    settings_source: SettingsSource,
 }
 
+/// Landscape data location.
 #[derive(Args)]
 #[group(required = true, multiple = false)]
 struct DataSource {
-    /// Landscape YAML local file path.
+    /// Landscape data file local path.
     #[arg(long)]
     data_file: Option<PathBuf>,
 
-    /// Landscape YAML file url.
+    /// Landscape data file url.
     #[arg(long)]
     data_url: Option<String>,
 }
 
+/// Logos location.
 #[derive(Args)]
 #[group(required = true, multiple = false)]
 struct LogosSource {
@@ -62,10 +72,21 @@ struct LogosSource {
     logos_url: Option<String>,
 }
 
+/// Landscape settings location.
+#[derive(Args)]
+#[group(required = true, multiple = false)]
+struct SettingsSource {
+    /// Landscape settings file local path.
+    #[arg(long)]
+    settings_file: Option<PathBuf>,
+
+    /// Landscape settings file url.
+    #[arg(long)]
+    settings_url: Option<String>,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let cli = Cli::parse();
-
     // Setup logging
     if std::env::var_os("RUST_LOG").is_none() {
         std::env::set_var("RUST_LOG", "landscape2=debug");
@@ -73,6 +94,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
     // Run command
+    let cli = Cli::parse();
     match &cli.command {
         Command::Build(args) => build(args).await?,
     }

@@ -1,4 +1,7 @@
-use crate::{datasets::Datasets, landscape::Landscape, tmpl, BuildArgs, DataSource, LogosSource};
+use crate::{
+    data::Data, datasets::Datasets, settings::Settings, tmpl, BuildArgs, DataSource, LogosSource,
+    SettingsSource,
+};
 use anyhow::{format_err, Result};
 use askama::Template;
 use lazy_static::lazy_static;
@@ -32,9 +35,10 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     check_web_assets()?;
     prepare_output_dir(&args.output_dir)?;
-    let mut landscape = get_landscape(&args.data_source).await?;
-    prepare_logos(&args.logos_source, &mut landscape, &args.output_dir).await?;
-    let datasets = generate_datasets(&landscape, &args.output_dir)?;
+    let mut data = get_landscape_data(&args.data_source).await?;
+    let settings = get_landscape_settings(&args.settings_source).await?;
+    prepare_logos(&args.logos_source, &mut data, &args.output_dir).await?;
+    let datasets = generate_datasets(&settings, &data, &args.output_dir)?;
     render_index(&datasets, &args.output_dir)?;
     copy_web_assets(&args.output_dir)?;
 
@@ -61,28 +65,46 @@ fn prepare_output_dir(output_dir: &Path) -> Result<()> {
         debug!("creating output directory");
         create_dir_all(output_dir)?;
     }
+
     let datasets_path = output_dir.join(DATASETS_PATH);
     if !datasets_path.exists() {
         create_dir(datasets_path)?;
     }
+
     let logos_path = output_dir.join(LOGOS_PATH);
     if !logos_path.exists() {
         create_dir(logos_path)?;
     }
+
     Ok(())
 }
 
-/// Create a new landscape instance from the datasource provided.
+/// Get landscape data from the source provided.
 #[instrument(skip_all, err)]
-async fn get_landscape(data_source: &DataSource) -> Result<Landscape> {
-    let landscape = if let Some(file) = &data_source.data_file {
-        debug!(?file, "getting landscape information from file");
-        Landscape::new_from_file(file)
+async fn get_landscape_data(src: &DataSource) -> Result<Data> {
+    let data = if let Some(file) = &src.data_file {
+        debug!(?file, "getting landscape data from file");
+        Data::new_from_file(file)
     } else {
-        debug!(url = ?data_source.data_url.as_ref().unwrap(), "getting landscape information from url");
-        Landscape::new_from_url(data_source.data_url.as_ref().unwrap()).await
+        debug!(url = ?src.data_url.as_ref().unwrap(), "getting landscape data from url");
+        Data::new_from_url(src.data_url.as_ref().unwrap()).await
     }?;
-    Ok(landscape)
+
+    Ok(data)
+}
+
+/// Get landscape settings from the source provided.
+#[instrument(skip_all, err)]
+async fn get_landscape_settings(src: &SettingsSource) -> Result<Settings> {
+    let settings = if let Some(file) = &src.settings_file {
+        debug!(?file, "getting landscape settings from file");
+        Settings::new_from_file(file)
+    } else {
+        debug!(url = ?src.settings_url.as_ref().unwrap(), "getting landscape settings from url");
+        Settings::new_from_url(src.settings_url.as_ref().unwrap()).await
+    }?;
+
+    Ok(settings)
 }
 
 lazy_static! {
@@ -92,11 +114,7 @@ lazy_static! {
 
 /// Prepare logos and copy them to the output directory.
 #[instrument(skip_all, err)]
-async fn prepare_logos(
-    logos_source: &LogosSource,
-    landscape: &mut Landscape,
-    output_dir: &Path,
-) -> Result<()> {
+async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: &Path) -> Result<()> {
     // Helper function to get the logo content from the corresponding source.
     #[instrument(fields(?file_name), skip_all, err)]
     async fn get_logo_svg(logos_source: &LogosSource, file_name: &str) -> Result<String> {
@@ -109,30 +127,26 @@ async fn prepare_logos(
     }
 
     debug!("preparing logos");
-    for category in &mut landscape.categories {
-        for subcategory in &mut category.subcategories {
-            for item in &mut subcategory.items {
-                // Get logo SVG
-                let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
+    for item in &mut data.items {
+        // Get logo SVG
+        let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
                     item.logo = String::new();
                     continue;
                 };
 
-                // Remove SVG title if present
-                let svg = SVG_TITLE.replace(&svg, "");
+        // Remove SVG title if present
+        let svg = SVG_TITLE.replace(&svg, "");
 
-                // Calculate SVG file digest
-                let digest = hex::encode(Sha256::digest(svg.as_bytes()));
+        // Calculate SVG file digest
+        let digest = hex::encode(Sha256::digest(svg.as_bytes()));
 
-                // Copy logo to output dir using the digest(+.svg) as filename
-                let logo = format!("{digest}.svg");
-                let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
-                file.write_all(svg.as_bytes())?;
+        // Copy logo to output dir using the digest(+.svg) as filename
+        let logo = format!("{digest}.svg");
+        let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
+        file.write_all(svg.as_bytes())?;
 
-                // Update logo field in landscape entry (to digest)
-                item.logo = format!("{LOGOS_PATH}/{logo}");
-            }
-        }
+        // Update logo field in landscape entry (to digest)
+        item.logo = format!("{LOGOS_PATH}/{logo}");
     }
 
     Ok(())
@@ -140,9 +154,9 @@ async fn prepare_logos(
 
 /// Generate datasets.
 #[instrument(skip_all, err)]
-fn generate_datasets(landscape: &Landscape, output_dir: &Path) -> Result<Datasets> {
+fn generate_datasets(settings: &Settings, data: &Data, output_dir: &Path) -> Result<Datasets> {
     debug!("generating datasets");
-    let datasets = Datasets::new(landscape)?;
+    let datasets = Datasets::new(settings, data)?;
 
     debug!("copying datasets to output directory");
     let mut base_file = File::create(output_dir.join(DATASETS_PATH).join("base.json"))?;
@@ -158,6 +172,7 @@ fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     let index = tmpl::Index { datasets }.render()?;
     let mut file = File::create(output_dir.join("index.html"))?;
     file.write_all(index.as_bytes())?;
+
     Ok(())
 }
 
@@ -178,5 +193,6 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
             file.write_all(&embedded_file.data)?;
         }
     }
+
     Ok(())
 }
