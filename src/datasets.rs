@@ -25,15 +25,25 @@ impl Datasets {
 mod base {
     use crate::{
         data::{Category, CategoryName, Data},
-        settings::{Settings, Tab},
+        settings::{FeaturedItemRule, Settings, Tab},
     };
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Base {
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub tabs: Vec<Tab>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories_overridden: Vec<CategoryName>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        pub featured_items: Vec<FeaturedItemRule>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
 
@@ -53,17 +63,20 @@ mod base {
         /// Create a new Base instance from the settings and data provided.
         pub(crate) fn new(settings: &Settings, data: &Data) -> Self {
             let mut base = Base {
-                tabs: settings.tabs.clone(),
+                tabs: settings.tabs.clone().unwrap_or(vec![]),
                 categories: data.categories.clone(),
+                featured_items: settings.featured_items.clone().unwrap_or(vec![]),
                 ..Default::default()
             };
 
             // Update categories overridden in settings
-            for category in &settings.categories {
-                if let Some(index) = base.categories.iter().position(|c| c.name == category.name) {
-                    base.categories[index] = category.clone();
+            if let Some(categories) = &settings.categories {
+                for category in categories {
+                    if let Some(index) = base.categories.iter().position(|c| c.name == category.name) {
+                        base.categories[index] = category.clone();
+                    }
+                    base.categories_overridden.push(category.name.clone());
                 }
-                base.categories_overridden.push(category.name.clone());
             }
 
             // Prepare items from landscape data
@@ -90,6 +103,7 @@ mod logos {
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Logos {
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub files: Vec<String>,
     }
 

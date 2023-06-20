@@ -7,8 +7,14 @@ use std::{fs, path::Path};
 /// Landscape settings.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Settings {
-    pub tabs: Vec<Tab>,
-    pub categories: Vec<Category>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tabs: Option<Vec<Tab>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub categories: Option<Vec<Category>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub featured_items: Option<Vec<FeaturedItemRule>>,
 }
 
 /// Landscape tab.
@@ -16,6 +22,25 @@ pub(crate) struct Settings {
 pub(crate) struct Tab {
     pub name: String,
     pub categories: Vec<CategoryName>,
+}
+
+/// Featured item rule information.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct FeaturedItemRule {
+    pub field: String,
+    pub options: Vec<FeaturedItemRuleOption>,
+}
+
+/// Featured item rule option.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct FeaturedItemRuleOption {
+    pub value: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
 }
 
 impl Settings {
