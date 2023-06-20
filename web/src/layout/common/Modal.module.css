@@ -12,19 +12,13 @@
   color: var(--rm-secondary);
 }
 
+.headerContent {
+  max-width: calc(100% - 40px);
+}
+
 .content {
   border-color: var(--solid-border) !important;
   box-shadow: none !important;
-}
-
-.visibleContentBackdrop::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background-color: var(--color-black-25);
   z-index: 10;
 }
 

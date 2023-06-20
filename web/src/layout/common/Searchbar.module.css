@@ -1,0 +1,91 @@
+.searchBar {
+  height: 33px;
+  width: 500px;
+  font-size: 0.8rem;
+  box-shadow: 0 0 0 0.3rem var(--bs-gray-200);
+  margin-right: 0.3rem;
+  margin: 0 0.3rem;
+}
+
+.btnIcon {
+  line-height: 0.9rem;
+}
+
+.iconWrapper {
+  color: var(--bs-secondary);
+}
+
+.vr {
+  margin: 0.4rem 0;
+}
+
+/* Dropdown */
+.dropdown {
+  margin-top: 0.5rem;
+  max-height: 350px;
+  overscroll-behavior: contain;
+}
+
+.activeDropdownItem {
+  background-color: var(--bs-gray-100);
+}
+
+.miniImageWrapper {
+  height: 40px;
+  width: 40px;
+  min-width: 40px;
+  font-size: 2rem;
+}
+
+.miniImageWrapper img {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.title {
+  font-size: 1rem;
+}
+
+.truncateWrapper {
+  min-width: 0;
+}
+
+/* Scroll */
+.visibleScroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.visibleScroll::-webkit-scrollbar-thumb,
+.visibleScroll::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 10px;
+  background-color: #686868;
+  border: 2px solid var(--bs-white);
+}
+
+.visibleScroll::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+@media only screen and (max-width: 991.98px) {
+  .searchBar {
+    width: 250px;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .searchBar {
+    width: calc(100% - 0.6rem);
+    height: 30px;
+  }
+
+  .vr {
+    margin: 0.65rem 0;
+  }
+}
+
+@media (hover: hover) {
+  .btnProject:hover {
+    filter: none !important;
+  }
+}

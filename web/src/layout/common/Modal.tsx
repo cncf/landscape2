@@ -1,37 +1,38 @@
-import React, { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './Modal.module.css';
-import { Item } from '../../types';
 
-export interface IModalProps {
-  item?: Item;
+interface Props {
+  open: boolean;
+  header: string | JSX.Element;
+  headerClassName?: string;
+  children: JSX.Element;
   onClose: () => void;
-  breakPoint?: string;
   size?: string;
   visibleContentBackdrop?: boolean;
 }
 
-export const Modal: React.FC<IModalProps> = (props: IModalProps) => {
-  const [openStatus, setOpenStatus] = useState(props.item !== undefined);
+const Modal = (props: Props) => {
+  const [openStatus, setOpenStatus] = useState(props.open);
   const ref = useRef<HTMLDivElement>(null);
 
   useOutsideClick([ref], openStatus, () => {
     closeModal();
   });
-  useBodyScroll(openStatus, 'modal', props.breakPoint);
+  useBodyScroll(openStatus, 'modal');
 
   const closeModal = () => {
     props.onClose();
-    // setOpenStatus(false);
+    setOpenStatus(false);
   };
 
   useEffect(() => {
-    setOpenStatus(props.item !== undefined);
-  }, [props.item]);
+    setOpenStatus(props.open);
+  }, [props.open]);
 
-  if (props.item === undefined) return null;
+  if (!props.open) return null;
 
   return (
     <>
@@ -42,11 +43,9 @@ export const Modal: React.FC<IModalProps> = (props: IModalProps) => {
           className={`modal-dialog modal-${props.size || 'lg'} modal-dialog-centered modal-dialog-scrollable`}
           ref={ref}
         >
-          <div
-            className={`modal-content rounded-0 border border-3 mx-auto position-relative ${styles.content} ${styles.visibleContentBackdrop}`}
-          >
+          <div className={`modal-content rounded-0 border border-3 mx-auto position-relative ${styles.content}`}>
             <div className={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
-              <div className="modal-title h5 m-2 flex-grow-1">Header</div>
+              <div className={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
 
               <button
                 type="button"
@@ -59,10 +58,12 @@ export const Modal: React.FC<IModalProps> = (props: IModalProps) => {
               ></button>
             </div>
 
-            <div className="modal-body p-4 h-100 d-flex flex-column">Content</div>
+            <div className="modal-body p-4 h-100 d-flex flex-column">{props.children}</div>
           </div>
         </div>
       </div>
     </>
   );
 };
+
+export default Modal;

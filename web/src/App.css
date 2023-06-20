@@ -6,3 +6,24 @@ body,
   margin: 0;
   padding: 0;
 }
+
+:root {
+  --card-size-width: 50px;
+  --card-size-height: 45px;
+  --card-gap: 5px;
+}
+
+button:focus,
+a:focus,
+input:focus,
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 0 transparent !important;
+}
+
+.noScroll-sidebar,
+.noScroll-modal {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}

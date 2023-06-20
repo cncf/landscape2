@@ -1,0 +1,27 @@
+.dropdown {
+  min-width: 200px;
+  font-size: 0.85rem;
+  margin-top: 23px;
+}
+
+.tooltip {
+  margin-top: 33px;
+}
+
+.arrow {
+  position: absolute;
+  display: block;
+  width: 0.8rem;
+  height: 0.4rem;
+  top: -0.5rem;
+  left: 0.85rem;
+}
+
+.arrow::before {
+  position: absolute;
+  content: '';
+  border-color: transparent;
+  border-style: solid;
+  bottom: -1px;
+  border-width: 0 0.4rem 0.4rem;
+}
