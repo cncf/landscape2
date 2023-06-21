@@ -7,15 +7,15 @@
 //! backwards compatibility, this module provides a `legacy` submodule that
 //! allows parsing the legacy format and convert to the new one.
 
+use crate::github;
 use anyhow::{format_err, Result};
+use chrono::NaiveDate;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
-use time::{format_description::FormatItem, Date};
 
 /// Format used for dates across the landscape data file.
-pub const DATE_FORMAT: &[FormatItem<'_>] = time::macros::format_description!("[year]-[month]-[day]");
-time::serde::format_description!(date_format, Date, DATE_FORMAT);
+pub const DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// Landscape data.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -46,8 +46,8 @@ pub(crate) struct Item {
     pub logo: String,
     pub subcategory: String,
 
-    #[serde(skip_serializing_if = "Option::is_none", with = "date_format::option")]
-    pub accepted_at: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accepted_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub artwork_url: Option<String>,
@@ -79,20 +79,20 @@ pub(crate) struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub github_discussions_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none", with = "date_format::option")]
-    pub graduated_at: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub graduated_at: Option<NaiveDate>,
 
-    #[serde(skip_serializing_if = "Option::is_none", with = "date_format::option")]
-    pub incubating_at: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub incubating_at: Option<NaiveDate>,
 
-    #[serde(skip_serializing_if = "Option::is_none", with = "date_format::option")]
-    pub joined_at: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub joined_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none", with = "date_format::option")]
-    pub latest_annual_review_at: Option<Date>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_annual_review_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub latest_annual_review_url: Option<String>,
@@ -165,6 +165,9 @@ pub(crate) struct Repository {
     pub branch: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub github_data: Option<github::Repository>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub primary: Option<bool>,
 }
 
@@ -227,7 +230,7 @@ impl From<legacy::Data> for Data {
                         ..Default::default()
                     };
                     if let Some(joined) = legacy_item.joined {
-                        if let Ok(v) = Date::parse(&joined, &DATE_FORMAT) {
+                        if let Ok(v) = NaiveDate::parse_from_str(&joined, DATE_FORMAT) {
                             item.joined_at = Some(v);
                         }
                     }
@@ -239,6 +242,7 @@ impl From<legacy::Data> for Data {
                             url,
                             branch: legacy_item.branch,
                             primary: Some(true),
+                            ..Default::default()
                         });
                     }
                     if let Some(additional_repos) = legacy_item.additional_repos {
@@ -247,6 +251,7 @@ impl From<legacy::Data> for Data {
                                 url: entry.repo_url,
                                 branch: entry.branch,
                                 primary: Some(false),
+                                ..Default::default()
                             });
                         }
                     }
@@ -271,22 +276,22 @@ impl From<legacy::Data> for Data {
                         item.youtube_url = extra.youtube_url;
 
                         if let Some(accepted) = extra.accepted {
-                            if let Ok(v) = Date::parse(&accepted, &DATE_FORMAT) {
+                            if let Ok(v) = NaiveDate::parse_from_str(&accepted, DATE_FORMAT) {
                                 item.accepted_at = Some(v);
                             }
                         }
                         if let Some(graduated) = extra.graduated {
-                            if let Ok(v) = Date::parse(&graduated, &DATE_FORMAT) {
+                            if let Ok(v) = NaiveDate::parse_from_str(&graduated, DATE_FORMAT) {
                                 item.graduated_at = Some(v);
                             }
                         }
                         if let Some(incubating) = extra.incubating {
-                            if let Ok(v) = Date::parse(&incubating, &DATE_FORMAT) {
+                            if let Ok(v) = NaiveDate::parse_from_str(&incubating, DATE_FORMAT) {
                                 item.incubating_at = Some(v);
                             }
                         }
                         if let Some(annual_review_date) = extra.annual_review_date {
-                            if let Ok(v) = Date::parse(&annual_review_date, &DATE_FORMAT) {
+                            if let Ok(v) = NaiveDate::parse_from_str(&annual_review_date, DATE_FORMAT) {
                                 item.latest_annual_review_at = Some(v);
                             }
                         }
@@ -330,6 +335,9 @@ impl From<legacy::Data> for Data {
 }
 
 mod legacy {
+    //! This module defines some types used to parse the landscape data file in
+    //! legacy format and convert it to the new one.
+
     use serde::{Deserialize, Serialize};
 
     /// Landscape data (legacy format).

@@ -6,7 +6,10 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, logos::Logos};
-use crate::{data::Data, settings::Settings};
+use crate::{
+    data::{self, Data},
+    settings::Settings,
+};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -14,6 +17,10 @@ use anyhow::{Ok, Result};
 pub(crate) struct Datasets {
     /// #[base]
     pub base: Base,
+
+    /// This dataset contains all landscape data plus some extra information
+    /// collected from external services.
+    pub full: data::Data,
 
     /// #[logos]
     pub logos: Logos,
@@ -24,6 +31,7 @@ impl Datasets {
     pub(crate) fn new(settings: &Settings, data: &Data) -> Result<Self> {
         let datasets = Datasets {
             base: Base::new(settings, data),
+            full: data.clone(),
             logos: data.into(),
         };
 

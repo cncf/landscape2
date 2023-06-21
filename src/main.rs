@@ -1,15 +1,20 @@
 #![warn(clippy::all, clippy::pedantic)]
+#![allow(clippy::doc_markdown)]
 
 use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 mod build;
 mod data;
 mod datasets;
+mod github;
 mod settings;
 mod tmpl;
+
+/// Environment variable containing a comma separated list of GitHub tokens.
+const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
 
 /// CLI arguments.
 #[derive(Parser)]
@@ -93,11 +98,23 @@ async fn main() -> Result<()> {
     }
     tracing_subscriber::fmt::init();
 
+    // Read credentials from environment
+    let mut credentials = Credentials::default();
+    if let Ok(github_tokens) = env::var(GITHUB_TOKENS) {
+        credentials.github_tokens = Some(github_tokens.split(',').map(ToString::to_string).collect());
+    }
+
     // Run command
     let cli = Cli::parse();
     match &cli.command {
-        Command::Build(args) => build(args).await?,
+        Command::Build(args) => build(args, &credentials).await?,
     }
 
     Ok(())
+}
+
+/// Services credentials.
+#[derive(Debug, Default)]
+pub(crate) struct Credentials {
+    pub github_tokens: Option<Vec<String>>,
 }
