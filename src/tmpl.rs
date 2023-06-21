@@ -1,3 +1,6 @@
+//! This module defines some templates used during the generation of the
+//! landscape static site.
+
 use crate::datasets::Datasets;
 use askama::Template;
 
