@@ -1,3 +1,12 @@
+//! This module defines the types used to represent the landscape data that is
+//! usually provided from a YAML file (landscape.yml). The landscape data is
+//! the main source of information for a landscape.
+//!
+//! The landscape data representation used in this module doesn't match the
+//! legacy format used by the existing landscapes data files. To maintain
+//! backwards compatibility, this module provides a `legacy` submodule that
+//! allows parsing the legacy format and convert to the new one.
+
 use anyhow::{format_err, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -18,7 +27,7 @@ pub(crate) struct Data {
 /// Landscape category.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
-    pub name: String,
+    pub name: CategoryName,
     pub subcategories: Vec<SubCategoryName>,
 }
 
@@ -164,9 +173,8 @@ impl Data {
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
         let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
-        let data = Data::from(legacy_data);
 
-        Ok(data)
+        Ok(Data::from(legacy_data))
     }
 
     /// Create a new landscape data instance from the url provided.
@@ -180,9 +188,8 @@ impl Data {
         }
         let raw_data = resp.text().await?;
         let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
-        let data = Data::from(legacy_data);
 
-        Ok(data)
+        Ok(Data::from(legacy_data))
     }
 }
 
@@ -191,15 +198,18 @@ impl From<legacy::Data> for Data {
     fn from(legacy_data: legacy::Data) -> Self {
         let mut data = Data::default();
 
+        // Categories
         for legacy_category in legacy_data.landscape {
             let mut category = Category {
                 name: legacy_category.name.clone(),
                 subcategories: vec![],
             };
 
+            // Subcategories
             for legacy_subcategory in legacy_category.subcategories {
                 category.subcategories.push(legacy_subcategory.name.clone());
 
+                // Items
                 for legacy_item in legacy_subcategory.items {
                     // Base item information
                     let mut item = Item {

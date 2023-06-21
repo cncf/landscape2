@@ -1,3 +1,12 @@
+//! This module defines the types used to represent the landscape settings that
+//! are usually provided from a YAML file (settings.yml). These settings allow
+//! customizing some aspects of the landscape, like the tabs that will appear
+//! in the web application, the categories that will belong to each of them, or
+//! the criteria used to highlight items.
+//!
+//! NOTE: the landscape settings file uses a new format that is not backwards
+//! compatible with the legacy settings file used by existing landscapes.
+
 use crate::data::{Category, CategoryName};
 use anyhow::{format_err, Result};
 use reqwest::StatusCode;
@@ -17,14 +26,17 @@ pub(crate) struct Settings {
     pub featured_items: Option<Vec<FeaturedItemRule>>,
 }
 
-/// Landscape tab.
+/// Landscape tab. A tab provides a mechanism to organize groups of categories
+/// in the web application.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Tab {
     pub name: String,
     pub categories: Vec<CategoryName>,
 }
 
-/// Featured item rule information.
+/// Featured item rule information. A featured item is specially highlighted in
+/// the web application, usually making it larger with some special styling.
+/// These rules are used to decide which items should be featured.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct FeaturedItemRule {
     pub field: String,
@@ -46,8 +58,8 @@ pub(crate) struct FeaturedItemRuleOption {
 impl Settings {
     /// Create a new landscape settings instance from the file provided.
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
-        let data = fs::read_to_string(file)?;
-        let settings: Settings = serde_yaml::from_str(&data)?;
+        let raw_data = fs::read_to_string(file)?;
+        let settings: Settings = serde_yaml::from_str(&raw_data)?;
 
         Ok(settings)
     }
@@ -61,8 +73,8 @@ impl Settings {
                 resp.status()
             ));
         }
-        let data = resp.text().await?;
-        let settings: Settings = serde_yaml::from_str(&data)?;
+        let raw_data = resp.text().await?;
+        let settings: Settings = serde_yaml::from_str(&raw_data)?;
 
         Ok(settings)
     }

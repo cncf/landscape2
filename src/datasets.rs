@@ -1,3 +1,10 @@
+//! This module defines some datasets that will be used to power the web
+//! application. They are built from the landscape settings and data, as well
+//! as from data collected from other external sources like GitHub. Some of
+//! these datasets may be embedded in the index document (or used while
+//! rendering it), whereas others will be written to the output directory so
+//! that they can be fetched when needed.
+
 use self::{base::Base, logos::Logos};
 use crate::{data::Data, settings::Settings};
 use anyhow::{Ok, Result};
@@ -5,12 +12,15 @@ use anyhow::{Ok, Result};
 /// Datasets collection.
 #[derive(Debug, Clone)]
 pub(crate) struct Datasets {
+    /// #[base]
     pub base: Base,
+
+    /// #[logos]
     pub logos: Logos,
 }
 
 impl Datasets {
-    /// Create a new datasets instance from the settings and data provided.
+    /// Create a new datasets instance.
     pub(crate) fn new(settings: &Settings, data: &Data) -> Result<Self> {
         let datasets = Datasets {
             base: Base::new(settings, data),
@@ -22,6 +32,9 @@ impl Datasets {
 }
 
 /// Base dataset.
+///
+/// This dataset contains the data the web application needs to render the
+/// initial page and power the features available on it.
 mod base {
     use crate::{
         data::{Category, CategoryName, Data},
@@ -97,6 +110,9 @@ mod base {
 }
 
 /// Logos dataset.
+///
+/// This dataset contains a list of the logos files used across all items in
+/// the landscape.
 mod logos {
     use crate::data::Data;
     use serde::{Deserialize, Serialize};

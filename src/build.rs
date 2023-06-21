@@ -1,3 +1,5 @@
+//! This module defines the functionality of the build CLI subcommand.
+
 use crate::{
     data::Data, datasets::Datasets, settings::Settings, tmpl, BuildArgs, DataSource, LogosSource,
     SettingsSource,
@@ -47,7 +49,8 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     Ok(())
 }
 
-/// Check web assets are present.
+/// Check web assets are present, to make sure the web application has already
+/// been built.
 #[instrument(skip_all, err)]
 fn check_web_assets() -> Result<()> {
     if !WebAssets::iter().any(|path| path.starts_with("assets/")) {
@@ -58,8 +61,9 @@ fn check_web_assets() -> Result<()> {
     Ok(())
 }
 
-/// Prepare output directory.
-#[instrument(fields(output_dir = ?output_dir), skip_all, err)]
+/// Prepare output directory, creating it as well as any of the other required
+/// paths inside it when needed.
+#[instrument(fields(?output_dir), skip_all, err)]
 fn prepare_output_dir(output_dir: &Path) -> Result<()> {
     if !output_dir.exists() {
         debug!("creating output directory");
@@ -130,9 +134,9 @@ async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: 
     for item in &mut data.items {
         // Get logo SVG
         let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
-                    item.logo = String::new();
-                    continue;
-                };
+            item.logo = String::new();
+            continue;
+        };
 
         // Remove SVG title if present
         let svg = SVG_TITLE.replace(&svg, "");
@@ -152,7 +156,10 @@ async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: 
     Ok(())
 }
 
-/// Generate datasets.
+/// Generate datasets from the landscape settings and data, as well as from the
+/// data collected from external services (GitHub, Crunchbase, etc). Some of
+/// the datasets will be embedded in the index document, and the rest will be
+/// written to the DATASETS_PATH in the output directory.
 #[instrument(skip_all, err)]
 fn generate_datasets(settings: &Settings, data: &Data, output_dir: &Path) -> Result<Datasets> {
     debug!("generating datasets");
