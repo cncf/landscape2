@@ -1,6 +1,7 @@
 //! This module defines the functionality of the build CLI subcommand.
 
 use crate::{
+    crunchbase::{self, CBApi, DynCB},
     data::Data,
     datasets::Datasets,
     github::{self, DynGH},
@@ -20,7 +21,8 @@ use std::{
     fs::{self, create_dir, create_dir_all, File},
     io::Write,
     path::Path,
-    time::Instant,
+    sync::Arc,
+    time::{Duration, Instant},
 };
 use tracing::{debug, info, instrument, warn};
 
@@ -46,7 +48,8 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     let mut data = get_landscape_data(&args.data_source).await?;
     let settings = get_landscape_settings(&args.settings_source).await?;
     prepare_logos(&args.logos_source, &mut data, &args.output_dir).await?;
-    collect_repositories_github_data(&credentials.github_tokens, &mut data).await?;
+    collect_github_data(&credentials.github_tokens, &mut data).await?;
+    collect_crunchbase_data(&credentials.crunchbase_api_key, &mut data).await?;
     let datasets = generate_datasets(&settings, &data, &args.output_dir)?;
     render_index(&datasets, &args.output_dir)?;
     copy_web_assets(&args.output_dir)?;
@@ -168,14 +171,16 @@ async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: 
 /// Collect some extra information for each of the items repositories from
 /// GitHub.
 #[instrument(skip_all, err)]
-async fn collect_repositories_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> Result<()> {
-    debug!("collecting repositories information from github (this may take a while)");
-
-    // Setup GitHub clients pool
+async fn collect_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> Result<()> {
+    // Check tokens have been provided
     let Some(tokens) = tokens else {
         warn!("github tokens not provided: no information will be collected from github");
         return Ok(());
     };
+
+    debug!("collecting repositories information from github (this may take a while)");
+
+    // Setup GitHub API clients pool
     let mut gh_clients: Vec<DynGH> = vec![];
     for token in tokens {
         let gh = Box::new(github::GHApi::new(token)?);
@@ -184,19 +189,19 @@ async fn collect_repositories_github_data(tokens: &Option<Vec<String>>, data: &m
     let gh_pool = Pool::from(gh_clients);
 
     // Collect urls of the repositories to process
-    let mut repositories_urls = vec![];
+    let mut urls = vec![];
     for item in &data.items {
         if let Some(repositories) = &item.repositories {
             for repo in repositories {
-                repositories_urls.push(&repo.url);
+                urls.push(&repo.url);
             }
         }
     }
-    repositories_urls.sort();
-    repositories_urls.dedup();
+    urls.sort();
+    urls.dedup();
 
     // Collect repositories information from GitHub
-    let repositories_github_data: HashMap<String, github::Repository> = stream::iter(repositories_urls)
+    let repositories_github_data: HashMap<String, github::Repository> = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
             let gh = gh_pool.get().await.expect("token -when available-");
@@ -226,6 +231,65 @@ async fn collect_repositories_github_data(tokens: &Option<Vec<String>>, data: &m
                 repositories.push(repo);
             }
             item.repositories = Some(repositories);
+        }
+    }
+
+    Ok(())
+}
+
+/// Collect some extra information for each of the items organizations from
+/// Crunchbase.
+#[instrument(skip_all, err)]
+async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> Result<()> {
+    // Check API key has been provided
+    let Some(api_key) = api_key else {
+        warn!("crunchbase api key not provided: no information will be collected from crunchbase");
+        return Ok(());
+    };
+
+    debug!("collecting organizations information from crunchbase (this may take a while)");
+
+    // Setup Crunchbase API client
+    let cb: DynCB = Arc::new(CBApi::new(api_key)?);
+
+    // Collect items Crunchbase urls
+    let mut urls = vec![];
+    for item in &data.items {
+        if let Some(url) = &item.crunchbase_url {
+            urls.push(url);
+        }
+    }
+    urls.sort();
+    urls.dedup();
+
+    // Collect information from Crunchbase
+    let urls_stream = stream::iter(urls);
+    let urls_stream_throttled = tokio_stream::StreamExt::throttle(urls_stream, Duration::from_millis(300));
+    let orgs_crunchbase_data: HashMap<String, crunchbase::Organization> = urls_stream_throttled
+        .map(|url| async {
+            let cb = cb.clone();
+            let url = url.clone();
+            (url.clone(), crunchbase::Organization::new(cb, &url).await)
+        })
+        .buffer_unordered(1)
+        .collect::<HashMap<String, Result<crunchbase::Organization>>>()
+        .await
+        .into_iter()
+        .filter_map(|(url, result)| {
+            if let Ok(crunchbase_data) = result {
+                Some((url, crunchbase_data))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // Enrich landscape items with information collected from Crunchbase
+    for item in &mut data.items {
+        if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
+            if let Some(crunchbase_data) = orgs_crunchbase_data.get(crunchbase_url) {
+                item.crunchbase_data = Some(crunchbase_data.clone());
+            }
         }
     }
 

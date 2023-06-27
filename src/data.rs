@@ -7,7 +7,7 @@
 //! backwards compatibility, this module provides a `legacy` submodule that
 //! allows parsing the legacy format and convert to the new one.
 
-use crate::github;
+use crate::{crunchbase::Organization, github};
 use anyhow::{format_err, Result};
 use chrono::NaiveDate;
 use reqwest::StatusCode;
@@ -60,6 +60,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clomonitor_name: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crunchbase_data: Option<Organization>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub crunchbase_url: Option<String>,
