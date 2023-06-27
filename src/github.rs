@@ -1,6 +1,6 @@
 //! This modules defines some types used to represent the information collected
-//! from GitHub for each of the landscape items (when applicable), as well as
-//! the functionality used to collect that information.
+//! from GitHub for each of the landscape items repositories (when applicable),
+//! as well as the functionality used to collect that information.
 
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
@@ -18,9 +18,9 @@ use std::collections::HashMap;
 use tracing::instrument;
 
 /// Repository information collected from GitHub.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Repository {
-    /// Represents the moment at which this repository instance was generated
+    /// Represents the moment at which this instance was generated
     pub _generated_at: DateTime<Utc>,
 
     pub contributors: Contributors,

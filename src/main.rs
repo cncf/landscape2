@@ -7,11 +7,15 @@ use clap::{Args, Parser, Subcommand};
 use std::{env, path::PathBuf};
 
 mod build;
+mod crunchbase;
 mod data;
 mod datasets;
 mod github;
 mod settings;
 mod tmpl;
+
+/// Environment variable containing a Crunchbase API key.
+const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
 /// Environment variable containing a comma separated list of GitHub tokens.
 const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
@@ -100,6 +104,9 @@ async fn main() -> Result<()> {
 
     // Read credentials from environment
     let mut credentials = Credentials::default();
+    if let Ok(crunchbase_api_key) = env::var(CRUNCHBASE_API_KEY) {
+        credentials.crunchbase_api_key = Some(crunchbase_api_key);
+    }
     if let Ok(github_tokens) = env::var(GITHUB_TOKENS) {
         credentials.github_tokens = Some(github_tokens.split(',').map(ToString::to_string).collect());
     }
@@ -116,5 +123,6 @@ async fn main() -> Result<()> {
 /// Services credentials.
 #[derive(Debug, Default)]
 pub(crate) struct Credentials {
+    pub crunchbase_api_key: Option<String>,
     pub github_tokens: Option<Vec<String>>,
 }

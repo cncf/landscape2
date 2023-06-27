@@ -32,6 +32,7 @@ tokio = { version = "1.28.2", features = [
     "signal",
     "time",
 ] }
+tokio-stream = "0.1.14"
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
 
