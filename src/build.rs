@@ -18,7 +18,7 @@ use rust_embed::RustEmbed;
 use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
-    fs::{self, create_dir, create_dir_all, File},
+    fs::{self, File},
     io::Write,
     path::Path,
     sync::Arc,
@@ -104,17 +104,17 @@ fn check_web_assets() -> Result<()> {
 fn setup_output_dir(output_dir: &Path) -> Result<()> {
     if !output_dir.exists() {
         debug!("creating output directory");
-        create_dir_all(output_dir)?;
+        fs::create_dir_all(output_dir)?;
     }
 
     let datasets_path = output_dir.join(DATASETS_PATH);
     if !datasets_path.exists() {
-        create_dir(datasets_path)?;
+        fs::create_dir(datasets_path)?;
     }
 
     let logos_path = output_dir.join(LOGOS_PATH);
     if !logos_path.exists() {
-        create_dir(logos_path)?;
+        fs::create_dir(logos_path)?;
     }
 
     Ok(())
@@ -359,10 +359,21 @@ fn generate_datasets(
     let datasets = Datasets::new(settings, landscape_data)?;
 
     debug!("copying datasets to output directory");
-    let mut base_file = File::create(output_dir.join(DATASETS_PATH).join("base.json"))?;
+    let datasets_path = output_dir.join(DATASETS_PATH);
+
+    // Base
+    let mut base_file = File::create(datasets_path.join("base.json"))?;
     base_file.write_all(&serde_json::to_vec(&datasets.base)?)?;
-    let mut full_file = File::create(output_dir.join(DATASETS_PATH).join("full.json"))?;
-    full_file.write_all(&serde_json::to_vec(&datasets.full)?)?;
+
+    // Landscape
+    let mut landscape_file = File::create(datasets_path.join("landscape.json"))?;
+    landscape_file.write_all(&serde_json::to_vec(&datasets.landscape)?)?;
+
+    // Landscape items (each on one file)
+    for item in &datasets.landscape.items {
+        let mut item_file = File::create(datasets_path.join(format!("landscape-item-{}.json", item.id)))?;
+        item_file.write_all(&serde_json::to_vec(&item)?)?;
+    }
 
     Ok(datasets)
 }
@@ -389,7 +400,7 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
         if let Some(embedded_file) = WebAssets::get(&asset_path) {
             debug!(?asset_path, "copying file");
             if let Some(parent_path) = Path::new(asset_path.as_ref()).parent() {
-                create_dir_all(output_dir.join(parent_path))?;
+                fs::create_dir_all(output_dir.join(parent_path))?;
             }
             let mut file = File::create(output_dir.join(asset_path.as_ref()))?;
             file.write_all(&embedded_file.data)?;

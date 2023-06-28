@@ -1,6 +1,6 @@
 //! This module defines the types used to represent the landscape settings that
 //! are usually provided from a YAML file (settings.yml). These settings allow
-//! customizing some aspects of the landscape, like the tabs that will appear
+//! customizing some aspects of the landscape, like the groups that will appear
 //! in the web application, the categories that will belong to each of them, or
 //! the criteria used to highlight items.
 //!
@@ -17,7 +17,7 @@ use std::{fs, path::Path};
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Settings {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tabs: Option<Vec<Tab>>,
+    pub groups: Option<Vec<Group>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
@@ -26,10 +26,10 @@ pub(crate) struct Settings {
     pub featured_items: Option<Vec<FeaturedItemRule>>,
 }
 
-/// Landscape tab. A tab provides a mechanism to organize groups of categories
-/// in the web application.
+/// Landscape group. A group provides a mechanism to organize sets of
+/// categories in the web application.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Tab {
+pub(crate) struct Group {
     pub name: String,
     pub categories: Vec<CategoryName>,
 }
