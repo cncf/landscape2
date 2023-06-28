@@ -15,9 +15,8 @@ pub(crate) struct Datasets {
     /// #[base]
     pub base: Base,
 
-    /// This dataset contains all landscape data plus some extra information
-    /// collected from external services.
-    pub full: LandscapeData,
+    /// Landscape data.
+    pub landscape: LandscapeData,
 
     /// #[logos]
     pub logos: Logos,
@@ -28,7 +27,7 @@ impl Datasets {
     pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Result<Self> {
         let datasets = Datasets {
             base: Base::new(settings, landscape_data),
-            full: landscape_data.clone(),
+            landscape: landscape_data.clone(),
             logos: landscape_data.into(),
         };
 
@@ -43,15 +42,13 @@ impl Datasets {
 mod base {
     use crate::{
         data::{Category, CategoryName, LandscapeData},
-        settings::{FeaturedItemRule, Settings, Tab},
+        settings::{FeaturedItemRule, Group, Settings},
     };
     use serde::{Deserialize, Serialize};
+    use uuid::Uuid;
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Base {
-        #[serde(skip_serializing_if = "Vec::is_empty")]
-        pub tabs: Vec<Tab>,
-
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
 
@@ -62,6 +59,9 @@ mod base {
         pub featured_items: Vec<FeaturedItemRule>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
+        pub groups: Vec<Group>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
 
@@ -69,6 +69,7 @@ mod base {
     pub(crate) struct Item {
         pub category: String,
         pub has_repositories: bool,
+        pub id: Uuid,
         pub name: String,
         pub logo: String,
         pub subcategory: String,
@@ -81,7 +82,7 @@ mod base {
         /// Create a new Base instance from the settings and data provided.
         pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Self {
             let mut base = Base {
-                tabs: settings.tabs.clone().unwrap_or(vec![]),
+                groups: settings.groups.clone().unwrap_or(vec![]),
                 categories: landscape_data.categories.clone(),
                 featured_items: settings.featured_items.clone().unwrap_or(vec![]),
                 ..Default::default()
@@ -102,6 +103,7 @@ mod base {
                 base.items.push(Item {
                     category: item.category.clone(),
                     has_repositories: !item.repositories.as_ref().unwrap_or(&vec![]).is_empty(),
+                    id: item.id,
                     name: item.name.clone(),
                     logo: item.logo.clone(),
                     project: item.project.clone(),

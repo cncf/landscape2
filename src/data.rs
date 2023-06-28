@@ -13,6 +13,7 @@ use chrono::NaiveDate;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
+use uuid::Uuid;
 
 /// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
@@ -22,156 +23,6 @@ pub const DATE_FORMAT: &str = "%Y-%m-%d";
 pub(crate) struct LandscapeData {
     pub categories: Vec<Category>,
     pub items: Vec<Item>,
-}
-
-/// Landscape category.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Category {
-    pub name: CategoryName,
-    pub subcategories: Vec<SubCategoryName>,
-}
-
-/// Type alias to represent a category name.
-pub(crate) type CategoryName = String;
-
-/// Type alias to represent a sub category name.
-pub(crate) type SubCategoryName = String;
-
-/// Landscape item (project, product, member, etc).
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Item {
-    pub category: String,
-    pub name: String,
-    pub homepage_url: String,
-    pub logo: String,
-    pub subcategory: String,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub accepted_at: Option<NaiveDate>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub artwork_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub blog_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub chat_channel: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub clomonitor_name: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub crunchbase_data: Option<Organization>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub crunchbase_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub devstats_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub discord_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub docker_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub enduser: Option<bool>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub github_discussions_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub graduated_at: Option<NaiveDate>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub incubating_at: Option<NaiveDate>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub joined_at: Option<NaiveDate>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mailing_list_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub latest_annual_review_at: Option<NaiveDate>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub latest_annual_review_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub openssf_best_practices_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub project: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub repositories: Option<Vec<Repository>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub slack_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub specification: Option<bool>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stack_overflow_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub summary: Option<ItemSummary>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub twitter_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub unnamed_organization: Option<bool>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub youtube_url: Option<String>,
-}
-
-/// Landscape item summary.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct ItemSummary {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub business_use_case: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub integration: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub integrations: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub intro_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub personas: Option<Vec<String>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub release_rate: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<String>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub use_case: Option<String>,
-}
-
-/// Repository information.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Repository {
-    pub url: String,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub branch: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub github_data: Option<github::Repository>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub primary: Option<bool>,
 }
 
 impl LandscapeData {
@@ -232,6 +83,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         unnamed_organization: legacy_item.unnamed_organization,
                         ..Default::default()
                     };
+                    item.set_id();
                     if let Some(joined) = legacy_item.joined {
                         if let Ok(v) = NaiveDate::parse_from_str(&joined, DATE_FORMAT) {
                             item.joined_at = Some(v);
@@ -335,6 +187,165 @@ impl From<legacy::LandscapeData> for LandscapeData {
 
         landscape_data
     }
+}
+
+/// Landscape category.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Category {
+    pub name: CategoryName,
+    pub subcategories: Vec<SubCategoryName>,
+}
+
+/// Type alias to represent a category name.
+pub(crate) type CategoryName = String;
+
+/// Type alias to represent a sub category name.
+pub(crate) type SubCategoryName = String;
+
+/// Landscape item (project, product, member, etc).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Item {
+    pub category: String,
+    pub homepage_url: String,
+    pub id: Uuid,
+    pub logo: String,
+    pub name: String,
+    pub subcategory: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accepted_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artwork_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub blog_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chat_channel: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clomonitor_name: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crunchbase_data: Option<Organization>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crunchbase_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub devstats_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub discord_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub docker_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enduser: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub github_discussions_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub graduated_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub incubating_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub joined_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mailing_list_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_annual_review_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_annual_review_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub openssf_best_practices_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repositories: Option<Vec<Repository>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slack_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub specification: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stack_overflow_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub summary: Option<ItemSummary>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub twitter_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unnamed_organization: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub youtube_url: Option<String>,
+}
+
+impl Item {
+    /// Generate and set the item's id.
+    fn set_id(&mut self) {
+        let key = format!("{}##{}##{}", &self.category, &self.subcategory, &self.name);
+        self.id = Uuid::new_v5(&Uuid::NAMESPACE_OID, key.as_bytes());
+    }
+}
+
+/// Landscape item summary.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct ItemSummary {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub business_use_case: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integration: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integrations: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intro_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub personas: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub release_rate: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub use_case: Option<String>,
+}
+
+/// Repository information.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Repository {
+    pub url: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub github_data: Option<github::Repository>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary: Option<bool>,
 }
 
 mod legacy {
