@@ -10,11 +10,14 @@ use crate::{
 };
 use anyhow::{format_err, Result};
 use askama::Template;
+use chrono::Utc;
 use deadpool::unmanaged::Pool;
 use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
+use leaky_bucket::RateLimiter;
 use regex::Regex;
 use rust_embed::RustEmbed;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
@@ -26,11 +29,26 @@ use std::{
 };
 use tracing::{debug, info, instrument, warn};
 
+/// How long the data in the cache is valid (in days).
+const CACHE_TTL: i64 = 7;
+
+/// Path where the cache file will be written to inside the cache directory.
+const CACHE_PATH: &str = "landscape";
+
+/// Cache file used to store some data.
+const CACHE_FILE: &str = "cached_data.json";
+
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
 
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
+
+/// Type alias to represent some organizations Crunchbase data.
+pub(crate) type CrunchbaseData = HashMap<String, crunchbase::Organization>;
+
+/// Type alias to represent some repositories GitHub data.
+pub(crate) type GithubData = HashMap<String, github::Repository>;
 
 /// Embed web assets into binary.
 #[derive(RustEmbed)]
@@ -38,7 +56,7 @@ const LOGOS_PATH: &str = "logos";
 struct WebAssets;
 
 /// Build landscape static site.
-#[instrument(skip_all, err)]
+#[instrument(skip_all)]
 pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result<()> {
     info!("building landscape site..");
     let start = Instant::now();
@@ -58,16 +76,25 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     // Prepare logos and copy them to the output directory
     prepare_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
-    // Collect data from external services and attach it to the landscape data
-    let (github_data, crunchbase_data) = tokio::try_join!(
-        collect_github_data(&credentials.github_tokens, &landscape_data),
-        collect_crunchbase_data(&credentials.crunchbase_api_key, &landscape_data)
+    // Collect data from external services
+    let cached_data = get_cached_data()?;
+    let cb_cached_data = cached_data.as_ref().and_then(|c| c.crunchbase_data.as_ref());
+    let gh_cached_data = cached_data.as_ref().and_then(|c| c.github_data.as_ref());
+    let (crunchbase_data, github_data) = tokio::try_join!(
+        collect_crunchbase_data(&credentials.crunchbase_api_key, &landscape_data, cb_cached_data),
+        collect_github_data(&credentials.github_tokens, &landscape_data, gh_cached_data)
     )?;
-    if let Some(github_data) = github_data {
-        attach_github_data(&mut landscape_data, github_data)?;
-    }
+    cache_data(CachedData {
+        crunchbase_data: crunchbase_data.clone(),
+        github_data: github_data.clone(),
+    })?;
+
+    // Attach data collected from external services to the landscape data
     if let Some(crunchbase_data) = crunchbase_data {
         attach_crunchbase_data(&mut landscape_data, crunchbase_data)?;
+    }
+    if let Some(github_data) = github_data {
+        attach_github_data(&mut landscape_data, github_data)?;
     }
 
     // Generate datasets for web application
@@ -197,13 +224,127 @@ async fn prepare_logos(
     Ok(())
 }
 
+/// Represents some cached data, usually collected from external services.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct CachedData {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    crunchbase_data: Option<CrunchbaseData>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    github_data: Option<GithubData>,
+}
+
+/// Read data from the local cache file if available.
+#[instrument(skip_all, err)]
+fn get_cached_data() -> Result<Option<CachedData>> {
+    // Setup cache directory
+    let Some(cache_dir) = dirs::cache_dir().map(|d| d.join(CACHE_PATH)) else {
+        return Ok(None)
+    };
+    if !cache_dir.exists() {
+        fs::create_dir_all(&cache_dir)?;
+    }
+
+    // Read data from cache file if available
+    let cache_file = cache_dir.join(CACHE_FILE);
+    if cache_file.exists() {
+        let cached_data_json = fs::read(cache_file)?;
+        let cached_data: CachedData = serde_json::from_slice(&cached_data_json)?;
+        return Ok(Some(cached_data));
+    }
+    Ok(None)
+}
+
+/// Write data to local cache file.
+#[instrument(skip_all, err)]
+fn cache_data(cached_data: CachedData) -> Result<()> {
+    // Setup cache directory
+    let Some(cache_dir) = dirs::cache_dir().map(|d| d.join(CACHE_PATH)) else {
+        return Ok(())
+    };
+
+    // Write data to cache file
+    let mut cache_file = File::create(cache_dir.join(CACHE_FILE))?;
+    cache_file.write_all(serde_json::to_vec_pretty(&cached_data)?.as_ref())?;
+
+    Ok(())
+}
+
+/// Collect some extra information for each of the items organizations from
+/// Crunchbase.
+#[instrument(skip_all, err)]
+async fn collect_crunchbase_data(
+    api_key: &Option<String>,
+    landscape_data: &LandscapeData,
+    cached_data: Option<&CrunchbaseData>,
+) -> Result<Option<CrunchbaseData>> {
+    // Check API key has been provided
+    let Some(api_key) = api_key else {
+        warn!("crunchbase api key not provided: no information will be collected from crunchbase");
+        return Ok(None);
+    };
+
+    debug!("collecting organizations information from crunchbase (this may take a while)");
+
+    // Setup Crunchbase API client
+    let cb: DynCB = Arc::new(CBApi::new(api_key)?);
+
+    // Collect items Crunchbase urls
+    let mut urls = vec![];
+    for item in &landscape_data.items {
+        if let Some(url) = &item.crunchbase_url {
+            urls.push(url);
+        }
+    }
+    urls.sort();
+    urls.dedup();
+
+    // Collect information from Crunchbase
+    let limiter = RateLimiter::builder().initial(1).interval(Duration::from_millis(300)).build();
+    let crunchbase_data: CrunchbaseData = stream::iter(urls)
+        .map(|url| async {
+            let url = url.clone();
+            if let Some(cached_org) = cached_data.and_then(|cache| {
+                cache.get(&url).and_then(|org| {
+                    if org.generated_at + chrono::Duration::days(CACHE_TTL) > Utc::now() {
+                        Some(org)
+                    } else {
+                        None
+                    }
+                })
+            }) {
+                // Use the cached data when available if it hasn't expired yet
+                (url, Ok(cached_org.clone()))
+            } else {
+                // Otherwise we pull it from Crunchbase
+                limiter.acquire_one().await;
+                (url.clone(), crunchbase::Organization::new(cb.clone(), &url).await)
+            }
+        })
+        .buffer_unordered(1)
+        .collect::<HashMap<String, Result<crunchbase::Organization>>>()
+        .await
+        .into_iter()
+        .filter_map(|(url, result)| {
+            if let Ok(crunchbase_data) = result {
+                Some((url, crunchbase_data))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok(Some(crunchbase_data))
+}
+
 /// Collect some extra information for each of the items repositories from
 /// GitHub.
 #[instrument(skip_all, err)]
 async fn collect_github_data(
     tokens: &Option<Vec<String>>,
     landscape_data: &LandscapeData,
-) -> Result<Option<HashMap<String, github::Repository>>> {
+    cached_data: Option<&GithubData>,
+) -> Result<Option<GithubData>> {
     // Check tokens have been provided
     let Some(tokens) = tokens else {
         warn!("github tokens not provided: no information will be collected from github");
@@ -233,11 +374,25 @@ async fn collect_github_data(
     urls.dedup();
 
     // Collect repositories information from GitHub
-    let github_data: HashMap<String, github::Repository> = stream::iter(urls)
+    let github_data: GithubData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
-            let gh = gh_pool.get().await.expect("token -when available-");
-            (url.clone(), github::Repository::new(gh, &url).await)
+            if let Some(cached_repo) = cached_data.and_then(|cache| {
+                cache.get(&url).and_then(|repo| {
+                    if repo.generated_at + chrono::Duration::days(CACHE_TTL) > Utc::now() {
+                        Some(repo)
+                    } else {
+                        None
+                    }
+                })
+            }) {
+                // Use the cached data when available if it hasn't expired yet
+                (url, Ok(cached_repo.clone()))
+            } else {
+                // Otherwise we pull it from GitHub
+                let gh = gh_pool.get().await.expect("token -when available-");
+                (url.clone(), github::Repository::new(gh, &url).await)
+            }
         })
         .buffer_unordered(tokens.len())
         .collect::<HashMap<String, Result<github::Repository>>>()
@@ -255,65 +410,22 @@ async fn collect_github_data(
     Ok(Some(github_data))
 }
 
-/// Collect some extra information for each of the items organizations from
-/// Crunchbase.
+/// Attach Crunchbase data to the landscape data.
 #[instrument(skip_all, err)]
-async fn collect_crunchbase_data(
-    api_key: &Option<String>,
-    landscape_data: &LandscapeData,
-) -> Result<Option<HashMap<String, crunchbase::Organization>>> {
-    // Check API key has been provided
-    let Some(api_key) = api_key else {
-        warn!("crunchbase api key not provided: no information will be collected from crunchbase");
-        return Ok(None);
-    };
-
-    debug!("collecting organizations information from crunchbase (this may take a while)");
-
-    // Setup Crunchbase API client
-    let cb: DynCB = Arc::new(CBApi::new(api_key)?);
-
-    // Collect items Crunchbase urls
-    let mut urls = vec![];
-    for item in &landscape_data.items {
-        if let Some(url) = &item.crunchbase_url {
-            urls.push(url);
+fn attach_crunchbase_data(landscape_data: &mut LandscapeData, crunchbase_data: CrunchbaseData) -> Result<()> {
+    for item in &mut landscape_data.items {
+        if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
+            if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
+                item.crunchbase_data = Some(org_crunchbase_data.clone());
+            }
         }
     }
-    urls.sort();
-    urls.dedup();
-
-    // Collect information from Crunchbase
-    let urls_stream = stream::iter(urls);
-    let urls_stream_throttled = tokio_stream::StreamExt::throttle(urls_stream, Duration::from_millis(300));
-    let crunchbase_data: HashMap<String, crunchbase::Organization> = urls_stream_throttled
-        .map(|url| async {
-            let cb = cb.clone();
-            let url = url.clone();
-            (url.clone(), crunchbase::Organization::new(cb, &url).await)
-        })
-        .buffer_unordered(1)
-        .collect::<HashMap<String, Result<crunchbase::Organization>>>()
-        .await
-        .into_iter()
-        .filter_map(|(url, result)| {
-            if let Ok(crunchbase_data) = result {
-                Some((url, crunchbase_data))
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    Ok(Some(crunchbase_data))
+    Ok(())
 }
 
 /// Attach GitHub data to the landscape data.
 #[instrument(skip_all, err)]
-fn attach_github_data(
-    landscape_data: &mut LandscapeData,
-    github_data: HashMap<String, github::Repository>,
-) -> Result<()> {
+fn attach_github_data(landscape_data: &mut LandscapeData, github_data: GithubData) -> Result<()> {
     for item in &mut landscape_data.items {
         if item.repositories.is_some() {
             let mut repositories = vec![];
@@ -324,22 +436,6 @@ fn attach_github_data(
                 repositories.push(repo);
             }
             item.repositories = Some(repositories);
-        }
-    }
-    Ok(())
-}
-
-/// Attach Crunchbase data to the landscape data.
-#[instrument(skip_all, err)]
-fn attach_crunchbase_data(
-    landscape_data: &mut LandscapeData,
-    crunchbase_data: HashMap<String, crunchbase::Organization>,
-) -> Result<()> {
-    for item in &mut landscape_data.items {
-        if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
-            if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
-                item.crunchbase_data = Some(org_crunchbase_data.clone());
-            }
         }
     }
     Ok(())
