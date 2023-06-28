@@ -2,7 +2,7 @@
 
 use crate::{
     crunchbase::{self, CBApi, DynCB},
-    data::Data,
+    data::LandscapeData,
     datasets::Datasets,
     github::{self, DynGH},
     settings::Settings,
@@ -43,15 +43,40 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     info!("building landscape site..");
     let start = Instant::now();
 
+    // Check required web assets are present
     check_web_assets()?;
+
+    // Setup output directory, creating it when needed
     setup_output_dir(&args.output_dir)?;
-    let mut data = get_landscape_data(&args.data_source).await?;
+
+    // Get landscape data from the source provided
+    let mut landscape_data = get_landscape_data(&args.data_source).await?;
+
+    // Get landscape settings from the source provided
     let settings = get_landscape_settings(&args.settings_source).await?;
-    prepare_logos(&args.logos_source, &mut data, &args.output_dir).await?;
-    collect_github_data(&credentials.github_tokens, &mut data).await?;
-    collect_crunchbase_data(&credentials.crunchbase_api_key, &mut data).await?;
-    let datasets = generate_datasets(&settings, &data, &args.output_dir)?;
+
+    // Prepare logos and copy them to the output directory
+    prepare_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
+
+    // Collect data from external services and attach it to the landscape data
+    let (github_data, crunchbase_data) = tokio::try_join!(
+        collect_github_data(&credentials.github_tokens, &landscape_data),
+        collect_crunchbase_data(&credentials.crunchbase_api_key, &landscape_data)
+    )?;
+    if let Some(github_data) = github_data {
+        attach_github_data(&mut landscape_data, github_data)?;
+    }
+    if let Some(crunchbase_data) = crunchbase_data {
+        attach_crunchbase_data(&mut landscape_data, crunchbase_data)?;
+    }
+
+    // Generate datasets for web application
+    let datasets = generate_datasets(&settings, &landscape_data, &args.output_dir)?;
+
+    // Render index file and write it to the output directory
     render_index(&datasets, &args.output_dir)?;
+
+    // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
@@ -97,13 +122,13 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
 
 /// Get landscape data from the source provided.
 #[instrument(skip_all, err)]
-async fn get_landscape_data(src: &DataSource) -> Result<Data> {
+async fn get_landscape_data(src: &DataSource) -> Result<LandscapeData> {
     let data = if let Some(file) = &src.data_file {
         debug!(?file, "getting landscape data from file");
-        Data::new_from_file(file)
+        LandscapeData::new_from_file(file)
     } else {
         debug!(url = ?src.data_url.as_ref().unwrap(), "getting landscape data from url");
-        Data::new_from_url(src.data_url.as_ref().unwrap()).await
+        LandscapeData::new_from_url(src.data_url.as_ref().unwrap()).await
     }?;
 
     Ok(data)
@@ -130,7 +155,11 @@ lazy_static! {
 
 /// Prepare logos and copy them to the output directory.
 #[instrument(skip_all, err)]
-async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: &Path) -> Result<()> {
+async fn prepare_logos(
+    logos_source: &LogosSource,
+    landscape_data: &mut LandscapeData,
+    output_dir: &Path,
+) -> Result<()> {
     // Helper function to get the logo content from the corresponding source.
     #[instrument(fields(?file_name), skip_all, err)]
     async fn get_logo_svg(logos_source: &LogosSource, file_name: &str) -> Result<String> {
@@ -143,7 +172,7 @@ async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: 
     }
 
     debug!("preparing logos");
-    for item in &mut data.items {
+    for item in &mut landscape_data.items {
         // Get logo SVG
         let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
             item.logo = String::new();
@@ -171,11 +200,14 @@ async fn prepare_logos(logos_source: &LogosSource, data: &mut Data, output_dir: 
 /// Collect some extra information for each of the items repositories from
 /// GitHub.
 #[instrument(skip_all, err)]
-async fn collect_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> Result<()> {
+async fn collect_github_data(
+    tokens: &Option<Vec<String>>,
+    landscape_data: &LandscapeData,
+) -> Result<Option<HashMap<String, github::Repository>>> {
     // Check tokens have been provided
     let Some(tokens) = tokens else {
         warn!("github tokens not provided: no information will be collected from github");
-        return Ok(());
+        return Ok(None);
     };
 
     debug!("collecting repositories information from github (this may take a while)");
@@ -190,7 +222,7 @@ async fn collect_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> R
 
     // Collect urls of the repositories to process
     let mut urls = vec![];
-    for item in &data.items {
+    for item in &landscape_data.items {
         if let Some(repositories) = &item.repositories {
             for repo in repositories {
                 urls.push(&repo.url);
@@ -201,7 +233,7 @@ async fn collect_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> R
     urls.dedup();
 
     // Collect repositories information from GitHub
-    let repositories_github_data: HashMap<String, github::Repository> = stream::iter(urls)
+    let github_data: HashMap<String, github::Repository> = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
             let gh = gh_pool.get().await.expect("token -when available-");
@@ -220,31 +252,20 @@ async fn collect_github_data(tokens: &Option<Vec<String>>, data: &mut Data) -> R
         })
         .collect();
 
-    // Enrich landscape items repositories with information collected from GH
-    for item in &mut data.items {
-        if item.repositories.is_some() {
-            let mut repositories = vec![];
-            for mut repo in item.repositories.clone().unwrap_or_default() {
-                if let Some(github_data) = repositories_github_data.get(&repo.url) {
-                    repo.github_data = Some(github_data.clone());
-                }
-                repositories.push(repo);
-            }
-            item.repositories = Some(repositories);
-        }
-    }
-
-    Ok(())
+    Ok(Some(github_data))
 }
 
 /// Collect some extra information for each of the items organizations from
 /// Crunchbase.
 #[instrument(skip_all, err)]
-async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> Result<()> {
+async fn collect_crunchbase_data(
+    api_key: &Option<String>,
+    landscape_data: &LandscapeData,
+) -> Result<Option<HashMap<String, crunchbase::Organization>>> {
     // Check API key has been provided
     let Some(api_key) = api_key else {
         warn!("crunchbase api key not provided: no information will be collected from crunchbase");
-        return Ok(());
+        return Ok(None);
     };
 
     debug!("collecting organizations information from crunchbase (this may take a while)");
@@ -254,7 +275,7 @@ async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> R
 
     // Collect items Crunchbase urls
     let mut urls = vec![];
-    for item in &data.items {
+    for item in &landscape_data.items {
         if let Some(url) = &item.crunchbase_url {
             urls.push(url);
         }
@@ -265,7 +286,7 @@ async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> R
     // Collect information from Crunchbase
     let urls_stream = stream::iter(urls);
     let urls_stream_throttled = tokio_stream::StreamExt::throttle(urls_stream, Duration::from_millis(300));
-    let orgs_crunchbase_data: HashMap<String, crunchbase::Organization> = urls_stream_throttled
+    let crunchbase_data: HashMap<String, crunchbase::Organization> = urls_stream_throttled
         .map(|url| async {
             let cb = cb.clone();
             let url = url.clone();
@@ -284,15 +305,43 @@ async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> R
         })
         .collect();
 
-    // Enrich landscape items with information collected from Crunchbase
-    for item in &mut data.items {
+    Ok(Some(crunchbase_data))
+}
+
+/// Attach GitHub data to the landscape data.
+#[instrument(skip_all, err)]
+fn attach_github_data(
+    landscape_data: &mut LandscapeData,
+    github_data: HashMap<String, github::Repository>,
+) -> Result<()> {
+    for item in &mut landscape_data.items {
+        if item.repositories.is_some() {
+            let mut repositories = vec![];
+            for mut repo in item.repositories.clone().unwrap_or_default() {
+                if let Some(repo_github_data) = github_data.get(&repo.url) {
+                    repo.github_data = Some(repo_github_data.clone());
+                }
+                repositories.push(repo);
+            }
+            item.repositories = Some(repositories);
+        }
+    }
+    Ok(())
+}
+
+/// Attach Crunchbase data to the landscape data.
+#[instrument(skip_all, err)]
+fn attach_crunchbase_data(
+    landscape_data: &mut LandscapeData,
+    crunchbase_data: HashMap<String, crunchbase::Organization>,
+) -> Result<()> {
+    for item in &mut landscape_data.items {
         if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
-            if let Some(crunchbase_data) = orgs_crunchbase_data.get(crunchbase_url) {
-                item.crunchbase_data = Some(crunchbase_data.clone());
+            if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
+                item.crunchbase_data = Some(org_crunchbase_data.clone());
             }
         }
     }
-
     Ok(())
 }
 
@@ -301,9 +350,13 @@ async fn collect_crunchbase_data(api_key: &Option<String>, data: &mut Data) -> R
 /// the datasets will be embedded in the index document, and the rest will be
 /// written to the DATASETS_PATH in the output directory.
 #[instrument(skip_all, err)]
-fn generate_datasets(settings: &Settings, data: &Data, output_dir: &Path) -> Result<Datasets> {
+fn generate_datasets(
+    settings: &Settings,
+    landscape_data: &LandscapeData,
+    output_dir: &Path,
+) -> Result<Datasets> {
     debug!("generating datasets");
-    let datasets = Datasets::new(settings, data)?;
+    let datasets = Datasets::new(settings, landscape_data)?;
 
     debug!("copying datasets to output directory");
     let mut base_file = File::create(output_dir.join(DATASETS_PATH).join("base.json"))?;

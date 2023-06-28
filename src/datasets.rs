@@ -6,10 +6,7 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, logos::Logos};
-use crate::{
-    data::{self, Data},
-    settings::Settings,
-};
+use crate::{data::LandscapeData, settings::Settings};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -20,7 +17,7 @@ pub(crate) struct Datasets {
 
     /// This dataset contains all landscape data plus some extra information
     /// collected from external services.
-    pub full: data::Data,
+    pub full: LandscapeData,
 
     /// #[logos]
     pub logos: Logos,
@@ -28,11 +25,11 @@ pub(crate) struct Datasets {
 
 impl Datasets {
     /// Create a new datasets instance.
-    pub(crate) fn new(settings: &Settings, data: &Data) -> Result<Self> {
+    pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(settings, data),
-            full: data.clone(),
-            logos: data.into(),
+            base: Base::new(settings, landscape_data),
+            full: landscape_data.clone(),
+            logos: landscape_data.into(),
         };
 
         Ok(datasets)
@@ -45,7 +42,7 @@ impl Datasets {
 /// initial page and power the features available on it.
 mod base {
     use crate::{
-        data::{Category, CategoryName, Data},
+        data::{Category, CategoryName, LandscapeData},
         settings::{FeaturedItemRule, Settings, Tab},
     };
     use serde::{Deserialize, Serialize};
@@ -82,10 +79,10 @@ mod base {
 
     impl Base {
         /// Create a new Base instance from the settings and data provided.
-        pub(crate) fn new(settings: &Settings, data: &Data) -> Self {
+        pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Self {
             let mut base = Base {
                 tabs: settings.tabs.clone().unwrap_or(vec![]),
-                categories: data.categories.clone(),
+                categories: landscape_data.categories.clone(),
                 featured_items: settings.featured_items.clone().unwrap_or(vec![]),
                 ..Default::default()
             };
@@ -101,7 +98,7 @@ mod base {
             }
 
             // Prepare items from landscape data
-            for item in &data.items {
+            for item in &landscape_data.items {
                 base.items.push(Item {
                     category: item.category.clone(),
                     has_repositories: !item.repositories.as_ref().unwrap_or(&vec![]).is_empty(),
@@ -122,7 +119,7 @@ mod base {
 /// This dataset contains a list of the logos files used across all items in
 /// the landscape.
 mod logos {
-    use crate::data::Data;
+    use crate::data::LandscapeData;
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -131,8 +128,8 @@ mod logos {
         pub files: Vec<String>,
     }
 
-    impl From<&Data> for Logos {
-        fn from(data: &Data) -> Self {
+    impl From<&LandscapeData> for Logos {
+        fn from(data: &LandscapeData) -> Self {
             let mut logos = Logos::default();
 
             for item in &data.items {

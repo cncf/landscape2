@@ -19,7 +19,7 @@ pub const DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// Landscape data.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Data {
+pub(crate) struct LandscapeData {
     pub categories: Vec<Category>,
     pub items: Vec<Item>,
 }
@@ -174,13 +174,13 @@ pub(crate) struct Repository {
     pub primary: Option<bool>,
 }
 
-impl Data {
+impl LandscapeData {
     /// Create a new landscape data instance from the file provided.
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
-        let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
+        let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
 
-        Ok(Data::from(legacy_data))
+        Ok(LandscapeData::from(legacy_data))
     }
 
     /// Create a new landscape data instance from the url provided.
@@ -193,19 +193,19 @@ impl Data {
             ));
         }
         let raw_data = resp.text().await?;
-        let legacy_data: legacy::Data = serde_yaml::from_str(&raw_data)?;
+        let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
 
-        Ok(Data::from(legacy_data))
+        Ok(LandscapeData::from(legacy_data))
     }
 }
 
-impl From<legacy::Data> for Data {
+impl From<legacy::LandscapeData> for LandscapeData {
     #[allow(clippy::too_many_lines)]
-    fn from(legacy_data: legacy::Data) -> Self {
-        let mut data = Data::default();
+    fn from(legacy_landscape_data: legacy::LandscapeData) -> Self {
+        let mut landscape_data = LandscapeData::default();
 
         // Categories
-        for legacy_category in legacy_data.landscape {
+        for legacy_category in legacy_landscape_data.landscape {
             let mut category = Category {
                 name: legacy_category.name.clone(),
                 subcategories: vec![],
@@ -326,14 +326,14 @@ impl From<legacy::Data> for Data {
                         }
                     }
 
-                    data.items.push(item);
+                    landscape_data.items.push(item);
                 }
             }
 
-            data.categories.push(category);
+            landscape_data.categories.push(category);
         }
 
-        data
+        landscape_data
     }
 }
 
@@ -345,7 +345,7 @@ mod legacy {
 
     /// Landscape data (legacy format).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct Data {
+    pub(super) struct LandscapeData {
         pub landscape: Vec<Category>,
     }
 
