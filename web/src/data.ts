@@ -1,20 +1,28 @@
-import { FilterSection } from "./types";
+import { FilterCategory, FilterSection, ViewMode } from "./types";
+
+export const VIEW_MODE_PARAM = 'view-mode';
+export const GROUP_PARAM = 'group';
+export const ZOOM_PARAM = 'zoom';
+export const MODAL_PARAM = 'modal';
+export const ITEM_PARAM = 'item';
+export const CATEGORY_PARAM = 'category';
+export const SUBCATEGORY_PARAM = 'subcategory';
+
+export const DEFAULT_ZOOM_LEVEL = 5;
+export const DEFAULT_VIEW_MODE = ViewMode.Grid;
+
+export const ZOOM_LEVELS = [['25px', '23px'], ['30px', '25px'], ['35px', '30px'], ['40px', '35px'], ['45px', '40px'], ['50px', '45px'], ['55px', '42px'], ['60px', '50px'], ['65px', '54px'], ['70px', '58px'], ['75px', '60px']];
+
 
 export const COLORS: string[] = [
-  'rgb(0, 128, 215)',
-  'rgb(76, 172, 225)',
-  'rgb(159, 174, 56)',
-  'rgb(201, 199, 42)',
-  'rgb(255, 209, 48)',
-  'rgb(247, 170, 53)',
-  'rgb(246, 131, 30)',
-  'rgb(241, 95, 34)',
-  'rgb(239, 28, 32)',
-  'rgb(189, 24, 30)',
+  'rgba(194, 197, 232, 0.65)',
+  'rgba(200, 227, 251, 0.65)',
+  'rgba(251, 208, 166, 0.75)',
 ];
 
 export const FILTERS: FilterSection[] = [
   {
+    value: FilterCategory.Project,
     title: 'Project',
     options: [
       {
@@ -35,7 +43,7 @@ export const FILTERS: FilterSection[] = [
           },
           {
             value: 'archived',
-            name: 'Arichived'
+            name: 'Archived'
           }
         ]
       },
@@ -46,3 +54,4 @@ export const FILTERS: FilterSection[] = [
     ]
   }
 ];
+

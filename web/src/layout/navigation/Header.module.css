@@ -1,0 +1,43 @@
+.logo {
+  min-height: 3rem;
+  margin-left: -4px;
+}
+
+.searchIcon {
+  left: 0.75rem;
+  top: 0.25rem;
+}
+
+.search {
+  padding-left: 2.5rem;
+}
+
+.link {
+  color: var(--bs-primary);
+  letter-spacing: 2px;
+}
+
+.githubIcon {
+  margin-top: -0.25rem;
+}
+
+.link:not(:global(.active)):hover:before {
+  background-color: var(--bs-primary);
+  content: "";
+  height: 4px;
+  left: 0;
+  opacity: .5;
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+}
+
+.link:global(.active):before {
+  background-color: var(--bs-primary);
+  content: "";
+  height: 4px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+}

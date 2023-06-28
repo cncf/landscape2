@@ -1,0 +1,56 @@
+.card {
+  width: var(--card-size-width);
+  height: var(--card-size-height);
+  padding: 0.25rem;
+}
+
+.noRepo {
+  background-color: #f1f3f5;
+}
+
+.bigCard {
+  width: var(--card-size-width) * 2 + var(--card-gap);
+  height: var(--card-size-height) * 2 + var(--card-gap);
+  padding: 0.5rem;
+  padding-bottom: 1.15rem;
+  grid-column-end: span 2;
+  grid-row-end: span 2;
+  /* border-color: var(--bs-gray-500) !important; */
+}
+
+.logo {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.legend {
+  background-color: var(--bs-gray-100);
+  font-size: 0.5rem;
+  line-height: 0.4rem;
+  padding: 0.25rem 0;
+}
+
+:global(.zoom-2) .legend, :global(.zoom-3) .legend {
+  font-size: 0.4rem;
+  line-height: 0.3rem;
+  padding: 0.15rem 0;
+}
+
+:global(.zoom-0) .legend, :global(.zoom-1) .legend {
+  font-size: 0.3rem;
+  line-height: 0.2rem;
+  padding: 0.15rem 0;
+}
+
+:global(.zoom-0) .card, :global(.zoom-1) .card, :global(.zoom-2) .card, :global(.zoom-3) .card {
+  padding: 0.15rem;
+}
+
+:global(.zoom-2) .bigCard, :global(.zoom-3) .bigCard {
+  padding-bottom: 1rem;
+}
+
+:global(.zoom-0) .bigCard, :global(.zoom-1) .bigCard {
+  padding-bottom: 0.75rem;
+}

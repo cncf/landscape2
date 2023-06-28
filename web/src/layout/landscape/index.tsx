@@ -1,113 +1,281 @@
 import classNames from 'classnames';
-import { Category, Item, Subcategory, Landscape as LandscapeData } from '../../types';
-import Card from './Card';
-import { COLORS } from '../../data';
+import {
+  ActiveFilters,
+  Category,
+  FilterCategory,
+  Item,
+  Landscape as LandscapeData,
+  OutletContext,
+  Group,
+  ViewMode,
+} from '../../types';
+import {
+  DEFAULT_VIEW_MODE,
+  DEFAULT_ZOOM_LEVEL,
+  GROUP_PARAM,
+  VIEW_MODE_PARAM,
+  ZOOM_LEVELS,
+  ZOOM_PARAM,
+} from '../../data';
 import styles from './Landscape.module.css';
-import { useState } from 'react';
-import Filters from '../filters';
-import { Modal } from './Modal';
+import { Fragment, useEffect, useState } from 'react';
+import Modal from '../common/Modal';
+import Content from './Content';
+import Filters from './filters';
+import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 
 interface Props {
   data: LandscapeData;
 }
 
-const ZOOM_LEVELS = [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5];
-const MATURITY_LEVELS = ['graduated', 'incubating', 'sandbox', 'archived']; // TODO - remove sandbox and archived from sort?
-
 const Landscape = (props: Props) => {
-  const [levelZoom, setLevelZoom] = useState<number>(5);
-  const [activeItem, setActiveItem] = useState<Item | undefined>();
-
-  const sortItems = (): LandscapeData => {
-    const data = props.data.categories.map((cat: Category) => {
-      const subcategories = cat.subcategories.map((subcat: Subcategory) => {
-        const items = subcat.items.sort((a: Item, b: Item) => {
-          const aMaturity = a.project ? MATURITY_LEVELS.indexOf(a.project) : MATURITY_LEVELS.length;
-          const bMaturity = b.project ? MATURITY_LEVELS.indexOf(b.project) : MATURITY_LEVELS.length;
-          return aMaturity - bMaturity || a.name.localeCompare(b.name);
-        });
-        return {
-          ...subcat,
-          items: items,
-        };
-      });
-      return {
-        ...cat,
-        subcategories: subcategories.sort((a: Subcategory, b: Subcategory) => b.items.length - a.items.length),
-      };
-    });
-    return { categories: data };
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { setActiveItem } = useOutletContext() as OutletContext;
+  const [levelZoom, setLevelZoom] = useState<number>(
+    searchParams.get(ZOOM_PARAM) !== null ? Number(searchParams.get(ZOOM_PARAM)) : DEFAULT_ZOOM_LEVEL
+  );
+  const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
+    props.data.groups ? searchParams.get(GROUP_PARAM) || props.data.groups[0].name : undefined
+  );
+  const [selectedViewMode, setSelectedViewMode] = useState<ViewMode>(
+    (searchParams.get(VIEW_MODE_PARAM) as ViewMode) || DEFAULT_VIEW_MODE
+  );
+  const [visibleItems, setVisibleItems] = useState<Item[]>(props.data.items);
+  const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
+  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
 
   const onClickItem = (item: Item) => {
     setActiveItem(item);
   };
 
-  const data: LandscapeData = sortItems();
+  const updateQueryString = (param: string, value: string) => {
+    const updatedSearchParams = new URLSearchParams(searchParams);
+    updatedSearchParams.delete(param);
+    updatedSearchParams.set(param, value);
+
+    navigate(
+      { pathname: location.pathname, search: updatedSearchParams.toString() },
+      {
+        replace: true,
+      }
+    );
+  };
+
+  // TODO - change zoom before loading
+  useEffect(() => {
+    const bodyStyles = document.body.style;
+    bodyStyles.setProperty('--card-size-width', ZOOM_LEVELS[levelZoom][0]);
+    bodyStyles.setProperty('--card-size-height', ZOOM_LEVELS[levelZoom][1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update card-size variable depending on zoom level
+  useEffect(() => {
+    const bodyStyles = document.body.style;
+    bodyStyles.setProperty('--card-size-width', ZOOM_LEVELS[levelZoom][0]);
+    bodyStyles.setProperty('--card-size-height', ZOOM_LEVELS[levelZoom][1]);
+  }, [levelZoom]);
+
+  const updateActiveFilters = (value: FilterCategory, options: string[]) => {
+    const tmpActiveFilters: ActiveFilters = { ...activeFilters };
+    if (options.length === 0) {
+      delete tmpActiveFilters[value];
+    } else {
+      tmpActiveFilters[value] = options;
+    }
+    setActiveFilters(tmpActiveFilters);
+  };
+
+  useEffect(() => {
+    if (Object.keys(activeFilters).length > 0) {
+      let filteredItems: Item[] = [];
+      Object.keys(activeFilters).forEach((f: string) => {
+        if (f === FilterCategory.Project) {
+          const includedUndefined = activeFilters[FilterCategory.Project]?.includes('non-cncf');
+          filteredItems = props.data.items.filter((item: Item) => {
+            if (includedUndefined && item.project === undefined) {
+              return item;
+            } else if (item.project !== undefined && activeFilters[FilterCategory.Project]?.includes(item.project)) {
+              return item;
+            }
+          });
+        }
+      });
+      setVisibleItems(filteredItems);
+    } else {
+      setVisibleItems(props.data.items);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters]);
 
   return (
     <>
-      <div className="d-flex flex-row justify-content-end pe-3 py-2">
-        <button disabled={levelZoom === 0} onClick={() => setLevelZoom(levelZoom - 1)}>
-          -
-        </button>
-        <div className="px-3">Zoom</div>
-        <button disabled={levelZoom === 10} onClick={() => setLevelZoom(levelZoom + 1)}>
-          +
-        </button>
-      </div>
-      <div className="d-flex flex-row p-4">
-        <div className={styles.filters}>
-          <Filters />
-        </div>
-        <div className="d-flex flex-column flex-grow-1" style={{ zoom: ZOOM_LEVELS[levelZoom] }}>
-          {data.categories.map((category: Category, index: number) => {
-            return (
-              <div key={`cat_${category.name}`} className="d-flex flex-row">
+      <div className="d-flex flex-row align-items-center justify-content-between my-3">
+        <div className="d-flex flex-row align-items-center">
+          <div>
+            <button
+              className={`position-relative btn btn-secondary text-white btn-sm rounded-0 p-0 me-4 ${styles.filterBtn}`}
+              onClick={() => setVisibleFilters(true)}
+            >
+              <svg
+                stroke="currentColor"
+                fill="currentColor"
+                strokeWidth="0"
+                viewBox="0 0 512 512"
+                height="1em"
+                width="1em"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M487.976 0H24.028C2.71 0-8.047 25.866 7.058 40.971L192 225.941V432c0 7.831 3.821 15.17 10.237 19.662l80 55.98C298.02 518.69 320 507.493 320 487.98V225.941l184.947-184.97C520.021 25.896 509.338 0 487.976 0z"></path>
+              </svg>
+              {Object.keys(activeFilters).length > 0 && (
                 <div
-                  className={classNames(
-                    'text-white text-center border border-3 border-white fw-semibold p-2',
-                    styles.catTitle,
-                    { 'border-bottom-0': index !== 0 }
-                  )}
-                  style={{ backgroundColor: COLORS[index] }}
-                >
-                  {category.name}
-                </div>
-                <div className="row g-0 w-100">
-                  {category.subcategories.map((subcategory: Subcategory, subcatIndex: number) => {
-                    return (
-                      <div
-                        key={`subcat_${subcategory.name}`}
-                        className={classNames(
-                          'col-12 col-xl d-flex flex-column border border-3 border-white border-start-0',
-                          { 'border-top-0': index !== 0 },
-                          { 'col-xl-12': subcatIndex === 0 }
-                        )}
-                      >
-                        <div
-                          className={`d-flex align-items-start align-items-xl-center text-white justify-content-center text-center px-2 w-100 ${styles.subcatTitle}`}
-                          style={{ backgroundColor: COLORS[index] }}
-                        >
-                          <div className={styles.ellipsis}>{subcategory.name}</div>
-                        </div>
-                        <div className={`flex-grow-1 p-2 ${styles.itemsContainer}`}>
-                          <div className={styles.items}>
-                            {subcategory.items.map((item: Item) => {
-                              return <Card item={item} key={`item_${item.name}`} onClick={onClickItem} />;
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  className={`position-absolute border bg-primary border-3 border-white rounded-circle ${styles.dot}`}
+                ></div>
+              )}
+            </button>
+          </div>
+          {props.data.groups && (
+            <>
+              <div className={styles.btnGroupLegend}>
+                <small className="text-muted me-2">GROUPS:</small>
+              </div>
+              <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                {props.data.groups.map((group: Group) => {
+                  return (
+                    <button
+                      key={`group_${group.name}`}
+                      className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
+                        [`active text-white ${styles.active}`]:
+                          selectedGroup !== undefined && group.name === selectedGroup,
+                      })}
+                      onClick={() => {
+                        setSelectedGroup(group.name);
+                        updateQueryString(GROUP_PARAM, group.name);
+                      }}
+                    >
+                      {group.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          <div className={styles.btnGroupLegend}>
+            <small className="text-muted me-2">VIEW MODE:</small>
+          </div>
+          <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`} role="group" aria-label="View mode options">
+            {Object.keys(ViewMode).map((mode) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const value = (ViewMode as any)[mode];
+              const isActive = value === selectedViewMode;
+
+              return (
+                <Fragment key={`view_mode_${value}`}>
+                  <button
+                    type="button"
+                    className={classNames('btn btn-outline-primary rounded-0 fw-semibold', {
+                      'active text-white': isActive,
+                    })}
+                    onClick={() => {
+                      if (!isActive) {
+                        setSelectedViewMode(value);
+                        updateQueryString(VIEW_MODE_PARAM, value);
+                      }
+                    }}
+                  >
+                    {mode}
+                  </button>
+                </Fragment>
+              );
+            })}
+          </div>
+          {selectedViewMode === ViewMode.Grid && (
+            <>
+              <div className={styles.btnGroupLegend}>
+                <small className="text-muted me-2">ZOOM:</small>
+              </div>
+              <div className="d-flex flex-row">
+                <div className={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                  <button
+                    className="btn btn-outline-primary rounded-0 fw-semibold"
+                    disabled={levelZoom === 0}
+                    onClick={() => {
+                      const newZoomLevel = levelZoom - 1;
+                      setLevelZoom(newZoomLevel);
+                      updateQueryString(ZOOM_PARAM, newZoomLevel.toString());
+                    }}
+                  >
+                    <div className={styles.btnSymbol}>-</div>
+                  </button>
+                  <button
+                    className="btn btn-outline-primary rounded-0 fw-semibold"
+                    disabled={levelZoom === 10}
+                    onClick={() => {
+                      const newZoomLevel = levelZoom + 1;
+                      setLevelZoom(newZoomLevel);
+                      updateQueryString(ZOOM_PARAM, newZoomLevel.toString());
+                    }}
+                  >
+                    <div className={styles.btnSymbol}>+</div>
+                  </button>
                 </div>
               </div>
-            );
-          })}
+            </>
+          )}{' '}
         </div>
       </div>
-      <Modal item={activeItem} onClose={() => setActiveItem(undefined)} />
+
+      <div className="d-flex w-100 pt-1">
+        <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
+          {props.data.groups !== undefined ? (
+            <>
+              {props.data.groups.map((group: Group) => {
+                return (
+                  <div
+                    key={`group_${group.name}`}
+                    className={classNames(
+                      'tab-pane',
+                      { 'd-block': selectedGroup === group.name },
+                      { 'd-none': selectedGroup !== group.name }
+                    )}
+                  >
+                    <Content
+                      selectedViewMode={selectedViewMode}
+                      categoriesList={group.categories}
+                      categories={props.data.categories}
+                      items={visibleItems}
+                      featured_items={props.data.featured_items}
+                      categories_overridden={props.data.categories_overridden}
+                      onClickItem={onClickItem}
+                    />
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <Content
+              selectedViewMode={selectedViewMode}
+              categoriesList={props.data.categories.map((c: Category) => c.name)}
+              categories={props.data.categories}
+              items={visibleItems}
+              featured_items={props.data.featured_items}
+              categories_overridden={props.data.categories_overridden}
+              onClickItem={onClickItem}
+            />
+          )}
+        </div>
+      </div>
+
+      {visibleFilters && (
+        <Modal header="Filters" open onClose={() => setVisibleFilters(false)}>
+          <div>
+            <Filters activeFilters={activeFilters} updateActiveFilters={updateActiveFilters} />
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

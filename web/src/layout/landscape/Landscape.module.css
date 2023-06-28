@@ -1,35 +1,36 @@
-.filters {
-  min-width: 250px;
-}
-
-.catTitle {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-}
-
-.subcatTitle {
-  font-size: 0.7rem;
-  line-height: 0.8rem;
+.roundedBtn {
   height: 2rem;
+  width: 2rem;
+  font-size: 1.5rem;
+  line-height: 0;
 }
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+.filterBtn {
+  height: 28px;
+  width: 28px;
+  font-size: 0.8rem;
 }
 
-.itemsContainer {
-  background-color: rgba(0, 0, 0, 0.05);
+.dot {
+  height: 0.8rem;
+  width: 0.8rem;
+  right: -0.4rem;
+  top: -0.4rem;
 }
 
-.items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 44px);
-  grid-auto-rows: 40px;
-  gap: 2px;
-  /* justify-content: center; */
+.btnGroup :global(.btn) {
+  font-size: 0.75rem;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.btnSymbol {
+  position: relative;
+  font-size: 1.25rem;
+  line-height: 0.5rem;
+  margin-top: -2px;
+}
+
+.btnGroupLegend {
+  font-size: 0.75rem;
 }

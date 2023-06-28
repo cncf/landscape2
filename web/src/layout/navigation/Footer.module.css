@@ -1,0 +1,27 @@
+.qr {
+  max-width: 70px;
+}
+
+.logo {
+  height: 30px;
+}
+
+.footerCol {
+  padding-right: 5rem;
+}
+
+@media only screen and (max-width: 991.98px) {
+  .footerCol,
+  .fullMobileSection {
+    padding: 0 1rem;
+  }
+
+  .footerCol {
+    padding-bottom: 1.5rem;
+  }
+
+  .fullMobileSection {
+    width: 100%;
+    text-align: center;
+  }
+}

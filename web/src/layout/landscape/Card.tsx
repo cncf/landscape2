@@ -1,32 +1,31 @@
 import classNames from 'classnames';
-import { Item } from '../../types';
+import { DetailedItem, Item } from '../../types';
 import styles from './Card.module.css';
 
 interface Props {
-  item: Item;
+  item: DetailedItem;
   onClick: (item: Item) => void;
 }
 
 const Card = (props: Props) => {
-  const isBigCard = props.item.project && ['incubating', 'graduated'].includes(props.item.project);
-
   return (
     <button
-      className={classNames('card rounded-0', styles.card, { [styles.bigCard]: isBigCard }, { 'p-1': !isBigCard })}
+      className={classNames('card rounded-0 p-0', styles.card, { [styles.noRepo]: !props.item.has_repositories })}
       onClick={() => props.onClick(props.item)}
     >
-      <img
-        alt={`${props.item.name} logo`}
-        className={`m-auto ${styles.logo}`}
-        src={import.meta.env.MODE === 'development' ? `../../static/${props.item.logo}` : `${props.item.logo}`}
-      />
-      {isBigCard && (
-        <div
-          className={`text-center text-uppercase bg-dark text-light position-absolute start-0 end-0 bottom-0 ${styles.legend}`}
-        >
-          {props.item.project}
+      <div className="d-flex flex-column h-100 w-100">
+        <div className="flex-grow-1 d-flex align-items-center h-75 p-2">
+          <img
+            alt={`${props.item.name} logo`}
+            className={`m-auto ${styles.logo}`}
+            src={import.meta.env.MODE === 'development' ? `../../static/${props.item.logo}` : `${props.item.logo}`}
+          />
         </div>
-      )}
+
+        <div className="w-100 border-top p-2">
+          <h6 className="text-muted text-center fw-semibold text-truncate mb-0">{props.item.name}</h6>
+        </div>
+      </div>
     </button>
   );
 };
