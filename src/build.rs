@@ -2,7 +2,7 @@
 
 use crate::{
     crunchbase::{self, CBApi, DynCB},
-    data::LandscapeData,
+    data::{ItemFeatured, LandscapeData},
     datasets::Datasets,
     github::{self, DynGH},
     settings::Settings,
@@ -72,6 +72,9 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
 
     // Get landscape settings from the source provided
     let settings = get_landscape_settings(&args.settings_source).await?;
+
+    // Attach featured items information
+    attach_featured_items_data(&mut landscape_data, &settings)?;
 
     // Prepare logos and copy them to the output directory
     prepare_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
@@ -173,6 +176,44 @@ async fn get_landscape_settings(src: &SettingsSource) -> Result<Settings> {
     }?;
 
     Ok(settings)
+}
+
+/// Attach featured items information.
+#[instrument(skip_all, err)]
+fn attach_featured_items_data(landscape_data: &mut LandscapeData, settings: &Settings) -> Result<()> {
+    let Some(rules) = &settings.featured_items else {
+        return Ok(());
+    };
+
+    for rule in rules {
+        match rule.field.as_str() {
+            "project" => {
+                for item in &mut landscape_data.items {
+                    if let Some(project) = item.project.as_ref() {
+                        if let Some(option) = rule.options.iter().find(|o| o.value == *project) {
+                            item.featured = Some(ItemFeatured {
+                                order: option.order,
+                                label: option.label.clone(),
+                            });
+                        }
+                    }
+                }
+            }
+            "subcategory" => {
+                for item in &mut landscape_data.items {
+                    if let Some(option) = rule.options.iter().find(|o| o.value == item.subcategory) {
+                        item.featured = Some(ItemFeatured {
+                            order: option.order,
+                            label: option.label.clone(),
+                        });
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
 }
 
 lazy_static! {

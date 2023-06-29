@@ -246,6 +246,9 @@ pub(crate) struct Item {
     pub enduser: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub featured: Option<ItemFeatured>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub github_discussions_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -303,6 +306,16 @@ impl Item {
         let key = format!("{}##{}##{}", &self.category, &self.subcategory, &self.name);
         self.id = Uuid::new_v5(&Uuid::NAMESPACE_OID, key.as_bytes());
     }
+}
+
+/// Landscape item featured information.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct ItemFeatured {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<usize>,
 }
 
 /// Landscape item summary.
