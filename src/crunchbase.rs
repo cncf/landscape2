@@ -17,9 +17,6 @@ use tracing::instrument;
 /// Organization information collected from Crunchbase.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Organization {
-    /// Represents the moment at which this instance was generated
-    pub _generated_at: DateTime<Utc>,
-
     #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
 
@@ -34,6 +31,9 @@ pub(crate) struct Organization {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub funding: Option<i64>,
+
+    /// Represents the moment at which this instance was generated
+    pub generated_at: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage_url: Option<String>,
@@ -94,7 +94,7 @@ impl Organization {
             None => (None, None),
         };
         Ok(Organization {
-            _generated_at: Utc::now(),
+            generated_at: Utc::now(),
             city: get_location_value(&cb_org.cards.headquarters_address, "city"),
             company_type: cb_org.properties.company_type,
             country: get_location_value(&cb_org.cards.headquarters_address, "country"),

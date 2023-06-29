@@ -20,15 +20,15 @@ use tracing::instrument;
 /// Repository information collected from GitHub.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Repository {
-    /// Represents the moment at which this instance was generated
-    pub _generated_at: DateTime<Utc>,
-
     pub contributors: Contributors,
     pub description: String,
     pub first_commit: Commit,
 
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    pub languages: HashMap<String, i64>,
+    /// Represents the moment at which this instance was generated
+    pub generated_at: DateTime<Utc>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub languages: Option<HashMap<String, i64>>,
 
     pub latest_commit: Commit,
 
@@ -58,7 +58,7 @@ impl Repository {
 
         // Prepare repository instance using the information collected
         Ok(Repository {
-            _generated_at: Utc::now(),
+            generated_at: Utc::now(),
             contributors: Contributors {
                 count: contributors_count,
                 url: format!("https://github.com/{owner}/{repo}/graphs/contributors"),
@@ -142,7 +142,7 @@ pub(crate) trait GH {
     async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
 
     /// Get languages used in repository.
-    async fn get_languages(&self, owner: &str, repo: &str) -> Result<HashMap<String, i64>>;
+    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>>;
 
     /// Get latest commit.
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
@@ -245,10 +245,10 @@ impl GH for GHApi {
 
     /// [GH::get_languages]
     #[instrument(fields(?owner, ?repo), skip_all, err)]
-    async fn get_languages(&self, owner: &str, repo: &str) -> Result<HashMap<String, i64>> {
+    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>> {
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/languages");
         let languages: HashMap<String, i64> = self.http_client.get(url).send().await?.json().await?;
-        Ok(languages)
+        Ok(Some(languages))
     }
 
     /// [GH::get_latest_commit]
