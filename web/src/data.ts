@@ -15,9 +15,8 @@ export const ZOOM_LEVELS = [['25px', '23px'], ['30px', '25px'], ['35px', '30px']
 
 
 export const COLORS: string[] = [
-  'rgba(194, 197, 232, 0.65)',
-  'rgba(200, 227, 251, 0.65)',
-  'rgba(251, 208, 166, 0.75)',
+  'rgba(1, 107, 204, 0.70)',
+  'rgba(95, 94, 95, 0.65)',
 ];
 
 export const FILTERS: FilterSection[] = [
