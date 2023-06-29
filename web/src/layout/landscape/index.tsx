@@ -112,7 +112,7 @@ const Landscape = (props: Props) => {
 
   return (
     <>
-      <div className="d-flex flex-row align-items-center justify-content-between my-3">
+      <div className="d-flex flex-row align-items-center justify-content-between my-3 py-1">
         <div className="d-flex flex-row align-items-center">
           <div>
             <button

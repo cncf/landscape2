@@ -65,7 +65,7 @@ const Content = (props: Props) => {
           <div key={`cat_${cat}`} className="d-flex flex-row">
             <div
               className={classNames(
-                'text-dark border border-3 border-white fw-semibold p-2 border-end-0 py-5',
+                'text-white border border-3 border-white fw-semibold p-2 border-end-0 py-5',
                 styles.catTitle,
                 { 'border-bottom-0': index !== 0 }
               )}
@@ -75,18 +75,24 @@ const Content = (props: Props) => {
                 <div>{cat}</div>
 
                 <div>
-                  <Link to="/guide" className={`btn btn-link text-black mt-2 p-1 ${styles.btnInCatTitle}`}>
+                  <Link
+                    to="/guide"
+                    className={`btn btn-link text-white opacity-75 px-0 py-1 mt-3 ${styles.btnIcon} ${styles.btnInCatTitle}`}
+                  >
                     <svg
-                      className={`position-relative ${styles.icon}`}
                       stroke="currentColor"
                       fill="currentColor"
                       strokeWidth="0"
-                      viewBox="0 0 24 24"
+                      viewBox="0 0 16 16"
                       height="1em"
                       width="1em"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <path d="M21 4H7C5.89543 4 5 4.89543 5 6C5 7.10457 5.89543 8 7 8H21V21C21 21.5523 20.5523 22 20 22H7C4.79086 22 3 20.2091 3 18V6C3 3.79086 4.79086 2 7 2H20C20.5523 2 21 2.44772 21 3V4ZM5 18C5 19.1046 5.89543 20 7 20H19V10H7C6.27143 10 5.58835 9.80521 5 9.46487V18ZM20 7H7C6.44772 7 6 6.55228 6 6C6 5.44772 6.44772 5 7 5H20V7Z"></path>
+                      <path
+                        fill-rule="evenodd"
+                        clip-rule="evenodd"
+                        d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
+                      ></path>
                     </svg>
                   </Link>
                 </div>
@@ -114,23 +120,29 @@ const Content = (props: Props) => {
                               )}
                             >
                               <div
-                                className={`d-flex align-items-center text-dark justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
+                                className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
                                 style={{ backgroundColor: colorsList[index] }}
                               >
                                 <div className={styles.ellipsis}>{subcat}</div>
                                 <div>
-                                  <Link to="/guide" className="btn btn-link text-black ms-2 p-1">
+                                  <Link
+                                    to="/guide"
+                                    className={`btn btn-link text-white opacity-75 ms-2 ${styles.btnIcon}`}
+                                  >
                                     <svg
-                                      className={`position-relative ${styles.icon}`}
                                       stroke="currentColor"
                                       fill="currentColor"
                                       strokeWidth="0"
-                                      viewBox="0 0 24 24"
+                                      viewBox="0 0 16 16"
                                       height="1em"
                                       width="1em"
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
-                                      <path d="M21 4H7C5.89543 4 5 4.89543 5 6C5 7.10457 5.89543 8 7 8H21V21C21 21.5523 20.5523 22 20 22H7C4.79086 22 3 20.2091 3 18V6C3 3.79086 4.79086 2 7 2H20C20.5523 2 21 2.44772 21 3V4ZM5 18C5 19.1046 5.89543 20 7 20H19V10H7C6.27143 10 5.58835 9.80521 5 9.46487V18ZM20 7H7C6.44772 7 6 6.55228 6 6C6 5.44772 6.44772 5 7 5H20V7Z"></path>
+                                      <path
+                                        fill-rule="evenodd"
+                                        clip-rule="evenodd"
+                                        d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
+                                      ></path>
                                     </svg>
                                   </Link>
                                 </div>
@@ -156,23 +168,29 @@ const Content = (props: Props) => {
                               )}
                             >
                               <div
-                                className={`d-flex align-items-center text-dark justify-content-center text-center fw-semibold px-2 w-100 ${styles.subcatTitle}`}
+                                className={`d-flex align-items-center text-white justify-content-center text-center fw-semibold px-2 w-100 ${styles.subcatTitle}`}
                                 style={{ backgroundColor: colorsList[index] }}
                               >
                                 <div className={styles.ellipsis}>{subcat}</div>
                                 <div>
-                                  <Link to="/guide" className="btn btn-link text-black ms-2 p-1">
+                                  <Link
+                                    to="/guide"
+                                    className={`btn btn-link text-white opacity-75 ms-2 ${styles.btnIcon}`}
+                                  >
                                     <svg
-                                      className={`position-relative ${styles.icon}`}
                                       stroke="currentColor"
                                       fill="currentColor"
                                       strokeWidth="0"
-                                      viewBox="0 0 24 24"
+                                      viewBox="0 0 16 16"
                                       height="1em"
                                       width="1em"
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
-                                      <path d="M21 4H7C5.89543 4 5 4.89543 5 6C5 7.10457 5.89543 8 7 8H21V21C21 21.5523 20.5523 22 20 22H7C4.79086 22 3 20.2091 3 18V6C3 3.79086 4.79086 2 7 2H20C20.5523 2 21 2.44772 21 3V4ZM5 18C5 19.1046 5.89543 20 7 20H19V10H7C6.27143 10 5.58835 9.80521 5 9.46487V18ZM20 7H7C6.44772 7 6 6.55228 6 6C6 5.44772 6.44772 5 7 5H20V7Z"></path>
+                                      <path
+                                        fill-rule="evenodd"
+                                        clip-rule="evenodd"
+                                        d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
+                                      ></path>
                                     </svg>
                                   </Link>
                                 </div>

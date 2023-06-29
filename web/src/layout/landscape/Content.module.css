@@ -5,8 +5,14 @@
   width: 2.75rem;
 }
 
+.btnIcon {
+  font-size: 0.9rem;
+  line-height: 0.8rem;
+}
+
 .btnInCatTitle {
   transform: rotate(90deg);
+  line-height: 1.5rem;
 }
 
 .icon {

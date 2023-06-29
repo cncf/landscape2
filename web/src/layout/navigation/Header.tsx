@@ -12,7 +12,7 @@ interface Props {
 
 const Header = (props: Props) => {
   return (
-    <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-4">
+    <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
       <div className="container-fluid d-flex align-items-center p-4">
         <div>
           <Link to="/">
@@ -28,13 +28,13 @@ const Header = (props: Props) => {
             Explore
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-5 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
             to="/guide"
           >
             Guide
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-5 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
             to="/stats"
           >
             Stats
