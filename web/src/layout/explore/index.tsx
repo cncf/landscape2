@@ -3,8 +3,8 @@ import {
   ActiveFilters,
   Category,
   FilterCategory,
-  Item,
-  Landscape as LandscapeData,
+  BaseItem,
+  BaseData as LandscapeData,
   OutletContext,
   Group,
   ViewMode,
@@ -42,11 +42,11 @@ const Landscape = (props: Props) => {
   const [selectedViewMode, setSelectedViewMode] = useState<ViewMode>(
     (searchParams.get(VIEW_MODE_PARAM) as ViewMode) || DEFAULT_VIEW_MODE
   );
-  const [visibleItems, setVisibleItems] = useState<Item[]>(props.data.items);
+  const [visibleItems, setVisibleItems] = useState<BaseItem[]>(props.data.items);
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
 
-  const onClickItem = (item: Item) => {
+  const onClickItem = (item: BaseItem) => {
     setActiveItem(item);
   };
 
@@ -90,11 +90,11 @@ const Landscape = (props: Props) => {
 
   useEffect(() => {
     if (Object.keys(activeFilters).length > 0) {
-      let filteredItems: Item[] = [];
+      let filteredItems: BaseItem[] = [];
       Object.keys(activeFilters).forEach((f: string) => {
         if (f === FilterCategory.Project) {
           const includedUndefined = activeFilters[FilterCategory.Project]?.includes('non-cncf');
-          filteredItems = props.data.items.filter((item: Item) => {
+          filteredItems = props.data.items.filter((item: BaseItem) => {
             if (includedUndefined && item.project === undefined) {
               return item;
             } else if (item.project !== undefined && activeFilters[FilterCategory.Project]?.includes(item.project)) {
@@ -230,29 +230,24 @@ const Landscape = (props: Props) => {
 
       <div className="d-flex w-100 pt-1">
         <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
-          {props.data.groups !== undefined ? (
+          {props.data.groups && selectedGroup ? (
             <>
               {props.data.groups.map((group: Group) => {
-                return (
-                  <div
-                    key={`group_${group.name}`}
-                    className={classNames(
-                      'tab-pane',
-                      { 'd-block': selectedGroup === group.name },
-                      { 'd-none': selectedGroup !== group.name }
-                    )}
-                  >
-                    <Content
-                      selectedViewMode={selectedViewMode}
-                      categoriesList={group.categories}
-                      categories={props.data.categories}
-                      items={visibleItems}
-                      featured_items={props.data.featured_items}
-                      categories_overridden={props.data.categories_overridden}
-                      onClickItem={onClickItem}
-                    />
-                  </div>
-                );
+                if (group.name === selectedGroup) {
+                  return (
+                    <div key={`group_${group.name}`} className="tab-pane d-block">
+                      <Content
+                        selectedViewMode={selectedViewMode}
+                        categoriesList={group.categories}
+                        categories={props.data.categories}
+                        items={visibleItems}
+                        categories_overridden={props.data.categories_overridden}
+                        onClickItem={onClickItem}
+                      />
+                    </div>
+                  );
+                }
+                return null;
               })}
             </>
           ) : (
@@ -261,7 +256,6 @@ const Landscape = (props: Props) => {
               categoriesList={props.data.categories.map((c: Category) => c.name)}
               categories={props.data.categories}
               items={visibleItems}
-              featured_items={props.data.featured_items}
               categories_overridden={props.data.categories_overridden}
               onClickItem={onClickItem}
             />

@@ -1,9 +1,9 @@
-import { Item } from '../../types';
-import Modal from '../common/Modal';
+import { BaseItem } from '../../types';
+import Modal from './Modal';
 import styles from './ItemModal.module.css';
 
 interface Props {
-  activeItem?: Item;
+  activeItem?: BaseItem;
   removeActiveItem: () => void;
 }
 

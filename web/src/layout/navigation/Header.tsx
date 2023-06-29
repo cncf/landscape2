@@ -1,13 +1,13 @@
 import styles from './Header.module.css';
 import logo from '../../assets/images/landscape-logo.svg';
-import { Item } from '../../types';
+import { BaseItem } from '../../types';
 import Searchbar from '../common/Searchbar';
 import { NavLink } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 interface Props {
-  items: Item[];
-  onClickItem: (item: Item) => void;
+  items: BaseItem[];
+  onClickItem: (item: BaseItem) => void;
 }
 
 const Header = (props: Props) => {

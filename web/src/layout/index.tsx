@@ -3,17 +3,17 @@ import { Outlet } from 'react-router-dom';
 
 import Footer from './navigation/Footer';
 import Header from './navigation/Header';
-import { Item } from '../types';
-import ItemModal from './landscape/ItemModal';
+import { BaseItem } from '../types';
+import ItemModal from './common/ItemModal';
 
 interface Props {
-  items: Item[];
+  items: BaseItem[];
 }
 
 const Layout = (props: Props) => {
-  const [activeItem, setActiveItem] = useState<Item | undefined>();
+  const [activeItem, setActiveItem] = useState<BaseItem | undefined>();
 
-  const onClickItem = (item: Item) => {
+  const onClickItem = (item: BaseItem) => {
     setActiveItem(item);
   };
 

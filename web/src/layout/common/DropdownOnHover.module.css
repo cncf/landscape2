@@ -8,6 +8,36 @@
   margin-top: 33px;
 }
 
+.centerAligned {
+  left: 50%;
+}
+
+.leftAligned {
+  left: 0;
+}
+
+.rightAligned {
+  right: 0;
+}
+
+.rightAligned .tooltip {
+  left: auto;
+  right: 0;
+}
+
+.centerAligned .tooltipArrow {
+  left: calc(50% - 3px);
+}
+
+.leftAligned .tooltipArrow {
+  left: 10px;
+}
+
+.rightAligned .tooltipArrow {
+  left: auto;
+  right: 10px;
+}
+
 .arrow {
   position: absolute;
   display: block;

@@ -4,11 +4,11 @@ import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import HoverableItem from './HoverableItem';
 import styles from './Searchbar.module.css';
-import { Item } from '../../types';
+import { BaseItem } from '../../types';
 
 interface Props {
-  items: Item[];
-  openItem: (item: Item) => void;
+  items: BaseItem[];
+  openItem: (item: BaseItem) => void;
 }
 
 const SEARCH_DELAY = 3 * 100; // 300ms
@@ -18,7 +18,7 @@ const Searchbar = (props: Props) => {
   const inputEl = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef(null);
   const [value, setValue] = useState<string>('');
-  const [itemsList, setItemsList] = useState<Item[] | null>(null);
+  const [itemsList, setItemsList] = useState<BaseItem[] | null>(null);
   const [visibleDropdown, setVisibleDropdown] = useState<boolean>(false);
   const [highlightedItem, setHighlightedItem] = useState<number | null>(null);
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -58,7 +58,7 @@ const Searchbar = (props: Props) => {
     }
   };
 
-  const openItemModal = (selectedItem: Item) => {
+  const openItemModal = (selectedItem: BaseItem) => {
     forceBlur();
     setValue('');
     cleanItemsSearch();
@@ -78,7 +78,7 @@ const Searchbar = (props: Props) => {
   };
 
   const onSearch = (text: string) => {
-    const filteredItems = props.items.filter((item: Item) => {
+    const filteredItems = props.items.filter((item: BaseItem) => {
       const re = new RegExp(text, 'i');
       if (re.test(item.name)) {
         return item;
@@ -242,7 +242,7 @@ const Searchbar = (props: Props) => {
           id="search-list"
         >
           <HoverableItem onLeave={() => setHighlightedItem(null)}>
-            {itemsList.map((item: Item, index: number) => {
+            {itemsList.map((item: BaseItem, index: number) => {
               return (
                 <HoverableItem
                   key={`item_${item.name}`}

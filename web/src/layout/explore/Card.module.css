@@ -1,0 +1,39 @@
+
+.logoWrapper {
+  min-height: 50px;
+  min-width: 50px;
+  width: 50px;
+}
+
+.logo {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.itemInfo {
+  background-color: var(--bs-gray-100);
+}
+
+.description {
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: unset;
+  white-space: inherit;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-wrap: normal;
+  max-height: 36px;
+}
+
+.additionalInfo {
+  font-size: 0.75rem;
+}
+
+.starIcon {
+  font-size: 0.6rem;
+}
+
+.badge {
+  background-color: var(--bs-gray-500);
+}
