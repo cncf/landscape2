@@ -41,8 +41,8 @@ impl Datasets {
 /// initial page and power the features available on it.
 mod base {
     use crate::{
-        data::{Category, CategoryName, LandscapeData},
-        settings::{FeaturedItemRule, Group, Settings},
+        data::{Category, CategoryName, ItemFeatured, LandscapeData},
+        settings::{Group, Settings},
     };
     use serde::{Deserialize, Serialize};
     use uuid::Uuid;
@@ -54,9 +54,6 @@ mod base {
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories_overridden: Vec<CategoryName>,
-
-        #[serde(skip_serializing_if = "Vec::is_empty")]
-        pub featured_items: Vec<FeaturedItemRule>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub groups: Vec<Group>,
@@ -75,6 +72,9 @@ mod base {
         pub subcategory: String,
 
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub featured: Option<ItemFeatured>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub project: Option<String>,
     }
 
@@ -84,7 +84,6 @@ mod base {
             let mut base = Base {
                 groups: settings.groups.clone().unwrap_or(vec![]),
                 categories: landscape_data.categories.clone(),
-                featured_items: settings.featured_items.clone().unwrap_or(vec![]),
                 ..Default::default()
             };
 
@@ -102,6 +101,7 @@ mod base {
             for item in &landscape_data.items {
                 base.items.push(Item {
                     category: item.category.clone(),
+                    featured: item.featured.clone(),
                     has_repositories: !item.repositories.as_ref().unwrap_or(&vec![]).is_empty(),
                     id: item.id,
                     name: item.name.clone(),
