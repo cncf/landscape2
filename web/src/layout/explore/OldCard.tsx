@@ -1,13 +1,13 @@
 import classNames from 'classnames';
-import { DetailedItem, Item } from '../../types';
-import styles from './Card.module.css';
+import { BaseItem } from '../../types';
+import styles from './OldCard.module.css';
 
 interface Props {
-  item: DetailedItem;
-  onClick: (item: Item) => void;
+  item: BaseItem;
+  onClick: (item: BaseItem) => void;
 }
 
-const Card = (props: Props) => {
+const OldCard = (props: Props) => {
   return (
     <button
       className={classNames('card rounded-0 p-0', styles.card, { [styles.noRepo]: !props.item.has_repositories })}
@@ -30,4 +30,4 @@ const Card = (props: Props) => {
   );
 };
 
-export default Card;
+export default OldCard;

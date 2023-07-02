@@ -1,0 +1,109 @@
+.card {
+  width: var(--card-size-width);
+  height: var(--card-size-height);
+}
+
+.cardContent {
+  padding: 0.25rem;
+}
+
+.noRepo {
+  background-color: #f1f3f5;
+}
+
+.bigCard {
+  width: var(--card-size-width) * 2 + var(--card-gap);
+  height: var(--card-size-height) * 2 + var(--card-gap);
+  grid-column-end: span 2;
+  grid-row-end: span 2;
+}
+
+.bigCard .cardContent {
+  padding: 0.5rem;
+  padding-bottom: 1.15rem;
+}
+
+.logo {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.legend {
+  background-color: var(--bs-gray-100);
+  font-size: 0.5rem;
+  line-height: 0.4rem;
+  padding: 0.25rem 0;
+}
+
+:global(.zoom-2) .legend,
+:global(.zoom-3) .legend {
+  font-size: 0.4rem;
+  line-height: 0.3rem;
+  padding: 0.15rem 0;
+}
+
+:global(.zoom-0) .legend,
+:global(.zoom-1) .legend {
+  font-size: 0.3rem;
+  line-height: 0.2rem;
+  padding: 0.15rem 0;
+}
+
+:global(.zoom-0) .cardContent,
+:global(.zoom-1) .cardContent,
+:global(.zoom-2) .cardContent,
+:global(.zoom-3) .cardContent {
+  padding: 0.15rem;
+}
+
+:global(.zoom-2) .bigCard .cardContent,
+:global(.zoom-3) .bigCard .cardContent {
+  padding-bottom: 1rem;
+}
+
+:global(.zoom-0) .bigCard .cardContent,
+:global(.zoom-1) .bigCard .cardContent {
+  padding-bottom: 0.75rem;
+}
+
+.dropdown {
+  min-width: 200px;
+  font-size: 0.85rem;
+  margin-top: var(--card-size-height);
+}
+
+.bigCard .dropdown {
+  margin-top: calc(var(--card-size-height) * 2 + var(--card-gap));
+}
+
+.centerAligned {
+  left: 50%;
+}
+
+.leftAligned {
+  left: 0;
+}
+
+.rightAligned {
+  right: 0;
+}
+
+.rightAligned .tooltip {
+  left: auto;
+  right: 0;
+}
+
+.centerAligned .tooltipArrow {
+  left: calc(50% - 3px);
+}
+
+.leftAligned .tooltipArrow {
+  left: 10px;
+}
+
+.rightAligned .tooltipArrow {
+  left: auto;
+  right: 10px;
+}
+

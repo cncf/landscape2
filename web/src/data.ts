@@ -1,4 +1,4 @@
-import { FilterCategory, FilterSection, ViewMode } from "./types";
+import { FilterCategory, FilterSection, ViewMode } from './types';
 
 export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
@@ -11,13 +11,21 @@ export const SUBCATEGORY_PARAM = 'subcategory';
 export const DEFAULT_ZOOM_LEVEL = 5;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 
-export const ZOOM_LEVELS = [['25px', '23px'], ['30px', '25px'], ['35px', '30px'], ['40px', '35px'], ['45px', '40px'], ['50px', '45px'], ['55px', '42px'], ['60px', '50px'], ['65px', '54px'], ['70px', '58px'], ['75px', '60px']];
-
-
-export const COLORS: string[] = [
-  'rgba(1, 107, 204, 0.70)',
-  'rgba(95, 94, 95, 0.65)',
+export const ZOOM_LEVELS = [
+  ['25px', '23px'],
+  ['30px', '25px'],
+  ['35px', '30px'],
+  ['40px', '35px'],
+  ['45px', '40px'],
+  ['50px', '45px'],
+  ['55px', '42px'],
+  ['60px', '50px'],
+  ['65px', '54px'],
+  ['70px', '58px'],
+  ['75px', '60px'],
 ];
+
+export const COLORS: string[] = ['rgba(1, 107, 204, 0.70)', 'rgba(0, 42, 81, 0.70)'];
 
 export const FILTERS: FilterSection[] = [
   {
@@ -30,27 +38,26 @@ export const FILTERS: FilterSection[] = [
         suboptions: [
           {
             value: 'graduated',
-            name: 'Graduated'
+            name: 'Graduated',
           },
           {
             value: 'incubating',
-            name: 'Incubating'
+            name: 'Incubating',
           },
           {
             value: 'sandbox',
-            name: 'Sandbox'
+            name: 'Sandbox',
           },
           {
             value: 'archived',
-            name: 'Archived'
-          }
-        ]
+            name: 'Archived',
+          },
+        ],
       },
       {
         value: 'non-cncf',
-        name: 'Non CNCF Projects'
-      }
-    ]
-  }
+        name: 'Non CNCF Projects',
+      },
+    ],
+  },
 ];
-

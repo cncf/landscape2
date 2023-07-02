@@ -23,10 +23,10 @@
 
 .link:not(:global(.active)):hover:before {
   background-color: var(--bs-primary);
-  content: "";
+  content: '';
   height: 4px;
   left: 0;
-  opacity: .5;
+  opacity: 0.5;
   position: absolute;
   right: 0;
   bottom: -10px;
@@ -34,7 +34,7 @@
 
 .link:global(.active):before {
   background-color: var(--bs-primary);
-  content: "";
+  content: '';
   height: 4px;
   left: 0;
   position: absolute;

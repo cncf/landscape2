@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import styles from './Content.module.css';
-import { Category, DetailedItem, FeatureItem, FeatureItemOption, Item, ViewMode } from '../../types';
-import Card from './Card';
+import { Category, BaseItem, ViewMode } from '../../types';
+import OldCard from './OldCard';
 import GridItem from './GridItem';
 import { Fragment } from 'react';
 import generateColorsArray from '../../utils/generateColorsArray';
@@ -11,43 +11,18 @@ interface Props {
   selectedViewMode: ViewMode;
   categoriesList: string[];
   categories: Category[];
-  items: Item[];
-  featured_items: FeatureItem[];
+  items: BaseItem[];
   categories_overridden?: string[];
-  onClickItem: (item: Item) => void;
+  onClickItem: (item: BaseItem) => void;
 }
 
 const Content = (props: Props) => {
-  const featureItem = (item: Item): DetailedItem => {
-    const detailedItem: DetailedItem = { ...item, isFeatured: false };
-    props.featured_items.forEach((fItem: FeatureItem) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value = (detailedItem as any)[fItem.field];
-      if (value) {
-        fItem.options.map((opt: FeatureItemOption) => {
-          if (value === opt.value) {
-            detailedItem.isFeatured = true;
-            if (opt.order) {
-              detailedItem.order = opt.order;
-            }
-            if (opt.label) {
-              detailedItem.label = opt.label;
-            }
-          }
-        });
-      }
-    });
-
-    return detailedItem;
-  };
-
-  const sortItems = (items: Item[]): DetailedItem[] => {
-    const formattedItems = items.map((item: Item) => {
-      return featureItem(item);
-    });
-
-    return formattedItems.sort((a: DetailedItem, b: DetailedItem) => {
-      return (a.order || 1000) - (b.order || 1000); // Items with undefined order are last
+  const sortItems = (items: BaseItem[]): BaseItem[] => {
+    return items.sort((a: BaseItem, b: BaseItem) => {
+      return (
+        (a.featured && a.featured.order ? a.featured.order : 1000) -
+        (b.featured && b.featured.order ? b.featured.order : 1000)
+      ); // Items with undefined order are last
     });
   };
 
@@ -77,7 +52,7 @@ const Content = (props: Props) => {
                 <div>
                   <Link
                     to="/guide"
-                    className={`btn btn-link text-white opacity-75 px-0 py-1 mt-3 ${styles.btnIcon} ${styles.btnInCatTitle}`}
+                    className={`btn btn-link text-white opacity-75 px-0 p-0 mt-2 ${styles.btnIcon} ${styles.btnInCatTitle}`}
                   >
                     <svg
                       stroke="currentColor"
@@ -89,8 +64,8 @@ const Content = (props: Props) => {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
+                        fillRule="evenodd"
+                        clipRule="evenodd"
                         d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
                       ></path>
                     </svg>
@@ -101,8 +76,8 @@ const Content = (props: Props) => {
 
             <div className="row g-0 w-100">
               {category.subcategories.map((subcat: string, subcatIndex: number) => {
-                const sortedItems: DetailedItem[] = sortItems(
-                  props.items.filter((item: Item) => item.category === cat && item.subcategory === subcat)
+                const sortedItems: BaseItem[] = sortItems(
+                  props.items.filter((item: BaseItem) => item.category === cat && item.subcategory === subcat)
                 );
 
                 return (
@@ -127,7 +102,7 @@ const Content = (props: Props) => {
                                 <div>
                                   <Link
                                     to="/guide"
-                                    className={`btn btn-link text-white opacity-75 ms-2 ${styles.btnIcon}`}
+                                    className={`btn btn-link text-white opacity-75 px-2 ${styles.btnIcon}`}
                                   >
                                     <svg
                                       stroke="currentColor"
@@ -139,8 +114,8 @@ const Content = (props: Props) => {
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
                                       <path
-                                        fill-rule="evenodd"
-                                        clip-rule="evenodd"
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
                                         d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
                                       ></path>
                                     </svg>
@@ -149,9 +124,14 @@ const Content = (props: Props) => {
                               </div>
                               <div className={`flex-grow-1 ${styles.itemsContainer}`}>
                                 <div className={styles.items}>
-                                  {sortedItems.map((item: DetailedItem) => {
+                                  {sortedItems.map((item: BaseItem) => {
                                     return (
-                                      <GridItem item={item} key={`item_${item.name}`} onClick={props.onClickItem} />
+                                      <GridItem
+                                        item={item}
+                                        key={`item_${item.name}`}
+                                        borderColor={colorsList[index]}
+                                        onClick={props.onClickItem}
+                                      />
                                     );
                                   })}
                                 </div>
@@ -175,7 +155,7 @@ const Content = (props: Props) => {
                                 <div>
                                   <Link
                                     to="/guide"
-                                    className={`btn btn-link text-white opacity-75 ms-2 ${styles.btnIcon}`}
+                                    className={`btn btn-link text-white opacity-75 px-2 ${styles.btnIcon}`}
                                   >
                                     <svg
                                       stroke="currentColor"
@@ -187,8 +167,8 @@ const Content = (props: Props) => {
                                       xmlns="http://www.w3.org/2000/svg"
                                     >
                                       <path
-                                        fill-rule="evenodd"
-                                        clip-rule="evenodd"
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
                                         d="M14.5 2H9l-.35.15-.65.64-.65-.64L7 2H1.5l-.5.5v10l.5.5h5.29l.86.85h.7l.86-.85h5.29l.5-.5v-10l-.5-.5zm-7 10.32l-.18-.17L7 12H2V3h4.79l.74.74-.03 8.58zM14 12H9l-.35.15-.14.13V3.7l.7-.7H14v9zM6 5H3v1h3V5zm0 4H3v1h3V9zM3 7h3v1H3V7zm10-2h-3v1h3V5zm-3 2h3v1h-3V7zm0 2h3v1h-3V9z"
                                       ></path>
                                     </svg>
@@ -196,8 +176,8 @@ const Content = (props: Props) => {
                                 </div>
                               </div>
                               <div className={`flex-grow-1 d-flex flex-wrap ${styles.itemsContainer}`}>
-                                {sortedItems.map((item: DetailedItem) => {
-                                  return <Card item={item} key={`item_${item.name}`} onClick={props.onClickItem} />;
+                                {sortedItems.map((item: BaseItem) => {
+                                  return <OldCard item={item} key={`item_${item.name}`} onClick={props.onClickItem} />;
                                 })}
                               </div>
                             </div>
