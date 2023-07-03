@@ -12,17 +12,17 @@ export const DEFAULT_ZOOM_LEVEL = 5;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 
 export const ZOOM_LEVELS = [
-  ['25px', '23px'],
-  ['30px', '25px'],
-  ['35px', '30px'],
-  ['40px', '35px'],
-  ['45px', '40px'],
-  ['50px', '45px'],
-  ['55px', '42px'],
-  ['60px', '50px'],
-  ['65px', '54px'],
-  ['70px', '58px'],
-  ['75px', '60px'],
+  [25, 23],
+  [30, 25],
+  [35, 30],
+  [40, 35],
+  [45, 40],
+  [50, 45],
+  [55, 42],
+  [60, 50],
+  [65, 54],
+  [70, 58],
+  [75, 60],
 ];
 
 export const COLORS: string[] = ['rgba(1, 107, 204, 0.70)', 'rgba(0, 42, 81, 0.70)'];

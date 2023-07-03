@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import {
   ActiveFilters,
-  Category,
   FilterCategory,
   BaseItem,
   BaseData as LandscapeData,
@@ -23,6 +22,7 @@ import Modal from '../common/Modal';
 import Content from './Content';
 import Filters from './filters';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
+import prepareBaseData, { CategoriesData } from '../../utils/prepareBaseData';
 
 interface Props {
   data: LandscapeData;
@@ -45,6 +45,9 @@ const Landscape = (props: Props) => {
   const [visibleItems, setVisibleItems] = useState<BaseItem[]>(props.data.items);
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
+  const [categoriesData, setCategoriesData] = useState<CategoriesData | undefined>(
+    prepareBaseData(props.data, visibleItems, selectedGroup)
+  );
 
   const onClickItem = (item: BaseItem) => {
     setActiveItem(item);
@@ -66,16 +69,16 @@ const Landscape = (props: Props) => {
   // TODO - change zoom before loading
   useEffect(() => {
     const bodyStyles = document.body.style;
-    bodyStyles.setProperty('--card-size-width', ZOOM_LEVELS[levelZoom][0]);
-    bodyStyles.setProperty('--card-size-height', ZOOM_LEVELS[levelZoom][1]);
+    bodyStyles.setProperty('--card-size-width', `${ZOOM_LEVELS[levelZoom][0]}px`);
+    bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update card-size variable depending on zoom level
   useEffect(() => {
     const bodyStyles = document.body.style;
-    bodyStyles.setProperty('--card-size-width', ZOOM_LEVELS[levelZoom][0]);
-    bodyStyles.setProperty('--card-size-height', ZOOM_LEVELS[levelZoom][1]);
+    bodyStyles.setProperty('--card-size-width', `${ZOOM_LEVELS[levelZoom][0]}px`);
+    bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
   }, [levelZoom]);
 
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
@@ -109,6 +112,13 @@ const Landscape = (props: Props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
+
+  useEffect(() => {
+    setCategoriesData(prepareBaseData(props.data, visibleItems, selectedGroup));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleItems, selectedGroup]);
+
+  if (categoriesData === undefined) return null;
 
   return (
     <>
@@ -230,36 +240,13 @@ const Landscape = (props: Props) => {
 
       <div className="d-flex w-100 pt-1">
         <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
-          {props.data.groups && selectedGroup ? (
-            <>
-              {props.data.groups.map((group: Group) => {
-                if (group.name === selectedGroup) {
-                  return (
-                    <div key={`group_${group.name}`} className="tab-pane d-block">
-                      <Content
-                        selectedViewMode={selectedViewMode}
-                        categoriesList={group.categories}
-                        categories={props.data.categories}
-                        items={visibleItems}
-                        categories_overridden={props.data.categories_overridden}
-                        onClickItem={onClickItem}
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })}
-            </>
-          ) : (
-            <Content
-              selectedViewMode={selectedViewMode}
-              categoriesList={props.data.categories.map((c: Category) => c.name)}
-              categories={props.data.categories}
-              items={visibleItems}
-              categories_overridden={props.data.categories_overridden}
-              onClickItem={onClickItem}
-            />
-          )}
+          <Content
+            data={categoriesData}
+            cardWidth={ZOOM_LEVELS[levelZoom][0]}
+            selectedViewMode={selectedViewMode}
+            categories_overridden={props.data.categories_overridden}
+            onClickItem={onClickItem}
+          />
         </div>
       </div>
 

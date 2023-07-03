@@ -18,7 +18,6 @@ const Card = (props: Props) => {
       props.item.crunchbase_data.description &&
       props.item.crunchbase_data.description !== ''
     ) {
-      console.log(props.item.crunchbase_data.description);
       description = props.item.crunchbase_data.description;
     }
 
