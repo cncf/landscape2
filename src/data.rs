@@ -264,6 +264,9 @@ pub(crate) struct Item {
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub member_subcategory: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub latest_annual_review_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -100,6 +100,9 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
         attach_github_data(&mut landscape_data, github_data)?;
     }
 
+    // Attach items member subcategory.
+    attach_member_subcategory(&mut landscape_data, &settings.members_category);
+
     // Generate datasets for web application
     let datasets = generate_datasets(&settings, &landscape_data, &args.output_dir)?;
 
@@ -480,6 +483,30 @@ fn attach_github_data(landscape_data: &mut LandscapeData, github_data: GithubDat
         }
     }
     Ok(())
+}
+
+/// Attach items member subcategory.
+fn attach_member_subcategory(landscape_data: &mut LandscapeData, members_category: &Option<String>) {
+    let Some(members_category) = members_category else {
+        return;
+    };
+
+    // Create a map with the member subcategory for each Crunchbase url
+    let mut members_subcategories: HashMap<String, String> = HashMap::new();
+    for item in landscape_data.items.iter().filter(|i| &i.category == members_category) {
+        if let Some(crunchbase_url) = &item.crunchbase_url {
+            members_subcategories.insert(crunchbase_url.clone(), item.subcategory.clone());
+        }
+    }
+
+    // Set item's member subcategory using the item's Crunchbase url to match
+    for item in &mut landscape_data.items {
+        if let Some(crunchbase_url) = &item.crunchbase_url {
+            if let Some(member_subcategory) = members_subcategories.get(crunchbase_url) {
+                item.member_subcategory = Some(member_subcategory.clone());
+            }
+        }
+    }
 }
 
 /// Generate datasets from the landscape settings and data, as well as from the
