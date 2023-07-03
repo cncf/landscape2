@@ -17,13 +17,16 @@ use std::{fs, path::Path};
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Settings {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub groups: Option<Vec<Group>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub featured_items: Option<Vec<FeaturedItemRule>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub groups: Option<Vec<Group>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub members_category: Option<String>,
 }
 
 /// Landscape group. A group provides a mechanism to organize sets of
