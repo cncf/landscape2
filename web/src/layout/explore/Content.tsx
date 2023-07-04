@@ -7,7 +7,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import generateColorsArray from '../../utils/generateColorsArray';
 import { Link } from 'react-router-dom';
 import { CategoriesData } from '../../utils/prepareBaseData';
-import getGridLayout, { GetGridLayoutOutput } from '../../utils/gridLayout';
+import getGridCategoryLayout, { GridCategoryLayout, LayoutColumn, SubcategoryDetails } from '../../utils/gridCategoryLayout';
 
 interface Props {
   data: CategoriesData;
@@ -37,15 +37,14 @@ const Content = (props: Props) => {
       setContainerWidth(container.current.offsetWidth);
     }
   }, []);
-
   return (
     <>
       {Object.keys(props.data).map((cat: string, index: number) => {
         const isOverriden = props.categories_overridden !== undefined && props.categories_overridden.includes(cat);
-        const subcateories: { name: string; itemsCount: number; itemsFeaturedCount: number }[] = [];
+        const subcategories: SubcategoryDetails[] = [];
         Object.keys(props.data[cat]).forEach((subcat: string) => {
           if (props.data[cat][subcat].itemsCount !== 0) {
-            subcateories.push({
+            subcategories.push({
               name: subcat,
               itemsCount: props.data[cat][subcat].itemsCount,
               itemsFeaturedCount: props.data[cat][subcat].itemsFeaturedCount,
@@ -53,14 +52,14 @@ const Content = (props: Props) => {
           }
         });
 
-        if (subcateories.length === 0) return null;
+        if (subcategories.length === 0) return null;
 
-        const grid: GetGridLayoutOutput = getGridLayout({
+        const categoryLayout: GridCategoryLayout = getGridCategoryLayout({
           containerWidth: containerWidth,
           itemWidth: props.cardWidth,
           categoryName: cat,
           isOverriden: isOverriden,
-          subcategories: subcateories,
+          subcategories: subcategories,
         });
 
         return (
@@ -104,27 +103,21 @@ const Content = (props: Props) => {
             <div ref={container} className="w-100">
               {containerWidth !== 0 && (
                 <>
-                  {grid.layout.map(
+                  {categoryLayout.map(
                     (
-                      row: {
-                        subcategoryName: string;
-                        percentage: number;
-                      }[],
-                      rownIndex: number
+                      row: LayoutColumn[],
+                      rowIndex: number
                     ) => {
                       return (
-                        <div className="row g-0 w-100" key={`cat_${index}row_${rownIndex}`}>
+                        <div className="row g-0 w-100" key={`cat_${index}row_${rowIndex}`}>
                           {row.map(
                             (
-                              subcat: {
-                                subcategoryName: string;
-                                percentage: number;
-                              },
-                              subcatIndex: number
+                              column: LayoutColumn,
+                              columnIndex: number
                             ) => {
-                              const sortedItems: BaseItem[] = sortItems(props.data[cat][subcat.subcategoryName].items);
+                              const sortedItems: BaseItem[] = sortItems(props.data[cat][column.subcategoryName].items);
                               return (
-                                <Fragment key={`subcat_${subcat.subcategoryName}`}>
+                                <Fragment key={`subcat_${column.subcategoryName}`}>
                                   {(() => {
                                     switch (props.selectedViewMode) {
                                       case ViewMode.Grid:
@@ -133,15 +126,15 @@ const Content = (props: Props) => {
                                             className={classNames(
                                               'col d-flex flex-column border border-3 border-white border-start-0',
                                               { 'border-top-0': index !== 0 },
-                                              { 'border-bottom-0 col-12': subcat.percentage === 100 }
+                                              { 'border-bottom-0 col-12': column.percentage === 100 }
                                             )}
-                                            style={{ maxWidth: `${subcat.percentage}%` }}
+                                            style={{ maxWidth: `${column.percentage}%` }}
                                           >
                                             <div
                                               className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
                                               style={{ backgroundColor: colorsList[index] }}
                                             >
-                                              <div className="text-truncate">{subcat.subcategoryName}</div>
+                                              <div className="text-truncate">{column.subcategoryName}</div>
                                               <div>
                                                 <Link
                                                   to="/guide"
@@ -187,14 +180,14 @@ const Content = (props: Props) => {
                                             className={classNames(
                                               'col-12 d-flex flex-column border border-3 border-white border-start-0',
                                               { 'border-top-0': index !== 0 },
-                                              { 'border-bottom-0': subcatIndex === 0 && index === 0 }
+                                              { 'border-bottom-0': columnIndex === 0 && index === 0 }
                                             )}
                                           >
                                             <div
                                               className={`d-flex align-items-center text-white justify-content-center text-center fw-semibold px-2 w-100 ${styles.subcatTitle}`}
                                               style={{ backgroundColor: colorsList[index] }}
                                             >
-                                              <div className={styles.ellipsis}>{subcat.subcategoryName}</div>
+                                              <div className={styles.ellipsis}>{column.subcategoryName}</div>
                                               <div>
                                                 <Link
                                                   to="/guide"
