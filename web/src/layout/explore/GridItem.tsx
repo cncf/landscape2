@@ -14,7 +14,7 @@ interface Props {
 }
 
 const FETCH_DELAY = 1 * 100; // 100ms
-const DEFAULT_DROPDOWN_WIDTH = 350;
+const DEFAULT_DROPDOWN_WIDTH = 420;
 const DEFAULT_MARGIN = 30;
 
 const GridItem = (props: Props) => {
@@ -120,6 +120,7 @@ const GridItem = (props: Props) => {
           onMouseEnter={() => setOnDropdownHover(true)}
           onMouseLeave={() => setOnDropdownHover(false)}
         >
+          <div className={`d-block position-absolute ${styles.arrow}`} />
           {itemInfo && <Card item={itemInfo} />}
         </div>
       </div>
