@@ -42,6 +42,7 @@ export interface Item extends BaseItem {
   blog_url?: string;
   chat_channel?: string;
   clomonitor_name?: string;
+  member_subcategory?: string;
   crunchbase_data?: Organization;
   crunchbase_url?: string;
   devstats_url?: string;

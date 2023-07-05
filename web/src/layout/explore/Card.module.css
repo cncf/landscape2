@@ -1,8 +1,8 @@
 
 .logoWrapper {
-  min-height: 50px;
-  min-width: 50px;
-  width: 50px;
+  min-height: 70px;
+  min-width: 70px;
+  width: 70px;
 }
 
 .logo {
@@ -11,7 +11,8 @@
 }
 
 .itemInfo {
-  background-color: var(--bs-gray-100);
+  background-color: #f1f3f5;
+  width: calc(100% - 70px);
 }
 
 .description {
@@ -36,4 +37,19 @@
 
 .badge {
   background-color: var(--bs-gray-500);
+}
+
+.link {
+  position: relative;
+  color: inherit;
+  margin-top: -4px;
+}
+
+.link:hover {
+  color: var(--bs-primary);
+}
+
+.link svg {
+  height: 14px;
+  width: 14px;
 }
