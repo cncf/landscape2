@@ -1,13 +1,13 @@
 
 .logoWrapper {
-  min-height: 70px;
-  min-width: 70px;
+  height: 90px;
   width: 70px;
 }
 
 .logo {
-  max-height: 100%;
   max-width: 100%;
+  max-height: 100%;
+  height: auto;
 }
 
 .itemInfo {
@@ -42,7 +42,8 @@
 .link {
   position: relative;
   color: inherit;
-  margin-top: -4px;
+  height: 17px;
+  line-height: 17px;
 }
 
 .link:hover {
@@ -50,6 +51,8 @@
 }
 
 .link svg {
+  position: relative;
   height: 14px;
   width: 14px;
+  margin-top: -2px;
 }

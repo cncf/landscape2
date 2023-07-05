@@ -72,6 +72,7 @@
   font-size: 0.85rem;
   margin-top: calc(var(--card-size-height) + 0.5rem);
   border-color: var(--bs-gray-600);
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .5) !important;
 }
 
 .bigCard .dropdown {
