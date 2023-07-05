@@ -98,11 +98,11 @@ const GridItem = (props: Props) => {
 
   return (
     <div
-      style={props.item.featured ? { border: `2px solid ${props.borderColor}` } : {}}
+      style={props.item.project !== undefined ? { border: `1px solid ${props.borderColor}` } : {}}
       className={classNames(
         'card rounded-0 position-relative p-0',
         styles.card,
-        { [styles.bigCard]: props.item.featured },
+        { [`border-2 ${styles.bigCard}`]: props.item.featured },
         { [styles.noRepo]: !props.item.has_repositories }
       )}
     >

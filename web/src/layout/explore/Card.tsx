@@ -10,20 +10,21 @@ interface Props {
 }
 
 const Card = (props: Props) => {
-  let description = 'This item does not have a description available';
+  let description = 'This item does not have a description available yet';
   let stars: number | undefined;
   let mainRepoUrl: string | undefined;
+  let websiteUrl: string | undefined = props.item.homepage_url;
+
+  if (
+    props.item.crunchbase_data &&
+    props.item.crunchbase_data.description &&
+    props.item.crunchbase_data.description !== ''
+  ) {
+    description = cleanEmojis(props.item.crunchbase_data.description);
+  }
 
   if (props.item.repositories) {
     const primaryRepo = props.item.repositories.find((repo: Repository) => repo.primary);
-
-    if (
-      props.item.crunchbase_data &&
-      props.item.crunchbase_data.description &&
-      props.item.crunchbase_data.description !== ''
-    ) {
-      description = cleanEmojis(props.item.crunchbase_data.description);
-    }
 
     if (
       primaryRepo &&
@@ -45,9 +46,18 @@ const Card = (props: Props) => {
     });
   }
 
+  // If homepage_url is undefined or is equal to main repository url
+  // and project field is undefined,
+  // we use the homepage_url fron crunchbase
+  if (websiteUrl === undefined || websiteUrl === mainRepoUrl) {
+    if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
+      websiteUrl = props.item.crunchbase_data.homepage_url;
+    }
+  }
+
   return (
     <div className={props.className}>
-      <div className="d-flex flex-row">
+      <div className="d-flex flex-row align-items-center">
         <div className={`d-flex align-items-center justify-content-center me-3 ${styles.logoWrapper}`}>
           <img
             alt={`${props.item.name} logo`}
@@ -87,16 +97,12 @@ const Card = (props: Props) => {
               </>
             )}
 
-            {props.item.crunchbase_data && props.item.crunchbase_data.homepage_url && (
-              <ExternalLink
-                title="Website"
-                className={`me-2 ${styles.link}`}
-                href={props.item.crunchbase_data.homepage_url}
-              >
+            {websiteUrl && (
+              <ExternalLink title="Website" className={`me-2 ${styles.link}`} href={websiteUrl}>
                 <svg
                   stroke="currentColor"
                   fill="currentColor"
-                  stroke-width="0"
+                  strokeWidth="0"
                   viewBox="0 0 512 512"
                   height="1em"
                   width="1em"
@@ -104,24 +110,24 @@ const Card = (props: Props) => {
                 >
                   <path
                     fill="none"
-                    stroke-miterlimit="10"
-                    stroke-width="32"
+                    strokeMiterlimit="10"
+                    strokeWidth="32"
                     d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208 208-93.13 208-208S370.87 48 256 48z"
                   ></path>
                   <path
                     fill="none"
-                    stroke-miterlimit="10"
-                    stroke-width="32"
+                    strokeMiterlimit="10"
+                    strokeWidth="32"
                     d="M256 48c-58.07 0-112.67 93.13-112.67 208S197.93 464 256 464s112.67-93.13 112.67-208S314.07 48 256 48z"
                   ></path>
                   <path
                     fill="none"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="32"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="32"
                     d="M117.33 117.33c38.24 27.15 86.38 43.34 138.67 43.34s100.43-16.19 138.67-43.34m0 277.34c-38.24-27.15-86.38-43.34-138.67-43.34s-100.43 16.19-138.67 43.34"
                   ></path>
-                  <path fill="none" stroke-miterlimit="10" stroke-width="32" d="M256 48v416m208-208H48"></path>
+                  <path fill="none" strokeMiterlimit="10" strokeWidth="32" d="M256 48v416m208-208H48"></path>
                 </svg>
               </ExternalLink>
             )}
@@ -131,7 +137,7 @@ const Card = (props: Props) => {
                 <svg
                   stroke="currentColor"
                   fill="currentColor"
-                  stroke-width="0"
+                  strokeWidth="0"
                   viewBox="0 0 24 24"
                   height="1em"
                   width="1em"
@@ -159,12 +165,34 @@ const Card = (props: Props) => {
               </ExternalLink>
             )}
 
+            {props.item.project === undefined && props.item.crunchbase_url !== undefined && (
+              <ExternalLink title="Devstats" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  height="1em"
+                  width="1em"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <path d="M3 19v-14a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                  <path d="M10.414 11.586a2 2 0 1 0 0 2.828"></path>
+                  <path d="M15 13m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
+                  <path d="M13 7v6"></path>
+                </svg>
+              </ExternalLink>
+            )}
+
             {props.item.accepted_at !== undefined && (
               <div title={`Accepted at ${props.item.accepted_at}`} className="d-flex flex-row align-items-center me-2">
                 <svg
                   stroke="currentColor"
                   fill="currentColor"
-                  stroke-width="0"
+                  strokeWidth="0"
                   viewBox="0 0 24 24"
                   className="me-1 text-muted"
                   height="1em"

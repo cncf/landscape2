@@ -38,6 +38,7 @@ export interface Featured {
 
 export interface Item extends BaseItem {
   accepted_at?: string;
+  homepage_url?: string;
   artwork_url?: string;
   blog_url?: string;
   chat_channel?: string;
