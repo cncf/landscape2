@@ -1,7 +1,8 @@
-import { Item, Repository } from '../../types';
-import cleanEmojis from '../../utils/cleanEmojis';
-import prettifyNumber from '../../utils/prettifyNumber';
-import ExternalLink from '../common/ExternalLink';
+import { Item, Repository } from '../../../types';
+import cleanEmojis from '../../../utils/cleanEmojis';
+import prettifyNumber from '../../../utils/prettifyNumber';
+import ExternalLink from '../../common/ExternalLink';
+import Image from '../../common/Image';
 import styles from './Card.module.css';
 
 interface Props {
@@ -59,11 +60,7 @@ const Card = (props: Props) => {
     <div className={props.className}>
       <div className="d-flex flex-row align-items-center">
         <div className={`d-flex align-items-center justify-content-center me-3 ${styles.logoWrapper}`}>
-          <img
-            alt={`${props.item.name} logo`}
-            className={`m-auto ${styles.logo}`}
-            src={import.meta.env.MODE === 'development' ? `../../static/${props.item.logo}` : `${props.item.logo}`}
-          />
+          <Image name={props.item.name} className={`m-auto ${styles.logo}`} logo={props.item.logo} />
         </div>
 
         <div className={`p-3 ${styles.itemInfo}`}>
@@ -166,7 +163,7 @@ const Card = (props: Props) => {
             )}
 
             {props.item.project === undefined && props.item.crunchbase_url !== undefined && (
-              <ExternalLink title="Devstats" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
+              <ExternalLink title="Crunchbase" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
                 <svg
                   stroke="currentColor"
                   fill="none"

@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { BaseItem } from '../../types';
+import { BaseItem } from '../../../types';
 import styles from './OldCard.module.css';
 
 interface Props {

@@ -1,17 +1,17 @@
 // Input used to calculate the grid category layout.
 export interface GetGridCategoryLayoutInput {
-  categoryName: string,
-  subcategories: SubcategoryDetails[],
-  isOverriden: boolean,
-  containerWidth: number,
-  itemWidth: number,
+  categoryName: string;
+  subcategories: SubcategoryDetails[];
+  isOverriden: boolean;
+  containerWidth: number;
+  itemWidth: number;
 }
 
 // Some details about a subcategory.
 export interface SubcategoryDetails {
-  name: string,
-  itemsCount: number,
-  itemsFeaturedCount: number,
+  name: string;
+  itemsCount: number;
+  itemsFeaturedCount: number;
 }
 
 // Grid category layout representation that defines how the subcategories in
@@ -23,16 +23,13 @@ export type LayoutRow = LayoutColumn[];
 
 // Represents a column in a row in the layout.
 export interface LayoutColumn {
-  subcategoryName: string,
-  percentage: number,
+  subcategoryName: string;
+  percentage: number;
 }
 
 // Get the grid layout of the category provided.
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput): GridCategoryLayout {
-  if (input.containerWidth === 0) return [];
-
-  // Calculate number of rows needed to display the subcategories
+export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput): GridCategoryLayout {  // Calculate number of rows needed to display the subcategories
   let rowsCount;
   if (input.isOverriden) {
     rowsCount = input.subcategories.length;

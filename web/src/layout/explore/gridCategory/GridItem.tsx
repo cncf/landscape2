@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import styles from './GridItem.module.css';
-import { BaseItem, Item } from '../../types';
+import { BaseItem, Item } from '../../../types';
 import classNames from 'classnames';
-import itemsDataGetter from '../../utils/itemsDataGetter';
-import Card from './Card';
+import itemsDataGetter from '../../../utils/itemsDataGetter';
+import Card from '../cardCategory/Card';
+import Image from '../../common/Image';
 
 interface Props {
   item: BaseItem;
@@ -127,10 +128,14 @@ const GridItem = (props: Props) => {
 
       <div ref={wrapper} className="w-100 h-100">
         <button
-          className={`btn border-0 w-100 h-100 ${styles.cardContent}`}
+          className={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
           onClick={(e) => {
             e.preventDefault();
             props.onClick(props.item);
+            setFetchTimeout(null);
+            cleanFetchTimeout();
+            setOnLinkHover(false);
+            setOpenStatus(false);
           }}
           onMouseEnter={(e) => {
             e.preventDefault();
@@ -147,11 +152,8 @@ const GridItem = (props: Props) => {
           aria-hidden="true"
           tabIndex={-1}
         >
-          <img
-            alt={`${props.item.name} logo`}
-            className={`m-auto ${styles.logo}`}
-            src={import.meta.env.MODE === 'development' ? `../../static/${props.item.logo}` : `${props.item.logo}`}
-          />
+          <Image name={props.item.name} className={`m-auto ${styles.logo}`} logo={props.item.logo} />
+
           {props.item.featured && props.item.featured.label && (
             <div
               className={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 ${styles.legend}`}

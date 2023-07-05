@@ -168,3 +168,12 @@ export enum ViewMode {
   Grid = 'grid',
   Card = 'card',
 }
+
+export enum Breakpoint {
+  XXL = 'xxl',
+  XL = 'xl',
+  LG = 'lg',
+  MD = 'md',
+  SM = 'sm',
+  XS = 'xs',
+}

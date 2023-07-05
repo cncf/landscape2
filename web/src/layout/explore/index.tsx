@@ -7,15 +7,9 @@ import {
   OutletContext,
   Group,
   ViewMode,
+  Breakpoint,
 } from '../../types';
-import {
-  DEFAULT_VIEW_MODE,
-  DEFAULT_ZOOM_LEVEL,
-  GROUP_PARAM,
-  VIEW_MODE_PARAM,
-  ZOOM_LEVELS,
-  ZOOM_PARAM,
-} from '../../data';
+import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import styles from './Landscape.module.css';
 import { Fragment, useEffect, useState } from 'react';
 import Modal from '../common/Modal';
@@ -23,6 +17,7 @@ import Content from './Content';
 import Filters from './filters';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import prepareBaseData, { CategoriesData } from '../../utils/prepareBaseData';
+import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 
 interface Props {
   data: LandscapeData;
@@ -31,10 +26,11 @@ interface Props {
 const Landscape = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const point = useBreakpointDetect();
   const [searchParams] = useSearchParams();
   const { setActiveItem } = useOutletContext() as OutletContext;
   const [levelZoom, setLevelZoom] = useState<number>(
-    searchParams.get(ZOOM_PARAM) !== null ? Number(searchParams.get(ZOOM_PARAM)) : DEFAULT_ZOOM_LEVEL
+    point ? DEFAULT_ZOOM_LEVELS[point] : DEFAULT_ZOOM_LEVELS[Breakpoint.XL]
   );
   const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
     props.data.groups ? searchParams.get(GROUP_PARAM) || props.data.groups[0].name : undefined
@@ -65,14 +61,6 @@ const Landscape = (props: Props) => {
       }
     );
   };
-
-  // TODO - change zoom before loading
-  useEffect(() => {
-    const bodyStyles = document.body.style;
-    bodyStyles.setProperty('--card-size-width', `${ZOOM_LEVELS[levelZoom][0]}px`);
-    bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Update card-size variable depending on zoom level
   useEffect(() => {
@@ -117,6 +105,12 @@ const Landscape = (props: Props) => {
     setCategoriesData(prepareBaseData(props.data, visibleItems, selectedGroup));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleItems, selectedGroup]);
+
+  useEffect(() => {
+    if (point) {
+      setLevelZoom(DEFAULT_ZOOM_LEVELS[point]);
+    }
+  }, [point]);
 
   if (categoriesData === undefined) return null;
 
@@ -215,7 +209,6 @@ const Landscape = (props: Props) => {
                     onClick={() => {
                       const newZoomLevel = levelZoom - 1;
                       setLevelZoom(newZoomLevel);
-                      updateQueryString(ZOOM_PARAM, newZoomLevel.toString());
                     }}
                   >
                     <div className={styles.btnSymbol}>-</div>
@@ -226,7 +219,6 @@ const Landscape = (props: Props) => {
                     onClick={() => {
                       const newZoomLevel = levelZoom + 1;
                       setLevelZoom(newZoomLevel);
-                      updateQueryString(ZOOM_PARAM, newZoomLevel.toString());
                     }}
                   >
                     <div className={styles.btnSymbol}>+</div>

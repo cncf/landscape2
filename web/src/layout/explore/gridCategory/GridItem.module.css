@@ -5,6 +5,7 @@
 
 .cardContent {
   padding: 0.25rem;
+  vertical-align: top;
 }
 
 .noRepo {
@@ -20,13 +21,18 @@
 
 .bigCard .cardContent {
   padding: 0.5rem;
-  padding-bottom: 1.15rem;
+  padding-bottom: 1.5rem;
 }
 
 .logo {
+  font-size: calc(var(--card-size-height) / 1.5);
   max-width: 100%;
   max-height: 100%;
   height: auto;
+}
+
+.bigCard .logo {
+  font-size: calc(var(--card-size-height) * 1.5);
 }
 
 .legend {
