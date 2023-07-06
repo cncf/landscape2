@@ -34,10 +34,16 @@ const Header = (props: Props) => {
             Guide
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
             to="/stats"
           >
             Stats
+          </NavLink>
+          <NavLink
+            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
+            to="/acquisitions"
+          >
+            Acquisitions
           </NavLink>
         </div>
 

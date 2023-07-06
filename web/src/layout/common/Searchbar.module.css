@@ -43,7 +43,18 @@
 }
 
 .title {
-  font-size: 1rem;
+  font-size: 0.9rem;
+  color: var(--bs-gray-700);
+}
+
+.legend {
+  font-size: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.badge {
+  font-size: 0.6rem;
+  line-height: 0.7rem;
 }
 
 .truncateWrapper {
