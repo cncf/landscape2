@@ -5,6 +5,7 @@ import { useOutsideClick } from '../../hooks/useOutsideClick';
 import HoverableItem from './HoverableItem';
 import styles from './Searchbar.module.css';
 import { BaseItem } from '../../types';
+import MaturityBadge from './MaturityBadge';
 
 interface Props {
   items: BaseItem[];
@@ -274,9 +275,23 @@ const Searchbar = (props: Props) => {
                           src={import.meta.env.MODE === 'development' ? `../../static/${item.logo}` : `${item.logo}`}
                         />
                       </div>
-                      <div className={`flex-grow-1 d-flex flex-column ${styles.truncateWrapper}`}>
-                        <div className="d-flex flex-row justify-content-between align-items-end">
-                          <span className={`text-truncate fw-semibold mb-0 ${styles.title}`}>{item.name}</span>
+                      <div
+                        className={`flex-grow-1 d-flex flex-column text-start justify-content-between h-100 ${styles.truncateWrapper}`}
+                      >
+                        <div className="d-flex flex-row align-items-baseline">
+                          <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
+                          {item.project !== undefined && (
+                            <>
+                              <div title="CNCF" className={`badge rounded-0 bg-primary ms-2 ${styles.badge}`}>
+                                CNCF
+                              </div>
+
+                              <MaturityBadge level={item.project} className={`mx-2 ${styles.badge}`} />
+                            </>
+                          )}
+                        </div>
+                        <div className={`text-muted text-truncate ${styles.legend}`}>
+                          {item.category} / {item.subcategory}
                         </div>
                       </div>
                     </div>

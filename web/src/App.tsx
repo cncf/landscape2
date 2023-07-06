@@ -9,6 +9,7 @@ import Stats from './layout/stats';
 import Guide from './layout/guide';
 import itemsDataGetter from './utils/itemsDataGetter';
 import { useEffect } from 'react';
+import Acquisitions from './layout/stats';
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,6 +28,7 @@ const App = () => {
           <Route index element={<Landscape data={data} />} />
           <Route path="/guide" element={<Guide />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/acquisitions" element={<Acquisitions />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
