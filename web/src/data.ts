@@ -1,14 +1,20 @@
-import { FilterCategory, FilterSection, ViewMode } from './types';
+import { Breakpoint, FilterCategory, FilterSection, ViewMode } from './types';
 
 export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
-export const ZOOM_PARAM = 'zoom';
 export const MODAL_PARAM = 'modal';
 export const ITEM_PARAM = 'item';
 export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 
-export const DEFAULT_ZOOM_LEVEL = 5;
+export const DEFAULT_ZOOM_LEVELS = {
+  [Breakpoint.XXL]: 5,
+  [Breakpoint.XL]: 4,
+  [Breakpoint.LG]: 3,
+  [Breakpoint.MD]: 2,
+  [Breakpoint.SM]: 1,
+  [Breakpoint.XS]: 0,
+};
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 
 export const ZOOM_LEVELS = [

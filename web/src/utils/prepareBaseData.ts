@@ -2,12 +2,14 @@ import { BaseData, BaseItem, Category, Group } from "../types";
 
 export interface CategoriesData {
   [key: string]: {
-    [key: string]: {
-      items: BaseItem[];
-      itemsCount: number;
-      itemsFeaturedCount: number;
-    };
+    [key: string]: SubcategoryData;
   }
+}
+
+export interface SubcategoryData {
+  items: BaseItem[];
+  itemsCount: number;
+  itemsFeaturedCount: number;
 }
 
 const prepareBaseData = (data: BaseData, items: BaseItem[], activeGroup?: string): CategoriesData => {

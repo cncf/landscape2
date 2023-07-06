@@ -1,0 +1,22 @@
+.btnIcon {
+  font-size: 0.9rem;
+  line-height: 0.8rem;
+}
+
+.subcatTitle {
+  font-size: 0.8rem;
+  height: 2rem;
+}
+
+.itemsContainer {
+  background-color: var(--bs-gray-100);
+  padding: 0.6rem;
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--card-size-width));
+  grid-auto-rows: var(--card-size-height);
+  gap: var(--card-gap);
+  /* justify-content: center; */
+}

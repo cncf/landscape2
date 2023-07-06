@@ -5,6 +5,7 @@
 }
 
 .logo {
+  font-size: 3rem;
   max-width: 100%;
   max-height: 100%;
   height: auto;
@@ -52,7 +53,7 @@
 
 .link svg {
   position: relative;
-  height: 14px;
-  width: 14px;
+  height: 15px;
+  width: auto;
   margin-top: -2px;
 }
