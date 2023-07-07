@@ -1,4 +1,4 @@
-//! This modules defines some types used to represent the information collected
+//! This module defines some types used to represent the information collected
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
