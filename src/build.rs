@@ -16,6 +16,7 @@ use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
 use leaky_bucket::RateLimiter;
 use regex::Regex;
+use reqwest::StatusCode;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -27,7 +28,8 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, error, info, instrument, warn};
+use uuid::Uuid;
 
 /// How long the data in the cache is valid (in days).
 const CACHE_TTL: i64 = 7;
@@ -231,38 +233,46 @@ async fn prepare_logos(
     landscape_data: &mut LandscapeData,
     output_dir: &Path,
 ) -> Result<()> {
-    // Helper function to get the logo content from the corresponding source.
-    #[instrument(fields(?file_name), skip_all, err)]
-    async fn get_logo_svg(logos_source: &LogosSource, file_name: &str) -> Result<String> {
-        let svg = if let Some(path) = &logos_source.logos_path {
-            fs::read_to_string(path.join(file_name))?
-        } else {
-            reqwest::get(logos_source.logos_url.as_ref().unwrap()).await?.text().await?
-        };
-        Ok(svg)
-    }
-
     debug!("preparing logos");
+
+    // Get logos from the source and copy them to the output directory
+    let http_client = reqwest::Client::new();
+    let logos: HashMap<Uuid, Option<String>> = stream::iter(landscape_data.items.iter())
+        .map(|item| async {
+            // Get logo SVG
+            let Ok(svg) = get_logo_svg(http_client.clone(), logos_source, &item.logo).await else {
+                return (item.id, None);
+            };
+
+            // Remove SVG title if present
+            let svg = SVG_TITLE.replace(&svg, "");
+
+            // Calculate SVG file digest
+            let digest = hex::encode(Sha256::digest(svg.as_bytes()));
+
+            // Copy logo to output dir using the digest(+.svg) as filename
+            let logo = format!("{digest}.svg");
+            let Ok(mut file) = File::create(output_dir.join(LOGOS_PATH).join(&logo)) else {
+                error!(?logo, "error creating logo file in output dir");
+                return (item.id, None);
+            };
+            if let Err(err) = file.write_all(svg.as_bytes()) {
+                error!(?err, ?logo, "error writing logo to file in output dir");
+            };
+
+            (item.id, Some(format!("{LOGOS_PATH}/{logo}")))
+        })
+        .buffer_unordered(10)
+        .collect()
+        .await;
+
+    // Update logo field in landscape items to logo digest path
     for item in &mut landscape_data.items {
-        // Get logo SVG
-        let Ok(svg) = get_logo_svg(logos_source, &item.logo).await else {
-            item.logo = String::new();
-            continue;
-        };
-
-        // Remove SVG title if present
-        let svg = SVG_TITLE.replace(&svg, "");
-
-        // Calculate SVG file digest
-        let digest = hex::encode(Sha256::digest(svg.as_bytes()));
-
-        // Copy logo to output dir using the digest(+.svg) as filename
-        let logo = format!("{digest}.svg");
-        let mut file = File::create(output_dir.join(LOGOS_PATH).join(&logo))?;
-        file.write_all(svg.as_bytes())?;
-
-        // Update logo field in landscape entry (to digest)
-        item.logo = format!("{LOGOS_PATH}/{logo}");
+        item.logo = if let Some(Some(logo)) = logos.get(&item.id) {
+            logo.clone()
+        } else {
+            String::new()
+        }
     }
 
     Ok(())
@@ -572,4 +582,29 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+// Helper function to get the logo content from the corresponding source.
+#[instrument(fields(?file_name), skip_all, err)]
+async fn get_logo_svg(
+    http_client: reqwest::Client,
+    logos_source: &LogosSource,
+    file_name: &str,
+) -> Result<String> {
+    let svg = if let Some(path) = &logos_source.logos_path {
+        fs::read_to_string(path.join(file_name))?
+    } else {
+        let logos_url = logos_source.logos_url.as_ref().unwrap().trim_end_matches('/');
+        let logo_url = format!("{logos_url}/{file_name}");
+        let resp = http_client.get(logo_url).send().await?;
+        if resp.status() != StatusCode::OK {
+            return Err(format_err!(
+                "unexpected status code getting logo: {}",
+                resp.status()
+            ));
+        }
+        resp.text().await?
+    };
+
+    Ok(svg)
 }
