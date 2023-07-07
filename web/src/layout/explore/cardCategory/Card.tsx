@@ -60,14 +60,14 @@ const Card = (props: Props) => {
   return (
     <div className={props.className}>
       <div className="d-flex flex-row align-items-center">
-        <div className={`d-flex align-items-center justify-content-center me-3 ${styles.logoWrapper}`}>
+        <div className={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
           <Image name={props.item.name} className={`m-auto ${styles.logo}`} logo={props.item.logo} />
         </div>
 
-        <div className={`p-3 ${styles.itemInfo}`}>
+        <div className={`p-3 ms-3 ${styles.itemInfo}`}>
           <div className="fw-semibold text-truncate mb-1">{props.item.name}</div>
           {props.item.crunchbase_data && props.item.crunchbase_data.name && (
-            <div className="text-muted text-truncate pb-1">
+            <div className={`text-muted text-truncate ${styles.name}`}>
               <small>{props.item.crunchbase_data.name}</small>
             </div>
           )}
@@ -229,7 +229,7 @@ const Card = (props: Props) => {
           {(props.item.project === undefined || props.item.crunchbase_data === undefined) && (
             <>
               <small className="me-1 text-black-50">Funding:</small>
-              <div>
+              <div className="fw-semibold">
                 {props.item.crunchbase_data &&
                 props.item.crunchbase_data.funding &&
                 props.item.crunchbase_data.funding > 0 ? (
@@ -244,7 +244,7 @@ const Card = (props: Props) => {
         {stars !== undefined && (
           <div className="d-flex flex-row align-items-baseline">
             <small className="me-1 text-black-50">GitHub stars:</small>
-            <div>{stars ? prettifyNumber(stars) : '-'}</div>
+            <div className="fw-semibold">{stars ? prettifyNumber(stars) : '-'}</div>
           </div>
         )}
       </div>

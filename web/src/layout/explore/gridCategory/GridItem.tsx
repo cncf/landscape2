@@ -15,7 +15,7 @@ interface Props {
 }
 
 const FETCH_DELAY = 1 * 100; // 100ms
-const DEFAULT_DROPDOWN_WIDTH = 420;
+const DEFAULT_DROPDOWN_WIDTH = 450;
 const DEFAULT_MARGIN = 30;
 
 const GridItem = (props: Props) => {
@@ -104,6 +104,7 @@ const GridItem = (props: Props) => {
         'card rounded-0 position-relative p-0',
         styles.card,
         { [`border-2 ${styles.bigCard}`]: props.item.featured },
+        { [styles.withLabel]: props.item.featured && props.item.featured.label },
         { [styles.noRepo]: !props.item.has_repositories }
       )}
     >
