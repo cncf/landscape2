@@ -25,6 +25,7 @@ const Searchbar = (props: Props) => {
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useOutsideClick([dropdownRef], visibleDropdown, () => {
+    setValue('');
     cleanItemsSearch();
   });
 
@@ -119,7 +120,6 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanItemsSearch = () => {
-    setValue('');
     setItemsList(null);
     setVisibleDropdown(false);
     setHighlightedItem(null);

@@ -101,7 +101,7 @@ const Grid = (props: Props) => {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.containerWidth]);
+  }, [props.containerWidth, props.itemWidth]);
 
   if (grid === undefined) return null;
 

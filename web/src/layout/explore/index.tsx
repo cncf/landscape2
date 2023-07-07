@@ -120,20 +120,23 @@ const Landscape = (props: Props) => {
         <div className="d-flex flex-row align-items-center">
           <div>
             <button
-              className={`position-relative btn btn-secondary text-white btn-sm rounded-0 p-0 me-4 ${styles.filterBtn}`}
+              className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
               onClick={() => setVisibleFilters(true)}
             >
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                strokeWidth="0"
-                viewBox="0 0 512 512"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M487.976 0H24.028C2.71 0-8.047 25.866 7.058 40.971L192 225.941V432c0 7.831 3.821 15.17 10.237 19.662l80 55.98C298.02 518.69 320 507.493 320 487.98V225.941l184.947-184.97C520.021 25.896 509.338 0 487.976 0z"></path>
-              </svg>
+              <div className="d-flex flex-row align-items-center">
+                <svg
+                  stroke="currentColor"
+                  fill="currentColor"
+                  strokeWidth="0"
+                  viewBox="0 0 512 512"
+                  height="1em"
+                  width="1em"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M487.976 0H24.028C2.71 0-8.047 25.866 7.058 40.971L192 225.941V432c0 7.831 3.821 15.17 10.237 19.662l80 55.98C298.02 518.69 320 507.493 320 487.98V225.941l184.947-184.97C520.021 25.896 509.338 0 487.976 0z"></path>
+                </svg>
+                <div className="fw-semibold ps-2">Filters</div>
+              </div>
               {Object.keys(activeFilters).length > 0 && (
                 <div
                   className={`position-absolute border bg-primary border-3 border-white rounded-circle ${styles.dot}`}

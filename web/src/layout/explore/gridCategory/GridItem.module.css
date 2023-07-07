@@ -4,7 +4,7 @@
 }
 
 .cardContent {
-  padding: 0.25rem;
+  padding: 0.15rem;
   vertical-align: top;
 }
 
@@ -63,7 +63,7 @@
 :global(.zoom-1) .cardContent,
 :global(.zoom-2) .cardContent,
 :global(.zoom-3) .cardContent {
-  padding: 0.15rem;
+  padding: 0.1rem;
 }
 
 :global(.zoom-2) .bigCard.withLabel .cardContent,
