@@ -21,6 +21,9 @@
 
 .bigCard .cardContent {
   padding: 0.5rem;
+}
+
+.bigCard.withLabel .cardContent {
   padding-bottom: 1.5rem;
 }
 
@@ -63,13 +66,13 @@
   padding: 0.15rem;
 }
 
-:global(.zoom-2) .bigCard .cardContent,
+:global(.zoom-2) .bigCard.withLabel .cardContent,
 :global(.zoom-3) .bigCard .cardContent {
   padding-bottom: 1rem;
 }
 
-:global(.zoom-0) .bigCard .cardContent,
-:global(.zoom-1) .bigCard .cardContent {
+:global(.zoom-0) .bigCard.withLabel .cardContent,
+:global(.zoom-1) .bigCard.withLabel .cardContent {
   padding-bottom: 0.75rem;
 }
 

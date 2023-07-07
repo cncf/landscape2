@@ -18,17 +18,17 @@ export const DEFAULT_ZOOM_LEVELS = {
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 
 export const ZOOM_LEVELS = [
-  [25, 23],
+  [25, 20],
   [30, 25],
   [35, 30],
   [40, 35],
   [45, 40],
   [50, 45],
-  [55, 42],
-  [60, 50],
-  [65, 54],
-  [70, 58],
-  [75, 60],
+  [55, 50],
+  [60, 55],
+  [65, 60],
+  [70, 65],
+  [75, 70],
 ];
 
 export const COLORS: string[] = ['rgba(1, 107, 204, 0.70)', 'rgba(0, 42, 81, 0.70)'];

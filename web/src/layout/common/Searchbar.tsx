@@ -119,6 +119,7 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanItemsSearch = () => {
+    setValue('');
     setItemsList(null);
     setVisibleDropdown(false);
     setHighlightedItem(null);
@@ -281,13 +282,13 @@ const Searchbar = (props: Props) => {
                         <div className="d-flex flex-row align-items-baseline">
                           <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
                           {item.project !== undefined && (
-                            <>
+                            <div className={`position-relative ${styles.badges}`}>
                               <div title="CNCF" className={`badge rounded-0 bg-primary ms-2 ${styles.badge}`}>
                                 CNCF
                               </div>
 
                               <MaturityBadge level={item.project} className={`mx-2 ${styles.badge}`} />
-                            </>
+                            </div>
                           )}
                         </div>
                         <div className={`text-muted text-truncate ${styles.legend}`}>
