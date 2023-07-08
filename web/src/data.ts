@@ -8,6 +8,7 @@ export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 
 export const DEFAULT_ZOOM_LEVELS = {
+  [Breakpoint.XXXL]: 5,
   [Breakpoint.XXL]: 5,
   [Breakpoint.XL]: 4,
   [Breakpoint.LG]: 3,

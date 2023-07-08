@@ -58,14 +58,14 @@ const Card = (props: Props) => {
   }
 
   return (
-    <div className={props.className}>
+    <div className={`d-flex flex-column ${props.className}`}>
       <div className="d-flex flex-row align-items-center">
         <div className={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
           <Image name={props.item.name} className={`m-auto ${styles.logo}`} logo={props.item.logo} />
         </div>
 
         <div className={`p-3 ms-3 ${styles.itemInfo}`}>
-          <div className="fw-semibold text-truncate mb-1">{props.item.name}</div>
+          <div className={`fw-semibold text-truncate mb-1 ${styles.title}`}>{props.item.name}</div>
           {props.item.crunchbase_data && props.item.crunchbase_data.name && (
             <div className={`text-muted text-truncate ${styles.name}`}>
               <small>{props.item.crunchbase_data.name}</small>
@@ -200,7 +200,10 @@ const Card = (props: Props) => {
             )}
 
             {props.item.accepted_at !== undefined && (
-              <div title={`Accepted at ${props.item.accepted_at}`} className="d-flex flex-row align-items-center me-2">
+              <div
+                title={`Accepted at ${props.item.accepted_at}`}
+                className="d-flex flex-row align-items-center accepted-date"
+              >
                 <svg
                   stroke="currentColor"
                   fill="currentColor"
@@ -221,9 +224,9 @@ const Card = (props: Props) => {
           </div>
         </div>
       </div>
-      <div className={`mt-3 text-muted ${styles.description}`}>{description}</div>
+      <div className={`my-3 text-muted ${styles.description}`}>{description}</div>
       <div
-        className={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-3 pt-1 ${styles.additionalInfo}`}
+        className={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >
         <div className="d-flex flex-row align-items-baseline">
           {(props.item.project === undefined || props.item.crunchbase_data === undefined) && (

@@ -1,0 +1,25 @@
+
+.card {
+  height: 237px;
+  font-size: 90%;
+}
+
+.card :global(.badge) {
+  font-size: 65%;
+}
+
+.card :global(.accepted-date) {
+  display: flex !important;
+}
+
+@media (min-width: 1400px) and (max-width: 1580px) {
+  .card :global(.accepted-date) {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 1950px) {
+  .card :global(.accepted-date) {
+    display: none !important;
+  }
+}

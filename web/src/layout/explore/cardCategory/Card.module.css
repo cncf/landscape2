@@ -1,8 +1,8 @@
 
 .logoWrapper {
   height: 90px;
-  width: 80px;
-  min-width: 80px;
+  width: 70px;
+  min-width: 70px;
 }
 
 .logo {
@@ -14,7 +14,12 @@
 
 .itemInfo {
   background-color: #f8f9fa;
-  width: calc(100% - 70px);
+  width: calc(100% - 70px - 1rem);
+  height: 112px;
+}
+
+.title {
+  font-size: 1.15rem;
 }
 
 .name {

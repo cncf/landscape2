@@ -1,47 +1,33 @@
-.catTitle {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  width: 2.75rem;
-}
-
-.btnIcon {
-  font-size: 0.9rem;
-  line-height: 0.8rem;
-}
-
-.btnInCatTitle {
-  transform: rotate(90deg);
-  line-height: 1.5rem;
-}
-
-.icon {
-  margin-top: -2px;
-  font-size: 0.9rem;
-}
-
-.subcatTitle {
+.toc {
+  width: 270px;
+  max-width: 270px;
   font-size: 0.8rem;
-  height: 2rem;
 }
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+.truncateWrapper {
+  min-width: 0;
 }
 
-.itemsContainer {
+.subcategories {
   background-color: var(--bs-gray-100);
-  padding: 0.8rem;
 }
 
-.items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, var(--card-size-width));
-  grid-auto-rows: var(--card-size-height);
-  gap: var(--card-gap);
-  /* justify-content: center; */
+.arrow {
+  left: -0.3rem;
+  top: -1px;
+}
+
+.subcategoryBtn {
+  color: var(--bs-body-color);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.selected {
+  color: black !important;
+  opacity: 1 !important;
+}
+
+.subcategoryBtn:hover {
+  text-decoration: underline;
 }

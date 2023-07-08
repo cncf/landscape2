@@ -170,6 +170,7 @@ export enum ViewMode {
 }
 
 export enum Breakpoint {
+  XXXL = 'xxxl',
   XXL = 'xxl',
   XL = 'xl',
   LG = 'lg',
