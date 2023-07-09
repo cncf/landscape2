@@ -9,6 +9,7 @@ import CardWrapper from './CardWrapper';
 
 interface Props {
   data: CategoriesData;
+  categories_overridden?: string[];
   onClickItem: (item: BaseItem) => void;
 }
 
@@ -17,7 +18,12 @@ interface SelectedSection {
   subcategory: string;
 }
 
+interface Menu {
+  [key: string]: string[];
+}
+
 const CardCategory = (props: Props) => {
+  const [menu, setMenu] = useState<Menu | undefined>();
   const [selectedSection, setSelectedSection] = useState<SelectedSection | undefined>();
   const [visibleItems, setVisibleItems] = useState<BaseItem[] | undefined>();
   const bgColor = COLORS[0];
@@ -29,39 +35,76 @@ const CardCategory = (props: Props) => {
   };
 
   useEffect(() => {
-    const firstCategory = Object.keys(props.data)[0];
-    const firstSubcategory = Object.keys(props.data[firstCategory])[0];
-    setSelectedSection({ category: firstCategory, subcategory: firstSubcategory });
-    setVisibleItems(sortItems(firstCategory, firstSubcategory));
+    const prepareMenu = (d: CategoriesData): Menu => {
+      const menu: Menu = {};
+
+      Object.keys(d).forEach((cat: string) => {
+        const isOverriden = props.categories_overridden !== undefined && props.categories_overridden.includes(cat);
+
+        const subcategories: SubcategoryDetails[] = [];
+        const subcategoriesList: string[] = [];
+        Object.keys(d[cat]).forEach((subcat: string) => {
+          if (props.data[cat][subcat].items.length > 0) {
+            subcategoriesList.push(subcat);
+            subcategories.push({
+              name: subcat,
+              itemsCount: props.data[cat][subcat].itemsCount,
+              itemsFeaturedCount: props.data[cat][subcat].itemsFeaturedCount,
+            });
+          }
+        });
+
+        if (subcategories.length !== 0) {
+          const sortedSubcategories: string[] = isOverriden ? subcategoriesList : subcategoriesList.sort();
+          menu[cat] = sortedSubcategories;
+        }
+      });
+
+      return menu;
+    };
+
+    setMenu(prepareMenu(props.data));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.data]);
 
   useEffect(() => {
+    if (menu !== undefined) {
+      let selectedCategory = Object.keys(menu)[0];
+      let selectedSubcategory = menu[selectedCategory][0];
+
+      // Use selected section when subcategory has items
+      if (
+        selectedSection !== undefined &&
+        menu[selectedSection.category] &&
+        menu[selectedSection.category].includes(selectedSection.subcategory)
+      ) {
+        selectedCategory = selectedSection.category;
+        selectedSubcategory = selectedSection.subcategory;
+      }
+
+      setSelectedSection({ category: selectedCategory, subcategory: selectedSubcategory });
+      setVisibleItems(sortItems(selectedCategory, selectedSubcategory));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menu]);
+
+  useEffect(() => {
     if (selectedSection) {
       setVisibleItems(sortItems(selectedSection.category, selectedSection.subcategory));
+      // Scroll to top
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSection]);
 
-  if (selectedSection === undefined) return null;
+  if (selectedSection === undefined || menu === undefined) return null;
 
   return (
     <div className="d-flex flex-row mt-2">
       <div className={`d-flex flex-column me-4 ${styles.toc}`}>
-        {Object.keys(props.data).map((cat: string, index: number) => {
-          const subcategories: SubcategoryDetails[] = [];
-          Object.keys(props.data[cat]).forEach((subcat: string) => {
-            if (props.data[cat][subcat].itemsCount !== 0) {
-              subcategories.push({
-                name: subcat,
-                itemsCount: props.data[cat][subcat].itemsCount,
-                itemsFeaturedCount: props.data[cat][subcat].itemsFeaturedCount,
-              });
-            }
-          });
-
-          if (subcategories.length === 0) return null;
-
+        {Object.keys(menu).map((cat: string, index: number) => {
           return (
             <div key={`cat_${cat}`}>
               <div
@@ -75,14 +118,14 @@ const CardCategory = (props: Props) => {
 
               <div
                 className={classNames(
-                  'd-flex flex-column text-start border border-3 py-3 px-2 border-white',
+                  'd-flex flex-column text-start border border-3 py-3 border-white',
                   styles.subcategories,
                   {
-                    'border-bottom-0': index !== Object.keys(props.data).length - 1,
+                    'border-bottom-0': index !== Object.keys(menu).length - 1,
                   }
                 )}
               >
-                {Object.keys(props.data[cat]).map((subcat: string) => {
+                {menu[cat].map((subcat: string) => {
                   const isSelected =
                     selectedSection !== undefined &&
                     cat === selectedSection.category &&
@@ -92,7 +135,7 @@ const CardCategory = (props: Props) => {
                     <button
                       key={`subcat_${subcat}`}
                       className={classNames(
-                        'position-relative btn btn-sm btn-link p-0 ps-2 mb-1 text-start text-truncate',
+                        'position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate',
                         styles.subcategoryBtn,
                         { [`fw-bold ${styles.selected}`]: isSelected }
                       )}
@@ -123,9 +166,9 @@ const CardCategory = (props: Props) => {
           );
         })}
       </div>
-      <div className="d-flex flex-column">
+      <div className="d-flex flex-column flex-grow-1">
         {visibleItems && (
-          <div className="row g-4">
+          <div className="row g-4 w-100">
             {visibleItems.map((item: BaseItem) => {
               return (
                 <Fragment key={`card_${item.id}`}>

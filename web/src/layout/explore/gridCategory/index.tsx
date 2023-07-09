@@ -45,7 +45,7 @@ const GridCategory = (props: Props) => {
         const isOverriden = props.categories_overridden !== undefined && props.categories_overridden.includes(cat);
         const subcategories: SubcategoryDetails[] = [];
         Object.keys(props.data[cat]).forEach((subcat: string) => {
-          if (props.data[cat][subcat].itemsCount !== 0) {
+          if (props.data[cat][subcat].items.length !== 0) {
             subcategories.push({
               name: subcat,
               itemsCount: props.data[cat][subcat].itemsCount,

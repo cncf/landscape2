@@ -165,6 +165,7 @@ export enum FilterCategory {
 }
 
 export enum ViewMode {
+  Summary = 'summary',
   Grid = 'grid',
   Card = 'card',
 }

@@ -26,7 +26,13 @@ const Content = (props: Props) => {
               />
             );
           case ViewMode.Card:
-            return <CardCategory data={props.data} onClickItem={props.onClickItem} />;
+            return (
+              <CardCategory
+                data={props.data}
+                categories_overridden={props.categories_overridden}
+                onClickItem={props.onClickItem}
+              />
+            );
         }
       })()}
     </>

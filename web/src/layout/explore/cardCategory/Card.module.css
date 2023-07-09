@@ -14,12 +14,8 @@
 
 .itemInfo {
   background-color: #f8f9fa;
-  width: calc(100% - 70px - 1rem);
-  height: 112px;
-}
-
-.title {
-  font-size: 1.15rem;
+  width: calc(100% - 70px - 0.5rem);
+  height: 105px;
 }
 
 .name {
@@ -42,6 +38,10 @@
   font-size: 0.75rem;
 }
 
+.additionalInfo small {
+  font-size: 0.7rem;
+}
+
 .starIcon {
   font-size: 0.6rem;
 }
@@ -53,8 +53,9 @@
 .link {
   position: relative;
   color: inherit;
-  height: 17px;
-  line-height: 17px;
+  height: 20px;
+  line-height: 20px;
+  width: auto;
 }
 
 .link:hover {
@@ -66,4 +67,8 @@
   height: 15px;
   width: auto;
   margin-top: -2px;
+}
+
+.extra {
+  height: 20px;
 }
