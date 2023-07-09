@@ -28,8 +28,8 @@ const CardWrapper = (props: Props) => {
   if (itemInfo === undefined || itemInfo === null) return null;
 
   return (
-    <div className={`col-12 col-xl-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}>
-      <div className={`card rounded-0 p-3 ${styles.card}`}>
+    <div className={`col-12 col-lg-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}>
+      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => props.onClick(itemInfo as BaseItem)}>
         <Card item={itemInfo} className="h-100" />
       </div>
     </div>

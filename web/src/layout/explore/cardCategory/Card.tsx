@@ -5,6 +5,7 @@ import ExternalLink from '../../common/ExternalLink';
 import Image from '../../common/Image';
 import MaturityBadge from '../../common/MaturityBadge';
 import styles from './Card.module.css';
+import CardTitle from './CardTitle';
 
 interface Props {
   item: Item;
@@ -64,15 +65,15 @@ const Card = (props: Props) => {
           <Image name={props.item.name} className={`m-auto ${styles.logo}`} logo={props.item.logo} />
         </div>
 
-        <div className={`p-3 ms-3 ${styles.itemInfo}`}>
-          <div className={`fw-semibold text-truncate mb-1 ${styles.title}`}>{props.item.name}</div>
+        <div className={`p-3 ms-2 ${styles.itemInfo}`}>
+          <CardTitle title={props.item.name} />
           {props.item.crunchbase_data && props.item.crunchbase_data.name && (
             <div className={`text-muted text-truncate ${styles.name}`}>
               <small>{props.item.crunchbase_data.name}</small>
             </div>
           )}
 
-          <div className="d-flex flex-row align-items-center mt-2">
+          <div className={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
             {props.item.project !== undefined ? (
               <>
                 <div title="CNCF" className="badge rounded-0 bg-primary">

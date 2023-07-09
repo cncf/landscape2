@@ -1,6 +1,7 @@
 .toc {
   width: 270px;
   max-width: 270px;
+  min-width: 270px;
   font-size: 0.8rem;
 }
 
@@ -13,8 +14,8 @@
 }
 
 .arrow {
-  left: -0.3rem;
-  top: -1px;
+  left: 0.15rem;
+  top: 0.15rem;
 }
 
 .subcategoryBtn {
@@ -26,8 +27,11 @@
 .selected {
   color: black !important;
   opacity: 1 !important;
+  background-color: rgba(0,0,0,0.035) !important;
 }
 
 .subcategoryBtn:hover {
+  color: var(--bs-primary);
   text-decoration: underline;
+  background-color: rgba(0,0,0,0.035);
 }

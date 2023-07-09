@@ -190,6 +190,7 @@ const Searchbar = (props: Props) => {
           spellCheck="false"
           placeholder="Search projects, products and members"
           onKeyDown={onKeyDown}
+          onBlur={() => setValue('')}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
         />
 
