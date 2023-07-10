@@ -11,7 +11,7 @@ import Image from '../../common/Image';
 interface Props {
   item: BaseItem;
   borderColor?: string;
-  onClick: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 const FETCH_DELAY = 1 * 100; // 100ms
@@ -132,7 +132,7 @@ const GridItem = (props: Props) => {
           className={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
           onClick={(e) => {
             e.preventDefault();
-            props.onClick(props.item);
+            props.onClickItem(props.item.id);
             setFetchTimeout(null);
             cleanFetchTimeout();
             setOnLinkHover(false);

@@ -10,7 +10,7 @@ import CardWrapper from './CardWrapper';
 interface Props {
   data: CategoriesData;
   categories_overridden?: string[];
-  onClickItem: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 interface SelectedSection {
@@ -172,7 +172,7 @@ const CardCategory = (props: Props) => {
             {visibleItems.map((item: BaseItem) => {
               return (
                 <Fragment key={`card_${item.id}`}>
-                  <CardWrapper id={item.id} onClick={props.onClickItem} />
+                  <CardWrapper id={item.id} onClickItem={props.onClickItem} />
                 </Fragment>
               );
             })}

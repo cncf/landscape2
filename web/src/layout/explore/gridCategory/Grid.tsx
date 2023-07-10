@@ -21,7 +21,7 @@ interface Props {
   subcategories: SubcategoryDetails[];
   backgroundColor: string;
   categoryIndex: number;
-  onClickItem: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 interface GridDimensions {
@@ -182,7 +182,7 @@ const Grid = (props: Props) => {
                             item={item}
                             key={`item_${item.name}`}
                             borderColor={props.backgroundColor}
-                            onClick={props.onClickItem}
+                            onClickItem={props.onClickItem}
                           />
                         );
                       })}

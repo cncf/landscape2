@@ -1,6 +1,5 @@
 import classNames from 'classnames';
 import styles from './GridCategory.module.css';
-import { BaseItem } from '../../../types';
 import { useEffect, useRef, useState } from 'react';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { Link } from 'react-router-dom';
@@ -13,7 +12,7 @@ interface Props {
   data: CategoriesData;
   cardWidth: number;
   categories_overridden?: string[];
-  onClickItem: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 const GridCategory = (props: Props) => {

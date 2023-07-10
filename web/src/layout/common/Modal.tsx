@@ -6,7 +6,7 @@ import styles from './Modal.module.css';
 
 interface Props {
   open: boolean;
-  header: string | JSX.Element;
+  header?: string | JSX.Element;
   headerClassName?: string;
   children: JSX.Element;
   onClose: () => void;
@@ -43,20 +43,34 @@ const Modal = (props: Props) => {
           className={`modal-dialog modal-${props.size || 'lg'} modal-dialog-centered modal-dialog-scrollable`}
           ref={ref}
         >
-          <div className={`modal-content rounded-0 border border-3 mx-auto position-relative ${styles.content}`}>
-            <div className={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
-              <div className={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
+          <div className={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
+            {props.header ? (
+              <div className={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
+                <div className={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
 
-              <button
-                type="button"
-                className="btn-close"
-                onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.preventDefault();
-                  closeModal();
-                }}
-                aria-label="Close"
-              ></button>
-            </div>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                    e.preventDefault();
+                    closeModal();
+                  }}
+                  aria-label="Close"
+                ></button>
+              </div>
+            ) : (
+              <div className={`position-absolute ${styles.btnCloseWrapper}`}>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                    e.preventDefault();
+                    closeModal();
+                  }}
+                  aria-label="Close"
+                ></button>
+              </div>
+            )}
 
             <div className="modal-body p-4 h-100 d-flex flex-column">{props.children}</div>
           </div>

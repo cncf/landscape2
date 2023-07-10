@@ -11,14 +11,14 @@ interface Props {
 }
 
 const Layout = (props: Props) => {
-  const [activeItem, setActiveItem] = useState<BaseItem | undefined>();
+  const [activeItemId, setActiveItemId] = useState<string | undefined>();
 
-  const onClickItem = (item: BaseItem) => {
-    setActiveItem(item);
+  const onClickItem = (itemId: string) => {
+    setActiveItemId(itemId);
   };
 
   const removeActiveItem = () => {
-    setActiveItem(undefined);
+    setActiveItemId(undefined);
   };
 
   return (
@@ -26,11 +26,11 @@ const Layout = (props: Props) => {
       <Header items={props.items} onClickItem={onClickItem} />
       <div className="d-flex flex-column flex-grow-1">
         <main className="container-fluid px-4">
-          <Outlet context={{ activeItem, setActiveItem }} />
+          <Outlet context={{ activeItemId, setActiveItemId }} />
         </main>
       </div>
       <Footer />
-      <ItemModal activeItem={activeItem} removeActiveItem={removeActiveItem} />
+      <ItemModal activeItemId={activeItemId} removeActiveItem={removeActiveItem} />
     </div>
   );
 };

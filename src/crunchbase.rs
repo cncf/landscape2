@@ -78,7 +78,7 @@ impl Organization {
         let cb_org = cb.get_organization(&permalink).await?;
 
         // Prepare organization instance using the information collected
-        let (num_employees_max, num_employees_min) = match cb_org.properties.num_employees_enum {
+        let (num_employees_min, num_employees_max) = match cb_org.properties.num_employees_enum {
             Some(value) => match value.as_str() {
                 "c_00001_00010" => (Some(1), Some(10)),
                 "c_00011_00050" => (Some(11), Some(50)),
