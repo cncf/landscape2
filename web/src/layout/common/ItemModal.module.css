@@ -93,7 +93,7 @@
 }
 
 .activeProjectBadge {
-  background-color: rgb(105, 150, 216);
+  background-color: var(--light-blue);
 }
 
 .line::after {
@@ -103,7 +103,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background-color: rgb(105, 150, 216);
+  background-color: var(--light-blue);
   z-index: -1;
 }
 
@@ -135,13 +135,14 @@
 }
 
 .highlightedTitle {
-  color: rgba(1, 107, 204, 0.70);
+  color: var(--light-blue);
   font-size: 2.5rem;
 }
 
 .highlightedLegend {
   color: var(--bs-tertiary-color);
   line-height: 0.7rem;
+  padding-bottom: 0.75rem;
 }
 
 .tableRepos td {

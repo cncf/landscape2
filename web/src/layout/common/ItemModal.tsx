@@ -90,7 +90,7 @@ const ItemModal = (props: Props) => {
 
   return (
     <Modal size="xl" open onClose={() => props.removeActiveItem()}>
-      <div className="d-flex flex-column">
+      <div className="d-flex flex-column p-3">
         <div className="d-flex flex-row align-items-center">
           <div className={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
             <Image name={itemInfo.name} className={`m-auto ${styles.logo}`} logo={itemInfo.logo} />
@@ -590,7 +590,7 @@ const ItemModal = (props: Props) => {
         )}
 
         {/* Repositories */}
-        <div className={`position-relative my-4 border ${styles.fieldset}`}>
+        <div className={`position-relative mt-4 border ${styles.fieldset}`}>
           <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
           {mainRepo !== undefined && (
             <>
@@ -678,7 +678,7 @@ const ItemModal = (props: Props) => {
           {itemInfo.repositories && itemInfo.repositories.length > 1 && (
             <div className="mt-4">
               <small className="text-muted">Other repositories:</small>
-              <table className="table table-sm table-striped table-bordered mt-2">
+              <table className="table table-sm table-striped table-bordered mt-3">
                 <thead>
                   <tr>
                     <th className="text-center" scope="col">
