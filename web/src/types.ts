@@ -1,6 +1,6 @@
 export interface OutletContext {
-  activeItem?: BaseItem;
-  setActiveItem: (value?: BaseItem) => void;
+  activeItemId?: string;
+  setActiveItemId: (itemId?: string) => void;
 }
 
 export interface BaseData {
@@ -126,12 +126,12 @@ export interface Contributors {
 }
 
 export interface Commit {
-  ts: number;
+  ts: string;
   url: string;
 }
 
 export interface Release {
-  ts: number;
+  ts: string;
   url: string;
 }
 

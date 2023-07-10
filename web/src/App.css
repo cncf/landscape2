@@ -27,3 +27,8 @@ select:focus {
   height: 100%;
   overflow: hidden;
 }
+
+/* Bootstrap */
+.badge {
+  font-weight: 600 !important;
+}

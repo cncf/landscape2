@@ -7,17 +7,18 @@
   overflow-y: auto;
 }
 
-.header {
-  background-color: var(--rm-secondary-15);
-  color: var(--rm-secondary);
-}
-
 .headerContent {
   max-width: calc(100% - 40px);
 }
 
+.btnCloseWrapper {
+  top: 2.5rem;
+  right: 2.5rem;
+  z-index: 1;
+}
+
 .content {
-  border-color: var(--solid-border) !important;
+  border-color: var(--bs-gray-500) !important;
   box-shadow: none !important;
   z-index: 10;
 }

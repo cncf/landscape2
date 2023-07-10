@@ -28,7 +28,7 @@ const Landscape = (props: Props) => {
   const location = useLocation();
   const point = useBreakpointDetect();
   const [searchParams] = useSearchParams();
-  const { setActiveItem } = useOutletContext() as OutletContext;
+  const { setActiveItemId } = useOutletContext() as OutletContext;
   const [levelZoom, setLevelZoom] = useState<number>(
     point ? DEFAULT_ZOOM_LEVELS[point] : DEFAULT_ZOOM_LEVELS[Breakpoint.XL]
   );
@@ -45,8 +45,8 @@ const Landscape = (props: Props) => {
     prepareBaseData(props.data, visibleItems, selectedGroup)
   );
 
-  const onClickItem = (item: BaseItem) => {
-    setActiveItem(item);
+  const onClickItem = (itemId: string) => {
+    setActiveItemId(itemId);
   };
 
   const updateQueryString = (param: string, value: string) => {

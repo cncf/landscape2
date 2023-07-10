@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 interface Props {
   items: BaseItem[];
-  onClickItem: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 const Header = (props: Props) => {

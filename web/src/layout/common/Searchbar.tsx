@@ -9,7 +9,7 @@ import MaturityBadge from './MaturityBadge';
 
 interface Props {
   items: BaseItem[];
-  openItem: (item: BaseItem) => void;
+  openItem: (itemId: string) => void;
 }
 
 const SEARCH_DELAY = 3 * 100; // 300ms
@@ -48,7 +48,7 @@ const Searchbar = (props: Props) => {
           } else {
             const selectedProject = itemsList[highlightedItem];
             if (selectedProject) {
-              openItemModal(selectedProject);
+              openItemModal(selectedProject.id);
             }
           }
         } else {
@@ -60,11 +60,11 @@ const Searchbar = (props: Props) => {
     }
   };
 
-  const openItemModal = (selectedItem: BaseItem) => {
+  const openItemModal = (selectedItemId: string) => {
     forceBlur();
     setValue('');
     cleanItemsSearch();
-    props.openItem(selectedItem);
+    props.openItem(selectedItemId);
   };
 
   const forceBlur = (): void => {
@@ -260,7 +260,7 @@ const Searchbar = (props: Props) => {
                       { [styles.activeDropdownItem]: index === highlightedItem }
                     )}
                     onClick={() => {
-                      openItemModal(item);
+                      openItemModal(item.id);
                     }}
                     aria-label={`Open ${item.name} detail`}
                     role="option"

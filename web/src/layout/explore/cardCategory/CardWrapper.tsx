@@ -1,4 +1,4 @@
-import { BaseItem, Item } from '../../../types';
+import { Item } from '../../../types';
 import styles from './CardWrapper.module.css';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Card from './Card';
@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   id: string;
-  onClick: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 const CardWrapper = (props: Props) => {
@@ -29,7 +29,7 @@ const CardWrapper = (props: Props) => {
 
   return (
     <div className={`col-12 col-lg-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}>
-      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => props.onClick(itemInfo as BaseItem)}>
+      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => props.onClickItem(itemInfo.id)}>
         <Card item={itemInfo} className="h-100" />
       </div>
     </div>

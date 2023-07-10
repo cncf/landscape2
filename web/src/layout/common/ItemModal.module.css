@@ -1,4 +1,150 @@
+.logoWrapper {
+  height: 120px;
+  width: 100px;
+  min-width: 100px;
+}
+
 .logo {
-  max-height: 40px;
-  max-width: 40px;
+  font-size: 3rem;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.itemInfo {
+  background-color: #f8f9fa;
+  width: calc(100% - 100px - 1rem);
+  height: 140px;
+  padding: 1rem 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+.name {
+  padding-bottom: 5px;
+}
+
+.description {
+  font-size: 0.9rem;
+}
+
+.additionalInfo {
+  font-size: 0.75rem;
+}
+
+.additionalInfo small {
+  font-size: 0.7rem;
+}
+
+.starIcon {
+  font-size: 0.6rem;
+}
+
+.badge {
+  background-color: var(--bs-gray-500);
+}
+
+.badgeOutlineDark {
+  border-color: var(--bs-gray-700) !important;
+  color: var(--bs-gray-700);
+}
+
+.location {
+  font-size: 0.8rem;
+}
+
+.link {
+  position: relative;
+  color: inherit;
+  height: 24px;
+  line-height: 22px;
+  width: auto;
+}
+
+.link:hover {
+  color: var(--bs-primary);
+}
+
+.link svg {
+  position: relative;
+  height: 18px;
+  width: auto;
+  margin-top: -4px;
+}
+
+.fieldset {
+  padding: 1.5rem 1.75rem;
+}
+
+.fieldsetTitle {
+  font-size: 0.8rem;
+  line-height: 0.8rem;
+  color: rgba(0, 42, 81, 0.70);
+  top: -0.35rem;
+  left: 1rem;
+}
+
+.projectBadge {
+  width: 100px;
+  background-color: var(--bs-gray-500);
+}
+
+.activeProjectBadge {
+  background-color: rgb(105, 150, 216);
+}
+
+.line::after {
+  position: absolute;
+  content: '';
+  top: 0.7rem;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgb(105, 150, 216);
+  z-index: -1;
+}
+
+.line::before {
+  position: absolute;
+  content: '';
+  top: 0.7rem;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--bs-gray-200);
+  z-index: -1;
+}
+
+:global(.incubatingLine)::after {
+  right: 50%;
+}
+
+:global(.sandboxLine)::after {
+  display: none;
+}
+
+.statusLegend {
+  font-size: 0.7rem;
+}
+
+.highlighted {
+  background-color: var(--bs-gray-100);
+}
+
+.highlightedTitle {
+  color: rgba(1, 107, 204, 0.70);
+  font-size: 2.5rem;
+}
+
+.highlightedLegend {
+  color: var(--bs-tertiary-color);
+  line-height: 0.7rem;
+}
+
+.tableRepos td {
+  font-size: 0.9rem;
+  line-height: 2;
 }

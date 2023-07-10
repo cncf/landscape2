@@ -1,4 +1,4 @@
-import { BaseItem, ViewMode } from '../../types';
+import { ViewMode } from '../../types';
 import { CategoriesData } from '../../utils/prepareBaseData';
 import GridCategory from './gridCategory';
 import CardCategory from './cardCategory';
@@ -8,7 +8,7 @@ interface Props {
   selectedViewMode: ViewMode;
   cardWidth: number;
   categories_overridden?: string[];
-  onClickItem: (item: BaseItem) => void;
+  onClickItem: (itemId: string) => void;
 }
 
 const Content = (props: Props) => {
