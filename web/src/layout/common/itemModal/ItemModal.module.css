@@ -1,3 +1,9 @@
+.modalDialog {
+  min-height: calc(100% - 10rem) !important;
+  max-height: calc(100% - 10rem) !important;
+  margin: 5rem auto !important;
+}
+
 .logoWrapper {
   height: 120px;
   width: 100px;
@@ -136,7 +142,7 @@
 
 .highlightedTitle {
   color: var(--light-blue);
-  font-size: 2.5rem;
+  font-size: 2rem;
 }
 
 .highlightedLegend {
@@ -148,4 +154,18 @@
 .tableRepos td {
   font-size: 0.9rem;
   line-height: 2;
+}
+
+@media (min-width: 1200px) {
+  .highlightedTitle {
+    font-size: 2.5rem;
+  }
+}
+
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .modalDialog {
+    width: 95%;
+    max-width: 95%;
+  }
 }

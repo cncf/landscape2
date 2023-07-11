@@ -1,0 +1,8 @@
+.chart {
+  height: 80px;
+}
+
+.bar {
+  width: 2%;
+  background-color: var(--light-blue);
+}

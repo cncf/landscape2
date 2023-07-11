@@ -1,15 +1,16 @@
-import { Item, Repository } from '../../types';
-import Modal from './Modal';
+import { Item, Repository } from '../../../types';
+import Modal from '../Modal';
 import styles from './ItemModal.module.css';
 import { useEffect, useState } from 'react';
-import itemsDataGetter from '../../utils/itemsDataGetter';
-import cleanEmojis from '../../utils/cleanEmojis';
-import MaturityBadge from './MaturityBadge';
-import Image from './Image';
-import ExternalLink from './ExternalLink';
-import prettifyNumber from '../../utils/prettifyNumber';
+import itemsDataGetter from '../../../utils/itemsDataGetter';
+import cleanEmojis from '../../../utils/cleanEmojis';
+import MaturityBadge from '../MaturityBadge';
+import Image from '../Image';
+import ExternalLink from '../ExternalLink';
+import prettifyNumber from '../../../utils/prettifyNumber';
 import moment from 'moment';
 import classNames from 'classnames';
+import ParticipationStats from './ParticipationStats';
 
 interface Props {
   activeItemId?: string;
@@ -89,7 +90,7 @@ const ItemModal = (props: Props) => {
   if (itemInfo === undefined || itemInfo === null) return null;
 
   return (
-    <Modal size="xl" open onClose={() => props.removeActiveItem()}>
+    <Modal size="xl" open modalDialogClassName={styles.modalDialog} onClose={() => props.removeActiveItem()}>
       <div className="d-flex flex-column p-3">
         <div className="d-flex flex-row align-items-center">
           <div className={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
@@ -150,8 +151,10 @@ const ItemModal = (props: Props) => {
               </div>
             )}
             <div className="d-flex flex-row align-items-center mb-1">
-              <div className={`badge border rounded-0 ${styles.badgeOutlineDark}`}>{itemInfo.category}</div>
-              <div className={`badge border ms-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>
+              <div className={`d-none d-xl-flex badge border rounded-0 ${styles.badgeOutlineDark}`}>
+                {itemInfo.category}
+              </div>
+              <div className={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>
                 {itemInfo.subcategory}
               </div>
               <div className="ms-auto">
@@ -590,122 +593,134 @@ const ItemModal = (props: Props) => {
         )}
 
         {/* Repositories */}
-        <div className={`position-relative mt-4 border ${styles.fieldset}`}>
-          <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
-          {mainRepo !== undefined && (
-            <>
-              <div className="d-flex flex-row align-items-center">
-                <div>
-                  <small className="text-muted">Primary repository:</small>
+        {itemInfo.repositories !== undefined && (
+          <div className={`position-relative mt-4 border ${styles.fieldset}`}>
+            <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
+            {mainRepo !== undefined && (
+              <>
+                <div className="d-flex flex-row align-items-center">
+                  <div>
+                    <small className="text-muted">Primary repository:</small>
+                  </div>
+                  <div className="ms-2">{mainRepo.url}</div>
+                  {mainRepo.github_data && (
+                    <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark}`}>
+                      {mainRepo.github_data.license}
+                    </div>
+                  )}
                 </div>
-                <div className="ms-2">{mainRepo.url}</div>
                 {mainRepo.github_data && (
-                  <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark}`}>
-                    {mainRepo.github_data.license}
-                  </div>
+                  <>
+                    <div className="row g-4 my-0 mb-2">
+                      <div className="col">
+                        <div
+                          className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            {prettifyNumber(mainRepo.github_data.stars)}
+                          </div>
+                          <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Stars</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col">
+                        <div
+                          className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            {prettifyNumber(mainRepo.github_data.contributors.count)}
+                          </div>
+                          <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Contributors</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col">
+                        <div
+                          className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            {formatDate(mainRepo.github_data.first_commit.ts)}
+                          </div>
+                          <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>First commit</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col">
+                        <div
+                          className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            {formatDate(mainRepo.github_data.latest_commit.ts)}
+                          </div>
+                          <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Latest commit</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col">
+                        <div
+                          className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            {mainRepo.github_data.latest_release
+                              ? formatDate(mainRepo.github_data.latest_release.ts)
+                              : '-'}
+                          </div>
+                          <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Latest release</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {mainRepo.github_data.participation_stats && (
+                      <div className="mt-4">
+                        <small className="text-muted">Participation stats:</small>
+                        <ParticipationStats stats={mainRepo.github_data.participation_stats} />
+                      </div>
+                    )}
+                  </>
                 )}
+              </>
+            )}
+            {itemInfo.repositories && itemInfo.repositories.length > 1 && (
+              <div className="mt-4">
+                <small className="text-muted">Other repositories:</small>
+                <table className="table table-sm table-striped table-bordered mt-3">
+                  <thead>
+                    <tr>
+                      <th className="text-center" scope="col">
+                        URL
+                      </th>
+                      <th className="text-center" scope="col">
+                        STARS
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itemInfo.repositories.map((repo: Repository) => {
+                      if (repo.primary) return null;
+                      return (
+                        <tr className={styles.tableRepos} key={`table_${repo.url}`}>
+                          <td className="px-3">{repo.url}</td>
+                          <td className="px-3 text-center">
+                            {repo.github_data && repo.github_data.stars ? prettifyNumber(repo.github_data.stars) : '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              {mainRepo.github_data && (
-                <div className="row g-4 my-0 mb-2">
-                  <div className="col">
-                    <div
-                      className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {prettifyNumber(mainRepo.github_data.stars)}
-                      </div>
-                      <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Stars</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col">
-                    <div
-                      className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {prettifyNumber(mainRepo.github_data.contributors.count)}
-                      </div>
-                      <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Contributors</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col">
-                    <div
-                      className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {formatDate(mainRepo.github_data.first_commit.ts)}
-                      </div>
-                      <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>First commit</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col">
-                    <div
-                      className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {formatDate(mainRepo.github_data.latest_commit.ts)}
-                      </div>
-                      <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Latest commit</small>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col">
-                    <div
-                      className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {mainRepo.github_data.latest_release ? formatDate(mainRepo.github_data.latest_release.ts) : '-'}
-                      </div>
-                      <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Latest release</small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-          {itemInfo.repositories && itemInfo.repositories.length > 1 && (
-            <div className="mt-4">
-              <small className="text-muted">Other repositories:</small>
-              <table className="table table-sm table-striped table-bordered mt-3">
-                <thead>
-                  <tr>
-                    <th className="text-center" scope="col">
-                      URL
-                    </th>
-                    <th className="text-center" scope="col">
-                      STARS
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {itemInfo.repositories.map((repo: Repository) => {
-                    if (repo.primary) return null;
-                    return (
-                      <tr className={styles.tableRepos} key={`table_${repo.url}`}>
-                        <td className="px-3">{repo.url}</td>
-                        <td className="px-3 text-center">
-                          {repo.github_data && repo.github_data.stars ? prettifyNumber(repo.github_data.stars) : '-'}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   );
