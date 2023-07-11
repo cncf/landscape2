@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Footer from './navigation/Footer';
 import Header from './navigation/Header';
 import { BaseItem } from '../types';
-import ItemModal from './common/ItemModal';
+import ItemModal from './common/itemModal';
 
 interface Props {
   items: BaseItem[];
