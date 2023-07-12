@@ -2,10 +2,13 @@ import { ChangeEvent, Fragment } from 'react';
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';
 import { CheckBox } from '../../common/Checkbox';
 import styles from './Section.module.css';
+import classNames from 'classnames';
 
 interface Props {
-  section: FilterSection;
+  section?: FilterSection;
   activeFilters?: string[];
+  withTitle?: boolean;
+  inLine?: boolean;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
 }
 
@@ -34,6 +37,7 @@ const Section = (props: Props) => {
       name={sectionName as unknown as string}
       value={opt.value}
       labelClassName="mw-100"
+      className={classNames('mt-2', { 'mb-2': props.inLine === undefined })}
       label={opt.name}
       checked={(props.activeFilters || []).includes(opt.value)}
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -42,31 +46,38 @@ const Section = (props: Props) => {
     />
   );
 
+  if (props.section === undefined) return null;
+
   return (
     <div>
-      <small className={`fw-bold text-uppercase text-dark pb-2 ${styles.categoryTitle}`}>{props.section.title}</small>
-      {props.section.options.map((opt: FilterOption) => {
-        let subOpts;
-        if (opt.suboptions) {
-          subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
-        }
-        return (
-          <div key={`f_${props.section.value}_opt_${opt.value}`} className={`mt-2 ${styles.checks}`}>
-            {renderCheckBox(opt, props.section.value, subOpts)}
-            <div className="ms-3 mt-2">
-              {opt.suboptions && (
-                <>
-                  {opt.suboptions.map((subOpt: FilterOption) => (
-                    <Fragment key={`f_${props.section.value}_subopt_${subOpt.value}`}>
-                      {renderCheckBox(subOpt, props.section.value)}
-                    </Fragment>
-                  ))}
-                </>
-              )}
+      <div className={classNames({ 'd-flex flex-row': props.inLine })}>
+        {props.section.options.map((opt: FilterOption) => {
+          let subOpts;
+          if (opt.suboptions) {
+            subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
+          }
+          return (
+            <div
+              key={`f_${props.section?.value}_opt_${opt.value}`}
+              className={classNames(styles.checks, { 'me-3': props.inLine })}
+            >
+              {renderCheckBox(opt, props.section?.value as FilterCategory, subOpts)}
+              <div className="ms-3">
+                {opt.suboptions && (
+                  <>
+                    {opt.suboptions.map((subOpt: FilterOption) => (
+                      <Fragment key={`f_${props.section?.value}_subopt_${subOpt.value}`}>
+                        {renderCheckBox(subOpt, props.section?.value as FilterCategory)}
+                      </Fragment>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      {props.withTitle && <small className={`text-muted ${styles.legend}`}>{props.section.title}</small>}
     </div>
   );
 };

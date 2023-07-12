@@ -145,6 +145,9 @@ export interface FilterSection {
   placeholder?: string;
   title: string;
   options: FilterOption[];
+  extra?: {
+    [key: string]: string[];
+  }
 }
 
 export interface Option {
@@ -162,10 +165,16 @@ export type ActiveFilters = {
 
 export enum FilterCategory {
   Project = 'project',
+  Organization = 'organization',
+  License = 'license',
+  Country = 'country',
+  City = 'city',
+  Region = 'region',
+  Industry = 'industry',
+  CompanyType = 'company-type',
 }
 
 export enum ViewMode {
-  Summary = 'summary',
   Grid = 'grid',
   Card = 'card',
 }

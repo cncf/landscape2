@@ -67,4 +67,18 @@ export const FILTERS: FilterSection[] = [
       },
     ],
   },
+  {
+    value: FilterCategory.CompanyType,
+    title: 'Company type',
+    options: [
+      {
+        value: 'for_profit',
+        name: 'For profit',
+      },
+      {
+        value: 'non_profit',
+        name: 'Non profit',
+      }
+    ]
+  },
 ];

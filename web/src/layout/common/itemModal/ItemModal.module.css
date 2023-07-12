@@ -88,7 +88,7 @@
 .fieldsetTitle {
   font-size: 0.8rem;
   line-height: 0.8rem;
-  color: rgba(0, 42, 81, 0.70);
+  color: var(--dark-blue);
   top: -0.35rem;
   left: 1rem;
 }

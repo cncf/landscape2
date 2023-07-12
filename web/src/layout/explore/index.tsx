@@ -9,11 +9,11 @@ import {
   Breakpoint,
   BaseData,
   Item,
+  FilterSection,
 } from '../../types';
 import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import styles from './Landscape.module.css';
 import { Fragment, useEffect, useState } from 'react';
-import Modal from '../common/Modal';
 import Content from './Content';
 import Filters from './filters';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
@@ -21,6 +21,8 @@ import prepareData, { CategoriesData } from '../../utils/prepareData';
 import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import filterData from '../../utils/filterData';
+import prepareFilters from '../../utils/prepareFilters';
+import NoData from '../common/NoData';
 
 interface Props {
   data: BaseData;
@@ -48,9 +50,14 @@ const Landscape = (props: Props) => {
   const [categoriesData, setCategoriesData] = useState<CategoriesData | undefined>(
     prepareData(props.data, visibleItems, selectedGroup)
   );
+  const [filtersFromData, setFiltersFromData] = useState<FilterSection[]>([]);
+  const [filtersApplied, setFiltersApplied] = useState<boolean>(Object.keys(activeFilters).length > 0);
 
   itemsDataGetter.subscribe({
-    updateLandscapeData: (items: Item[]) => setLandscapeData(items),
+    updateLandscapeData: (items: Item[]) => {
+      setLandscapeData(items);
+      setFiltersFromData(prepareFilters(items));
+    },
   });
 
   const onClickItem = (itemId: string) => {
@@ -83,6 +90,11 @@ const Landscape = (props: Props) => {
     bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
   }, [levelZoom]);
 
+  const removeFilter = (name: FilterCategory, value: string) => {
+    const tmpActiveFilters: string[] = (activeFilters[name] || []).filter((f: string) => f !== value);
+    updateActiveFilters(name, tmpActiveFilters);
+  };
+
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
     const tmpActiveFilters: ActiveFilters = { ...activeFilters };
     if (options.length === 0) {
@@ -91,6 +103,12 @@ const Landscape = (props: Props) => {
       tmpActiveFilters[value] = options;
     }
     setActiveFilters(tmpActiveFilters);
+    setFiltersApplied(Object.keys(tmpActiveFilters).length > 0);
+  };
+
+  const resetFilters = () => {
+    setActiveFilters({});
+    setFiltersApplied(false);
   };
 
   useEffect(() => {
@@ -134,7 +152,7 @@ const Landscape = (props: Props) => {
                 </svg>
                 <div className="fw-semibold ps-2">Filters</div>
               </div>
-              {Object.keys(activeFilters).length > 0 && (
+              {filtersApplied && (
                 <div
                   className={`position-absolute border bg-primary border-3 border-white rounded-circle ${styles.dot}`}
                 ></div>
@@ -230,6 +248,86 @@ const Landscape = (props: Props) => {
         </div>
       </div>
 
+      {Object.keys(activeFilters).length > 0 && (
+        <div className="d-flex flex-row align-items-baseline mb-3">
+          <div className="text-muted text-uppercase me-3">
+            <small>Filters:</small>
+          </div>
+          {Object.keys(activeFilters).map((f: string) => {
+            if (activeFilters[f as FilterCategory] === undefined) return null;
+            return (
+              <div className="d-flex flex-row" key={`active_${f}`} role="list">
+                {activeFilters[f as FilterCategory]?.map((c: string) => {
+                  return (
+                    <span
+                      role="listitem"
+                      key={`active_${f}_${c}`}
+                      className="badge badge-sm bg-primary rounded-0 text-light me-3 my-1 d-flex flex-row align-items-center"
+                    >
+                      <div className="d-flex flex-row align-items-baseline">
+                        <div>
+                          <small className="text-uppercase fw-normal me-2">{f}:</small>
+                          <span
+                            className={
+                              [FilterCategory.Project, FilterCategory.CompanyType].includes(f as FilterCategory)
+                                ? 'text-uppercase'
+                                : ''
+                            }
+                          >
+                            {c}
+                          </span>
+                        </div>
+                        <button
+                          className="btn btn-link text-white btn-sm lh-1 p-0 ps-2"
+                          onClick={() => removeFilter(f as FilterCategory, c)}
+                          aria-label={`Remove ${c} filter`}
+                        >
+                          <svg
+                            stroke="currentColor"
+                            fill="currentColor"
+                            strokeWidth="0"
+                            viewBox="0 0 512 512"
+                            height="1em"
+                            width="1em"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M256 90c44.3 0 86 17.3 117.4 48.6C404.7 170 422 211.7 422 256s-17.3 86-48.6 117.4C342 404.7 300.3 422 256 422s-86-17.3-117.4-48.6C107.3 342 90 300.3 90 256s17.3-86 48.6-117.4C170 107.3 211.7 90 256 90m0-42C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48z"></path>
+                            <path d="M360 330.9L330.9 360 256 285.1 181.1 360 152 330.9l74.9-74.9-74.9-74.9 29.1-29.1 74.9 74.9 74.9-74.9 29.1 29.1-74.9 74.9z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {visibleItems.length === 0 && (
+        <NoData>
+          <>
+            <div className="fs-4">Not items available</div>
+
+            {filtersApplied && (
+              <>
+                <p className="h6 my-4 lh-base">You can reset the filters:</p>
+
+                <button
+                  type="button"
+                  className="btn btn-sm btn-secondary rounded-0 text-white text-uppercase fw-semibold"
+                  onClick={resetFilters}
+                  aria-label="Reset filters"
+                >
+                  Reset filters
+                </button>
+              </>
+            )}
+          </>
+        </NoData>
+      )}
+
       <div className="d-flex w-100 pt-1">
         <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
           <Content
@@ -243,13 +341,15 @@ const Landscape = (props: Props) => {
         </div>
       </div>
 
-      {visibleFilters && (
-        <Modal header="Filters" open onClose={() => setVisibleFilters(false)}>
-          <div>
-            <Filters activeFilters={activeFilters} updateActiveFilters={updateActiveFilters} />
-          </div>
-        </Modal>
-      )}
+      <Filters
+        fullDataReady={landscapeData !== undefined}
+        filtersFromData={filtersFromData}
+        visibleFilters={visibleFilters}
+        onClose={() => setVisibleFilters(false)}
+        resetFilters={resetFilters}
+        activeFilters={activeFilters}
+        updateActiveFilters={updateActiveFilters}
+      />
     </>
   );
 };
