@@ -35,3 +35,22 @@
   text-decoration: underline;
   background-color: rgba(0,0,0,0.035);
 }
+
+.card {
+  height: 237px;
+  font-size: 90%;
+  cursor: pointer;
+}
+
+.card :global(.badge) {
+  font-size: 65%;
+}
+
+.card :global(.accepted-date) {
+  display: flex !important;
+}
+
+.card:hover {
+  border-color: var(--bs-primary) !important;
+  box-shadow: 0px 0px 5px 0px var(--bs-focus-ring-color);
+}

@@ -1,6 +1,7 @@
 .card {
   width: var(--card-size-width);
   height: var(--card-size-height);
+  background-color: #f1f3f5;
 }
 
 .cardContent {
@@ -8,8 +9,8 @@
   vertical-align: top;
 }
 
-.noRepo {
-  background-color: #f1f3f5;
+.withRepo {
+  background-color: var(--bs-white);
 }
 
 .bigCard {

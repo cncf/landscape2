@@ -1,13 +1,14 @@
-import { BaseItem } from '../../../types';
+import { BaseItem, Item } from '../../../types';
 import styles from './CardCategory.module.css';
-import { CategoriesData } from '../../../utils/prepareBaseData';
+import { CategoriesData } from '../../../utils/prepareData';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COLORS } from '../../../data';
 import classNames from 'classnames';
-import CardWrapper from './CardWrapper';
+import Card from './Card';
 
 interface Props {
+  fullDataReady: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
   onClickItem: (itemId: string) => void;
@@ -167,16 +168,27 @@ const CardCategory = (props: Props) => {
         })}
       </div>
       <div className="d-flex flex-column flex-grow-1">
-        {visibleItems && (
-          <div className="row g-4 w-100">
-            {visibleItems.map((item: BaseItem) => {
-              return (
-                <Fragment key={`card_${item.id}`}>
-                  <CardWrapper id={item.id} onClickItem={props.onClickItem} />
-                </Fragment>
-              );
-            })}
-          </div>
+        {props.fullDataReady ? (
+          <>
+            {visibleItems && (
+              <div className="row g-4 w-100">
+                {visibleItems.map((item: Item) => {
+                  return (
+                    <div
+                      key={`card_${item.id}`}
+                      className={`col-12 col-lg-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}
+                    >
+                      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => props.onClickItem(item.id)}>
+                        <Card item={item} className="h-100" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          <>Loading</>
         )}
       </div>
     </div>

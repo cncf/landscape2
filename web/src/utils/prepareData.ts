@@ -1,4 +1,4 @@
-import { BaseData, BaseItem, Category, Group } from "../types";
+import { BaseData, BaseItem, Category, Group, Item } from "../types";
 
 export interface CategoriesData {
   [key: string]: {
@@ -7,12 +7,12 @@ export interface CategoriesData {
 }
 
 export interface SubcategoryData {
-  items: BaseItem[];
+  items: (BaseItem | Item)[];
   itemsCount: number;
   itemsFeaturedCount: number;
 }
 
-const prepareBaseData = (data: BaseData, items: BaseItem[], activeGroup?: string): CategoriesData => {
+const prepareData = (data: BaseData, items: (BaseItem | Item)[], activeGroup?: string): CategoriesData => {
   const categories: CategoriesData = {};
   let categoriesList: Category[] = [];
 
@@ -56,4 +56,4 @@ const prepareBaseData = (data: BaseData, items: BaseItem[], activeGroup?: string
   return categories;
 };
 
-export default prepareBaseData;
+export default prepareData;

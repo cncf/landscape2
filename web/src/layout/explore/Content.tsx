@@ -1,9 +1,10 @@
 import { ViewMode } from '../../types';
-import { CategoriesData } from '../../utils/prepareBaseData';
+import { CategoriesData } from '../../utils/prepareData';
 import GridCategory from './gridCategory';
 import CardCategory from './cardCategory';
 
 interface Props {
+  fullDataReady: boolean;
   data: CategoriesData;
   selectedViewMode: ViewMode;
   cardWidth: number;
@@ -19,6 +20,7 @@ const Content = (props: Props) => {
           case ViewMode.Grid:
             return (
               <GridCategory
+                fullDataReady={props.fullDataReady}
                 data={props.data}
                 cardWidth={props.cardWidth}
                 categories_overridden={props.categories_overridden}
@@ -28,6 +30,7 @@ const Content = (props: Props) => {
           case ViewMode.Card:
             return (
               <CardCategory
+                fullDataReady={props.fullDataReady}
                 data={props.data}
                 categories_overridden={props.categories_overridden}
                 onClickItem={props.onClickItem}
