@@ -4,56 +4,29 @@ import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import styles from './GridItem.module.css';
 import { BaseItem, Item } from '../../../types';
 import classNames from 'classnames';
-import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Card from '../cardCategory/Card';
 import Image from '../../common/Image';
 
 interface Props {
-  item: BaseItem;
+  fullDataReady: boolean;
+  item: BaseItem | Item;
   borderColor?: string;
   onClickItem: (itemId: string) => void;
 }
 
-const FETCH_DELAY = 1 * 100; // 100ms
 const DEFAULT_DROPDOWN_WIDTH = 450;
 const DEFAULT_MARGIN = 30;
 
 const GridItem = (props: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const wrapper = useRef<HTMLDivElement>(null);
-  const [itemInfo, setItemInfo] = useState<Item | null | undefined>(undefined);
   const [openStatus, setOpenStatus] = useState(false);
   const [onLinkHover, setOnLinkHover] = useState(false);
   const [onDropdownHover, setOnDropdownHover] = useState(false);
-  const [fetchTimeout, setFetchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [tooltipAlignment, setTooltipAlignment] = useState<'right' | 'left' | 'center'>('center');
   const [elWidth, setElWidth] = useState<number>(0);
 
   useOutsideClick([ref], openStatus, () => setOpenStatus(false));
-
-  async function fetchItemInfo() {
-    try {
-      setItemInfo(await itemsDataGetter.get(props.item.id));
-    } catch {
-      setItemInfo(null);
-    }
-  }
-
-  const openItemInfo = () => {
-    if (itemInfo === undefined) {
-      setFetchTimeout(
-        setTimeout(() => {
-          fetchItemInfo();
-        }, FETCH_DELAY)
-      );
-    }
-  };
-
-  const cleanFetchTimeout = () => {
-    if (fetchTimeout) {
-      clearTimeout(fetchTimeout);
-    }
-  };
 
   useEffect(() => {
     const calculateTooltipPosition = () => {
@@ -76,11 +49,11 @@ const GridItem = (props: Props) => {
     };
 
     let timeout: NodeJS.Timeout;
-    if (itemInfo && !openStatus && (onLinkHover || onDropdownHover)) {
+    if (!openStatus && (onLinkHover || onDropdownHover)) {
       timeout = setTimeout(() => {
         calculateTooltipPosition();
         setOpenStatus(true);
-      }, 100);
+      }, 200);
     }
     if (openStatus && !onLinkHover && !onDropdownHover) {
       timeout = setTimeout(() => {
@@ -93,9 +66,9 @@ const GridItem = (props: Props) => {
       if (timeout) {
         clearTimeout(timeout);
       }
-      cleanFetchTimeout();
     };
-  }, [onLinkHover, onDropdownHover, itemInfo, openStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onLinkHover, onDropdownHover, props.fullDataReady, openStatus]);
 
   return (
     <div
@@ -105,26 +78,32 @@ const GridItem = (props: Props) => {
         styles.card,
         { [`border-2 ${styles.bigCard}`]: props.item.featured },
         { [styles.withLabel]: props.item.featured && props.item.featured.label },
-        { [styles.noRepo]: !props.item.has_repositories }
+        {
+          [styles.withRepo]:
+            (props.item.has_repositories !== undefined && props.item.has_repositories) ||
+            (props.item.has_repositories === undefined && 'repositories' in props.item),
+        }
       )}
     >
       <div className="position-absolute">
-        <div
-          ref={ref}
-          role="complementary"
-          className={classNames('dropdown-menu rounded-0 p-3', styles.dropdown, styles[`${tooltipAlignment}Aligned`], {
-            ['popover show']: openStatus,
-          })}
-          style={{
-            minWidth: `${DEFAULT_DROPDOWN_WIDTH}px`,
-            left: tooltipAlignment === 'center' ? `${-(DEFAULT_DROPDOWN_WIDTH - elWidth) / 2}px` : 'auto',
-          }}
-          onMouseEnter={() => setOnDropdownHover(true)}
-          onMouseLeave={() => setOnDropdownHover(false)}
-        >
-          <div className={`d-block position-absolute ${styles.arrow}`} />
-          {itemInfo && <Card item={itemInfo} />}
-        </div>
+        {openStatus && (
+          <div
+            ref={ref}
+            role="complementary"
+            className={`dropdown-menu rounded-0 p-3 popover show ${styles.dropdown} ${
+              styles[`${tooltipAlignment}Aligned`]
+            }`}
+            style={{
+              minWidth: `${DEFAULT_DROPDOWN_WIDTH}px`,
+              left: tooltipAlignment === 'center' ? `${-(DEFAULT_DROPDOWN_WIDTH - elWidth) / 2}px` : 'auto',
+            }}
+            onMouseEnter={() => setOnDropdownHover(true)}
+            onMouseLeave={() => setOnDropdownHover(false)}
+          >
+            <div className={`d-block position-absolute ${styles.arrow}`} />
+            {!props.fullDataReady ? <>Loading</> : <Card item={props.item} />}
+          </div>
+        )}
       </div>
 
       <div ref={wrapper} className="w-100 h-100">
@@ -133,19 +112,14 @@ const GridItem = (props: Props) => {
           onClick={(e) => {
             e.preventDefault();
             props.onClickItem(props.item.id);
-            setFetchTimeout(null);
-            cleanFetchTimeout();
             setOnLinkHover(false);
             setOpenStatus(false);
           }}
           onMouseEnter={(e) => {
             e.preventDefault();
             setOnLinkHover(true);
-            openItemInfo();
           }}
           onMouseLeave={() => {
-            setFetchTimeout(null);
-            cleanFetchTimeout();
             setOnLinkHover(false);
           }}
           aria-label="Item info"

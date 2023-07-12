@@ -3,12 +3,13 @@ import styles from './GridCategory.module.css';
 import { useEffect, useRef, useState } from 'react';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { Link } from 'react-router-dom';
-import { CategoriesData } from '../../../utils/prepareBaseData';
+import { CategoriesData } from '../../../utils/prepareData';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import Grid from './Grid';
 import throttle from '../../../utils/throttle';
 
 interface Props {
+  fullDataReady: boolean;
   data: CategoriesData;
   cardWidth: number;
   categories_overridden?: string[];
@@ -95,6 +96,7 @@ const GridCategory = (props: Props) => {
 
             <div ref={container} className="d-flex flex-column align-items-stretch w-100">
               <Grid
+                fullDataReady={props.fullDataReady}
                 containerWidth={containerWidth}
                 itemWidth={props.cardWidth}
                 categoryName={cat}

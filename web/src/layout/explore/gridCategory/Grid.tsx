@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { BaseItem } from '../../../types';
+import { BaseItem, Item } from '../../../types';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -9,10 +9,11 @@ import getGridCategoryLayout, {
 import { Link } from 'react-router-dom';
 import GridItem from './GridItem';
 import styles from './Grid.module.css';
-import { CategoriesData, SubcategoryData } from '../../../utils/prepareBaseData';
+import { CategoriesData, SubcategoryData } from '../../../utils/prepareData';
 import { CSSProperties, useEffect, useState } from 'react';
 
 interface Props {
+  fullDataReady: boolean;
   data: CategoriesData;
   containerWidth: number;
   itemWidth: number;
@@ -116,7 +117,7 @@ const Grid = (props: Props) => {
             key={`cat_${props.categoryIndex}row_${rownIndex}`}
           >
             {row.map((subcat: LayoutColumn, subcatIndex: number) => {
-              const sortedItems: BaseItem[] = sortItems(
+              const sortedItems: (BaseItem | Item)[] = sortItems(
                 sortItems(props.data[props.categoryName][subcat.subcategoryName].items)
               );
 
@@ -176,9 +177,10 @@ const Grid = (props: Props) => {
                   </div>
                   <div className={`flex-grow-1 ${styles.itemsContainer}`}>
                     <div className={styles.items}>
-                      {sortedItems.map((item: BaseItem) => {
+                      {sortedItems.map((item: BaseItem | Item) => {
                         return (
                           <GridItem
+                            fullDataReady={props.fullDataReady}
                             item={item}
                             key={`item_${item.name}`}
                             borderColor={props.backgroundColor}

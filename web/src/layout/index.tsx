@@ -5,6 +5,7 @@ import Footer from './navigation/Footer';
 import Header from './navigation/Header';
 import { BaseItem } from '../types';
 import ItemModal from './common/itemModal';
+import itemsDataGetter from '../utils/itemsDataGetter';
 
 interface Props {
   items: BaseItem[];
@@ -12,6 +13,7 @@ interface Props {
 
 const Layout = (props: Props) => {
   const [activeItemId, setActiveItemId] = useState<string | undefined>();
+  const [fullDataReady, setFullDataReady] = useState<boolean>(false);
 
   const onClickItem = (itemId: string) => {
     setActiveItemId(itemId);
@@ -20,6 +22,10 @@ const Layout = (props: Props) => {
   const removeActiveItem = () => {
     setActiveItemId(undefined);
   };
+
+  itemsDataGetter.isReady({
+    updateStatus: (status: boolean) => setFullDataReady(status),
+  });
 
   return (
     <div className="h-100 d-flex flex-column">
@@ -30,7 +36,7 @@ const Layout = (props: Props) => {
         </main>
       </div>
       <Footer />
-      <ItemModal activeItemId={activeItemId} removeActiveItem={removeActiveItem} />
+      <ItemModal fullDataReady={fullDataReady} activeItemId={activeItemId} removeActiveItem={removeActiveItem} />
     </div>
   );
 };
