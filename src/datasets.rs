@@ -5,7 +5,7 @@
 //! rendering it), whereas others will be written to the output directory so
 //! that they can be fetched when needed.
 
-use self::{base::Base, logos::Logos};
+use self::{base::Base, full::Full, logos::Logos};
 use crate::{data::LandscapeData, settings::Settings};
 use anyhow::{Ok, Result};
 
@@ -15,8 +15,8 @@ pub(crate) struct Datasets {
     /// #[base]
     pub base: Base,
 
-    /// Landscape data.
-    pub landscape: LandscapeData,
+    /// #[full]
+    pub full: Full,
 
     /// #[logos]
     pub logos: Logos,
@@ -27,7 +27,7 @@ impl Datasets {
     pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Result<Self> {
         let datasets = Datasets {
             base: Base::new(settings, landscape_data),
-            landscape: landscape_data.clone(),
+            full: Full::new(landscape_data.clone()),
             logos: landscape_data.into(),
         };
 
@@ -37,8 +37,8 @@ impl Datasets {
 
 /// Base dataset.
 ///
-/// This dataset contains the data the web application needs to render the
-/// initial page and power the features available on it.
+/// This dataset contains the minimal data the web application needs to render
+/// the initial page and power the features available on it.
 mod base {
     use crate::{
         data::{Category, CategoryName, ItemFeatured, LandscapeData},
@@ -112,6 +112,35 @@ mod base {
             }
 
             base
+        }
+    }
+}
+
+/// Full dataset.
+///
+/// This dataset contains all the information available for the landscape. This
+/// information is used by the web application to power features that require
+/// some extra data not available in the base dataset.
+mod full {
+    use crate::data::{Category, Item, LandscapeData};
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Full {
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        pub categories: Vec<Category>,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        pub items: Vec<Item>,
+    }
+
+    impl Full {
+        /// Create a new Full instance from the landscape data provided.
+        pub(crate) fn new(data: LandscapeData) -> Self {
+            Full {
+                categories: data.categories,
+                items: data.items,
+            }
         }
     }
 }

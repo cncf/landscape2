@@ -539,15 +539,9 @@ fn generate_datasets(
     let mut base_file = File::create(datasets_path.join("base.json"))?;
     base_file.write_all(&serde_json::to_vec(&datasets.base)?)?;
 
-    // Landscape
-    let mut landscape_file = File::create(datasets_path.join("landscape.json"))?;
-    landscape_file.write_all(&serde_json::to_vec(&datasets.landscape)?)?;
-
-    // Landscape items (each on one file)
-    for item in &datasets.landscape.items {
-        let mut item_file = File::create(datasets_path.join(format!("landscape-item-{}.json", item.id)))?;
-        item_file.write_all(&serde_json::to_vec(&item)?)?;
-    }
+    // Full
+    let mut full_file = File::create(datasets_path.join("full.json"))?;
+    full_file.write_all(&serde_json::to_vec(&datasets.full)?)?;
 
     Ok(datasets)
 }
