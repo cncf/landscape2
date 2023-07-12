@@ -24,7 +24,7 @@ export class ItemsDataGetter {
 
   public init() {
     if (!this.ready) {
-      fetch(import.meta.env.MODE === 'development' ? "../../static/landscape.json" : "./data/landscape.json")
+      fetch(import.meta.env.MODE === 'development' ? "../../static/full.json" : "./data/full.json")
       .then(res => res.json())
       .then(data => {
         this.landscapeData = data;
