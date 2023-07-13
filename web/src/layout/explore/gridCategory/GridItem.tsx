@@ -122,7 +122,8 @@ const GridItem = (props: Props) => {
           onMouseLeave={() => {
             setOnLinkHover(false);
           }}
-          aria-label="Item info"
+          aria-label={`${props.item.name} info`}
+          title={props.item.name}
           aria-expanded={openStatus}
           aria-hidden="true"
           tabIndex={-1}

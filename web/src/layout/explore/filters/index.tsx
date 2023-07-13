@@ -50,6 +50,7 @@ const Filters = (props: Props) => {
         Object.keys(props.activeFilters).length > 0 ? (
           <button
             type="button"
+            title="Reset filters"
             className="btn btn-sm rounded-0 fw-semibold btn-secondary text-uppercase text-white"
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();

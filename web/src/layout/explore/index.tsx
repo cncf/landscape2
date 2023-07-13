@@ -135,6 +135,7 @@ const Landscape = (props: Props) => {
         <div className="d-flex flex-row align-items-center">
           <div>
             <button
+              title="Filters"
               className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
               onClick={() => setVisibleFilters(true)}
             >
@@ -169,6 +170,7 @@ const Landscape = (props: Props) => {
                   return (
                     <button
                       key={`group_${group.name}`}
+                      title={`Group: ${group.name}`}
                       className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
                         [`active text-white ${styles.active}`]:
                           selectedGroup !== undefined && group.name === selectedGroup,
@@ -197,6 +199,7 @@ const Landscape = (props: Props) => {
               return (
                 <Fragment key={`view_mode_${value}`}>
                   <button
+                    title={`View mode: ${mode}`}
                     type="button"
                     className={classNames('btn btn-outline-primary rounded-0 fw-semibold', {
                       'active text-white': isActive,
@@ -222,6 +225,7 @@ const Landscape = (props: Props) => {
               <div className="d-flex flex-row">
                 <div className={`btn-group btn-group-sm ${styles.btnGroup}`}>
                   <button
+                    title="Increase zoom level"
                     className="btn btn-outline-primary rounded-0 fw-semibold"
                     disabled={levelZoom === 0}
                     onClick={() => {
@@ -232,6 +236,7 @@ const Landscape = (props: Props) => {
                     <div className={styles.btnSymbol}>-</div>
                   </button>
                   <button
+                    title="Decrease zoom level"
                     className="btn btn-outline-primary rounded-0 fw-semibold"
                     disabled={levelZoom === 10}
                     onClick={() => {
@@ -281,6 +286,7 @@ const Landscape = (props: Props) => {
                           className="btn btn-link text-white btn-sm lh-1 p-0 ps-2"
                           onClick={() => removeFilter(f as FilterCategory, c)}
                           aria-label={`Remove ${c} filter`}
+                          title={`Remove ${c} filter`}
                         >
                           <svg
                             stroke="currentColor"
@@ -319,6 +325,7 @@ const Landscape = (props: Props) => {
                   className="btn btn-sm btn-secondary rounded-0 text-white text-uppercase fw-semibold"
                   onClick={resetFilters}
                   aria-label="Reset filters"
+                  title="Reset filters"
                 >
                   Reset filters
                 </button>

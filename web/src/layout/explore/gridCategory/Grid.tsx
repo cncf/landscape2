@@ -158,7 +158,10 @@ const Grid = (props: Props) => {
                   >
                     <div className="text-truncate">{subcat.subcategoryName}</div>
                     <div>
-                      <Link to="/guide" className={`btn btn-link text-white opacity-75 px-2 ${styles.btnIcon}`}>
+                      <Link
+                        to="/guide"
+                        className={`btn btn-link text-white opacity-75 px-2 disabled ${styles.btnIcon}`}
+                      >
                         <svg
                           stroke="currentColor"
                           fill="currentColor"

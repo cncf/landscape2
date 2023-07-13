@@ -137,6 +137,7 @@ const CardCategory = (props: Props) => {
                   return (
                     <button
                       key={`subcat_${subcat}`}
+                      title={subcat}
                       className={classNames(
                         'position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate',
                         styles.subcategoryBtn,

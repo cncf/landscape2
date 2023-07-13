@@ -83,6 +83,12 @@
   background-color: transparent;
 }
 
+@media only screen and (max-width: 1399.98px) {
+  .searchBar {
+    width: 300px;
+  }
+}
+
 @media only screen and (max-width: 991.98px) {
   .searchBar {
     width: 250px;

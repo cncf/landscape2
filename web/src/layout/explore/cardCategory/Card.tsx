@@ -86,7 +86,7 @@ const Card = (props: Props) => {
                 {props.item.member_subcategory !== undefined && (
                   <div
                     title={`${props.item.member_subcategory} member`}
-                    className={`badge rounded-0 text-uppercase me-2 ${styles.badge}`}
+                    className={`badge rounded-0 text-uppercase me-2 border ${styles.badgeOutlineDark}`}
                   >
                     {props.item.member_subcategory} member
                   </div>

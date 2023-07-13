@@ -60,6 +60,7 @@ const Modal = (props: Props) => {
 
                 <button
                   type="button"
+                  title="Close modal"
                   className="btn-close"
                   onClick={(e: MouseEvent<HTMLButtonElement>) => {
                     e.preventDefault();
@@ -75,6 +76,7 @@ const Modal = (props: Props) => {
                 <div className={`position-absolute ${styles.btnCloseWrapper}`}>
                   <button
                     type="button"
+                    title="Close modal"
                     className="btn-close"
                     onClick={(e: MouseEvent<HTMLButtonElement>) => {
                       e.preventDefault();

@@ -72,7 +72,7 @@ const GridCategory = (props: Props) => {
                 <div>
                   <Link
                     to="/guide"
-                    className={`btn btn-link text-white opacity-75 px-0 p-0 mt-2 ${styles.btnIcon} ${styles.btnInCatTitle}`}
+                    className={`btn btn-link text-white opacity-75 px-0 p-0 mt-2 disabled ${styles.btnIcon} ${styles.btnInCatTitle}`}
                   >
                     <svg
                       stroke="currentColor"
