@@ -13,16 +13,17 @@ import {
 } from '../../types';
 import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import styles from './Landscape.module.css';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Content from './Content';
 import Filters from './filters';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
-import prepareData, { CategoriesData } from '../../utils/prepareData';
+import prepareData from '../../utils/prepareData';
 import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import filterData from '../../utils/filterData';
 import prepareFilters from '../../utils/prepareFilters';
 import NoData from '../common/NoData';
+import throttle from '../../utils/throttle';
 
 interface Props {
   data: BaseData;
@@ -34,6 +35,8 @@ const Landscape = (props: Props) => {
   const point = useBreakpointDetect();
   const [searchParams] = useSearchParams();
   const { setActiveItemId } = useOutletContext() as OutletContext;
+  const container = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
   const [landscapeData, setLandscapeData] = useState<Item[] | undefined>();
   const [levelZoom, setLevelZoom] = useState<number>(
     point ? DEFAULT_ZOOM_LEVELS[point] : DEFAULT_ZOOM_LEVELS[Breakpoint.XL]
@@ -47,9 +50,6 @@ const Landscape = (props: Props) => {
   const [visibleItems, setVisibleItems] = useState<(BaseItem | Item)[]>(props.data.items);
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
-  const [categoriesData, setCategoriesData] = useState<CategoriesData | undefined>(
-    prepareData(props.data, visibleItems, selectedGroup)
-  );
   const [filtersFromData, setFiltersFromData] = useState<FilterSection[]>([]);
   const [filtersApplied, setFiltersApplied] = useState<boolean>(Object.keys(activeFilters).length > 0);
 
@@ -117,17 +117,27 @@ const Landscape = (props: Props) => {
   }, [activeFilters]);
 
   useEffect(() => {
-    setCategoriesData(prepareData(props.data, visibleItems, selectedGroup));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleItems, selectedGroup]);
-
-  useEffect(() => {
     if (point) {
       setLevelZoom(DEFAULT_ZOOM_LEVELS[point]);
     }
   }, [point]);
 
-  if (categoriesData === undefined) return null;
+  useEffect(() => {
+    if (container && container.current) {
+      setContainerWidth(container.current.offsetWidth);
+    }
+  }, []);
+
+  useEffect(() => {
+    const checkContainerWidth = throttle(() => {
+      if (container && container.current) {
+        setContainerWidth(container.current.offsetWidth);
+      }
+    }, 400);
+    window.addEventListener('resize', checkContainerWidth);
+
+    return () => window.removeEventListener('resize', checkContainerWidth);
+  }, []);
 
   return (
     <>
@@ -336,15 +346,37 @@ const Landscape = (props: Props) => {
       )}
 
       <div className="d-flex w-100 pt-1">
-        <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
-          <Content
-            fullDataReady={landscapeData !== undefined}
-            data={categoriesData}
-            cardWidth={ZOOM_LEVELS[levelZoom][0]}
-            selectedViewMode={selectedViewMode}
-            categories_overridden={props.data.categories_overridden}
-            onClickItem={onClickItem}
-          />
+        <div ref={container} className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
+          {props.data.groups ? (
+            <>
+              {props.data.groups.map((group: Group) => {
+                const isSelected = selectedGroup === group.name;
+                return (
+                  <div key={group.name} className={classNames({ 'd-none': !isSelected }, { 'd-block': isSelected })}>
+                    <Content
+                      containerWidth={containerWidth}
+                      fullDataReady={landscapeData !== undefined}
+                      data={prepareData(props.data, visibleItems, group.name)}
+                      cardWidth={ZOOM_LEVELS[levelZoom][0]}
+                      selectedViewMode={selectedViewMode}
+                      categories_overridden={props.data.categories_overridden}
+                      onClickItem={onClickItem}
+                    />
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <Content
+              containerWidth={containerWidth}
+              fullDataReady={landscapeData !== undefined}
+              data={prepareData(props.data, visibleItems)}
+              cardWidth={ZOOM_LEVELS[levelZoom][0]}
+              selectedViewMode={selectedViewMode}
+              categories_overridden={props.data.categories_overridden}
+              onClickItem={onClickItem}
+            />
+          )}
         </div>
       </div>
 
