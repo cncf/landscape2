@@ -1,4 +1,3 @@
-import NoData from '../NoData';
 import styles from './ParticipationStats.module.css';
 
 interface Props {
