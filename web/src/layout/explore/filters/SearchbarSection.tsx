@@ -116,6 +116,7 @@ const SearchbarSection = (props: Props) => {
           {value !== '' && (
             <>
               <button
+                title="Clear search"
                 aria-label="Clear search"
                 className={`btn btn-link text-muted lh-1 px-2 ${styles.btnIcon}`}
                 onClick={cleanSearchValue}
@@ -136,7 +137,12 @@ const SearchbarSection = (props: Props) => {
             </>
           )}
 
-          <button aria-label="Search text" className={`btn btn-link lh-1 px-2 ${styles.btnIcon}`} onClick={search}>
+          <button
+            title="Search text"
+            aria-label="Search text"
+            className={`btn btn-link lh-1 px-2 ${styles.btnIcon}`}
+            onClick={search}
+          >
             <div className={`${styles.iconWrapper}`}>
               <svg
                 stroke="currentColor"
@@ -164,6 +170,8 @@ const SearchbarSection = (props: Props) => {
                 <div key={`f_${f}`} className={`d-flex flex-row align-items-center w-100 ${styles.activeFilter}`}>
                   <div className="flex-grow-1 text-truncate me-2">{f}</div>
                   <button
+                    title={`Remove ${f} filter`}
+                    aria-label={`Remove ${f} filter`}
                     className="btn btn-sm btn-link text-end text-decoration-none"
                     onClick={() => onChange(f, false)}
                   >

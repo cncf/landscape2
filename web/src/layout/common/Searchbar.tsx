@@ -197,6 +197,7 @@ const Searchbar = (props: Props) => {
         {value !== '' && (
           <>
             <button
+              title="Clear text"
               aria-label="Clear search"
               className={`btn btn-link text-muted lh-1 px-2 ${styles.btnIcon}`}
               onClick={cleanSearchValue}
@@ -217,7 +218,12 @@ const Searchbar = (props: Props) => {
           </>
         )}
 
-        <button aria-label="Search text" className={`btn btn-link lh-1 px-2 ${styles.btnIcon}`} onClick={search}>
+        <button
+          title="Search text"
+          aria-label="Search text"
+          className={`btn btn-link lh-1 px-2 ${styles.btnIcon}`}
+          onClick={search}
+        >
           <div className={`${styles.iconWrapper}`}>
             <svg
               stroke="currentColor"

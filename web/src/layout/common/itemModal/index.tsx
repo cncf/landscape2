@@ -422,7 +422,7 @@ const ItemModal = (props: Props) => {
                         >
                           <path
                             fill="none"
-                            stroke="#000"
+                            stroke="inherit"
                             strokeWidth="2"
                             d="M1,1 L19,1 L19,19 L1,19 L1,1 Z M5,19 L5,23 L23,23 L23,5.97061363 L18.9998921,5.97061363 M6,8 C6.55228475,8 7,7.55228475 7,7 C7,6.44771525 6.55228475,6 6,6 C5.44771525,6 5,6.44771525 5,7 C5,7.55228475 5.44771525,8 6,8 Z M2,18 L7,12 L10,15 L14,10 L19,16"
                           ></path>
@@ -515,17 +515,17 @@ const ItemModal = (props: Props) => {
                 <div className={`fw-semibold text-truncate fs-6`}>{itemInfo.crunchbase_data.name}</div>
 
                 {itemInfo.crunchbase_data.kind && (
-                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase ${styles.badge}`}>
+                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark}`}>
                     {itemInfo.crunchbase_data.kind}
                   </div>
                 )}
                 {itemInfo.crunchbase_data.company_type && (
-                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase ${styles.badge}`}>
+                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark}`}>
                     {itemInfo.crunchbase_data.company_type.replace(/_/g, ' ')}
                   </div>
                 )}
               </div>
-              <div className={`text-muted ${styles.location}`}>
+              <div className={`text-muted pt-1 ${styles.location}`}>
                 {itemInfo.crunchbase_data.city}
                 {itemInfo.crunchbase_data.country !== undefined ? `, ${itemInfo.crunchbase_data.country}` : ''}
               </div>
@@ -537,7 +537,6 @@ const ItemModal = (props: Props) => {
                   <div
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
-                    {' '}
                     <div className={`fw-bold ${styles.highlightedTitle}`}>
                       {itemInfo.crunchbase_data.funding ? prettifyNumber(itemInfo.crunchbase_data.funding) : '-'}
                     </div>
@@ -574,7 +573,7 @@ const ItemModal = (props: Props) => {
                   <div
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
-                    <div className={`fw-bold ${styles.highlightedTitle}`}>
+                    <div className={`fw-bold text-uppercase ${styles.highlightedTitle}`}>
                       {itemInfo.crunchbase_data.stock_exchange ? itemInfo.crunchbase_data.stock_exchange : '-'}
                     </div>
                     <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -605,11 +604,11 @@ const ItemModal = (props: Props) => {
               <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
               {mainRepo !== undefined && (
                 <>
+                  <div>
+                    <small className="text-muted">Primary repository:</small>
+                  </div>
                   <div className="d-flex flex-row align-items-center">
-                    <div>
-                      <small className="text-muted">Primary repository:</small>
-                    </div>
-                    <div className="ms-2">{mainRepo.url}</div>
+                    <div className="mt-2 fw-semibold">{mainRepo.url}</div>
                     {mainRepo.github_data && (
                       <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark}`}>
                         {mainRepo.github_data.license}
@@ -624,7 +623,7 @@ const ItemModal = (props: Props) => {
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
                             <div className={`fw-bold ${styles.highlightedTitle}`}>
-                              {prettifyNumber(mainRepo.github_data.stars)}
+                              {prettifyNumber(mainRepo.github_data.stars, 1)}
                             </div>
                             <div className={`fw-semibold ${styles.highlightedLegend}`}>
                               <small>Stars</small>
@@ -715,7 +714,11 @@ const ItemModal = (props: Props) => {
                         if (repo.primary) return null;
                         return (
                           <tr className={styles.tableRepos} key={`table_${repo.url}`}>
-                            <td className="px-3">{repo.url}</td>
+                            <td className="px-3">
+                              <ExternalLink className="text-muted" href={repo.url}>
+                                {repo.url}
+                              </ExternalLink>
+                            </td>
                             <td className="px-3 text-center">
                               {repo.github_data && repo.github_data.stars
                                 ? prettifyNumber(repo.github_data.stars)

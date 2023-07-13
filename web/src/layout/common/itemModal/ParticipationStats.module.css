@@ -6,3 +6,7 @@
   width: 2%;
   background-color: var(--light-blue);
 }
+
+.message {
+  font-size: 0.8rem;
+}
