@@ -1,14 +1,13 @@
 import classNames from 'classnames';
 import styles from './GridCategory.module.css';
-import { useEffect, useRef, useState } from 'react';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { Link } from 'react-router-dom';
 import { CategoriesData } from '../../../utils/prepareData';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import Grid from './Grid';
-import throttle from '../../../utils/throttle';
 
 interface Props {
+  containerWidth: number;
   fullDataReady: boolean;
   data: CategoriesData;
   cardWidth: number;
@@ -17,27 +16,7 @@ interface Props {
 }
 
 const GridCategory = (props: Props) => {
-  const container = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
-
   const colorsList = generateColorsArray(Object.keys(props.data).length);
-
-  useEffect(() => {
-    if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth);
-    }
-  }, []);
-
-  useEffect(() => {
-    const checkContainerWidth = throttle(() => {
-      if (container && container.current) {
-        setContainerWidth(container.current.offsetWidth);
-      }
-    }, 400);
-    window.addEventListener('resize', checkContainerWidth);
-
-    return () => window.removeEventListener('resize', checkContainerWidth);
-  }, []);
 
   return (
     <>
@@ -94,10 +73,10 @@ const GridCategory = (props: Props) => {
               </div>
             </div>
 
-            <div ref={container} className="d-flex flex-column align-items-stretch w-100">
+            <div className="d-flex flex-column align-items-stretch w-100">
               <Grid
                 fullDataReady={props.fullDataReady}
-                containerWidth={containerWidth}
+                containerWidth={props.containerWidth}
                 itemWidth={props.cardWidth}
                 categoryName={cat}
                 isOverriden={isOverriden}

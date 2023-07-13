@@ -12,12 +12,12 @@ export interface SubcategoryData {
   itemsFeaturedCount: number;
 }
 
-const prepareData = (data: BaseData, items: (BaseItem | Item)[], activeGroup?: string): CategoriesData => {
+const prepareData = (data: BaseData, items: (BaseItem | Item)[], group?: string): CategoriesData => {
   const categories: CategoriesData = {};
   let categoriesList: Category[] = [];
 
-  if (activeGroup && data.groups) {
-    const activeGroupData = data.groups.find((group: Group) => group.name === activeGroup);
+  if (group && data.groups) {
+    const activeGroupData = data.groups.find((g: Group) => g.name === group);
     if (activeGroupData) {
       activeGroupData.categories.forEach((cat: string) => {
         const category = data.categories.find((c: Category) => c.name === cat);

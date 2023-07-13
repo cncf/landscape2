@@ -4,6 +4,7 @@ import GridCategory from './gridCategory';
 import CardCategory from './cardCategory';
 
 interface Props {
+  containerWidth: number;
   fullDataReady: boolean;
   data: CategoriesData;
   selectedViewMode: ViewMode;
@@ -15,29 +16,24 @@ interface Props {
 const Content = (props: Props) => {
   return (
     <>
-      {(() => {
-        switch (props.selectedViewMode) {
-          case ViewMode.Grid:
-            return (
-              <GridCategory
-                fullDataReady={props.fullDataReady}
-                data={props.data}
-                cardWidth={props.cardWidth}
-                categories_overridden={props.categories_overridden}
-                onClickItem={props.onClickItem}
-              />
-            );
-          case ViewMode.Card:
-            return (
-              <CardCategory
-                fullDataReady={props.fullDataReady}
-                data={props.data}
-                categories_overridden={props.categories_overridden}
-                onClickItem={props.onClickItem}
-              />
-            );
-        }
-      })()}
+      <div className={props.selectedViewMode === ViewMode.Grid ? 'd-block' : 'd-none'}>
+        <GridCategory
+          containerWidth={props.containerWidth}
+          fullDataReady={props.fullDataReady}
+          data={props.data}
+          cardWidth={props.cardWidth}
+          categories_overridden={props.categories_overridden}
+          onClickItem={props.onClickItem}
+        />
+      </div>
+      <div className={props.selectedViewMode === ViewMode.Card ? 'd-block' : 'd-none'}>
+        <CardCategory
+          fullDataReady={props.fullDataReady}
+          data={props.data}
+          categories_overridden={props.categories_overridden}
+          onClickItem={props.onClickItem}
+        />
+      </div>
     </>
   );
 };
