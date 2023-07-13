@@ -147,7 +147,7 @@ export interface FilterSection {
   options: FilterOption[];
   extra?: {
     [key: string]: string[];
-  }
+  };
 }
 
 export interface Option {

@@ -12,7 +12,7 @@ body,
   --card-size-height: 45px;
   --card-gap: 5px;
   --light-blue: rgb(96, 149, 214);
-  --dark-blue: rgba(0, 42, 81, 0.70);
+  --dark-blue: rgba(0, 42, 81, 0.7);
 }
 
 button:focus,
@@ -29,6 +29,25 @@ select:focus {
   height: 100%;
   overflow: hidden;
 }
+
+/* Scroll */
+.visibleScroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.visibleScroll::-webkit-scrollbar-thumb,
+.visibleScroll::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 10px;
+  background-color: var(--bs-gray-500);
+  border: 2px solid var(--bs-white);
+}
+
+.visibleScroll::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+
 
 /* Bootstrap */
 .badge {

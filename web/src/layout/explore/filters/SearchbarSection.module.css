@@ -1,3 +1,7 @@
+.wrapper {
+  border: 1px solid var(--bs-gray-200);
+}
+
 .searchBar {
   height: 33px;
   width: 100%;
@@ -21,19 +25,9 @@
   font-size: 0.7rem;
 }
 
-/* Dropdown */
-.dropdown {
-  width: 350px;
-  top: 3.75rem;
-  max-height: 250px;
+.list {
+  height: 200px;
+  max-height: 200px;
   overscroll-behavior: contain;
   font-size: 0.85rem;
-}
-
-.activeFilter {
-  font-size: 0.8rem;
-}
-
-.closeIcon {
-  min-width: 15px;
 }

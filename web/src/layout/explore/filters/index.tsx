@@ -43,15 +43,13 @@ const Filters = (props: Props) => {
   return (
     <Modal
       modalDialogClassName={styles.modal}
-      header="Filters"
-      open
-      onClose={props.onClose}
-      footer={
-        Object.keys(props.activeFilters).length > 0 ? (
+      header={
+        <div className="d-flex flex-row align-items-baseline">
+          <div>Filters</div>
           <button
             type="button"
             title="Reset filters"
-            className="btn btn-sm rounded-0 fw-semibold btn-secondary text-uppercase text-white"
+            className="btn btn-sm btn-link text-reset text-decoration-none"
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
               props.resetFilters();
@@ -59,11 +57,13 @@ const Filters = (props: Props) => {
             }}
             aria-label="Reset filters"
           >
-            Reset filters
+            (reset filters)
           </button>
-        ) : undefined
+        </div>
       }
-      noScrollable
+      open
+      size="xl"
+      onClose={props.onClose}
     >
       <div>
         {props.fullDataReady ? (
@@ -89,7 +89,7 @@ const Filters = (props: Props) => {
                 <div className="col-4">
                   <Section
                     section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                    activeFilters={props.activeFilters[FilterCategory.Project]}
+                    activeFilters={props.activeFilters[FilterCategory.CompanyType]}
                     updateActiveFilters={props.updateActiveFilters}
                     withTitle
                     inLine
