@@ -14,10 +14,6 @@
       <script>
         window.baseDS = {{ datasets.base|json|safe }};
       </script>
-
-      {%~ for url in datasets.logos.files %}
-        <link rel="preload" as="image" href="{{ url }}">
-      {%- endfor %}
     <% } %>
   </head>
   <body>

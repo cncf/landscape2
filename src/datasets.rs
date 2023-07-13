@@ -5,7 +5,7 @@
 //! rendering it), whereas others will be written to the output directory so
 //! that they can be fetched when needed.
 
-use self::{base::Base, full::Full, logos::Logos};
+use self::{base::Base, full::Full};
 use crate::{data::LandscapeData, settings::Settings};
 use anyhow::{Ok, Result};
 
@@ -17,9 +17,6 @@ pub(crate) struct Datasets {
 
     /// #[full]
     pub full: Full,
-
-    /// #[logos]
-    pub logos: Logos,
 }
 
 impl Datasets {
@@ -28,7 +25,6 @@ impl Datasets {
         let datasets = Datasets {
             base: Base::new(settings, landscape_data),
             full: Full::new(landscape_data.clone()),
-            logos: landscape_data.into(),
         };
 
         Ok(datasets)
@@ -141,35 +137,6 @@ mod full {
                 categories: data.categories,
                 items: data.items,
             }
-        }
-    }
-}
-
-/// Logos dataset.
-///
-/// This dataset contains a list of the logos files used across all items in
-/// the landscape.
-mod logos {
-    use crate::data::LandscapeData;
-    use serde::{Deserialize, Serialize};
-
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(crate) struct Logos {
-        #[serde(skip_serializing_if = "Vec::is_empty")]
-        pub files: Vec<String>,
-    }
-
-    impl From<&LandscapeData> for Logos {
-        fn from(data: &LandscapeData) -> Self {
-            let mut logos = Logos::default();
-
-            for item in &data.items {
-                logos.files.push(item.logo.clone());
-            }
-            logos.files.sort();
-            logos.files.dedup();
-
-            logos
         }
     }
 }
