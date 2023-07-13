@@ -50,6 +50,7 @@ const Section = (props: Props) => {
 
   return (
     <div>
+      {props.withTitle && <small className={`text-muted ${styles.legend}`}>{props.section.title}</small>}
       <div className={classNames({ 'd-flex flex-row': props.inLine })}>
         {props.section.options.map((opt: FilterOption) => {
           let subOpts;
@@ -77,7 +78,6 @@ const Section = (props: Props) => {
           );
         })}
       </div>
-      {props.withTitle && <small className={`text-muted ${styles.legend}`}>{props.section.title}</small>}
     </div>
   );
 };

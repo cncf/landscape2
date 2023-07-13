@@ -1,4 +1,4 @@
-import { FilterCategory, FilterSection, Item, Repository } from "../types";
+import { FilterCategory, FilterSection, Item, Repository } from '../types';
 
 const cleanValue = (t: string): string => {
   // return encodeURIComponent(t);
@@ -42,7 +42,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     title: 'Organization',
     options: [...new Set(organizations)].sort().map((org: string) => ({
       value: cleanValue(org),
-      name: org
+      name: org,
     })),
   });
 
@@ -51,7 +51,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     title: 'License',
     options: [...new Set(licenses)].sort().map((license: string) => ({
       value: cleanValue(license),
-      name: license
+      name: license,
     })),
   });
 
@@ -60,7 +60,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     title: 'Country',
     options: [...new Set(countries)].sort().map((country: string) => ({
       value: cleanValue(country),
-      name: country
+      name: country,
     })),
   });
 
@@ -69,7 +69,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     title: 'Industry',
     options: [...new Set(categories)].sort().map((category: string) => ({
       value: cleanValue(category),
-      name: category
+      name: category,
     })),
   });
 

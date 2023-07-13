@@ -78,7 +78,7 @@ export const FILTERS: FilterSection[] = [
       {
         value: 'non_profit',
         name: 'Non profit',
-      }
-    ]
+      },
+    ],
   },
 ];
