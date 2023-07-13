@@ -6,6 +6,7 @@ import Header from './navigation/Header';
 import { BaseItem } from '../types';
 import ItemModal from './common/itemModal';
 import itemsDataGetter from '../utils/itemsDataGetter';
+import NoData from './common/NoData';
 
 interface Props {
   items: BaseItem[];
@@ -31,7 +32,10 @@ const Layout = (props: Props) => {
     <div className="h-100 d-flex flex-column">
       <Header items={props.items} onClickItem={onClickItem} />
       <div className="d-flex flex-column flex-grow-1">
-        <main className="container-fluid px-4">
+        <NoData className="d-block d-lg-none">
+          <div className="fs-3">Mobile view is not ready yet!</div>
+        </NoData>
+        <main className="container-fluid px-4 d-none d-lg-block">
           <Outlet context={{ activeItemId, setActiveItemId }} />
         </main>
       </div>

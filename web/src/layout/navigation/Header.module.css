@@ -41,3 +41,9 @@
   right: 0;
   bottom: -10px;
 }
+
+@media only screen and (max-width: 991.98px) {
+  .link {
+    font-size: 0.9rem;
+  }
+}

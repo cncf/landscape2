@@ -7,10 +7,10 @@ const Footer = () => {
   return (
     <footer role="contentinfo" className={`bg-black text-white mt-4 ${styles.footer}`}>
       <div className="container-fluid">
-        <div className="d-flex flex-row justify-content-between">
-          <div className="d-flex flex-column w-75">
-            <div className="d-flex flex-row flex-wrap align-items-stretch justify-content-start text-light">
-              <div className={styles.logoCNCFWrapper}>
+        <div className="d-flex flex-column flex-sm-row justify-content-between">
+          <div className={`d-flex flex-column ${styles.content}`}>
+            <div className="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
+              <div className={`mb-4 mb-md-0 ${styles.logoCNCFWrapper}`}>
                 <img className={styles.logoCNCF} alt="Logo CNCF" src={CNCFLogo} />
               </div>
               <div className={styles.footerCol}>
@@ -98,7 +98,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className={`d-flex flex-column ms-0 ms-lg-auto ${styles.footerMobileSection}`}>
+          <div className={`mt-4 mt-md-0 d-flex flex-column ms-0 ms-lg-auto ${styles.footerMobileSection}`}>
             <img className={`mx-auto mt-1 ${styles.qr}`} alt="QR code" src={qr} />
             <img className={`mt-3 ${styles.logo}`} alt="Logo Landscape" src={logo} />
           </div>

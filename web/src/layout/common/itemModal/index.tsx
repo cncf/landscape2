@@ -103,7 +103,7 @@ const ItemModal = (props: Props) => {
               <div className="d-flex flex-row align-items-center">
                 <div className={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo.name}</div>
                 <div className={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
-                  {itemInfo.project !== undefined ? (
+                  {itemInfo.project !== undefined && (
                     <>
                       <div title="CNCF" className="badge rounded-0 bg-primary">
                         CNCF
@@ -130,17 +130,6 @@ const ItemModal = (props: Props) => {
                           <div>
                             <small>{itemInfo.accepted_at.split('-')[0]}</small>
                           </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      {itemInfo.member_subcategory !== undefined && (
-                        <div
-                          title={`${itemInfo.member_subcategory} member`}
-                          className={`badge rounded-0 text-uppercase me-2 ${styles.badge}`}
-                        >
-                          {itemInfo.member_subcategory} member
                         </div>
                       )}
                     </>
