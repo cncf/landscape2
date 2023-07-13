@@ -3,6 +3,7 @@ import { MouseEvent, useEffect, useRef, useState } from 'react';
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './Modal.module.css';
+import classNames from 'classnames';
 
 interface Props {
   open: boolean;
@@ -10,8 +11,10 @@ interface Props {
   headerClassName?: string;
   modalDialogClassName?: string;
   children: JSX.Element;
+  footer?: JSX.Element;
   onClose: () => void;
   size?: string;
+  noScrollable?: boolean;
   visibleContentBackdrop?: boolean;
 }
 
@@ -41,9 +44,13 @@ const Modal = (props: Props) => {
 
       <div className={`modal d-block ${styles.modal} ${styles.active}`} role="dialog" aria-modal={true}>
         <div
-          className={`modal-dialog modal-${props.size || 'lg'} modal-dialog-centered modal-dialog-scrollable ${
+          className={classNames(
+            `modal-dialog modal-${props.size || 'lg'}`,
+            {
+              'modal-dialog-centered modal-dialog-scrollable': props.noScrollable === undefined || !props.noScrollable,
+            },
             props.modalDialogClassName
-          }`}
+          )}
           ref={ref}
         >
           <div className={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
@@ -80,6 +87,8 @@ const Modal = (props: Props) => {
 
               {props.children}
             </div>
+
+            {props.footer !== undefined && <div className="modal-footer p-3">{props.footer}</div>}
           </div>
         </div>
       </div>

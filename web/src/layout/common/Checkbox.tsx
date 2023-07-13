@@ -24,7 +24,7 @@ export const CheckBox = (props: Props) => {
   const id = `${props.name}-${props.value}`;
 
   return (
-    <div className={`form-check me-sm-2 mb-2 ${props.className}`}>
+    <div className={`form-check me-sm-2 mb-0 ${props.className}`}>
       <input
         type="checkbox"
         className={`form-check-input rounded-0 ${styles.checkbox}`}

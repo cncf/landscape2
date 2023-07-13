@@ -12,6 +12,7 @@ body,
   --card-size-height: 45px;
   --card-gap: 5px;
   --light-blue: rgb(96, 149, 214);
+  --dark-blue: rgba(0, 42, 81, 0.70);
 }
 
 button:focus,

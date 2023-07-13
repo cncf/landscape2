@@ -102,7 +102,7 @@ const Grid = (props: Props) => {
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.containerWidth, props.itemWidth]);
+  }, [props.containerWidth, props.itemWidth, props.subcategories]);
 
   if (grid === undefined) return null;
 
@@ -117,6 +117,8 @@ const Grid = (props: Props) => {
             key={`cat_${props.categoryIndex}row_${rownIndex}`}
           >
             {row.map((subcat: LayoutColumn, subcatIndex: number) => {
+              if (props.data[props.categoryName][subcat.subcategoryName].items.length === 0) return null;
+
               const sortedItems: (BaseItem | Item)[] = sortItems(
                 sortItems(props.data[props.categoryName][subcat.subcategoryName].items)
               );

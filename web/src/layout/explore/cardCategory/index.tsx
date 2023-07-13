@@ -69,7 +69,7 @@ const CardCategory = (props: Props) => {
   }, [props.data]);
 
   useEffect(() => {
-    if (menu !== undefined) {
+    if (menu !== undefined && Object.keys(menu).length > 0) {
       let selectedCategory = Object.keys(menu)[0];
       let selectedSubcategory = menu[selectedCategory][0];
 
@@ -85,6 +85,8 @@ const CardCategory = (props: Props) => {
 
       setSelectedSection({ category: selectedCategory, subcategory: selectedSubcategory });
       setVisibleItems(sortItems(selectedCategory, selectedSubcategory));
+    } else {
+      setVisibleItems([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menu]);
