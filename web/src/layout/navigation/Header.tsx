@@ -14,33 +14,33 @@ const Header = (props: Props) => {
   return (
     <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
       <div className="container-fluid d-flex align-items-center p-4">
-        <div>
+        <div className="mx-auto mx-md-0">
           <Link to="/">
             <img className={styles.logo} src={logo} alt="Landscape logo" />
           </Link>
         </div>
 
-        <div className="collapse navbar-collapse d-flex align-items-center">
+        <div className="d-none d-md-flex align-items-center">
           <NavLink
-            className={`btn btn-link position-relative ms-5 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            className={`btn btn-link position-relative ms-4 ms-xl-5 text-light text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
             to="/"
           >
             Explore
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
+            className={`btn btn-link position-relative ms-3 ms-xl-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
             to="/guide"
           >
             Guide
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
+            className={`btn btn-link position-relative ms-3 ms-xl-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
             to="/stats"
           >
             Stats
           </NavLink>
           <NavLink
-            className={`btn btn-link position-relative ms-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
+            className={`btn btn-link position-relative ms-3 ms-xl-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
             to="/acquisitions"
           >
             Acquisitions
@@ -48,11 +48,11 @@ const Header = (props: Props) => {
         </div>
 
         <div className={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>
-          <div className="position-relative me-4">
+          <div className="d-none d-lg-block position-relative me-2 me-xl-4">
             <Searchbar items={props.items} openItem={props.onClickItem} />
           </div>
           <a
-            className={`btn btn-md text-dark fs-5 ms-4 px-0`}
+            className={`btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0`}
             href="https://github.com/cncf/clotributor"
             target="_blank"
             rel="noopener noreferrer"

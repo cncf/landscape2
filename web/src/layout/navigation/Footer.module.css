@@ -2,6 +2,10 @@
   padding: 4rem;
 }
 
+.content {
+  width: 75%;
+}
+
 .logoCNCFWrapper {
   margin-right: 5rem;
 }
@@ -35,6 +39,10 @@
 }
 
 @media only screen and (max-width: 991.98px) {
+  .footer {
+    padding: 2rem 1.5rem;
+  }
+
   .footerCol,
   .fullMobileSection {
     padding: 0 1rem;
@@ -47,5 +55,15 @@
   .fullMobileSection {
     width: 100%;
     text-align: center;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .content {
+    width: 100%;
+  }
+
+  .about {
+    max-width: 100%;
   }
 }
