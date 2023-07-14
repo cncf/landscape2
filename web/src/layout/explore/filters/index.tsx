@@ -4,20 +4,24 @@ import Section from './Section';
 import Modal from '../../common/Modal';
 import SearchbarSection from './SearchbarSection';
 import styles from './Filters.module.css';
-import { MouseEvent } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 
 interface Props {
   fullDataReady: boolean;
   filtersFromData: FilterSection[];
   visibleFilters: boolean;
   onClose: () => void;
-  resetFilters: () => void;
+  applyFilters: (newFilters: ActiveFilters) => void;
   activeFilters: ActiveFilters;
-  resetFilter: (value: FilterCategory) => void;
-  updateActiveFilters: (value: FilterCategory, options: string[]) => void;
 }
 
 const Filters = (props: Props) => {
+  const [tmpActiveFilters, setTmpActiveFilters] = useState<ActiveFilters>(props.activeFilters);
+
+  useEffect(() => {
+    setTmpActiveFilters(props.activeFilters);
+  }, [props.activeFilters, props.visibleFilters]);
+
   if (!props.visibleFilters) return null;
 
   const getSection = (id: FilterCategory): FilterSection | undefined => {
@@ -34,6 +38,24 @@ const Filters = (props: Props) => {
       return section;
     }
     return;
+  };
+
+  const resetFilter = (name: FilterCategory) => {
+    updateActiveFilters(name, []);
+  };
+
+  const updateActiveFilters = (value: FilterCategory, options: string[]) => {
+    const filters: ActiveFilters = { ...tmpActiveFilters };
+    if (options.length === 0) {
+      delete filters[value];
+    } else {
+      filters[value] = options;
+    }
+    setTmpActiveFilters(filters);
+  };
+
+  const resetFilters = () => {
+    setTmpActiveFilters({});
   };
 
   const countryFilter = getSection(FilterCategory.Country);
@@ -53,7 +75,7 @@ const Filters = (props: Props) => {
             className="btn btn-sm btn-link text-muted"
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
-              props.resetFilters();
+              resetFilters();
               props.onClose();
             }}
             aria-label="Reset filters"
@@ -72,7 +94,8 @@ const Filters = (props: Props) => {
               className="btn btn-sm btn-secondary text-uppercase fw-semibold text-white rounded-0"
               onClick={(e: MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault();
-                // TODO - apply
+                props.applyFilters(tmpActiveFilters);
+                props.onClose();
               }}
               aria-label="Apply filters"
             >
@@ -93,9 +116,9 @@ const Filters = (props: Props) => {
                 <Section
                   title="Project status"
                   section={getSectionInPredefinedFilters(FilterCategory.Project)}
-                  activeFilters={props.activeFilters[FilterCategory.Project]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.Project]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
 
@@ -103,18 +126,18 @@ const Filters = (props: Props) => {
                 <SearchbarSection
                   title="License"
                   section={licenseFilter}
-                  activeFilters={props.activeFilters[FilterCategory.License]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.License]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
 
               <div className="col-4">
                 <SearchbarSection
                   section={industryFilter}
-                  activeFilters={props.activeFilters[FilterCategory.Industry]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.Industry]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
 
@@ -122,9 +145,9 @@ const Filters = (props: Props) => {
                 <SearchbarSection
                   title="Organization"
                   section={orgFilter}
-                  activeFilters={props.activeFilters[FilterCategory.Organization]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.Organization]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
 
@@ -132,9 +155,9 @@ const Filters = (props: Props) => {
                 <Section
                   title="Organization type"
                   section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                  activeFilters={props.activeFilters[FilterCategory.CompanyType]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.CompanyType]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
 
@@ -142,9 +165,9 @@ const Filters = (props: Props) => {
                 <SearchbarSection
                   title="Location"
                   section={countryFilter}
-                  activeFilters={props.activeFilters[FilterCategory.Country]}
-                  updateActiveFilters={props.updateActiveFilters}
-                  resetFilter={props.resetFilter}
+                  activeFilters={tmpActiveFilters[FilterCategory.Country]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
                 />
               </div>
             </div>
