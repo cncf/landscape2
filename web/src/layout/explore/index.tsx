@@ -93,6 +93,10 @@ const Landscape = (props: Props) => {
     updateActiveFilters(name, tmpActiveFilters);
   };
 
+  const resetFilter = (name: FilterCategory) => {
+    updateActiveFilters(name, []);
+  };
+
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
     const tmpActiveFilters: ActiveFilters = { ...activeFilters };
     if (options.length === 0) {
@@ -332,6 +336,7 @@ const Landscape = (props: Props) => {
         resetFilters={resetFilters}
         activeFilters={activeFilters}
         updateActiveFilters={updateActiveFilters}
+        resetFilter={resetFilter}
       />
     </>
   );

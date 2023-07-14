@@ -13,6 +13,7 @@ interface Props {
   onClose: () => void;
   resetFilters: () => void;
   activeFilters: ActiveFilters;
+  resetFilter: (value: FilterCategory) => void;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
 }
 
@@ -49,7 +50,7 @@ const Filters = (props: Props) => {
           <button
             type="button"
             title="Reset filters"
-            className="btn btn-sm btn-link text-reset text-decoration-none"
+            className="btn btn-sm btn-link text-muted"
             onClick={(e: MouseEvent<HTMLButtonElement>) => {
               e.preventDefault();
               props.resetFilters();
@@ -57,84 +58,94 @@ const Filters = (props: Props) => {
             }}
             aria-label="Reset filters"
           >
-            (reset filters)
+            (reset all)
           </button>
+        </div>
+      }
+      footer={
+        <div className="d-flex flex-row justify-content-between w-100">
+          <small className="fst-italic text-muted">x items found</small>
+          <div>
+            <button
+              type="button"
+              title="Apply filters"
+              className="btn btn-sm btn-secondary text-uppercase fw-semibold text-white rounded-0"
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault();
+                // TODO - apply
+              }}
+              aria-label="Apply filters"
+            >
+              Apply
+            </button>
+          </div>
         </div>
       }
       open
       size="xl"
       onClose={props.onClose}
     >
-      <div>
+      <div className="p-3">
         {props.fullDataReady ? (
           <>
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
-              <div className="row g-4">
-                <div className="col-4">
-                  <SearchbarSection
-                    title="Name"
-                    section={orgFilter}
-                    activeFilters={props.activeFilters[FilterCategory.Organization]}
-                    updateActiveFilters={props.updateActiveFilters}
-                  />
-                </div>
-                <div className="col-4">
-                  <SearchbarSection
-                    section={industryFilter}
-                    activeFilters={props.activeFilters[FilterCategory.Industry]}
-                    updateActiveFilters={props.updateActiveFilters}
-                  />
-                </div>
-                <div className="col-4">
-                  <Section
-                    section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                    activeFilters={props.activeFilters[FilterCategory.CompanyType]}
-                    updateActiveFilters={props.updateActiveFilters}
-                    withTitle
-                    inLine
-                  />
-                </div>
+            <div className="row g-5">
+              <div className="col-4">
+                <Section
+                  title="Project status"
+                  section={getSectionInPredefinedFilters(FilterCategory.Project)}
+                  activeFilters={props.activeFilters[FilterCategory.Project]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
               </div>
-            </div>
 
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repository</div>
-              <div className="row g-4">
-                <div className="col-6">
-                  <SearchbarSection
-                    title="License"
-                    section={licenseFilter}
-                    activeFilters={props.activeFilters[FilterCategory.License]}
-                    updateActiveFilters={props.updateActiveFilters}
-                  />
-                </div>
+              <div className="col-4">
+                <SearchbarSection
+                  title="License"
+                  section={licenseFilter}
+                  activeFilters={props.activeFilters[FilterCategory.License]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
               </div>
-            </div>
 
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Location</div>
-              <div className="row g-0">
-                <div className="col-6">
-                  <SearchbarSection
-                    section={countryFilter}
-                    activeFilters={props.activeFilters[FilterCategory.Country]}
-                    updateActiveFilters={props.updateActiveFilters}
-                  />
-                </div>
+              <div className="col-4">
+                <SearchbarSection
+                  section={industryFilter}
+                  activeFilters={props.activeFilters[FilterCategory.Industry]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
               </div>
-            </div>
 
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Project</div>
-              <div className="row g-4">
-                <div className="col-6">
-                  <Section
-                    section={getSectionInPredefinedFilters(FilterCategory.Project)}
-                    activeFilters={props.activeFilters[FilterCategory.Project]}
-                    updateActiveFilters={props.updateActiveFilters}
-                  />
-                </div>
+              <div className="col-4">
+                <SearchbarSection
+                  title="Organization"
+                  section={orgFilter}
+                  activeFilters={props.activeFilters[FilterCategory.Organization]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
+              </div>
+
+              <div className="col-4">
+                <Section
+                  title="Organization type"
+                  section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
+                  activeFilters={props.activeFilters[FilterCategory.CompanyType]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
+              </div>
+
+              <div className="col-4">
+                <SearchbarSection
+                  title="Location"
+                  section={countryFilter}
+                  activeFilters={props.activeFilters[FilterCategory.Country]}
+                  updateActiveFilters={props.updateActiveFilters}
+                  resetFilter={props.resetFilter}
+                />
               </div>
             </div>
           </>

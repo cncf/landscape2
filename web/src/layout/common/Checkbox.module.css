@@ -1,3 +1,7 @@
+.label {
+  font-size: 0.8rem;
+}
+
 @media (hover: hover) {
   .checkbox:not([disabled]),
   .checkbox:not([disabled]) + label {
