@@ -462,7 +462,16 @@ const ItemModal = (props: Props) => {
                 <div className="d-flex flex-row justify-content-between">
                   <div className="d-flex flex-column align-items-center">
                     <div className={`badge rounded-1 p-2 ${styles.projectBadge} ${styles.activeProjectBadge}`}>
-                      {itemInfo.accepted_at || '-'}
+                      {itemInfo.accepted_at ? (
+                        <>
+                          {itemInfo.accepted_at === itemInfo.incubating_at ||
+                          itemInfo.accepted_at === itemInfo.graduated_at
+                            ? '-'
+                            : itemInfo.accepted_at}
+                        </>
+                      ) : (
+                        '-'
+                      )}
                     </div>
                     <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>
                       Sandbox

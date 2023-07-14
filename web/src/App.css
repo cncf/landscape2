@@ -52,12 +52,14 @@ select:focus {
   font-weight: 600 !important;
 }
 
-a, .btn-link {
+a,
+.btn-link {
   text-decoration: none;
 }
 
 @media (hover: hover) {
-  a:hover, .btn-link:hover {
+  a:hover,
+  .btn-link:hover {
     text-decoration: underline;
   }
 }

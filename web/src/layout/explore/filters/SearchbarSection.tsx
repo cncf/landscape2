@@ -7,6 +7,7 @@ import { sortBy } from 'lodash';
 
 export interface Props {
   title?: string;
+  placeholder?: string;
   section?: FilterSection;
   activeFilters?: string[];
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
@@ -126,6 +127,7 @@ const SearchbarSection = (props: Props) => {
             data-testid="search-bar"
             ref={inputEl}
             className={`flex-grow-1 border-0 shadow-none bg-transparent lh-base ps-2 ${styles.input}`}
+            placeholder={props.placeholder || 'Search'}
             type="text"
             value={value}
             autoComplete="off"

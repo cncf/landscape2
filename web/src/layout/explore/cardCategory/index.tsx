@@ -7,6 +7,7 @@ import { COLORS } from '../../../data';
 import classNames from 'classnames';
 import Card from './Card';
 import { useOutletContext } from 'react-router-dom';
+import { orderBy } from 'lodash';
 
 interface Props {
   fullDataReady: boolean;
@@ -31,8 +32,10 @@ const CardCategory = (props: Props) => {
   const bgColor = COLORS[0];
 
   const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
-    return props.data[firstCategory][firstSubcategory].items.sort((a: BaseItem, b: BaseItem) =>
-      a.name.localeCompare(b.name)
+    return orderBy(
+      props.data[firstCategory][firstSubcategory].items,
+      [(item: BaseItem) => item.name.toString()],
+      'asc'
     );
   };
 

@@ -1,15 +1,5 @@
 import classNames from 'classnames';
-import {
-  ActiveFilters,
-  FilterCategory,
-  BaseItem,
-  Group,
-  ViewMode,
-  Breakpoint,
-  BaseData,
-  Item,
-  FilterSection,
-} from '../../types';
+import { ActiveFilters, FilterCategory, BaseItem, Group, ViewMode, Breakpoint, BaseData, Item } from '../../types';
 import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import styles from './Landscape.module.css';
 import { Fragment, useEffect, useRef, useState } from 'react';
@@ -20,10 +10,10 @@ import prepareData, { GroupData } from '../../utils/prepareData';
 import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import filterData from '../../utils/filterData';
-import prepareFilters from '../../utils/prepareFilters';
 import NoData from '../common/NoData';
 import throttle from '../../utils/throttle';
 import ActiveFiltersList from './filters/ActiveFiltersList';
+import countVisibleItems from '../../utils/countVisibleItems';
 
 interface Props {
   data: BaseData;
@@ -51,14 +41,12 @@ const Landscape = (props: Props) => {
   const [visibleItems, setVisibleItems] = useState<(BaseItem | Item)[]>(props.data.items);
   const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
-  const [filtersFromData, setFiltersFromData] = useState<FilterSection[]>([]);
-  const [filtersApplied, setFiltersApplied] = useState<boolean>(Object.keys(activeFilters).length > 0);
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
+  const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
 
   itemsDataGetter.subscribe({
     updateLandscapeData: (items: Item[]) => {
       setLandscapeData(items);
-      setFiltersFromData(prepareFilters(items));
     },
   });
 
@@ -101,12 +89,10 @@ const Landscape = (props: Props) => {
       tmpActiveFilters[value] = options;
     }
     setActiveFilters(tmpActiveFilters);
-    setFiltersApplied(Object.keys(tmpActiveFilters).length > 0);
   };
 
   const resetFilters = () => {
     setActiveFilters({});
-    setFiltersApplied(false);
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
@@ -119,7 +105,9 @@ const Landscape = (props: Props) => {
   }, [activeFilters]);
 
   useEffect(() => {
-    setGroupsData(prepareData(props.data, visibleItems));
+    const newData = prepareData(props.data, visibleItems);
+    setGroupsData(newData);
+    setNumVisibleItems(countVisibleItems(newData[selectedGroup || 'default']));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleItems, selectedGroup]);
 
@@ -269,27 +257,23 @@ const Landscape = (props: Props) => {
 
       <ActiveFiltersList activeFilters={activeFilters} resetFilters={resetFilters} removeFilter={removeFilter} />
 
-      {visibleItems.length === 0 && (
+      {numVisibleItems === 0 && (
         <div className="pt-5">
           <NoData>
             <>
               <div className="fs-4">We couldn't find any items that match the criteria selected.</div>
-              {filtersApplied && (
-                <>
-                  <p className="h6 my-4 lh-base">
-                    You can update them and try again or{' '}
-                    <button
-                      type="button"
-                      className="btn btn-link lh-1 p-0 text-reset align-baseline"
-                      onClick={resetFilters}
-                      aria-label="Reset filters"
-                    >
-                      reset all
-                    </button>{' '}
-                    the filters.
-                  </p>
-                </>
-              )}
+              <p className="h6 my-4 lh-base">
+                You can update them and try again or{' '}
+                <button
+                  type="button"
+                  className="btn btn-link lh-1 p-0 text-reset align-baseline"
+                  onClick={resetFilters}
+                  aria-label="Reset filters"
+                >
+                  reset all
+                </button>{' '}
+                the filters.
+              </p>
             </>
           </NoData>
         </div>
@@ -329,8 +313,9 @@ const Landscape = (props: Props) => {
       </div>
 
       <Filters
-        fullDataReady={landscapeData !== undefined}
-        filtersFromData={filtersFromData}
+        data={props.data}
+        landscapeData={landscapeData}
+        selectedGroup={selectedGroup}
         visibleFilters={visibleFilters}
         onClose={() => setVisibleFilters(false)}
         activeFilters={activeFilters}
