@@ -248,7 +248,7 @@ const Card = (props: Props) => {
         {stars !== undefined && (
           <div className="d-flex flex-row align-items-baseline">
             <small className="me-1 text-black-50">GitHub stars:</small>
-            <div className="fw-semibold">{stars ? prettifyNumber(stars) : '-'}</div>
+            <div className="fw-semibold">{stars ? prettifyNumber(stars, 1) : '-'}</div>
           </div>
         )}
       </div>

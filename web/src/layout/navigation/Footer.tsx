@@ -8,7 +8,7 @@ const Footer = () => {
     <footer role="contentinfo" className={`bg-black text-white mt-4 ${styles.footer}`}>
       <div className="container-fluid">
         <div className="d-flex flex-column flex-sm-row justify-content-between">
-          <div className={`d-flex flex-column ${styles.content}`}>
+          <div className={`d-flex flex-column position-relative pb-5 ${styles.content}`}>
             <div className="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
               <div className={`mb-4 mb-md-0 ${styles.logoCNCFWrapper}`}>
                 <img className={styles.logoCNCF} alt="Logo CNCF" src={CNCFLogo} />
@@ -85,15 +85,14 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            <div>
-              <hr className={styles.hr} />
-              <div className="d-flex flex-row">
-                <div className={`text-white opacity-75 ${styles.copyright}`}>
-                  Copyright © 2023 The Linux Foundation®. All rights reserved. The Linux Foundation has registered
-                  trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our
-                  Trademark Usage page. Linux is a registered trademark of Linus Torvalds. Privacy Policy and Terms of
-                  Use.
-                </div>
+            <hr className={styles.hr} />
+
+            <div className={`bottom-0 ${styles.copyrightWrapper}`}>
+              <div className={`text-white opacity-75 ${styles.copyright}`}>
+                Copyright © 2023 The Linux Foundation®. All rights reserved. The Linux Foundation has registered
+                trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our
+                Trademark Usage page. Linux is a registered trademark of Linus Torvalds. Privacy Policy and Terms of
+                Use.
               </div>
             </div>
           </div>

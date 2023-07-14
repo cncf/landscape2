@@ -12,7 +12,6 @@ interface Props {
   data: CategoriesData;
   cardWidth: number;
   categories_overridden?: string[];
-  onClickItem: (itemId: string) => void;
 }
 
 const GridCategory = (props: Props) => {
@@ -81,10 +80,9 @@ const GridCategory = (props: Props) => {
                 categoryName={cat}
                 isOverriden={isOverriden}
                 subcategories={subcategories}
-                data={props.data}
+                categoryData={props.data[cat]}
                 backgroundColor={colorsList[index]}
                 categoryIndex={index}
-                onClickItem={props.onClickItem}
               />
             </div>
           </div>

@@ -27,13 +27,13 @@
 .selected {
   color: black !important;
   opacity: 1 !important;
-  background-color: rgba(0,0,0,0.035) !important;
+  background-color: rgba(0, 0, 0, 0.035) !important;
 }
 
 .subcategoryBtn:hover {
   color: var(--bs-primary);
   text-decoration: underline;
-  background-color: rgba(0,0,0,0.035);
+  background-color: rgba(0, 0, 0, 0.035);
 }
 
 .card {

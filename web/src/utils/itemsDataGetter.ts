@@ -1,4 +1,4 @@
-import { Item, LandscapeData } from "../types";
+import { Item, LandscapeData } from '../types';
 
 export interface ItemsDataHandler {
   updateLandscapeData(items: Item[]): void;
@@ -24,18 +24,18 @@ export class ItemsDataGetter {
 
   public init() {
     if (!this.ready) {
-      fetch(import.meta.env.MODE === 'development' ? "../../static/full.json" : "./data/full.json")
-      .then(res => res.json())
-      .then(data => {
-        this.landscapeData = data;
-        this.ready = true;
-        if (this.updateData) {
-          this.updateData.updateLandscapeData(data.items);
-        }
-        if (this.updateStatus) {
-          this.updateStatus.updateStatus(true);
-        }
-      });
+      fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
+        .then((res) => res.json())
+        .then((data) => {
+          this.landscapeData = data;
+          this.ready = true;
+          if (this.updateData) {
+            this.updateData.updateLandscapeData(data.items);
+          }
+          if (this.updateStatus) {
+            this.updateStatus.updateStatus(true);
+          }
+        });
     }
   }
 

@@ -13,17 +13,21 @@ import classNames from 'classnames';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
-  fullDataReady: boolean;
   activeItemId?: string;
   removeActiveItem: () => void;
 }
 
 const ItemModal = (props: Props) => {
+  const [fullDataReady, setFullDataReady] = useState<boolean>(false);
   const [itemInfo, setItemInfo] = useState<Item | null | undefined>(undefined);
   let description = 'This item does not have a description available yet';
   let stars: number | undefined;
   let mainRepo: Repository | undefined;
   let websiteUrl: string | undefined = itemInfo ? itemInfo.homepage_url : undefined;
+
+  itemsDataGetter.isReady({
+    updateStatus: (status: boolean) => setFullDataReady(status),
+  });
 
   if (
     itemInfo &&
@@ -80,13 +84,13 @@ const ItemModal = (props: Props) => {
       }
     }
 
-    if (props.activeItemId && props.fullDataReady) {
+    if (props.activeItemId && fullDataReady) {
       fetchItemInfo();
     } else {
       setItemInfo(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.activeItemId, props.fullDataReady]);
+  }, [props.activeItemId, fullDataReady]);
 
   if (props.activeItemId === undefined) return null;
 
@@ -504,12 +508,16 @@ const ItemModal = (props: Props) => {
                 <div className={`fw-semibold text-truncate fs-6`}>{itemInfo.crunchbase_data.name}</div>
 
                 {itemInfo.crunchbase_data.kind && (
-                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark}`}>
+                  <div
+                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                  >
                     {itemInfo.crunchbase_data.kind}
                   </div>
                 )}
                 {itemInfo.crunchbase_data.company_type && (
-                  <div className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark}`}>
+                  <div
+                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                  >
                     {itemInfo.crunchbase_data.company_type.replace(/_/g, ' ')}
                   </div>
                 )}
@@ -596,8 +604,10 @@ const ItemModal = (props: Props) => {
                   <div>
                     <small className="text-muted">Primary repository:</small>
                   </div>
-                  <div className="d-flex flex-row align-items-center">
-                    <div className="mt-2 fw-semibold">{mainRepo.url}</div>
+                  <div className="d-flex flex-row align-items-center my-2">
+                    <ExternalLink className="text-reset p-0 align-baseline fw-semibold" href={mainRepo.url}>
+                      {mainRepo.url}
+                    </ExternalLink>
                     {mainRepo.github_data && (
                       <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark}`}>
                         {mainRepo.github_data.license}

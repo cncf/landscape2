@@ -1,9 +1,13 @@
-import { BaseData, BaseItem, Category, Group, Item } from "../types";
+import { BaseData, BaseItem, Category, Group, Item } from '../types';
+
+export interface GroupData {
+  [key: string]: CategoriesData;
+}
 
 export interface CategoriesData {
   [key: string]: {
     [key: string]: SubcategoryData;
-  }
+  };
 }
 
 export interface SubcategoryData {
@@ -12,25 +16,8 @@ export interface SubcategoryData {
   itemsFeaturedCount: number;
 }
 
-const prepareData = (data: BaseData, items: (BaseItem | Item)[], group?: string): CategoriesData => {
+const getCategoriesData = (categoriesList: Category[], items: (BaseItem | Item)[]): CategoriesData => {
   const categories: CategoriesData = {};
-  let categoriesList: Category[] = [];
-
-  if (group && data.groups) {
-    const activeGroupData = data.groups.find((g: Group) => g.name === group);
-    if (activeGroupData) {
-      activeGroupData.categories.forEach((cat: string) => {
-        const category = data.categories.find((c: Category) => c.name === cat);
-        if (category) {
-          categoriesList.push(category);
-        }
-      });
-    } else {
-      categoriesList = data.categories;
-    }
-  } else {
-    categoriesList = data.categories;
-  }
 
   categoriesList.forEach((cat: Category) => {
     categories[cat.name] = {};
@@ -38,7 +25,7 @@ const prepareData = (data: BaseData, items: (BaseItem | Item)[], group?: string)
       categories[cat.name][subcat] = {
         items: [],
         itemsCount: 0,
-        itemsFeaturedCount: 0
+        itemsFeaturedCount: 0,
       };
     });
   });
@@ -54,6 +41,29 @@ const prepareData = (data: BaseData, items: (BaseItem | Item)[], group?: string)
   });
 
   return categories;
+};
+
+const prepareData = (data: BaseData, items: (BaseItem | Item)[]): GroupData => {
+  const groups: GroupData = {};
+
+  if (data.groups) {
+    data.groups.map((g: Group) => {
+      const categoriesList: Category[] = [];
+
+      g.categories.forEach((cat: string) => {
+        const category = data.categories.find((c: Category) => c.name === cat);
+        if (category) {
+          categoriesList.push(category);
+        }
+      });
+
+      groups[g.name] = getCategoriesData(categoriesList, items);
+    });
+  } else {
+    groups.default = getCategoriesData(data.categories, items);
+  }
+
+  return groups;
 };
 
 export default prepareData;

@@ -47,9 +47,17 @@ select:focus {
   background-color: transparent;
 }
 
-
-
 /* Bootstrap */
 .badge {
   font-weight: 600 !important;
+}
+
+a {
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  a:hover {
+    text-decoration: underline;
+  }
 }
