@@ -14,3 +14,16 @@
 .month {
   font-size: 0.7rem;
 }
+
+.axisLegend {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.6rem;
+  width: 1.25rem;
+}
+
+.axisValue {
+  font-size: 0.6rem;
+  line-height: 0.6rem;
+}

@@ -108,6 +108,6 @@
 
 @media (hover: hover) {
   .btnProject:hover {
-    filter: none !important;
+    background-color: var(--bs-gray-100);
   }
 }

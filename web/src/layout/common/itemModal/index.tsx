@@ -11,6 +11,8 @@ import prettifyNumber from '../../../utils/prettifyNumber';
 import moment from 'moment';
 import classNames from 'classnames';
 import ParticipationStats from './ParticipationStats';
+import formatProfitLabel from '../../../utils/formatLabelProfit';
+import { Loading } from '../Loading';
 
 interface Props {
   activeItemId?: string;
@@ -527,7 +529,7 @@ const ItemModal = (props: Props) => {
                   <div
                     className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
                   >
-                    {itemInfo.crunchbase_data.company_type.replace(/_/g, ' ')}
+                    {formatProfitLabel(itemInfo.crunchbase_data.company_type)}
                   </div>
                 )}
               </div>
@@ -743,7 +745,9 @@ const ItemModal = (props: Props) => {
           )}
         </div>
       ) : (
-        <>Loading</>
+        <div className={`d-flex flex-column p-5 ${styles.loadingWrapper}`}>
+          <Loading />
+        </div>
       )}
     </Modal>
   );

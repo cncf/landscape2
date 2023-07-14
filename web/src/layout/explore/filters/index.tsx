@@ -8,6 +8,7 @@ import { MouseEvent, useEffect, useState } from 'react';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import prepareData from '../../../utils/prepareData';
 import { isUndefined } from 'lodash';
+import { Loading } from '../../common/Loading';
 
 interface Props {
   data: BaseData;
@@ -210,7 +211,9 @@ const Filters = (props: Props) => {
             </div>
           </>
         ) : (
-          <>Loading</>
+          <div className="py-5">
+            <Loading />
+          </div>
         )}
       </div>
     </Modal>

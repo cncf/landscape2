@@ -4,6 +4,10 @@
   margin: 5rem auto !important;
 }
 
+.loadingWrapper {
+  min-height: 500px;
+}
+
 .logoWrapper {
   height: 120px;
   width: 100px;

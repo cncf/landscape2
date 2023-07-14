@@ -8,6 +8,7 @@ import classNames from 'classnames';
 import Card from './Card';
 import { useOutletContext } from 'react-router-dom';
 import { orderBy } from 'lodash';
+import { Loading } from '../../common/Loading';
 
 interface Props {
   fullDataReady: boolean;
@@ -195,7 +196,7 @@ const CardCategory = (props: Props) => {
             )}
           </>
         ) : (
-          <>Loading</>
+          <Loading />
         )}
       </div>
     </div>
