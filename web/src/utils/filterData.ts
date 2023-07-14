@@ -1,4 +1,4 @@
-import { ActiveFilters, FilterCategory, Item, Repository } from "../types";
+import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
 
 const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
   if (Object.keys(activeFilters).length > 0) {
@@ -7,7 +7,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.Organization]) {
         if (item.crunchbase_data === undefined || item.crunchbase_data.name === undefined) {
           return false;
-        } else if (!(activeFilters[FilterCategory.Organization].includes(item.crunchbase_data.name))) {
+        } else if (!activeFilters[FilterCategory.Organization].includes(item.crunchbase_data.name)) {
           return false;
         }
       }
@@ -16,7 +16,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.Country]) {
         if (item.crunchbase_data === undefined || item.crunchbase_data.country === undefined) {
           return false;
-        } else if (!(activeFilters[FilterCategory.Country].includes(item.crunchbase_data.country))) {
+        } else if (!activeFilters[FilterCategory.Country].includes(item.crunchbase_data.country)) {
           return false;
         }
       }
@@ -25,7 +25,9 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.Industry]) {
         if (item.crunchbase_data === undefined || item.crunchbase_data.categories === undefined) {
           return false;
-        } else if (!(item.crunchbase_data.categories.some((c: string) => activeFilters[FilterCategory.Industry]?.includes(c)))) {
+        } else if (
+          !item.crunchbase_data.categories.some((c: string) => activeFilters[FilterCategory.Industry]?.includes(c))
+        ) {
           return false;
         }
       }
@@ -41,7 +43,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
               licenses.push(repo.github_data.license);
             }
           });
-          if (!(licenses.some((l: string) => activeFilters[FilterCategory.License]?.includes(l)))) {
+          if (!licenses.some((l: string) => activeFilters[FilterCategory.License]?.includes(l))) {
             return false;
           }
         }
@@ -51,17 +53,17 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.CompanyType]) {
         if (item.crunchbase_data === undefined || item.crunchbase_data.company_type === undefined) {
           return false;
-        } else if (!(activeFilters[FilterCategory.CompanyType].includes(item.crunchbase_data.company_type))) {
+        } else if (!activeFilters[FilterCategory.CompanyType].includes(item.crunchbase_data.company_type)) {
           return false;
         }
       }
 
       //  Project filter
       if (activeFilters[FilterCategory.Project]) {
-        if (item.project === undefined && !(activeFilters[FilterCategory.Project].includes('non-cncf'))) {
+        if (item.project === undefined && !activeFilters[FilterCategory.Project].includes('non-cncf')) {
           return false;
         } else {
-          if (item.project !== undefined && !(activeFilters[FilterCategory.Project].includes(item.project))) {
+          if (item.project !== undefined && !activeFilters[FilterCategory.Project].includes(item.project)) {
             return false;
           }
         }

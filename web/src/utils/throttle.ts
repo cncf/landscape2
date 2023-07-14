@@ -1,8 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-types
 const throttle = (fn: Function, wait = 300) => {
-  let inThrottle: boolean,
-    lastFn: ReturnType<typeof setTimeout>,
-    lastTime: number;
+  let inThrottle: boolean, lastFn: ReturnType<typeof setTimeout>, lastTime: number;
   return function (ctxt: unknown) {
     const context = ctxt,
       // eslint-disable-next-line prefer-rest-params

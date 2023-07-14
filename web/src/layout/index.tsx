@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import Footer from './navigation/Footer';
 import Header from './navigation/Header';
 import { BaseItem } from '../types';
 import ItemModal from './common/itemModal';
-import itemsDataGetter from '../utils/itemsDataGetter';
 import NoData from './common/NoData';
 
 interface Props {
@@ -14,33 +13,33 @@ interface Props {
 
 const Layout = (props: Props) => {
   const [activeItemId, setActiveItemId] = useState<string | undefined>();
-  const [fullDataReady, setFullDataReady] = useState<boolean>(false);
 
-  const onClickItem = (itemId: string) => {
+  const onClickItem = useCallback((itemId: string) => {
     setActiveItemId(itemId);
-  };
+  }, []);
 
-  const removeActiveItem = () => {
+  const removeActiveItem = useCallback(() => {
     setActiveItemId(undefined);
-  };
-
-  itemsDataGetter.isReady({
-    updateStatus: (status: boolean) => setFullDataReady(status),
-  });
+  }, []);
 
   return (
     <div className="h-100 d-flex flex-column">
       <Header items={props.items} onClickItem={onClickItem} />
       <div className="d-flex flex-column flex-grow-1">
-        <NoData className="d-block d-lg-none">
-          <div className="fs-3">Mobile view is not ready yet!</div>
-        </NoData>
+        <div className="d-block d-lg-none mx-5">
+          <NoData>
+            <div className="d-flex flex-column">
+              <div className="fs-6 fw-semibold">This prototype hasn't been optimized for mobile devices yet.</div>
+              <small className="my-3">But we are working on it and it'll be ready soon 😊</small>
+            </div>
+          </NoData>
+        </div>
         <main className="container-fluid px-4 d-none d-lg-block">
           <Outlet context={{ activeItemId, setActiveItemId }} />
         </main>
       </div>
       <Footer />
-      <ItemModal fullDataReady={fullDataReady} activeItemId={activeItemId} removeActiveItem={removeActiveItem} />
+      <ItemModal activeItemId={activeItemId} removeActiveItem={removeActiveItem} />
     </div>
   );
 };

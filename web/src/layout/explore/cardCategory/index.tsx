@@ -1,4 +1,4 @@
-import { BaseItem, Item } from '../../../types';
+import { BaseItem, Item, OutletContext } from '../../../types';
 import styles from './CardCategory.module.css';
 import { CategoriesData } from '../../../utils/prepareData';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { COLORS } from '../../../data';
 import classNames from 'classnames';
 import Card from './Card';
+import { useOutletContext } from 'react-router-dom';
 
 interface Props {
   fullDataReady: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
-  onClickItem: (itemId: string) => void;
 }
 
 interface SelectedSection {
@@ -24,6 +24,7 @@ interface Menu {
 }
 
 const CardCategory = (props: Props) => {
+  const { setActiveItemId } = useOutletContext() as OutletContext;
   const [menu, setMenu] = useState<Menu | undefined>();
   const [selectedSection, setSelectedSection] = useState<SelectedSection | undefined>();
   const [visibleItems, setVisibleItems] = useState<BaseItem[] | undefined>();
@@ -181,7 +182,7 @@ const CardCategory = (props: Props) => {
                       key={`card_${item.id}`}
                       className={`col-12 col-lg-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}
                     >
-                      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => props.onClickItem(item.id)}>
+                      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => setActiveItemId(item.id)}>
                         <Card item={item} className="h-100" />
                       </div>
                     </div>

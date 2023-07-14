@@ -10,7 +10,6 @@ interface Props {
   selectedViewMode: ViewMode;
   cardWidth: number;
   categories_overridden?: string[];
-  onClickItem: (itemId: string) => void;
 }
 
 const Content = (props: Props) => {
@@ -23,7 +22,6 @@ const Content = (props: Props) => {
           data={props.data}
           cardWidth={props.cardWidth}
           categories_overridden={props.categories_overridden}
-          onClickItem={props.onClickItem}
         />
       </div>
       <div className={props.selectedViewMode === ViewMode.Card ? 'd-block' : 'd-none'}>
@@ -31,7 +29,6 @@ const Content = (props: Props) => {
           fullDataReady={props.fullDataReady}
           data={props.data}
           categories_overridden={props.categories_overridden}
-          onClickItem={props.onClickItem}
         />
       </div>
     </>

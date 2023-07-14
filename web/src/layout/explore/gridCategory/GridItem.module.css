@@ -82,7 +82,7 @@
   font-size: 0.85rem;
   margin-top: calc(var(--card-size-height) + 0.5rem);
   border-color: var(--bs-gray-600);
-  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .5) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 }
 
 .bigCard .dropdown {
@@ -107,12 +107,12 @@
 
 .arrow {
   top: -0.5rem;
-	border-style: solid;
-  border-width: 0 .5rem .5rem;
+  border-style: solid;
+  border-width: 0 0.5rem 0.5rem;
   border-color: transparent;
   border-bottom-color: var(--bs-gray-700);
-	width: 0;
-	height: 0;
+  width: 0;
+  height: 0;
 }
 
 .centerAligned .arrow {

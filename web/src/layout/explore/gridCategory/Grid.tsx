@@ -5,16 +5,17 @@ import getGridCategoryLayout, {
   LayoutColumn,
   LayoutRow,
   SubcategoryDetails,
+  transformGridLayout,
 } from '../../../utils/gridCategoryLayout';
 import { Link } from 'react-router-dom';
 import GridItem from './GridItem';
 import styles from './Grid.module.css';
-import { CategoriesData, SubcategoryData } from '../../../utils/prepareData';
-import { CSSProperties, useEffect, useState } from 'react';
+import { SubcategoryData } from '../../../utils/prepareData';
+import { useEffect, useState } from 'react';
 
 interface Props {
   fullDataReady: boolean;
-  data: CategoriesData;
+  categoryData: { [key: string]: SubcategoryData };
   containerWidth: number;
   itemWidth: number;
   categoryName: string;
@@ -22,21 +23,7 @@ interface Props {
   subcategories: SubcategoryDetails[];
   backgroundColor: string;
   categoryIndex: number;
-  onClickItem: (itemId: string) => void;
 }
-
-interface GridDimensions {
-  sizes: {
-    columns: number;
-    rows: number;
-    spaces: number;
-  }[];
-  maxRowsIndex?: number;
-  forceWidthIndex: number[];
-}
-
-const PADDING = 18;
-const GAP = 5;
 
 const Grid = (props: Props) => {
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
@@ -50,53 +37,19 @@ const Grid = (props: Props) => {
     });
   };
 
-  const calculateItemsPerRow = (percentage: number): number => {
-    return Math.floor((props.containerWidth * (percentage / 100) - PADDING - GAP) / (props.itemWidth + GAP));
-  };
-
-  const allEqual = (arr: number[]): boolean => arr.every((v) => v === arr[0]);
-
-  const calculateHighestSubcategory = (row: LayoutRow): GridDimensions => {
-    let maxRowsIndex: number | undefined;
-    const rowsInSub: number[] = [];
-    const forceWidthIndex: number[] = [];
-
-    const sizes = row.map((subcat: LayoutColumn, index: number) => {
-      const itemsPerRow = calculateItemsPerRow(subcat.percentage);
-      const subcatData: SubcategoryData = props.data[props.categoryName][subcat.subcategoryName];
-      const totalSpaces: number =
-        subcatData.itemsCount - subcatData.itemsFeaturedCount + subcatData.itemsFeaturedCount * 4;
-      const totalRows = totalSpaces / itemsPerRow;
-      rowsInSub.push(Math.ceil(totalRows));
-      if (itemsPerRow % 2 !== 0 && itemsPerRow < subcatData.itemsFeaturedCount * 2) {
-        forceWidthIndex.push(index);
-      }
-      return { columns: itemsPerRow, rows: totalRows, spaces: totalSpaces };
-    });
-
-    if (!allEqual(rowsInSub)) {
-      const max = Math.max(...rowsInSub);
-      const items = rowsInSub.filter((element) => max === element);
-      if (items.length === 1) {
-        maxRowsIndex = rowsInSub.indexOf(max);
-      }
-    }
-
-    return { sizes: sizes, maxRowsIndex: maxRowsIndex, forceWidthIndex: forceWidthIndex };
-  };
-
-  const calculateWidthInPx = (columnsNumber: number): string => {
-    return `${columnsNumber * (props.itemWidth + 5) + PADDING}px`;
-  };
-
   useEffect(() => {
-    if (props.containerWidth !== 0) {
+    if (props.containerWidth > 0) {
       setGrid(
-        getGridCategoryLayout({
-          containerWidth: props.containerWidth,
+        transformGridLayout({
+          grid: getGridCategoryLayout({
+            containerWidth: props.containerWidth,
+            itemWidth: props.itemWidth,
+            categoryName: props.categoryName,
+            isOverriden: props.isOverriden,
+            subcategories: props.subcategories,
+          }),
           itemWidth: props.itemWidth,
-          categoryName: props.categoryName,
-          isOverriden: props.isOverriden,
+          containerWidth: props.containerWidth,
           subcategories: props.subcategories,
         })
       );
@@ -108,39 +61,18 @@ const Grid = (props: Props) => {
 
   return (
     <>
-      {grid.map((row: LayoutRow, rownIndex: number) => {
-        const gridDimensions = calculateHighestSubcategory(row);
-
+      {grid.map((row: LayoutRow, rowIndex: number) => {
         return (
           <div
-            className={classNames('row g-0 w-100', { 'flex-grow-1': rownIndex === grid.length - 1 })}
-            key={`cat_${props.categoryIndex}row_${rownIndex}`}
+            className={classNames('row g-0 w-100', { 'flex-grow-1': rowIndex === grid.length - 1 })}
+            key={`cat_${props.categoryIndex}row_${rowIndex}`}
           >
-            {row.map((subcat: LayoutColumn, subcatIndex: number) => {
-              if (props.data[props.categoryName][subcat.subcategoryName].items.length === 0) return null;
+            {row.map((subcat: LayoutColumn) => {
+              if (props.categoryData[subcat.subcategoryName].items.length === 0) return null;
 
               const sortedItems: (BaseItem | Item)[] = sortItems(
-                sortItems(props.data[props.categoryName][subcat.subcategoryName].items)
+                sortItems(props.categoryData[subcat.subcategoryName].items)
               );
-
-              let style: CSSProperties = { maxWidth: `${subcat.percentage}%` };
-
-              if (gridDimensions.forceWidthIndex.length > 0) {
-                // Use an even number of columns to prevent featured items from leaving a gap
-                if (gridDimensions.forceWidthIndex.includes(subcatIndex)) {
-                  const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns + 1);
-                  style = { maxWidth: width, minWidth: width };
-                }
-              } else {
-                if (
-                  gridDimensions.sizes[subcatIndex].columns % 2 !== 0 &&
-                  gridDimensions.sizes[subcatIndex].columns <
-                    props.data[props.categoryName][subcat.subcategoryName].itemsFeaturedCount * 2
-                ) {
-                  const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns + 1);
-                  style = { maxWidth: width, minWidth: width };
-                }
-              }
 
               return (
                 <div
@@ -150,7 +82,7 @@ const Grid = (props: Props) => {
                     { 'border-top-0': props.categoryIndex !== 0 },
                     { 'border-bottom-0 col-12': subcat.percentage === 100 }
                   )}
-                  style={style}
+                  style={subcat.style ? { ...subcat.style } : { maxWidth: `${subcat.percentage}%` }}
                 >
                   <div
                     className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
@@ -189,7 +121,6 @@ const Grid = (props: Props) => {
                             item={item}
                             key={`item_${item.name}`}
                             borderColor={props.backgroundColor}
-                            onClickItem={props.onClickItem}
                           />
                         );
                       })}
@@ -205,4 +136,5 @@ const Grid = (props: Props) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export default Grid;

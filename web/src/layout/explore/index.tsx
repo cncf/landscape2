@@ -3,7 +3,6 @@ import {
   ActiveFilters,
   FilterCategory,
   BaseItem,
-  OutletContext,
   Group,
   ViewMode,
   Breakpoint,
@@ -16,8 +15,8 @@ import styles from './Landscape.module.css';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Content from './Content';
 import Filters from './filters';
-import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
-import prepareData from '../../utils/prepareData';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import prepareData, { GroupData } from '../../utils/prepareData';
 import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import filterData from '../../utils/filterData';
@@ -30,12 +29,13 @@ interface Props {
   data: BaseData;
 }
 
+const TITLE_GAP = 40;
+
 const Landscape = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const point = useBreakpointDetect();
   const [searchParams] = useSearchParams();
-  const { setActiveItemId } = useOutletContext() as OutletContext;
   const container = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [landscapeData, setLandscapeData] = useState<Item[] | undefined>();
@@ -53,6 +53,7 @@ const Landscape = (props: Props) => {
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [filtersFromData, setFiltersFromData] = useState<FilterSection[]>([]);
   const [filtersApplied, setFiltersApplied] = useState<boolean>(Object.keys(activeFilters).length > 0);
+  const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
 
   itemsDataGetter.subscribe({
     updateLandscapeData: (items: Item[]) => {
@@ -60,10 +61,6 @@ const Landscape = (props: Props) => {
       setFiltersFromData(prepareFilters(items));
     },
   });
-
-  const onClickItem = (itemId: string) => {
-    setActiveItemId(itemId);
-  };
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
@@ -118,6 +115,11 @@ const Landscape = (props: Props) => {
   }, [activeFilters]);
 
   useEffect(() => {
+    setGroupsData(prepareData(props.data, visibleItems));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleItems, selectedGroup]);
+
+  useEffect(() => {
     if (point) {
       setLevelZoom(DEFAULT_ZOOM_LEVELS[point]);
     }
@@ -125,20 +127,22 @@ const Landscape = (props: Props) => {
 
   useEffect(() => {
     if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth);
+      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
     }
   }, []);
 
   useEffect(() => {
     const checkContainerWidth = throttle(() => {
       if (container && container.current) {
-        setContainerWidth(container.current.offsetWidth);
+        setContainerWidth(container.current.offsetWidth - TITLE_GAP);
       }
     }, 400);
     window.addEventListener('resize', checkContainerWidth);
 
     return () => window.removeEventListener('resize', checkContainerWidth);
   }, []);
+
+  if (groupsData === undefined) return null;
 
   return (
     <>
@@ -265,21 +269,21 @@ const Landscape = (props: Props) => {
         <div className="pt-5">
           <NoData>
             <>
-              <div className="fs-4">Not items available</div>
-
+              <div className="fs-4">We couldn't find any items that match the criteria selected.</div>
               {filtersApplied && (
                 <>
-                  <p className="h6 my-4 lh-base">You can reset the filters:</p>
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-secondary rounded-0 text-white text-uppercase fw-semibold"
-                    onClick={resetFilters}
-                    aria-label="Reset filters"
-                    title="Reset filters"
-                  >
-                    Reset filters
-                  </button>
+                  <p className="h6 my-4 lh-base">
+                    You can update them and try again or{' '}
+                    <button
+                      type="button"
+                      className="btn btn-link lh-1 p-0 text-reset align-baseline"
+                      onClick={resetFilters}
+                      aria-label="Reset filters"
+                    >
+                      reset all
+                    </button>{' '}
+                    the filters.
+                  </p>
                 </>
               )}
             </>
@@ -298,11 +302,10 @@ const Landscape = (props: Props) => {
                     <Content
                       containerWidth={containerWidth}
                       fullDataReady={landscapeData !== undefined}
-                      data={prepareData(props.data, visibleItems, group.name)}
+                      data={groupsData[group.name]}
                       cardWidth={ZOOM_LEVELS[levelZoom][0]}
                       selectedViewMode={selectedViewMode}
                       categories_overridden={props.data.categories_overridden}
-                      onClickItem={onClickItem}
                     />
                   </div>
                 );
@@ -312,11 +315,10 @@ const Landscape = (props: Props) => {
             <Content
               containerWidth={containerWidth}
               fullDataReady={landscapeData !== undefined}
-              data={prepareData(props.data, visibleItems)}
+              data={groupsData.default}
               cardWidth={ZOOM_LEVELS[levelZoom][0]}
               selectedViewMode={selectedViewMode}
               categories_overridden={props.data.categories_overridden}
-              onClickItem={onClickItem}
             />
           )}
         </div>
