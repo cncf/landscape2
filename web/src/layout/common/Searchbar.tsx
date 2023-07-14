@@ -261,7 +261,7 @@ const Searchbar = (props: Props) => {
                   <button
                     type="button"
                     className={classNames(
-                      'btn btn-link text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3',
+                      'btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3',
                       styles.btnProject,
                       { [styles.activeDropdownItem]: index === highlightedItem }
                     )}

@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import Card from '../cardCategory/Card';
 import Image from '../../common/Image';
 import { useOutletContext } from 'react-router-dom';
+import { Loading } from '../../common/Loading';
 
 interface Props {
   fullDataReady: boolean;
@@ -102,7 +103,7 @@ const GridItem = (props: Props) => {
             onMouseLeave={() => setOnDropdownHover(false)}
           >
             <div className={`d-block position-absolute ${styles.arrow}`} />
-            {!props.fullDataReady ? <>Loading</> : <Card item={props.item} />}
+            {!props.fullDataReady ? <Loading /> : <Card item={props.item} />}
           </div>
         )}
       </div>

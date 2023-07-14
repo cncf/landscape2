@@ -2,6 +2,7 @@ import styles from './Footer.module.css';
 import qr from '../../assets/images/qr-l.svg';
 import logo from '../../assets/images/cncf-landscape-horizontal-white.svg';
 import CNCFLogo from '../../assets/images/CNCF_logo_white.svg';
+import { NavLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -16,13 +17,7 @@ const Footer = () => {
               <div className={styles.footerCol}>
                 <div className="h6 fw-bold text-uppercase">Project</div>
                 <div className="d-flex flex-column text-start">
-                  <a
-                    className="link mb-1 opacity-75 text-white"
-                    href="/"
-                    target="_self"
-                    rel="noopener noreferrer"
-                    aria-label="Open documentation"
-                  >
+                  <NavLink className="link mb-1 opacity-75 text-white disabled text-decoration-none" to="/">
                     <div className="d-flex align-items-center">
                       <svg
                         stroke="currentColor"
@@ -38,19 +33,13 @@ const Footer = () => {
                       </svg>
                       Documentation
                     </div>
-                  </a>
+                  </NavLink>
                 </div>
               </div>
               <div className={styles.footerCol}>
                 <div className="h6 fw-bold text-uppercase">Community</div>
                 <div className="d-flex flex-column text-start">
-                  <a
-                    className="link mb-1 opacity-75 text-white"
-                    href="/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Open Github"
-                  >
+                  <NavLink className="link mb-1 opacity-75 text-white disabled text-decoration-none" to="/">
                     <div className="d-flex align-items-center">
                       <svg
                         stroke="currentColor"
@@ -66,7 +55,7 @@ const Footer = () => {
                       </svg>
                       GitHub
                     </div>
-                  </a>
+                  </NavLink>
                 </div>
               </div>
               <div className={`${styles.footerCol} ${styles.about} pe-0`}>

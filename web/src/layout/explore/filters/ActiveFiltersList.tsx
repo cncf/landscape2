@@ -1,4 +1,5 @@
 import { ActiveFilters, FilterCategory } from '../../../types';
+import formatProfitLabel from '../../../utils/formatLabelProfit';
 import styles from './ActiveFiltersList.module.css';
 
 interface Props {
@@ -40,7 +41,7 @@ const ActiveFiltersList = (props: Props) => (
                               : ''
                           }
                         >
-                          {c}
+                          {f === FilterCategory.CompanyType ? formatProfitLabel(c) : c}
                         </span>
                       </div>
                       <button
