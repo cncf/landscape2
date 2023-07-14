@@ -1,14 +1,18 @@
 import { FILTERS } from '../../../data';
-import { ActiveFilters, FilterCategory, FilterSection } from '../../../types';
+import { ActiveFilters, BaseData, FilterCategory, FilterSection, Item } from '../../../types';
 import Section from './Section';
 import Modal from '../../common/Modal';
 import SearchbarSection from './SearchbarSection';
 import styles from './Filters.module.css';
 import { MouseEvent, useEffect, useState } from 'react';
+import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
+import prepareData from '../../../utils/prepareData';
+import { isUndefined } from 'lodash';
 
 interface Props {
-  fullDataReady: boolean;
-  filtersFromData: FilterSection[];
+  data: BaseData;
+  landscapeData?: Item[];
+  selectedGroup?: string;
   visibleFilters: boolean;
   onClose: () => void;
   applyFilters: (newFilters: ActiveFilters) => void;
@@ -17,15 +21,30 @@ interface Props {
 
 const Filters = (props: Props) => {
   const [tmpActiveFilters, setTmpActiveFilters] = useState<ActiveFilters>(props.activeFilters);
+  const [filtersFromData, setFiltersFromData] = useState<FiltersPerGroup | undefined>();
+  const [filters, setFilters] = useState<FilterSection[]>([]);
 
   useEffect(() => {
     setTmpActiveFilters(props.activeFilters);
   }, [props.activeFilters, props.visibleFilters]);
 
+  useEffect(() => {
+    if (props.landscapeData) {
+      setFiltersFromData(getFiltersPerGroup(prepareData(props.data, props.landscapeData)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.landscapeData]);
+
+  useEffect(() => {
+    if (filtersFromData) {
+      setFilters(filtersFromData[props.selectedGroup || 'default']);
+    }
+  }, [filtersFromData, props.selectedGroup]);
+
   if (!props.visibleFilters) return null;
 
   const getSection = (id: FilterCategory): FilterSection | undefined => {
-    const section = props.filtersFromData.find((sec: FilterSection) => sec.value === id);
+    const section = filters.find((sec: FilterSection) => sec.value === id);
     if (section) {
       return section;
     }
@@ -62,6 +81,8 @@ const Filters = (props: Props) => {
   const orgFilter = getSection(FilterCategory.Organization);
   const licenseFilter = getSection(FilterCategory.License);
   const industryFilter = getSection(FilterCategory.Industry);
+  const companyTypeFilter = getSection(FilterCategory.CompanyType);
+  const projectFilter = getSection(FilterCategory.Project);
 
   return (
     <Modal
@@ -109,67 +130,83 @@ const Filters = (props: Props) => {
       onClose={props.onClose}
     >
       <div className="p-3">
-        {props.fullDataReady ? (
+        {!isUndefined(filtersFromData) ? (
           <>
             <div className="row g-5">
-              <div className="col-4">
-                <Section
-                  title="Project status"
-                  section={getSectionInPredefinedFilters(FilterCategory.Project)}
-                  activeFilters={tmpActiveFilters[FilterCategory.Project]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {projectFilter && (
+                <div className="col-4">
+                  <Section
+                    title="Project status"
+                    section={getSectionInPredefinedFilters(FilterCategory.Project)}
+                    activeFilters={tmpActiveFilters[FilterCategory.Project]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
 
-              <div className="col-4">
-                <SearchbarSection
-                  title="License"
-                  section={licenseFilter}
-                  activeFilters={tmpActiveFilters[FilterCategory.License]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {licenseFilter && (
+                <div className="col-4">
+                  <SearchbarSection
+                    title="License"
+                    placeholder="Search license"
+                    section={licenseFilter}
+                    activeFilters={tmpActiveFilters[FilterCategory.License]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
 
-              <div className="col-4">
-                <SearchbarSection
-                  section={industryFilter}
-                  activeFilters={tmpActiveFilters[FilterCategory.Industry]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {industryFilter && (
+                <div className="col-4">
+                  <SearchbarSection
+                    section={industryFilter}
+                    placeholder="Search industry"
+                    activeFilters={tmpActiveFilters[FilterCategory.Industry]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
 
-              <div className="col-4">
-                <SearchbarSection
-                  title="Organization"
-                  section={orgFilter}
-                  activeFilters={tmpActiveFilters[FilterCategory.Organization]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {orgFilter && (
+                <div className="col-4">
+                  <SearchbarSection
+                    title="Organization"
+                    placeholder="Search organization"
+                    section={orgFilter}
+                    activeFilters={tmpActiveFilters[FilterCategory.Organization]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
 
-              <div className="col-4">
-                <Section
-                  title="Organization type"
-                  section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                  activeFilters={tmpActiveFilters[FilterCategory.CompanyType]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {companyTypeFilter && (
+                <div className="col-4">
+                  <Section
+                    title="Organization type"
+                    section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
+                    activeFilters={tmpActiveFilters[FilterCategory.CompanyType]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
 
-              <div className="col-4">
-                <SearchbarSection
-                  title="Location"
-                  section={countryFilter}
-                  activeFilters={tmpActiveFilters[FilterCategory.Country]}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
-              </div>
+              {countryFilter && (
+                <div className="col-4">
+                  <SearchbarSection
+                    title="Location"
+                    placeholder="Search country"
+                    section={countryFilter}
+                    activeFilters={tmpActiveFilters[FilterCategory.Country]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                  />
+                </div>
+              )}
             </div>
           </>
         ) : (
