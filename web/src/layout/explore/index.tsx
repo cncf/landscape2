@@ -93,10 +93,6 @@ const Landscape = (props: Props) => {
     updateActiveFilters(name, tmpActiveFilters);
   };
 
-  const resetFilter = (name: FilterCategory) => {
-    updateActiveFilters(name, []);
-  };
-
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
     const tmpActiveFilters: ActiveFilters = { ...activeFilters };
     if (options.length === 0) {
@@ -111,6 +107,10 @@ const Landscape = (props: Props) => {
   const resetFilters = () => {
     setActiveFilters({});
     setFiltersApplied(false);
+  };
+
+  const applyFilters = (newFilters: ActiveFilters) => {
+    setActiveFilters(newFilters);
   };
 
   useEffect(() => {
@@ -333,10 +333,8 @@ const Landscape = (props: Props) => {
         filtersFromData={filtersFromData}
         visibleFilters={visibleFilters}
         onClose={() => setVisibleFilters(false)}
-        resetFilters={resetFilters}
         activeFilters={activeFilters}
-        updateActiveFilters={updateActiveFilters}
-        resetFilter={resetFilter}
+        applyFilters={applyFilters}
       />
     </>
   );
