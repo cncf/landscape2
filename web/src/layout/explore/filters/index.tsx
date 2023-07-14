@@ -108,7 +108,9 @@ const Filters = (props: Props) => {
       }
       footer={
         <div className="d-flex flex-row justify-content-between w-100">
-          <small className="fst-italic text-muted">x items found</small>
+          <div>
+            <small className="d-none fst-italic text-muted">x items found</small>
+          </div>
           <div>
             <button
               type="button"
