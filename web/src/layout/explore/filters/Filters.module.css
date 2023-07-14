@@ -1,7 +1,3 @@
-.modal {
-  margin-top: 7rem;
-}
-
 .fieldset {
   padding: 1.5rem 1.75rem;
 }
@@ -12,12 +8,6 @@
   color: var(--dark-blue);
   top: -0.35rem;
   left: 1rem;
-}
-
-@media only screen and (max-width: 767.98px) {
-  .modal {
-    margin-top: 3rem;
-  }
 }
 
 @media (max-width: 1199.98px) {

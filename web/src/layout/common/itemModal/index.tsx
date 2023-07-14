@@ -609,7 +609,7 @@ const ItemModal = (props: Props) => {
                       {mainRepo.url}
                     </ExternalLink>
                     {mainRepo.github_data && (
-                      <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark}`}>
+                      <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
                         {mainRepo.github_data.license}
                       </div>
                     )}

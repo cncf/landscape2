@@ -1,7 +1,12 @@
-.legend {
-  font-size: 0.7rem;
+.title {
+  font-size: 0.8rem;
+  color: var(--dark-blue);
 }
 
 .checks {
   font-size: 0.85rem;
+}
+
+.resetBtn {
+  font-size: 0.75rem;
 }

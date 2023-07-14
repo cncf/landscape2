@@ -7,9 +7,10 @@ import classNames from 'classnames';
 interface Props {
   section?: FilterSection;
   activeFilters?: string[];
-  withTitle?: boolean;
+  title?: string;
   inLine?: boolean;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
+  resetFilter: (value: FilterCategory) => void;
 }
 
 const Section = (props: Props) => {
@@ -36,7 +37,7 @@ const Section = (props: Props) => {
       key={`filter_${opt.value}`}
       name={sectionName as unknown as string}
       value={opt.value}
-      labelClassName="mw-100"
+      labelClassName="mw-100 text-muted"
       className={classNames('mt-2', { 'mb-2': props.inLine === undefined })}
       label={opt.name}
       checked={(props.activeFilters || []).includes(opt.value)}
@@ -49,34 +50,46 @@ const Section = (props: Props) => {
   if (props.section === undefined) return null;
 
   return (
-    <div>
-      {props.withTitle && <small className={`text-muted ${styles.legend}`}>{props.section.title}</small>}
-      <div className={classNames({ 'd-flex flex-row': props.inLine })}>
-        {props.section.options.map((opt: FilterOption) => {
-          let subOpts;
-          if (opt.suboptions) {
-            subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
-          }
-          return (
-            <div
-              key={`f_${props.section?.value}_opt_${opt.value}`}
-              className={classNames(styles.checks, { 'me-3': props.inLine })}
-            >
-              {renderCheckBox(opt, props.section?.value as FilterCategory, subOpts)}
-              <div className="ms-3">
-                {opt.suboptions && (
-                  <>
-                    {opt.suboptions.map((subOpt: FilterOption) => (
-                      <Fragment key={`f_${props.section?.value}_subopt_${subOpt.value}`}>
-                        {renderCheckBox(subOpt, props.section?.value as FilterCategory)}
-                      </Fragment>
-                    ))}
-                  </>
-                )}
+    <div className="d-flex flex-column h-100">
+      <div className="d-flex flex-row align-items-center pb-3">
+        <small className={`fw-semibold me-2 ${styles.title}`}>{props.title || props.section.title}</small>
+        {props.activeFilters && (
+          <button
+            className={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
+            onClick={() => props.resetFilter(props.section?.value as FilterCategory)}
+          >
+            (reset)
+          </button>
+        )}
+      </div>
+      <div className="postion-relative w-100 border p-3 flex-grow-1">
+        <div className={classNames({ 'd-flex flex-row': props.inLine })}>
+          {props.section.options.map((opt: FilterOption) => {
+            let subOpts;
+            if (opt.suboptions) {
+              subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
+            }
+            return (
+              <div
+                key={`f_${props.section?.value}_opt_${opt.value}`}
+                className={classNames(styles.checks, { 'me-3': props.inLine })}
+              >
+                {renderCheckBox(opt, props.section?.value as FilterCategory, subOpts)}
+                <div className="ms-3">
+                  {opt.suboptions && (
+                    <>
+                      {opt.suboptions.map((subOpt: FilterOption) => (
+                        <Fragment key={`f_${props.section?.value}_subopt_${subOpt.value}`}>
+                          {renderCheckBox(subOpt, props.section?.value as FilterCategory)}
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

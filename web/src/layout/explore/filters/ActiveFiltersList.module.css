@@ -1,12 +1,12 @@
 .btnReset {
-  font-size: 0.95em;
-  line-height: 0.75rem;
+  font-size: 0.7rem;
+  line-height: 0.7rem;
   text-decoration: none;
 }
 
 .filterBadge {
-  padding: 0rem 0.35rem;
-  font-size: 0.625rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
   color: var(--dark-blue);
   border-color: var(--dark-blue) !important;
 }

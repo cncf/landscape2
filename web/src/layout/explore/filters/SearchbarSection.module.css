@@ -1,5 +1,6 @@
-.wrapper {
-  border: 1px solid var(--bs-gray-200);
+.title {
+  font-size: 0.8rem;
+  color: var(--dark-blue);
 }
 
 .searchBar {
@@ -21,13 +22,13 @@
   margin: 0.4rem 0;
 }
 
-.legend {
-  font-size: 0.7rem;
-}
-
 .list {
   height: 200px;
   max-height: 200px;
   overscroll-behavior: contain;
   font-size: 0.85rem;
+}
+
+.resetBtn {
+  font-size: 0.75rem;
 }

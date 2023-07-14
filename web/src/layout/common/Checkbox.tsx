@@ -37,7 +37,11 @@ export const CheckBox = (props: Props) => {
         disabled={props.disabled}
         tabIndex={0}
       />
-      <label className={`form-check-label ${props.labelClassName}`} htmlFor={id} data-testid="checkboxLabel">
+      <label
+        className={`form-check-label ${styles.label} ${props.labelClassName}`}
+        htmlFor={id}
+        data-testid="checkboxLabel"
+      >
         <div className="d-flex align-items-baseline mw-100">
           {props.icon && <>{props.icon}</>}
           <span className="text-truncate">{props.label}</span>
