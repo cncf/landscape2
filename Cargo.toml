@@ -7,11 +7,11 @@ edition = "2021"
 rust-version = "1.70"
 
 [dependencies]
-anyhow = "1.0.71"
+anyhow = "1.0.72"
 askama = { version = "0.12.0", features = ["serde-json"] }
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 chrono = { version = "0.4.26", features = ["serde"] }
-clap = { version = "4.3.8", features = ["derive"] }
+clap = { version = "4.3.15", features = ["derive"] }
 deadpool = "0.9.5"
 dirs = "5.0.1"
 futures = "0.3.28"
@@ -20,14 +20,14 @@ lazy_static = "1.4.0"
 leaky-bucket = "1.0.1"
 octorust = "0.3.2"
 parse_link_header = "0.3.3"
-regex = "1.8.4"
+regex = "1.9.1"
 reqwest = "0.11.18"
-rust-embed = "6.7.0"
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.99"
-serde_yaml = "0.9.22"
+rust-embed = "6.8.1"
+serde = { version = "1.0.171", features = ["derive"] }
+serde_json = "1.0.103"
+serde_yaml = "0.9.24"
 sha2 = "0.10.7"
-tokio = { version = "1.29.0", features = [
+tokio = { version = "1.29.1", features = [
     "macros",
     "process",
     "rt-multi-thread",
@@ -36,7 +36,7 @@ tokio = { version = "1.29.0", features = [
 ] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-uuid = { version = "1.4.0", features = ["serde", "v5"] }
+uuid = { version = "1.4.1", features = ["serde", "v5"] }
 
 [dev-dependencies]
 mockall = "0.11.4"
