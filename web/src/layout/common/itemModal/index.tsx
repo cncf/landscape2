@@ -91,7 +91,7 @@ const ItemModal = (props: Props) => {
     } else {
       setItemInfo(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [props.activeItemId, fullDataReady]);
 
   if (props.activeItemId === undefined) return null;
