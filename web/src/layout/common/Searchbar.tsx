@@ -4,8 +4,9 @@ import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import HoverableItem from './HoverableItem';
 import styles from './Searchbar.module.css';
-import { BaseItem } from '../../types';
+import { BaseItem, SVGIconKind } from '../../types';
 import MaturityBadge from './MaturityBadge';
+import SVGIcon from './SVGIcon';
 
 interface Props {
   items: BaseItem[];
@@ -202,17 +203,7 @@ const Searchbar = (props: Props) => {
               className={`btn btn-link text-muted lh-1 px-2 ${styles.btnIcon}`}
               onClick={cleanSearchValue}
             >
-              <svg
-                stroke="currentColor"
-                fill="currentColor"
-                strokeWidth="0"
-                viewBox="0 0 512 512"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M400 145.49L366.51 112 256 222.51 145.49 112 112 145.49 222.51 256 112 366.51 145.49 400 256 289.49 366.51 400 400 366.51 289.49 256 400 145.49z"></path>
-              </svg>
+              <SVGIcon kind={SVGIconKind.Clear} />
             </button>
             <div className={`vr ${styles.vr}`} />
           </>
@@ -225,20 +216,7 @@ const Searchbar = (props: Props) => {
           onClick={search}
         >
           <div className={`${styles.iconWrapper}`}>
-            <svg
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
+            <SVGIcon kind={SVGIconKind.Search} />
           </div>
         </button>
       </div>

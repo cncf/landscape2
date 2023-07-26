@@ -179,6 +179,36 @@ export enum ViewMode {
   Card = 'card',
 }
 
+export enum SVGIconKind {
+  ArrowRight,
+  Artwork,
+  Blog,
+  Calendar,
+  Clear,
+  ClearCircle,
+  Crunchbase,
+  Discord,
+  Discussions,
+  Docker,
+  Documentation,
+  Filters,
+  GitHub,
+  GitHubCircle,
+  Guide,
+  Link,
+  MailingList,
+  NotImage,
+  OpenssfBestPractices,
+  Search,
+  Slack,
+  StackOverflow,
+  Stats,
+  Twitter,
+  Youtube,
+  Warning,
+  World,
+}
+
 export enum Breakpoint {
   XXXL = 'xxxl',
   XXL = 'xxl',

@@ -1,4 +1,4 @@
-import { BaseItem, Item, OutletContext } from '../../../types';
+import { BaseItem, Item, OutletContext, SVGIconKind } from '../../../types';
 import styles from './CardCategory.module.css';
 import { CategoriesData } from '../../../utils/prepareData';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
@@ -9,6 +9,7 @@ import Card from './Card';
 import { useOutletContext } from 'react-router-dom';
 import { orderBy } from 'lodash';
 import { Loading } from '../../common/Loading';
+import SVGIcon from '../../common/SVGIcon';
 
 interface Props {
   fullDataReady: boolean;
@@ -153,17 +154,7 @@ const CardCategory = (props: Props) => {
                     >
                       {isSelected && (
                         <div className={`position-absolute ${styles.arrow}`}>
-                          <svg
-                            stroke="currentColor"
-                            fill="currentColor"
-                            strokeWidth="0"
-                            viewBox="0 0 24 24"
-                            height="1em"
-                            width="1em"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path>
-                          </svg>
+                          <SVGIcon kind={SVGIconKind.ArrowRight} />
                         </div>
                       )}
                       {subcat}
