@@ -1,4 +1,6 @@
+import SVGIcon from './SVGIcon';
 import './ExternalLink.module.css';
+import { SVGIconKind } from '../../types';
 
 interface Props {
   children: JSX.Element | JSX.Element[] | string;
@@ -22,22 +24,7 @@ const ExternalLink = (props: Props) => {
         {props.visibleExternalIcon !== undefined && props.visibleExternalIcon ? (
           <div className="d-flex flex-row align-items-baseline">
             {props.children}
-            <svg
-              className={`ms-2 icon ${props.externalIconClassName}`}
-              stroke="currentColor"
-              fill="none"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              height="1em"
-              width="1em"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
+            <SVGIcon kind={SVGIconKind.Link} className={`ms-2 icon ${props.externalIconClassName}`} />
           </div>
         ) : (
           <>{props.children}</>
