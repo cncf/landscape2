@@ -1,5 +1,7 @@
 //! This module defines the functionality of the build CLI subcommand.
 
+#![allow(non_upper_case_globals)]
+
 use crate::{
     crunchbase::{self, CBApi, DynCB},
     data::{ItemFeatured, LandscapeData},
