@@ -7,6 +7,7 @@ use clap::{Args, Parser, Subcommand};
 use std::{env, path::PathBuf};
 
 mod build;
+mod cache;
 mod crunchbase;
 mod data;
 mod datasets;
@@ -14,7 +15,7 @@ mod github;
 mod settings;
 mod tmpl;
 
-/// Environment variable containing a Crunchbase API key.
+/// Environment variable containing the Crunchbase API key.
 const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
 /// Environment variable containing a comma separated list of GitHub tokens.
@@ -42,7 +43,7 @@ struct BuildArgs {
     #[command(flatten)]
     data_source: DataSource,
 
-    /// Logos source
+    /// Logos source.
     #[command(flatten)]
     logos_source: LogosSource,
 

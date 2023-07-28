@@ -2,10 +2,13 @@
 //! from GitHub for each of the landscape items repositories (when applicable),
 //! as well as the functionality used to collect that information.
 
+use crate::cache::GITHUB_CACHE_TTL;
+use crate::data::LandscapeData;
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use deadpool::unmanaged::Object;
+use deadpool::unmanaged::{Object, Pool};
+use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
 #[cfg(test)]
 use mockall::automock;
@@ -15,7 +18,94 @@ use regex::Regex;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use tracing::instrument;
+use tracing::{debug, instrument, warn};
+
+/// Collect GitHub data for each of the items repositories in the landscape,
+/// reusing cached data whenever possible.
+#[instrument(skip_all, err)]
+pub(crate) async fn collect_github_data(
+    tokens: &Option<Vec<String>>,
+    landscape_data: &LandscapeData,
+    cached_data: Option<&GithubData>,
+) -> Result<GithubData> {
+    debug!("collecting repositories information from github (this may take a while)");
+
+    // Setup GitHub API clients pool if any tokens have been provided
+    let gh_pool: Option<Pool<DynGH>> = if let Some(tokens) = tokens {
+        let mut gh_clients: Vec<DynGH> = vec![];
+        for token in tokens {
+            let gh = Box::new(GHApi::new(token)?);
+            gh_clients.push(gh);
+        }
+        Some(Pool::from(gh_clients))
+    } else {
+        warn!("github tokens not provided: no information will be collected from github");
+        None
+    };
+
+    // Collect urls of the repositories to process
+    let mut urls = vec![];
+    for item in &landscape_data.items {
+        if let Some(repositories) = &item.repositories {
+            for repo in repositories {
+                urls.push(&repo.url);
+            }
+        }
+    }
+    urls.sort();
+    urls.dedup();
+
+    // Collect repositories information from GitHub, reusing cached data when available
+    let concurrency = if let Some(tokens) = tokens {
+        tokens.len()
+    } else {
+        1
+    };
+    let github_data: GithubData = stream::iter(urls)
+        .map(|url| async {
+            let url = url.clone();
+            if let Some(cached_repo) = cached_data.and_then(|cache| {
+                cache.get(&url).and_then(|repo| {
+                    if repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now() {
+                        Some(repo)
+                    } else {
+                        None
+                    }
+                })
+            }) {
+                // Use cached data when available if it hasn't expired yet
+                (url, Ok(cached_repo.clone()))
+            } else {
+                // Otherwise we pull it from GitHub if any tokens were provided
+                if let Some(gh_pool) = &gh_pool {
+                    let gh = gh_pool.get().await.expect("token -when available-");
+                    (url.clone(), Repository::new(gh, &url).await)
+                } else {
+                    (url.clone(), Err(format_err!("no tokens provided")))
+                }
+            }
+        })
+        .buffer_unordered(concurrency)
+        .collect::<HashMap<String, Result<Repository>>>()
+        .await
+        .into_iter()
+        .filter_map(|(url, result)| {
+            if let Ok(github_data) = result {
+                Some((url, github_data))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok(github_data)
+}
+
+/// Type alias to represent some repositories' GitHub data.
+pub(crate) type GithubData = HashMap<RepositoryUrl, Repository>;
+
+/// Type alias to represent a GitHub repository url.
+pub(crate) type RepositoryUrl = String;
 
 /// Repository information collected from GitHub.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
