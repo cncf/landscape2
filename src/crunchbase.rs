@@ -2,17 +2,96 @@
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
+use crate::{cache::CRUNCHBASE_CACHE_TTL, data::LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
+use leaky_bucket::RateLimiter;
 #[cfg(test)]
 use mockall::automock;
 use regex::Regex;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use tracing::instrument;
+use std::{collections::HashMap, sync::Arc, time::Duration};
+use tracing::{debug, instrument, warn};
+
+/// Collect Crunchbase data for each of the items orgs in the landscape,
+/// reusing cached data whenever possible.
+#[instrument(skip_all, err)]
+pub(crate) async fn collect_crunchbase_data(
+    api_key: &Option<String>,
+    landscape_data: &LandscapeData,
+    cached_data: Option<&CrunchbaseData>,
+) -> Result<CrunchbaseData> {
+    debug!("collecting organizations information from crunchbase (this may take a while)");
+
+    // Setup Crunchbase API client if an api key was provided
+    let cb: Option<DynCB> = if let Some(api_key) = api_key {
+        Some(Arc::new(CBApi::new(api_key)?))
+    } else {
+        warn!("crunchbase api key not provided: no information will be collected from crunchbase");
+        None
+    };
+
+    // Collect items Crunchbase urls
+    let mut urls = vec![];
+    for item in &landscape_data.items {
+        if let Some(url) = &item.crunchbase_url {
+            urls.push(url);
+        }
+    }
+    urls.sort();
+    urls.dedup();
+
+    // Collect information from Crunchbase, reusing cached data when available
+    let limiter = RateLimiter::builder().initial(1).interval(Duration::from_millis(300)).build();
+    let crunchbase_data: CrunchbaseData = stream::iter(urls)
+        .map(|url| async {
+            let url = url.clone();
+            if let Some(cached_org) = cached_data.and_then(|cache| {
+                cache.get(&url).and_then(|org| {
+                    if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
+                        Some(org)
+                    } else {
+                        None
+                    }
+                })
+            }) {
+                // Use cached data when available if it hasn't expired yet
+                (url, Ok(cached_org.clone()))
+            } else {
+                // Otherwise we pull it from Crunchbase if a key was provided
+                if let Some(cb) = cb.clone() {
+                    limiter.acquire_one().await;
+                    (url.clone(), Organization::new(cb, &url).await)
+                } else {
+                    (url.clone(), Err(format_err!("no api key provided")))
+                }
+            }
+        })
+        .buffer_unordered(1)
+        .collect::<HashMap<String, Result<Organization>>>()
+        .await
+        .into_iter()
+        .filter_map(|(url, result)| {
+            if let Ok(crunchbase_data) = result {
+                Some((url, crunchbase_data))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    Ok(crunchbase_data)
+}
+
+/// Type alias to represent some organizations' Crunchbase data.
+pub(crate) type CrunchbaseData = HashMap<CrunchbaseUrl, Organization>;
+
+/// Type alias to represent a crunchbase url.
+pub(crate) type CrunchbaseUrl = String;
 
 /// Organization information collected from Crunchbase.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

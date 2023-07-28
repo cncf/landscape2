@@ -7,15 +7,33 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use crate::data::{Category, CategoryName};
+use crate::{
+    data::{Category, CategoryName},
+    SettingsSource,
+};
 use anyhow::{format_err, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
+use tracing::{debug, instrument};
+
+/// Get landscape settings from the source provided.
+#[instrument(skip_all, err)]
+pub(crate) async fn get_landscape_settings(src: &SettingsSource) -> Result<LandscapeSettings> {
+    let settings = if let Some(file) = &src.settings_file {
+        debug!(?file, "getting landscape settings from file");
+        LandscapeSettings::new_from_file(file)
+    } else {
+        debug!(url = ?src.settings_url.as_ref().unwrap(), "getting landscape settings from url");
+        LandscapeSettings::new_from_url(src.settings_url.as_ref().unwrap()).await
+    }?;
+
+    Ok(settings)
+}
 
 /// Landscape settings.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Settings {
+pub(crate) struct LandscapeSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
 
@@ -58,11 +76,11 @@ pub(crate) struct FeaturedItemRuleOption {
     pub label: Option<String>,
 }
 
-impl Settings {
+impl LandscapeSettings {
     /// Create a new landscape settings instance from the file provided.
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
-        let settings: Settings = serde_yaml::from_str(&raw_data)?;
+        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
 
         Ok(settings)
     }
@@ -77,7 +95,7 @@ impl Settings {
             ));
         }
         let raw_data = resp.text().await?;
-        let settings: Settings = serde_yaml::from_str(&raw_data)?;
+        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
 
         Ok(settings)
     }

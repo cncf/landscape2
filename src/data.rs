@@ -7,16 +7,36 @@
 //! backwards compatibility, this module provides a `legacy` submodule that
 //! allows parsing the legacy format and convert to the new one.
 
-use crate::{crunchbase::Organization, github};
+use crate::{
+    crunchbase::{CrunchbaseData, Organization},
+    github::{self, GithubData},
+    settings::LandscapeSettings,
+    DataSource,
+};
 use anyhow::{format_err, Result};
 use chrono::NaiveDate;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::{collections::HashMap, fs, path::Path};
+use tracing::{debug, instrument};
 use uuid::Uuid;
 
 /// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
+
+/// Get landscape data from the source provided.
+#[instrument(skip_all, err)]
+pub(crate) async fn get_landscape_data(src: &DataSource) -> Result<LandscapeData> {
+    let data = if let Some(file) = &src.data_file {
+        debug!(?file, "getting landscape data from file");
+        LandscapeData::new_from_file(file)
+    } else {
+        debug!(url = ?src.data_url.as_ref().unwrap(), "getting landscape data from url");
+        LandscapeData::new_from_url(src.data_url.as_ref().unwrap()).await
+    }?;
+
+    Ok(data)
+}
 
 /// Landscape data.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -27,6 +47,7 @@ pub(crate) struct LandscapeData {
 
 impl LandscapeData {
     /// Create a new landscape data instance from the file provided.
+    #[instrument(skip_all, err)]
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
         let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
@@ -35,6 +56,7 @@ impl LandscapeData {
     }
 
     /// Create a new landscape data instance from the url provided.
+    #[instrument(skip_all, err)]
     pub(crate) async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
@@ -48,15 +70,111 @@ impl LandscapeData {
 
         Ok(LandscapeData::from(legacy_data))
     }
+
+    /// Add Crunchbase data to the landscape data.
+    #[instrument(skip_all, err)]
+    pub(crate) fn add_crunchbase_data(&mut self, crunchbase_data: CrunchbaseData) -> Result<()> {
+        for item in &mut self.items {
+            if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
+                if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
+                    item.crunchbase_data = Some(org_crunchbase_data.clone());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Add featured items information to the landscape data based on the
+    /// settings provided (i.e. graduated and incubating projects must be
+    /// featured and the former displayed first).
+    #[instrument(skip_all, err)]
+    pub(crate) fn add_featured_items_data(&mut self, settings: &LandscapeSettings) -> Result<()> {
+        let Some(rules) = &settings.featured_items else {
+        return Ok(());
+    };
+
+        for rule in rules {
+            match rule.field.as_str() {
+                "project" => {
+                    for item in &mut self.items {
+                        if let Some(project) = item.project.as_ref() {
+                            if let Some(option) = rule.options.iter().find(|o| o.value == *project) {
+                                item.featured = Some(ItemFeatured {
+                                    order: option.order,
+                                    label: option.label.clone(),
+                                });
+                            }
+                        }
+                    }
+                }
+                "subcategory" => {
+                    for item in &mut self.items {
+                        if let Some(option) = rule.options.iter().find(|o| o.value == item.subcategory) {
+                            item.featured = Some(ItemFeatured {
+                                order: option.order,
+                                label: option.label.clone(),
+                            });
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Add GitHub data to the landscape data.
+    #[instrument(skip_all, err)]
+    pub(crate) fn add_github_data(&mut self, github_data: GithubData) -> Result<()> {
+        for item in &mut self.items {
+            if item.repositories.is_some() {
+                let mut repositories = vec![];
+                for mut repo in item.repositories.clone().unwrap_or_default() {
+                    if let Some(repo_github_data) = github_data.get(&repo.url) {
+                        repo.github_data = Some(repo_github_data.clone());
+                    }
+                    repositories.push(repo);
+                }
+                item.repositories = Some(repositories);
+            }
+        }
+        Ok(())
+    }
+
+    /// Add items member subcategory.
+    #[instrument(skip_all)]
+    pub(crate) fn add_member_subcategory(&mut self, members_category: &Option<String>) {
+        let Some(members_category) = members_category else {
+            return;
+        };
+
+        // Create a map with the member subcategory for each Crunchbase url
+        let mut members_subcategories: HashMap<String, String> = HashMap::new();
+        for item in self.items.iter().filter(|i| &i.category == members_category) {
+            if let Some(crunchbase_url) = &item.crunchbase_url {
+                members_subcategories.insert(crunchbase_url.clone(), item.subcategory.clone());
+            }
+        }
+
+        // Set item's member subcategory using the item's Crunchbase url to match
+        for item in &mut self.items {
+            if let Some(crunchbase_url) = &item.crunchbase_url {
+                if let Some(member_subcategory) = members_subcategories.get(crunchbase_url) {
+                    item.member_subcategory = Some(member_subcategory.clone());
+                }
+            }
+        }
+    }
 }
 
 impl From<legacy::LandscapeData> for LandscapeData {
     #[allow(clippy::too_many_lines)]
-    fn from(legacy_landscape_data: legacy::LandscapeData) -> Self {
-        let mut landscape_data = LandscapeData::default();
+    fn from(legacy_data: legacy::LandscapeData) -> Self {
+        let mut data = LandscapeData::default();
 
         // Categories
-        for legacy_category in legacy_landscape_data.landscape {
+        for legacy_category in legacy_data.landscape {
             let mut category = Category {
                 name: legacy_category.name.clone(),
                 subcategories: vec![],
@@ -178,14 +296,14 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         }
                     }
 
-                    landscape_data.items.push(item);
+                    data.items.push(item);
                 }
             }
 
-            landscape_data.categories.push(category);
+            data.categories.push(category);
         }
 
-        landscape_data
+        data
     }
 }
 

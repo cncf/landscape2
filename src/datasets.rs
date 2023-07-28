@@ -6,7 +6,7 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, full::Full};
-use crate::{data::LandscapeData, settings::Settings};
+use crate::{data::LandscapeData, settings::LandscapeSettings};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -21,9 +21,9 @@ pub(crate) struct Datasets {
 
 impl Datasets {
     /// Create a new datasets instance.
-    pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Result<Self> {
+    pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(settings, landscape_data),
+            base: Base::new(landscape_data, settings),
             full: Full::new(landscape_data.clone()),
         };
 
@@ -38,7 +38,7 @@ impl Datasets {
 mod base {
     use crate::{
         data::{Category, CategoryName, ItemFeatured, LandscapeData},
-        settings::{Group, Settings},
+        settings::{Group, LandscapeSettings},
     };
     use serde::{Deserialize, Serialize};
     use uuid::Uuid;
@@ -75,8 +75,8 @@ mod base {
     }
 
     impl Base {
-        /// Create a new Base instance from the settings and data provided.
-        pub(crate) fn new(settings: &Settings, landscape_data: &LandscapeData) -> Self {
+        /// Create a new Base instance from the data and settings provided.
+        pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
             let mut base = Base {
                 groups: settings.groups.clone().unwrap_or(vec![]),
                 categories: landscape_data.categories.clone(),
