@@ -2,7 +2,7 @@
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
-use crate::{cache::CRUNCHBASE_CACHE_TTL, data::LandscapeData};
+use crate::data::LandscapeData;
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -16,6 +16,9 @@ use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
+
+/// How long the Crunchbase data in the cache is valid (in days).
+const CRUNCHBASE_CACHE_TTL: i64 = 7;
 
 /// Collect Crunchbase data for each of the items orgs in the landscape,
 /// reusing cached data whenever possible.

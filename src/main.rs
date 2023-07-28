@@ -39,6 +39,10 @@ enum Command {
 /// Build command arguments.
 #[derive(Args)]
 struct BuildArgs {
+    /// Cache directory.
+    #[arg(long)]
+    cache_dir: Option<PathBuf>,
+
     /// Data source.
     #[command(flatten)]
     data_source: DataSource,
