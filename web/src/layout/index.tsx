@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
-import Footer from './navigation/Footer';
-import Header from './navigation/Header';
 import { BaseItem } from '../types';
 import ItemModal from './common/itemModal';
 import NoData from './common/NoData';
+import Footer from './navigation/Footer';
+import Header from './navigation/Header';
 
 interface Props {
   items: BaseItem[];

@@ -1,11 +1,12 @@
 import classNames from 'classnames';
+import { isNull, isUndefined } from 'lodash';
 import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';
-import HoverableItem from './HoverableItem';
-import styles from './Searchbar.module.css';
 import { BaseItem, SVGIconKind } from '../../types';
+import HoverableItem from './HoverableItem';
 import MaturityBadge from './MaturityBadge';
+import styles from './Searchbar.module.css';
 import SVGIcon from './SVGIcon';
 
 interface Props {
@@ -43,7 +44,7 @@ const Searchbar = (props: Props) => {
         return;
       case 'Enter':
         e.preventDefault();
-        if (itemsList !== null && highlightedItem !== null) {
+        if (!isNull(itemsList) && !isNull(highlightedItem)) {
           if (highlightedItem === itemsList.length) {
             search();
           } else {
@@ -69,13 +70,13 @@ const Searchbar = (props: Props) => {
   };
 
   const forceBlur = (): void => {
-    if (inputEl !== null && inputEl.current !== null) {
+    if (!isNull(inputEl) && !isNull(inputEl.current)) {
       inputEl.current.blur();
     }
   };
 
   const forceFocus = (): void => {
-    if (inputEl !== null && inputEl.current !== null) {
+    if (!isNull(inputEl) && !isNull(inputEl.current)) {
       inputEl.current.focus();
     }
   };
@@ -109,7 +110,7 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanTimeout = () => {
-    if (dropdownTimeout !== null) {
+    if (!isNull(dropdownTimeout)) {
       clearTimeout(dropdownTimeout);
       setDropdownTimeout(null);
     }
@@ -127,8 +128,8 @@ const Searchbar = (props: Props) => {
   };
 
   const updateHighlightedItem = (arrow: 'up' | 'down') => {
-    if (itemsList !== null && visibleDropdown) {
-      if (highlightedItem !== null) {
+    if (!isNull(itemsList) && visibleDropdown) {
+      if (!isNull(highlightedItem)) {
         let newIndex: number = arrow === 'up' ? highlightedItem - 1 : highlightedItem + 1;
         if (newIndex > itemsList.length) {
           newIndex = 0;
@@ -168,7 +169,7 @@ const Searchbar = (props: Props) => {
     }
 
     return () => {
-      if (dropdownTimeout !== null) {
+      if (!isNull(dropdownTimeout)) {
         clearTimeout(dropdownTimeout);
       }
     };
@@ -221,7 +222,7 @@ const Searchbar = (props: Props) => {
         </button>
       </div>
 
-      {visibleDropdown && itemsList !== null && (
+      {visibleDropdown && !isNull(itemsList) && (
         <div
           ref={dropdownRef}
           className={`dropdown-menu dropdown-menu-left p-0 shadow-sm w-100 rounded-0 show noFocus overflow-auto ${styles.dropdown} ${styles.visibleScroll}`}
@@ -266,7 +267,7 @@ const Searchbar = (props: Props) => {
                       >
                         <div className="d-flex flex-row align-items-baseline">
                           <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
-                          {item.project !== undefined && (
+                          {!isUndefined(item.project) && (
                             <div className={`position-relative ${styles.badges}`}>
                               <div title="CNCF" className={`badge rounded-0 bg-primary ms-2 ${styles.badge}`}>
                                 CNCF

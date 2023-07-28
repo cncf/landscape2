@@ -1,10 +1,11 @@
-import styles from './Footer.module.css';
-import qr from '../../assets/images/qr-l.svg';
-import logo from '../../assets/images/cncf-landscape-horizontal-white.svg';
-import CNCFLogo from '../../assets/images/CNCF_logo_white.svg';
 import { NavLink } from 'react-router-dom';
-import SVGIcon from '../common/SVGIcon';
+
+import CNCFLogo from '../../assets/images/CNCF_logo_white.svg';
+import logo from '../../assets/images/cncf-landscape-horizontal-white.svg';
+import qr from '../../assets/images/qr-l.svg';
 import { SVGIconKind } from '../../types';
+import SVGIcon from '../common/SVGIcon';
+import styles from './Footer.module.css';
 
 const Footer = () => {
   return (

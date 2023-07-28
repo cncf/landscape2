@@ -1,30 +1,32 @@
 import classNames from 'classnames';
+import { isUndefined } from 'lodash';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+
+import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
+import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import {
   ActiveFilters,
-  FilterCategory,
-  BaseItem,
-  Group,
-  ViewMode,
-  Breakpoint,
   BaseData,
+  BaseItem,
+  Breakpoint,
+  FilterCategory,
+  Group,
   Item,
   SVGIconKind,
+  ViewMode,
 } from '../../types';
-import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
-import styles from './Landscape.module.css';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import countVisibleItems from '../../utils/countVisibleItems';
+import filterData from '../../utils/filterData';
+import itemsDataGetter from '../../utils/itemsDataGetter';
+import prepareData, { GroupData } from '../../utils/prepareData';
+import throttle from '../../utils/throttle';
+import NoData from '../common/NoData';
+import SVGIcon from '../common/SVGIcon';
 import Content from './Content';
 import Filters from './filters';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import prepareData, { GroupData } from '../../utils/prepareData';
-import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
-import itemsDataGetter from '../../utils/itemsDataGetter';
-import filterData from '../../utils/filterData';
-import NoData from '../common/NoData';
-import throttle from '../../utils/throttle';
 import ActiveFiltersList from './filters/ActiveFiltersList';
-import countVisibleItems from '../../utils/countVisibleItems';
-import SVGIcon from '../common/SVGIcon';
+import styles from './Landscape.module.css';
 
 interface Props {
   data: BaseData;
@@ -50,7 +52,7 @@ const Landscape = (props: Props) => {
     (searchParams.get(VIEW_MODE_PARAM) as ViewMode) || DEFAULT_VIEW_MODE
   );
   const [visibleItems, setVisibleItems] = useState<(BaseItem | Item)[]>(props.data.items);
-  const [visibleFilters, setVisibleFilters] = useState<boolean>(false);
+  const [visibleFiltersModal, setVisibleFiltersModal] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
   const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
@@ -87,10 +89,14 @@ const Landscape = (props: Props) => {
     bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
   }, [levelZoom]);
 
-  const removeFilter = (name: FilterCategory, value: string) => {
-    const tmpActiveFilters: string[] = (activeFilters[name] || []).filter((f: string) => f !== value);
-    updateActiveFilters(name, tmpActiveFilters);
-  };
+  const removeFilter = useCallback(
+    (name: FilterCategory, value: string) => {
+      const tmpActiveFilters: string[] = (activeFilters[name] || []).filter((f: string) => f !== value);
+      updateActiveFilters(name, tmpActiveFilters);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeFilters]
+  );
 
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
     const tmpActiveFilters: ActiveFilters = { ...activeFilters };
@@ -102,13 +108,17 @@ const Landscape = (props: Props) => {
     setActiveFilters(tmpActiveFilters);
   };
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setActiveFilters({});
-  };
+  }, []);
 
-  const applyFilters = (newFilters: ActiveFilters) => {
+  const applyFilters = useCallback((newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
-  };
+  }, []);
+
+  const onCloseFiltersModal = useCallback(() => {
+    setVisibleFiltersModal(false);
+  }, []);
 
   useEffect(() => {
     setVisibleItems(filterData(landscapeData || props.data.items, activeFilters));
@@ -129,12 +139,6 @@ const Landscape = (props: Props) => {
   }, [point]);
 
   useEffect(() => {
-    if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
-    }
-  }, []);
-
-  useEffect(() => {
     const checkContainerWidth = throttle(() => {
       if (container && container.current) {
         setContainerWidth(container.current.offsetWidth - TITLE_GAP);
@@ -142,10 +146,14 @@ const Landscape = (props: Props) => {
     }, 400);
     window.addEventListener('resize', checkContainerWidth);
 
+    if (container && container.current) {
+      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
+    }
+
     return () => window.removeEventListener('resize', checkContainerWidth);
   }, []);
 
-  if (groupsData === undefined) return null;
+  if (isUndefined(groupsData)) return null;
 
   return (
     <>
@@ -155,7 +163,7 @@ const Landscape = (props: Props) => {
             <button
               title="Filters"
               className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
-              onClick={() => setVisibleFilters(true)}
+              onClick={() => setVisibleFiltersModal(true)}
             >
               <div className="d-flex flex-row align-items-center">
                 <SVGIcon kind={SVGIconKind.Filters} />
@@ -176,7 +184,7 @@ const Landscape = (props: Props) => {
                       title={`Group: ${group.name}`}
                       className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
                         [`active text-white ${styles.active}`]:
-                          selectedGroup !== undefined && group.name === selectedGroup,
+                          !isUndefined(selectedGroup) && group.name === selectedGroup,
                       })}
                       onClick={() => {
                         setSelectedGroup(group.name);
@@ -290,7 +298,7 @@ const Landscape = (props: Props) => {
                   <div key={group.name} className={classNames({ 'd-none': !isSelected }, { 'd-block': isSelected })}>
                     <Content
                       containerWidth={containerWidth}
-                      fullDataReady={landscapeData !== undefined}
+                      fullDataReady={!isUndefined(landscapeData)}
                       data={groupsData[group.name]}
                       cardWidth={ZOOM_LEVELS[levelZoom][0]}
                       selectedViewMode={selectedViewMode}
@@ -303,7 +311,7 @@ const Landscape = (props: Props) => {
           ) : (
             <Content
               containerWidth={containerWidth}
-              fullDataReady={landscapeData !== undefined}
+              fullDataReady={!isUndefined(landscapeData)}
               data={groupsData.default}
               cardWidth={ZOOM_LEVELS[levelZoom][0]}
               selectedViewMode={selectedViewMode}
@@ -317,8 +325,8 @@ const Landscape = (props: Props) => {
         data={props.data}
         landscapeData={landscapeData}
         selectedGroup={selectedGroup}
-        visibleFilters={visibleFilters}
-        onClose={() => setVisibleFilters(false)}
+        visibleFilters={visibleFiltersModal}
+        onClose={onCloseFiltersModal}
         activeFilters={activeFilters}
         applyFilters={applyFilters}
       />

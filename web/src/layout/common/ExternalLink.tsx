@@ -1,6 +1,9 @@
-import SVGIcon from './SVGIcon';
 import './ExternalLink.module.css';
+
+import { isUndefined } from 'lodash';
+
 import { SVGIconKind } from '../../types';
+import SVGIcon from './SVGIcon';
 
 interface Props {
   children: JSX.Element | JSX.Element[] | string;
@@ -21,7 +24,7 @@ const ExternalLink = (props: Props) => {
   const getData = () => {
     return (
       <>
-        {props.visibleExternalIcon !== undefined && props.visibleExternalIcon ? (
+        {!isUndefined(props.visibleExternalIcon) && props.visibleExternalIcon ? (
           <div className="d-flex flex-row align-items-baseline">
             {props.children}
             <SVGIcon kind={SVGIconKind.Link} className={`ms-2 icon ${props.externalIconClassName}`} />
@@ -35,7 +38,7 @@ const ExternalLink = (props: Props) => {
 
   return (
     <>
-      {props.btnType !== undefined && props.btnType ? (
+      {!isUndefined(props.btnType) && props.btnType ? (
         <button
           title={props.title}
           type="button"
@@ -46,7 +49,7 @@ const ExternalLink = (props: Props) => {
 
             if (props.onClick) props.onClick();
 
-            if (props.disabled === undefined || !props.disabled) {
+            if (isUndefined(props.disabled) || !props.disabled) {
               window.open(props.href, props.target || '_blank');
             }
           }}

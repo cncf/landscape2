@@ -1,10 +1,10 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { isNull, isUndefined, sortBy } from 'lodash';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-import styles from './SearchbarSection.module.css';
-import { CheckBox } from '../../common/Checkbox';
 import { FilterCategory, FilterOption, FilterSection, SVGIconKind } from '../../../types';
-import { sortBy } from 'lodash';
+import { CheckBox } from '../../common/Checkbox';
 import SVGIcon from '../../common/SVGIcon';
+import styles from './SearchbarSection.module.css';
 
 export interface Props {
   title?: string;
@@ -29,7 +29,7 @@ const SearchbarSection = (props: Props) => {
   );
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const onChange = (value: string, checked: boolean) => {
+  const onChange = useCallback((value: string, checked: boolean) => {
     let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
     if (!checked) {
       if (props.activeFilters) {
@@ -41,7 +41,8 @@ const SearchbarSection = (props: Props) => {
     if (props.section) {
       props.updateActiveFilters(props.section.value, tmpActiveFilters);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cleanSearchValue = () => {
     setValue('');
@@ -49,13 +50,13 @@ const SearchbarSection = (props: Props) => {
   };
 
   const forceBlur = (): void => {
-    if (inputEl !== null && inputEl.current !== null) {
+    if (!isNull(inputEl) && !isNull(inputEl.current)) {
       inputEl.current.blur();
     }
   };
 
   const forceFocus = (): void => {
-    if (inputEl !== null && inputEl.current !== null) {
+    if (!isNull(inputEl) && !isNull(inputEl.current)) {
       inputEl.current.focus();
     }
   };
@@ -87,7 +88,7 @@ const SearchbarSection = (props: Props) => {
   }, [props.activeFilters]);
 
   useEffect(() => {
-    if (searchTimeout !== null) {
+    if (!isNull(searchTimeout)) {
       clearTimeout(searchTimeout);
     }
     setSearchTimeout(
@@ -105,7 +106,7 @@ const SearchbarSection = (props: Props) => {
     };
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  if (props.section === undefined) return null;
+  if (isUndefined(props.section)) return null;
 
   return (
     <div className="d-flex flex-column h-100">
@@ -186,7 +187,9 @@ const SearchbarSection = (props: Props) => {
                 })}
               </>
             ) : (
-              <div className="py-4 text-center">Lorem ipsum....</div>
+              <div className="py-4 text-center">
+                We can't seem to find any result that match your search for <span className="fw-bold">{value}</span>
+              </div>
             )}
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { isUndefined } from 'lodash';
+
 import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
 
 const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
@@ -5,7 +7,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
     const filteredItems: Item[] = items.filter((item: Item) => {
       // Filter Organization
       if (activeFilters[FilterCategory.Organization]) {
-        if (item.crunchbase_data === undefined || item.crunchbase_data.name === undefined) {
+        if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.name)) {
           return false;
         } else if (!activeFilters[FilterCategory.Organization].includes(item.crunchbase_data.name)) {
           return false;
@@ -14,7 +16,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // Filter Country
       if (activeFilters[FilterCategory.Country]) {
-        if (item.crunchbase_data === undefined || item.crunchbase_data.country === undefined) {
+        if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.country)) {
           return false;
         } else if (!activeFilters[FilterCategory.Country].includes(item.crunchbase_data.country)) {
           return false;
@@ -23,7 +25,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // Filter Industry
       if (activeFilters[FilterCategory.Industry]) {
-        if (item.crunchbase_data === undefined || item.crunchbase_data.categories === undefined) {
+        if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.categories)) {
           return false;
         } else if (
           !item.crunchbase_data.categories.some((c: string) => activeFilters[FilterCategory.Industry]?.includes(c))
@@ -34,7 +36,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // License License
       if (activeFilters[FilterCategory.License]) {
-        if (item.repositories === undefined) {
+        if (isUndefined(item.repositories)) {
           return false;
         } else {
           const licenses: string[] = [];
@@ -51,7 +53,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // Filter CompanyType
       if (activeFilters[FilterCategory.CompanyType]) {
-        if (item.crunchbase_data === undefined || item.crunchbase_data.company_type === undefined) {
+        if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.company_type)) {
           return false;
         } else if (!activeFilters[FilterCategory.CompanyType].includes(item.crunchbase_data.company_type)) {
           return false;
@@ -60,10 +62,10 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       //  Project filter
       if (activeFilters[FilterCategory.Project]) {
-        if (item.project === undefined && !activeFilters[FilterCategory.Project].includes('non-cncf')) {
+        if (isUndefined(item.project) && !activeFilters[FilterCategory.Project].includes('non-cncf')) {
           return false;
         } else {
-          if (item.project !== undefined && !activeFilters[FilterCategory.Project].includes(item.project)) {
+          if (!isUndefined(item.project) && !activeFilters[FilterCategory.Project].includes(item.project)) {
             return false;
           }
         }

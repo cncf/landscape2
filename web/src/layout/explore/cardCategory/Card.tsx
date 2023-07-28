@@ -1,3 +1,5 @@
+import { isUndefined } from 'lodash';
+
 import { Item, Repository, SVGIconKind } from '../../../types';
 import cleanEmojis from '../../../utils/cleanEmojis';
 import prettifyNumber from '../../../utils/prettifyNumber';
@@ -53,7 +55,7 @@ const Card = (props: Props) => {
   // If homepage_url is undefined or is equal to main repository url
   // and project field is undefined,
   // we use the homepage_url fron crunchbase
-  if (websiteUrl === undefined || websiteUrl === mainRepoUrl) {
+  if (isUndefined(websiteUrl) || websiteUrl === mainRepoUrl) {
     if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
       websiteUrl = props.item.crunchbase_data.homepage_url;
     }
@@ -75,7 +77,7 @@ const Card = (props: Props) => {
           )}
 
           <div className={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
-            {props.item.project !== undefined ? (
+            {!isUndefined(props.item.project) ? (
               <>
                 <div title="CNCF" className="badge rounded-0 bg-primary">
                   CNCF
@@ -84,7 +86,7 @@ const Card = (props: Props) => {
               </>
             ) : (
               <>
-                {props.item.member_subcategory !== undefined && (
+                {!isUndefined(props.item.member_subcategory) && (
                   <div
                     title={`${props.item.member_subcategory} member`}
                     className={`badge rounded-0 text-uppercase me-2 border ${styles.badgeOutlineDark}`}
@@ -101,31 +103,31 @@ const Card = (props: Props) => {
               </ExternalLink>
             )}
 
-            {mainRepoUrl !== undefined && (
+            {!isUndefined(mainRepoUrl) && (
               <ExternalLink title="Repository" className={`me-2 ${styles.link}`} href={mainRepoUrl}>
                 <SVGIcon kind={SVGIconKind.GitHubCircle} />
               </ExternalLink>
             )}
 
-            {props.item.devstats_url !== undefined && (
+            {!isUndefined(props.item.devstats_url) && (
               <ExternalLink title="Devstats" className={`me-2 ${styles.link}`} href={props.item.devstats_url}>
                 <SVGIcon kind={SVGIconKind.Stats} />
               </ExternalLink>
             )}
 
-            {props.item.twitter_url !== undefined && (
+            {!isUndefined(props.item.twitter_url) && (
               <ExternalLink title="Twitter" className={`me-2 ${styles.link}`} href={props.item.twitter_url}>
                 <SVGIcon kind={SVGIconKind.Twitter} />
               </ExternalLink>
             )}
 
-            {props.item.project === undefined && props.item.crunchbase_url !== undefined && (
+            {isUndefined(props.item.project) && !isUndefined(props.item.crunchbase_url) && (
               <ExternalLink title="Crunchbase" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
                 <SVGIcon kind={SVGIconKind.Crunchbase} />
               </ExternalLink>
             )}
 
-            {props.item.accepted_at !== undefined && (
+            {!isUndefined(props.item.accepted_at) && (
               <div
                 title={`Accepted at ${props.item.accepted_at}`}
                 className="d-flex flex-row align-items-center accepted-date"
@@ -144,7 +146,7 @@ const Card = (props: Props) => {
         className={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >
         <div className="d-flex flex-row align-items-baseline">
-          {(props.item.project === undefined || props.item.crunchbase_data === undefined) && (
+          {(isUndefined(props.item.project) || isUndefined(props.item.crunchbase_data)) && (
             <>
               <small className="me-1 text-black-50">Funding:</small>
               <div className="fw-semibold">
@@ -159,7 +161,7 @@ const Card = (props: Props) => {
             </>
           )}
         </div>
-        {stars !== undefined && (
+        {!isUndefined(stars) && (
           <div className="d-flex flex-row align-items-baseline">
             <small className="me-1 text-black-50">GitHub stars:</small>
             <div className="fw-semibold">{stars ? prettifyNumber(stars, 1) : '-'}</div>

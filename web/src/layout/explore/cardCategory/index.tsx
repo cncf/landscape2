@@ -1,15 +1,16 @@
-import { BaseItem, Item, OutletContext, SVGIconKind } from '../../../types';
-import styles from './CardCategory.module.css';
-import { CategoriesData } from '../../../utils/prepareData';
-import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
-import { useEffect, useState } from 'react';
-import { COLORS } from '../../../data';
 import classNames from 'classnames';
-import Card from './Card';
+import { isUndefined, orderBy } from 'lodash';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { orderBy } from 'lodash';
+
+import { COLORS } from '../../../data';
+import { BaseItem, Item, OutletContext, SVGIconKind } from '../../../types';
+import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
+import { CategoriesData } from '../../../utils/prepareData';
 import { Loading } from '../../common/Loading';
 import SVGIcon from '../../common/SVGIcon';
+import Card from './Card';
+import styles from './CardCategory.module.css';
 
 interface Props {
   fullDataReady: boolean;
@@ -46,7 +47,7 @@ const CardCategory = (props: Props) => {
       const menu: Menu = {};
 
       Object.keys(d).forEach((cat: string) => {
-        const isOverriden = props.categories_overridden !== undefined && props.categories_overridden.includes(cat);
+        const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
 
         const subcategories: SubcategoryDetails[] = [];
         const subcategoriesList: string[] = [];
@@ -75,13 +76,13 @@ const CardCategory = (props: Props) => {
   }, [props.data]);
 
   useEffect(() => {
-    if (menu !== undefined && Object.keys(menu).length > 0) {
+    if (!isUndefined(menu) && Object.keys(menu).length > 0) {
       let selectedCategory = Object.keys(menu)[0];
       let selectedSubcategory = menu[selectedCategory][0];
 
       // Use selected section when subcategory has items
       if (
-        selectedSection !== undefined &&
+        !isUndefined(selectedSection) &&
         menu[selectedSection.category] &&
         menu[selectedSection.category].includes(selectedSection.subcategory)
       ) {
@@ -108,7 +109,7 @@ const CardCategory = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSection]);
 
-  if (selectedSection === undefined || menu === undefined) return null;
+  if (isUndefined(selectedSection) || isUndefined(menu)) return null;
 
   return (
     <div className="d-flex flex-row mt-2">
@@ -136,7 +137,7 @@ const CardCategory = (props: Props) => {
               >
                 {menu[cat].map((subcat: string) => {
                   const isSelected =
-                    selectedSection !== undefined &&
+                    !isUndefined(selectedSection) &&
                     cat === selectedSection.category &&
                     subcat === selectedSection.subcategory;
 

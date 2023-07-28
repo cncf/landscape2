@@ -1,12 +1,14 @@
 import classNames from 'classnames';
-import styles from './GridCategory.module.css';
-import generateColorsArray from '../../../utils/generateColorsArray';
+import { isUndefined } from 'lodash';
 import { Link } from 'react-router-dom';
-import { CategoriesData } from '../../../utils/prepareData';
-import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
-import Grid from './Grid';
-import SVGIcon from '../../common/SVGIcon';
+
 import { SVGIconKind } from '../../../types';
+import generateColorsArray from '../../../utils/generateColorsArray';
+import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
+import { CategoriesData } from '../../../utils/prepareData';
+import SVGIcon from '../../common/SVGIcon';
+import Grid from './Grid';
+import styles from './GridCategory.module.css';
 
 interface Props {
   containerWidth: number;
@@ -22,7 +24,7 @@ const GridCategory = (props: Props) => {
   return (
     <>
       {Object.keys(props.data).map((cat: string, index: number) => {
-        const isOverriden = props.categories_overridden !== undefined && props.categories_overridden.includes(cat);
+        const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
         const subcategories: SubcategoryDetails[] = [];
         Object.keys(props.data[cat]).forEach((subcat: string) => {
           if (props.data[cat][subcat].items.length !== 0) {

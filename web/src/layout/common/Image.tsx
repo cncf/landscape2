@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import SVGIcon from './SVGIcon';
+
 import { SVGIconKind } from '../../types';
+import SVGIcon from './SVGIcon';
 
 interface Props {
   name: string;

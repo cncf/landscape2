@@ -1,13 +1,14 @@
+import classNames from 'classnames';
+import { isUndefined } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
-import styles from './GridItem.module.css';
 import { BaseItem, Item, OutletContext } from '../../../types';
-import classNames from 'classnames';
-import Card from '../cardCategory/Card';
 import Image from '../../common/Image';
-import { useOutletContext } from 'react-router-dom';
 import { Loading } from '../../common/Loading';
+import Card from '../cardCategory/Card';
+import styles from './GridItem.module.css';
 
 interface Props {
   fullDataReady: boolean;
@@ -74,7 +75,7 @@ const GridItem = (props: Props) => {
 
   return (
     <div
-      style={props.item.project !== undefined ? { border: `1px solid ${props.borderColor}` } : {}}
+      style={!isUndefined(props.item.project) ? { border: `1px solid ${props.borderColor}` } : {}}
       className={classNames(
         'card rounded-0 position-relative p-0',
         styles.card,
@@ -82,8 +83,8 @@ const GridItem = (props: Props) => {
         { [styles.withLabel]: props.item.featured && props.item.featured.label },
         {
           [styles.withRepo]:
-            (props.item.has_repositories !== undefined && props.item.has_repositories) ||
-            (props.item.has_repositories === undefined && 'repositories' in props.item),
+            (!isUndefined(props.item.has_repositories) && props.item.has_repositories) ||
+            (isUndefined(props.item.has_repositories) && 'repositories' in props.item),
         }
       )}
     >

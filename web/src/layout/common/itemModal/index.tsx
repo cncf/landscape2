@@ -1,19 +1,21 @@
-import { Item, Repository, SVGIconKind } from '../../../types';
-import Modal from '../Modal';
-import styles from './ItemModal.module.css';
-import { useEffect, useState } from 'react';
-import itemsDataGetter from '../../../utils/itemsDataGetter';
-import cleanEmojis from '../../../utils/cleanEmojis';
-import MaturityBadge from '../MaturityBadge';
-import Image from '../Image';
-import ExternalLink from '../ExternalLink';
-import prettifyNumber from '../../../utils/prettifyNumber';
-import moment from 'moment';
 import classNames from 'classnames';
-import ParticipationStats from './ParticipationStats';
+import { isUndefined } from 'lodash';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+
+import { Item, Repository, SVGIconKind } from '../../../types';
+import cleanEmojis from '../../../utils/cleanEmojis';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
+import itemsDataGetter from '../../../utils/itemsDataGetter';
+import prettifyNumber from '../../../utils/prettifyNumber';
+import ExternalLink from '../ExternalLink';
+import Image from '../Image';
 import { Loading } from '../Loading';
+import MaturityBadge from '../MaturityBadge';
+import Modal from '../Modal';
 import SVGIcon from '../SVGIcon';
+import styles from './ItemModal.module.css';
+import ParticipationStats from './ParticipationStats';
 
 interface Props {
   activeItemId?: string;
@@ -67,7 +69,7 @@ const ItemModal = (props: Props) => {
   // If homepage_url is undefined or is equal to main repository url
   // and project field is undefined,
   // we use the homepage_url fron crunchbase
-  if (itemInfo && (websiteUrl === undefined || (mainRepo && websiteUrl === mainRepo.url))) {
+  if (itemInfo && (isUndefined(websiteUrl) || (mainRepo && websiteUrl === mainRepo.url))) {
     if (itemInfo.crunchbase_data && itemInfo.crunchbase_data.homepage_url) {
       websiteUrl = itemInfo.crunchbase_data.homepage_url;
     }
@@ -94,7 +96,7 @@ const ItemModal = (props: Props) => {
     }
   }, [props.activeItemId, fullDataReady]);
 
-  if (props.activeItemId === undefined) return null;
+  if (isUndefined(props.activeItemId)) return null;
 
   return (
     <Modal size="xl" open modalDialogClassName={styles.modalDialog} onClose={() => props.removeActiveItem()}>
@@ -109,14 +111,14 @@ const ItemModal = (props: Props) => {
               <div className="d-flex flex-row align-items-center">
                 <div className={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo.name}</div>
                 <div className={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
-                  {itemInfo.project !== undefined && (
+                  {!isUndefined(itemInfo.project) && (
                     <>
                       <div title="CNCF" className="badge rounded-0 bg-primary">
                         CNCF
                       </div>
                       <MaturityBadge level={itemInfo.project} className="mx-2" />
 
-                      {itemInfo.accepted_at !== undefined && (
+                      {!isUndefined(itemInfo.accepted_at) && (
                         <div
                           title={`Accepted at ${itemInfo.accepted_at}`}
                           className="d-flex flex-row align-items-center accepted-date me-3"
@@ -151,49 +153,49 @@ const ItemModal = (props: Props) => {
                       </ExternalLink>
                     )}
 
-                    {mainRepo !== undefined && (
+                    {!isUndefined(mainRepo) && (
                       <ExternalLink title="Repository" className={`ms-3 ${styles.link}`} href={mainRepo.url}>
                         <SVGIcon kind={SVGIconKind.GitHubCircle} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.devstats_url !== undefined && (
+                    {!isUndefined(itemInfo.devstats_url) && (
                       <ExternalLink title="Devstats" className={`ms-3 ${styles.link}`} href={itemInfo.devstats_url}>
                         <SVGIcon kind={SVGIconKind.Stats} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.twitter_url !== undefined && (
+                    {!isUndefined(itemInfo.twitter_url) && (
                       <ExternalLink title="Twitter" className={`ms-3 ${styles.link}`} href={itemInfo.twitter_url}>
                         <SVGIcon kind={SVGIconKind.Twitter} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.youtube_url !== undefined && (
+                    {!isUndefined(itemInfo.youtube_url) && (
                       <ExternalLink title="Youtube" className={`ms-3 ${styles.link}`} href={itemInfo.youtube_url}>
                         <SVGIcon kind={SVGIconKind.Youtube} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.slack_url !== undefined && (
+                    {!isUndefined(itemInfo.slack_url) && (
                       <ExternalLink title="Slack" className={`ms-3 ${styles.link}`} href={itemInfo.slack_url}>
                         <SVGIcon kind={SVGIconKind.Slack} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.discord_url !== undefined && (
+                    {!isUndefined(itemInfo.discord_url) && (
                       <ExternalLink title="Discord" className={`ms-3 ${styles.link}`} href={itemInfo.discord_url}>
                         <SVGIcon kind={SVGIconKind.Discord} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.docker_url !== undefined && (
+                    {!isUndefined(itemInfo.docker_url) && (
                       <ExternalLink title="Docker" className={`ms-3 ${styles.link}`} href={itemInfo.docker_url}>
                         <SVGIcon kind={SVGIconKind.Docker} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.stack_overflow_url !== undefined && (
+                    {!isUndefined(itemInfo.stack_overflow_url) && (
                       <ExternalLink
                         title="Stack overflow"
                         className={`ms-3 ${styles.link}`}
@@ -203,19 +205,19 @@ const ItemModal = (props: Props) => {
                       </ExternalLink>
                     )}
 
-                    {itemInfo.project === undefined && itemInfo.crunchbase_url !== undefined && (
+                    {isUndefined(itemInfo.project) && !isUndefined(itemInfo.crunchbase_url) && (
                       <ExternalLink title="Crunchbase" className={`ms-3 ${styles.link}`} href={itemInfo.crunchbase_url}>
                         <SVGIcon kind={SVGIconKind.Crunchbase} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.blog_url !== undefined && (
+                    {!isUndefined(itemInfo.blog_url) && (
                       <ExternalLink title="Blog" className={`ms-3 ${styles.link}`} href={itemInfo.blog_url}>
                         <SVGIcon kind={SVGIconKind.Blog} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.mailing_list_url !== undefined && (
+                    {!isUndefined(itemInfo.mailing_list_url) && (
                       <ExternalLink
                         title="Mailing list"
                         className={`ms-3 ${styles.link}`}
@@ -225,7 +227,7 @@ const ItemModal = (props: Props) => {
                       </ExternalLink>
                     )}
 
-                    {itemInfo.openssf_best_practices_url !== undefined && (
+                    {!isUndefined(itemInfo.openssf_best_practices_url) && (
                       <ExternalLink
                         title="OpenSSF best practices"
                         className={`ms-3 ${styles.link}`}
@@ -235,13 +237,13 @@ const ItemModal = (props: Props) => {
                       </ExternalLink>
                     )}
 
-                    {itemInfo.artwork_url !== undefined && (
+                    {!isUndefined(itemInfo.artwork_url) && (
                       <ExternalLink title="Artwork" className={`ms-3 ${styles.link}`} href={itemInfo.artwork_url}>
                         <SVGIcon kind={SVGIconKind.Artwork} />
                       </ExternalLink>
                     )}
 
-                    {itemInfo.github_discussions_url !== undefined && (
+                    {!isUndefined(itemInfo.github_discussions_url) && (
                       <ExternalLink
                         title="Github discussions"
                         className={`ms-3 ${styles.link}`}
@@ -259,7 +261,7 @@ const ItemModal = (props: Props) => {
           <div className={`mb-3 mt-4 text-muted ${styles.description}`}>{description}</div>
 
           {/* Project status */}
-          {itemInfo.project !== undefined && (
+          {!isUndefined(itemInfo.project) && (
             <div className={`position-relative my-4 border ${styles.fieldset}`}>
               <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>
                 Project status
@@ -340,7 +342,7 @@ const ItemModal = (props: Props) => {
               </div>
               <div className={`text-muted pt-1 ${styles.location}`}>
                 {itemInfo.crunchbase_data.city}
-                {itemInfo.crunchbase_data.country !== undefined ? `, ${itemInfo.crunchbase_data.country}` : ''}
+                {!isUndefined(itemInfo.crunchbase_data.country) ? `, ${itemInfo.crunchbase_data.country}` : ''}
               </div>
               <div className="mt-3">
                 <small className="text-muted">{itemInfo.crunchbase_data.description}</small>
@@ -412,10 +414,10 @@ const ItemModal = (props: Props) => {
           )}
 
           {/* Repositories */}
-          {itemInfo.repositories !== undefined && (
+          {!isUndefined(itemInfo.repositories) && (
             <div className={`position-relative mt-4 border ${styles.fieldset}`}>
               <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
-              {mainRepo !== undefined && (
+              {!isUndefined(mainRepo) && (
                 <>
                   <div>
                     <small className="text-muted">Primary repository:</small>

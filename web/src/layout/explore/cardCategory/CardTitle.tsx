@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import styles from './CardTitle.module.css';
+
 import throttle from '../../../utils/throttle';
+import styles from './CardTitle.module.css';
 
 interface Props {
   title: string;

@@ -1,10 +1,11 @@
-import styles from './Header.module.css';
+import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
 import logo from '../../assets/images/landscape-logo.svg';
 import { BaseItem, SVGIconKind } from '../../types';
 import Searchbar from '../common/Searchbar';
-import { NavLink } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import SVGIcon from '../common/SVGIcon';
+import styles from './Header.module.css';
 
 interface Props {
   items: BaseItem[];

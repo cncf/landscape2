@@ -1,15 +1,17 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
 import './styles/default.scss';
 import './App.css';
-import Landscape from './layout/explore';
+
+import { isNull, isUndefined } from 'lodash';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+
 import Layout from './layout';
+import Landscape from './layout/explore';
+import Guide from './layout/guide';
 import NotFound from './layout/notFound';
 import Stats from './layout/stats';
-import Guide from './layout/guide';
-import itemsDataGetter from './utils/itemsDataGetter';
-import { useEffect } from 'react';
 import Acquisitions from './layout/stats';
+import itemsDataGetter from './utils/itemsDataGetter';
 
 const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,7 +21,7 @@ const App = () => {
     itemsDataGetter.init();
   }, []);
 
-  if (data === null || data === undefined) return null;
+  if (isNull(data) || isUndefined(data)) return null;
 
   return (
     <Router>
