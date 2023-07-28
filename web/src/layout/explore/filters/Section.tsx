@@ -1,8 +1,10 @@
-import { ChangeEvent, Fragment } from 'react';
+import classNames from 'classnames';
+import { isUndefined } from 'lodash';
+import { ChangeEvent, Fragment, useCallback } from 'react';
+
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';
 import { CheckBox } from '../../common/Checkbox';
 import styles from './Section.module.css';
-import classNames from 'classnames';
 
 interface Props {
   section?: FilterSection;
@@ -14,14 +16,14 @@ interface Props {
 }
 
 const Section = (props: Props) => {
-  const onChange = (name: FilterCategory, value: string, checked: boolean, subOtps?: string[]) => {
+  const onChange = useCallback((name: FilterCategory, value: string, checked: boolean, subOtps?: string[]) => {
     let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
     if (!checked) {
       if (props.activeFilters) {
         tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value && !(subOtps || []).includes(f));
       }
     } else {
-      if (subOtps === undefined) {
+      if (isUndefined(subOtps)) {
         tmpActiveFilters.push(value);
       } else {
         tmpActiveFilters = [...tmpActiveFilters, ...subOtps];
@@ -30,7 +32,8 @@ const Section = (props: Props) => {
       }
     }
     props.updateActiveFilters(name, tmpActiveFilters);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const renderCheckBox = (opt: FilterOption, sectionName: FilterCategory, subOtps?: string[]) => (
     <CheckBox
@@ -38,7 +41,7 @@ const Section = (props: Props) => {
       name={sectionName as unknown as string}
       value={opt.value}
       labelClassName="mw-100 text-muted"
-      className={classNames('mt-2', { 'mb-2': props.inLine === undefined })}
+      className={classNames('mt-2', { 'mb-2': isUndefined(props.inLine) })}
       label={opt.name}
       checked={(props.activeFilters || []).includes(opt.value)}
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -47,7 +50,7 @@ const Section = (props: Props) => {
     />
   );
 
-  if (props.section === undefined) return null;
+  if (isUndefined(props.section)) return null;
 
   return (
     <div className="d-flex flex-column h-100">

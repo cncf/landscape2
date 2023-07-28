@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 
-import styles from './NotFound.module.css';
-import SVGIcon from '../common/SVGIcon';
 import { SVGIconKind } from '../../types';
+import SVGIcon from '../common/SVGIcon';
+import styles from './NotFound.module.css';
 
 const NotFound = () => {
   return (

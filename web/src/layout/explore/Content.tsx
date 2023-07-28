@@ -1,7 +1,9 @@
+import { memo } from 'react';
+
 import { ViewMode } from '../../types';
 import { CategoriesData } from '../../utils/prepareData';
-import GridCategory from './gridCategory';
 import CardCategory from './cardCategory';
+import GridCategory from './gridCategory';
 
 interface Props {
   containerWidth: number;
@@ -12,7 +14,8 @@ interface Props {
   categories_overridden?: string[];
 }
 
-const Content = (props: Props) => {
+// Memoized version of content to avoid unnecessary
+const Content = memo(function Content(props: Props) {
   return (
     <>
       <div className={props.selectedViewMode === ViewMode.Grid ? 'd-block' : 'd-none'}>
@@ -33,6 +36,6 @@ const Content = (props: Props) => {
       </div>
     </>
   );
-};
+});
 
 export default Content;

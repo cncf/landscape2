@@ -1,4 +1,5 @@
 import { ChangeEvent } from 'react';
+
 import styles from './Checkbox.module.css';
 
 export interface Props {

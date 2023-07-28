@@ -1,14 +1,15 @@
+import { isUndefined } from 'lodash';
+import { memo, MouseEvent, useCallback, useEffect, useState } from 'react';
+
 import { FILTERS } from '../../../data';
 import { ActiveFilters, BaseData, FilterCategory, FilterSection, Item } from '../../../types';
-import Section from './Section';
-import Modal from '../../common/Modal';
-import SearchbarSection from './SearchbarSection';
-import styles from './Filters.module.css';
-import { MouseEvent, useEffect, useState } from 'react';
-import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import prepareData from '../../../utils/prepareData';
-import { isUndefined } from 'lodash';
+import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import { Loading } from '../../common/Loading';
+import Modal from '../../common/Modal';
+import styles from './Filters.module.css';
+import SearchbarSection from './SearchbarSection';
+import Section from './Section';
 
 interface Props {
   data: BaseData;
@@ -20,7 +21,7 @@ interface Props {
   activeFilters: ActiveFilters;
 }
 
-const Filters = (props: Props) => {
+const Filters = memo(function Filters(props: Props) {
   const [tmpActiveFilters, setTmpActiveFilters] = useState<ActiveFilters>(props.activeFilters);
   const [filtersFromData, setFiltersFromData] = useState<FiltersPerGroup | undefined>();
   const [filters, setFilters] = useState<FilterSection[]>([]);
@@ -42,8 +43,6 @@ const Filters = (props: Props) => {
     }
   }, [filtersFromData, props.selectedGroup]);
 
-  if (!props.visibleFilters) return null;
-
   const getSection = (id: FilterCategory): FilterSection | undefined => {
     const section = filters.find((sec: FilterSection) => sec.value === id);
     if (section) {
@@ -52,31 +51,37 @@ const Filters = (props: Props) => {
     return;
   };
 
-  const getSectionInPredefinedFilters = (id: FilterCategory): FilterSection | undefined => {
+  const getSectionInPredefinedFilters = useCallback((id: FilterCategory): FilterSection | undefined => {
     const section = FILTERS.find((sec: FilterSection) => sec.value === id);
     if (section) {
       return section;
     }
     return;
-  };
+  }, []);
 
-  const resetFilter = (name: FilterCategory) => {
+  const resetFilter = useCallback((name: FilterCategory) => {
     updateActiveFilters(name, []);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const updateActiveFilters = (value: FilterCategory, options: string[]) => {
-    const filters: ActiveFilters = { ...tmpActiveFilters };
-    if (options.length === 0) {
-      delete filters[value];
-    } else {
-      filters[value] = options;
-    }
-    setTmpActiveFilters(filters);
-  };
+  const updateActiveFilters = useCallback(
+    (value: FilterCategory, options: string[]) => {
+      const filters: ActiveFilters = { ...tmpActiveFilters };
+      if (options.length === 0) {
+        delete filters[value];
+      } else {
+        filters[value] = options;
+      }
+      setTmpActiveFilters(filters);
+    },
+    [tmpActiveFilters]
+  );
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setTmpActiveFilters({});
-  };
+  }, []);
+
+  if (!props.visibleFilters) return null;
 
   const countryFilter = getSection(FilterCategory.Country);
   const orgFilter = getSection(FilterCategory.Organization);
@@ -220,6 +225,6 @@ const Filters = (props: Props) => {
       </div>
     </Modal>
   );
-};
+});
 
 export default Filters;

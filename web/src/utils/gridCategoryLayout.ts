@@ -1,3 +1,4 @@
+import { isUndefined } from 'lodash';
 import { CSSProperties } from 'react';
 
 // Input used to calculate the grid category layout.
@@ -108,7 +109,7 @@ export function transformGridLayout(input: TransformGridLayoutInput): GridCatego
         const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns + 1, input.itemWidth);
         style = { maxWidth: `${subcat.percentage}%`, minWidth: width };
       } else {
-        if (gridDimensions.maxRowsIndex !== undefined) {
+        if (!isUndefined(gridDimensions.maxRowsIndex)) {
           if (gridDimensions.maxRowsIndex !== subcatIndex) {
             const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns, input.itemWidth);
             style = { maxWidth: `${subcat.percentage}%`, width: width };

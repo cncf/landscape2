@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import styles from './ParticipationStats.module.css';
 import moment from 'moment';
+import { useEffect, useState } from 'react';
+
 import calculateAxisValues from '../../../utils/calculateAxisValues';
+import styles from './ParticipationStats.module.css';
 
 interface Props {
   stats: number[];

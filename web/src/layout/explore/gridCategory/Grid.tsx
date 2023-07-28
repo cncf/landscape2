@@ -1,4 +1,8 @@
 import classNames from 'classnames';
+import { isUndefined, sortBy } from 'lodash';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+
 import { BaseItem, Item, SVGIconKind } from '../../../types';
 import getGridCategoryLayout, {
   GridCategoryLayout,
@@ -7,12 +11,10 @@ import getGridCategoryLayout, {
   SubcategoryDetails,
   transformGridLayout,
 } from '../../../utils/gridCategoryLayout';
-import { Link } from 'react-router-dom';
-import GridItem from './GridItem';
-import styles from './Grid.module.css';
 import { SubcategoryData } from '../../../utils/prepareData';
-import { useEffect, useState } from 'react';
 import SVGIcon from '../../common/SVGIcon';
+import styles from './Grid.module.css';
+import GridItem from './GridItem';
 
 interface Props {
   fullDataReady: boolean;
@@ -30,12 +32,7 @@ const Grid = (props: Props) => {
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
 
   const sortItems = (items: BaseItem[]): BaseItem[] => {
-    return items.sort((a: BaseItem, b: BaseItem) => {
-      return (
-        (a.featured && a.featured.order ? a.featured.order : 1000) -
-        (b.featured && b.featured.order ? b.featured.order : 1000)
-      ); // Items with undefined order are last
-    });
+    return sortBy(items, ['featured.order']);
   };
 
   useEffect(() => {
@@ -58,7 +55,7 @@ const Grid = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.containerWidth, props.itemWidth, props.subcategories]);
 
-  if (grid === undefined) return null;
+  if (isUndefined(grid)) return null;
 
   return (
     <>

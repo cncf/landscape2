@@ -1,9 +1,10 @@
+import classNames from 'classnames';
+import { isUndefined } from 'lodash';
 import { MouseEvent, useEffect, useRef, useState } from 'react';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './Modal.module.css';
-import classNames from 'classnames';
 
 interface Props {
   open: boolean;
@@ -47,7 +48,7 @@ const Modal = (props: Props) => {
           className={classNames(
             `modal-dialog modal-${props.size || 'lg'}`,
             {
-              'modal-dialog-centered modal-dialog-scrollable': props.noScrollable === undefined || !props.noScrollable,
+              'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,
             },
             props.modalDialogClassName
           )}
@@ -72,7 +73,7 @@ const Modal = (props: Props) => {
             )}
 
             <div className="modal-body p-4 h-100 d-flex flex-column">
-              {props.header === undefined && (
+              {isUndefined(props.header) && (
                 <div className={`position-absolute ${styles.btnCloseWrapper}`}>
                   <button
                     type="button"
@@ -90,7 +91,7 @@ const Modal = (props: Props) => {
               {props.children}
             </div>
 
-            {props.footer !== undefined && <div className="modal-footer p-3">{props.footer}</div>}
+            {!isUndefined(props.footer) && <div className="modal-footer p-3">{props.footer}</div>}
           </div>
         </div>
       </div>

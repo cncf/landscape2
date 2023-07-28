@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { Breakpoint } from '../types';
 import throttle from '../utils/throttle';
 
