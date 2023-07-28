@@ -2,7 +2,6 @@
 //! from GitHub for each of the landscape items repositories (when applicable),
 //! as well as the functionality used to collect that information.
 
-use crate::cache::GITHUB_CACHE_TTL;
 use crate::data::LandscapeData;
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
@@ -19,6 +18,9 @@ use reqwest::header;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::{debug, instrument, warn};
+
+/// How long the GitHub data in the cache is valid (in days).
+const GITHUB_CACHE_TTL: i64 = 7;
 
 /// Collect GitHub data for each of the items repositories in the landscape,
 /// reusing cached data whenever possible.

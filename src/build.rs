@@ -3,7 +3,7 @@
 #![allow(non_upper_case_globals)]
 
 use crate::{
-    cache::{self, CachedData},
+    cache::{Cache, CachedData},
     crunchbase::collect_crunchbase_data,
     data::{get_landscape_data, LandscapeData},
     datasets::Datasets,
@@ -67,14 +67,15 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     prepare_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
-    let cached_data = cache::read()?;
+    let cache = Cache::new(&args.cache_dir)?;
+    let cached_data = cache.read()?;
     let cb_cached_data = cached_data.as_ref().map(|c| &c.crunchbase_data);
     let gh_cached_data = cached_data.as_ref().map(|c| &c.github_data);
     let (crunchbase_data, github_data) = tokio::try_join!(
         collect_crunchbase_data(&credentials.crunchbase_api_key, &landscape_data, cb_cached_data),
         collect_github_data(&credentials.github_tokens, &landscape_data, gh_cached_data)
     )?;
-    cache::write(CachedData {
+    cache.write(CachedData {
         crunchbase_data: crunchbase_data.clone(),
         github_data: github_data.clone(),
     })?;
