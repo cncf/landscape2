@@ -14,6 +14,10 @@ interface Props {
 const Layout = (props: Props) => {
   const [activeItemId, setActiveItemId] = useState<string | undefined>();
 
+  const updateActiveItemId = useCallback((id?: string) => {
+    setActiveItemId(id);
+  }, []);
+
   const onClickItem = useCallback((itemId: string) => {
     setActiveItemId(itemId);
   }, []);
@@ -35,7 +39,7 @@ const Layout = (props: Props) => {
           </NoData>
         </div>
         <main className="container-fluid px-4 d-none d-lg-block">
-          <Outlet context={{ activeItemId, setActiveItemId }} />
+          <Outlet context={{ activeItemId, updateActiveItemId }} />
         </main>
       </div>
       <Footer />

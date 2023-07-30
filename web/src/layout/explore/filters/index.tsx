@@ -22,6 +22,7 @@ interface Props {
 }
 
 const Filters = memo(function Filters(props: Props) {
+  // const Filters = (props: Props) => {
   const [tmpActiveFilters, setTmpActiveFilters] = useState<ActiveFilters>(props.activeFilters);
   const [filtersFromData, setFiltersFromData] = useState<FiltersPerGroup | undefined>();
   const [filters, setFilters] = useState<FilterSection[]>([]);
@@ -59,22 +60,24 @@ const Filters = memo(function Filters(props: Props) {
     return;
   }, []);
 
-  const resetFilter = useCallback((name: FilterCategory) => {
-    updateActiveFilters(name, []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const updateActiveFilters = useCallback(
     (value: FilterCategory, options: string[]) => {
-      const filters: ActiveFilters = { ...tmpActiveFilters };
+      const f: ActiveFilters = { ...tmpActiveFilters };
       if (options.length === 0) {
-        delete filters[value];
+        delete f[value];
       } else {
-        filters[value] = options;
+        f[value] = options;
       }
-      setTmpActiveFilters(filters);
+      setTmpActiveFilters(f);
     },
     [tmpActiveFilters]
+  );
+
+  const resetFilter = useCallback(
+    (name: FilterCategory) => {
+      updateActiveFilters(name, []);
+    },
+    [updateActiveFilters]
   );
 
   const resetFilters = useCallback(() => {
@@ -181,7 +184,6 @@ const Filters = memo(function Filters(props: Props) {
               {orgFilter && (
                 <div className="col-4">
                   <SearchbarSection
-                    title="Organization"
                     placeholder="Search organization"
                     section={orgFilter}
                     activeFilters={tmpActiveFilters[FilterCategory.Organization]}

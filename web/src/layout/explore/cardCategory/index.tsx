@@ -1,10 +1,11 @@
 import classNames from 'classnames';
 import { isUndefined, orderBy } from 'lodash';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
 import { COLORS } from '../../../data';
 import { BaseItem, Item, OutletContext, SVGIconKind } from '../../../types';
+import arePropsEqual from '../../../utils/areEqualProps';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData } from '../../../utils/prepareData';
 import { Loading } from '../../common/Loading';
@@ -27,8 +28,8 @@ interface Menu {
   [key: string]: string[];
 }
 
-const CardCategory = (props: Props) => {
-  const { setActiveItemId } = useOutletContext() as OutletContext;
+const CardCategory = memo(function CardCategory(props: Props) {
+  const { updateActiveItemId } = useOutletContext() as OutletContext;
   const [menu, setMenu] = useState<Menu | undefined>();
   const [selectedSection, setSelectedSection] = useState<SelectedSection | undefined>();
   const [visibleItems, setVisibleItems] = useState<BaseItem[] | undefined>();
@@ -178,7 +179,7 @@ const CardCategory = (props: Props) => {
                       key={`card_${item.id}`}
                       className={`col-12 col-lg-6 col-xxl-4 col-xxxl-3 ${styles.cardWrapper}`}
                     >
-                      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => setActiveItemId(item.id)}>
+                      <div className={`card rounded-0 p-3 ${styles.card}`} onClick={() => updateActiveItemId(item.id)}>
                         <Card item={item} className="h-100" />
                       </div>
                     </div>
@@ -193,6 +194,6 @@ const CardCategory = (props: Props) => {
       </div>
     </div>
   );
-};
+}, arePropsEqual);
 
 export default CardCategory;
