@@ -1,6 +1,6 @@
 export interface OutletContext {
   activeItemId?: string;
-  setActiveItemId: (itemId?: string) => void;
+  updateActiveItemId: (itemId?: string) => void;
 }
 
 export interface BaseData {
@@ -23,7 +23,7 @@ export interface Category {
 export interface BaseItem {
   id: string;
   category: string;
-  has_repositories: boolean;
+  has_repositories?: boolean;
   name: string;
   logo: string;
   subcategory: string;

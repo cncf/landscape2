@@ -12,7 +12,6 @@ import styles from './GridCategory.module.css';
 
 interface Props {
   containerWidth: number;
-  fullDataReady: boolean;
   data: CategoriesData;
   cardWidth: number;
   categories_overridden?: string[];
@@ -64,7 +63,6 @@ const GridCategory = (props: Props) => {
 
             <div className="d-flex flex-column align-items-stretch w-100">
               <Grid
-                fullDataReady={props.fullDataReady}
                 containerWidth={props.containerWidth}
                 itemWidth={props.cardWidth}
                 categoryName={cat}

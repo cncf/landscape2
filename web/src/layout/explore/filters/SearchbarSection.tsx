@@ -1,5 +1,5 @@
 import { isNull, isUndefined, sortBy } from 'lodash';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { FilterCategory, FilterOption, FilterSection, SVGIconKind } from '../../../types';
 import { CheckBox } from '../../common/Checkbox';
@@ -17,7 +17,7 @@ export interface Props {
 
 const SEARCH_DELAY = 3 * 100; // 300ms
 
-const SearchbarSection = (props: Props) => {
+const SearchbarSection = memo(function SearchbarSection(props: Props) {
   const sortOptions = (opts: FilterOption[]): FilterOption[] => {
     return sortBy(opts, (opt: FilterOption) => !(props.activeFilters || []).includes(opt.value));
   };
@@ -29,20 +29,22 @@ const SearchbarSection = (props: Props) => {
   );
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const onChange = useCallback((value: string, checked: boolean) => {
-    let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
-    if (!checked) {
-      if (props.activeFilters) {
-        tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value);
+  const onChange = useCallback(
+    (value: string, checked: boolean) => {
+      let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
+      if (!checked) {
+        if (props.activeFilters) {
+          tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value);
+        }
+      } else {
+        tmpActiveFilters.push(value);
       }
-    } else {
-      tmpActiveFilters.push(value);
-    }
-    if (props.section) {
-      props.updateActiveFilters(props.section.value, tmpActiveFilters);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      if (props.section) {
+        props.updateActiveFilters(props.section.value, tmpActiveFilters);
+      }
+    },
+    [props]
+  );
 
   const cleanSearchValue = () => {
     setValue('');
@@ -196,6 +198,6 @@ const SearchbarSection = (props: Props) => {
       </div>
     </div>
   );
-};
+});
 
 export default SearchbarSection;

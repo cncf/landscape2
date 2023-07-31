@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import { ViewMode } from '../../types';
+import arePropsEqual from '../../utils/areEqualProps';
 import { CategoriesData } from '../../utils/prepareData';
 import CardCategory from './cardCategory';
 import GridCategory from './gridCategory';
@@ -21,7 +22,6 @@ const Content = memo(function Content(props: Props) {
       <div className={props.selectedViewMode === ViewMode.Grid ? 'd-block' : 'd-none'}>
         <GridCategory
           containerWidth={props.containerWidth}
-          fullDataReady={props.fullDataReady}
           data={props.data}
           cardWidth={props.cardWidth}
           categories_overridden={props.categories_overridden}
@@ -36,6 +36,6 @@ const Content = memo(function Content(props: Props) {
       </div>
     </>
   );
-});
+}, arePropsEqual);
 
 export default Content;

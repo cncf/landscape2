@@ -1,9 +1,10 @@
 import classNames from 'classnames';
 import { isUndefined, sortBy } from 'lodash';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { BaseItem, Item, SVGIconKind } from '../../../types';
+import arePropsEqual from '../../../utils/areEqualProps';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -17,7 +18,6 @@ import styles from './Grid.module.css';
 import GridItem from './GridItem';
 
 interface Props {
-  fullDataReady: boolean;
   categoryData: { [key: string]: SubcategoryData };
   containerWidth: number;
   itemWidth: number;
@@ -28,7 +28,7 @@ interface Props {
   categoryIndex: number;
 }
 
-const Grid = (props: Props) => {
+const Grid = memo(function Grid(props: Props) {
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
 
   const sortItems = (items: BaseItem[]): BaseItem[] => {
@@ -99,14 +99,7 @@ const Grid = (props: Props) => {
                   <div className={`flex-grow-1 ${styles.itemsContainer}`}>
                     <div className={styles.items}>
                       {sortedItems.map((item: BaseItem | Item) => {
-                        return (
-                          <GridItem
-                            fullDataReady={props.fullDataReady}
-                            item={item}
-                            key={`item_${item.name}`}
-                            borderColor={props.backgroundColor}
-                          />
-                        );
+                        return <GridItem item={item} key={`item_${item.name}`} borderColor={props.backgroundColor} />;
                       })}
                     </div>
                   </div>
@@ -118,6 +111,6 @@ const Grid = (props: Props) => {
       })}
     </>
   );
-};
+}, arePropsEqual);
 
 export default Grid;

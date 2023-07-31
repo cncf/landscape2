@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
-import { ChangeEvent, Fragment, useCallback } from 'react';
+import { ChangeEvent, Fragment, memo, useCallback } from 'react';
 
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';
 import { CheckBox } from '../../common/Checkbox';
@@ -15,25 +15,27 @@ interface Props {
   resetFilter: (value: FilterCategory) => void;
 }
 
-const Section = (props: Props) => {
-  const onChange = useCallback((name: FilterCategory, value: string, checked: boolean, subOtps?: string[]) => {
-    let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
-    if (!checked) {
-      if (props.activeFilters) {
-        tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value && !(subOtps || []).includes(f));
-      }
-    } else {
-      if (isUndefined(subOtps)) {
-        tmpActiveFilters.push(value);
+const Section = memo(function Section(props: Props) {
+  const onChange = useCallback(
+    (name: FilterCategory, value: string, checked: boolean, subOtps?: string[]) => {
+      let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
+      if (!checked) {
+        if (props.activeFilters) {
+          tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value && !(subOtps || []).includes(f));
+        }
       } else {
-        tmpActiveFilters = [...tmpActiveFilters, ...subOtps];
-        tmpActiveFilters.push(value);
-        tmpActiveFilters = [...new Set(tmpActiveFilters)];
+        if (isUndefined(subOtps)) {
+          tmpActiveFilters.push(value);
+        } else {
+          tmpActiveFilters = [...tmpActiveFilters, ...subOtps];
+          tmpActiveFilters.push(value);
+          tmpActiveFilters = [...new Set(tmpActiveFilters)];
+        }
       }
-    }
-    props.updateActiveFilters(name, tmpActiveFilters);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      props.updateActiveFilters(name, tmpActiveFilters);
+    },
+    [props]
+  );
 
   const renderCheckBox = (opt: FilterOption, sectionName: FilterCategory, subOtps?: string[]) => (
     <CheckBox
@@ -96,6 +98,6 @@ const Section = (props: Props) => {
       </div>
     </div>
   );
-};
+});
 
 export default Section;

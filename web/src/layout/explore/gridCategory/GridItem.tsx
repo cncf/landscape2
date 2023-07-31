@@ -11,7 +11,6 @@ import Card from '../cardCategory/Card';
 import styles from './GridItem.module.css';
 
 interface Props {
-  fullDataReady: boolean;
   item: BaseItem | Item;
   borderColor?: string;
 }
@@ -22,14 +21,19 @@ const DEFAULT_MARGIN = 30;
 const GridItem = (props: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const wrapper = useRef<HTMLDivElement>(null);
-  const { setActiveItemId } = useOutletContext() as OutletContext;
+  const { updateActiveItemId } = useOutletContext() as OutletContext;
   const [visibleDropdown, setVisibleDropdown] = useState(false);
   const [onLinkHover, setOnLinkHover] = useState(false);
   const [onDropdownHover, setOnDropdownHover] = useState(false);
   const [tooltipAlignment, setTooltipAlignment] = useState<'right' | 'left' | 'center'>('center');
   const [elWidth, setElWidth] = useState<number>(0);
+  const [fullVersion, setFullVersion] = useState<boolean>(isUndefined(props.item.has_repositories));
 
   useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
+
+  useEffect(() => {
+    setFullVersion(isUndefined(props.item.has_repositories));
+  }, [props.item]);
 
   useEffect(() => {
     const calculateTooltipPosition = () => {
@@ -71,7 +75,7 @@ const GridItem = (props: Props) => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onLinkHover, onDropdownHover, props.fullDataReady, visibleDropdown]);
+  }, [onLinkHover, onDropdownHover, visibleDropdown]);
 
   return (
     <div
@@ -83,8 +87,7 @@ const GridItem = (props: Props) => {
         { [styles.withLabel]: props.item.featured && props.item.featured.label },
         {
           [styles.withRepo]:
-            (!isUndefined(props.item.has_repositories) && props.item.has_repositories) ||
-            (isUndefined(props.item.has_repositories) && 'repositories' in props.item),
+            (!fullVersion && props.item.has_repositories) || (fullVersion && 'repositories' in props.item),
         }
       )}
     >
@@ -104,7 +107,7 @@ const GridItem = (props: Props) => {
             onMouseLeave={() => setOnDropdownHover(false)}
           >
             <div className={`d-block position-absolute ${styles.arrow}`} />
-            {!props.fullDataReady ? <Loading /> : <Card item={props.item} />}
+            {!fullVersion ? <Loading /> : <Card item={props.item} />}
           </div>
         )}
       </div>
@@ -114,7 +117,7 @@ const GridItem = (props: Props) => {
           className={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
           onClick={(e) => {
             e.preventDefault();
-            setActiveItemId(props.item.id);
+            updateActiveItemId(props.item.id);
             setOnLinkHover(false);
             setVisibleDropdown(false);
           }}
