@@ -12,6 +12,7 @@ mod crunchbase;
 mod data;
 mod datasets;
 mod github;
+mod logos;
 mod settings;
 mod tmpl;
 
@@ -74,7 +75,7 @@ struct DataSource {
 }
 
 /// Logos location.
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[group(required = true, multiple = false)]
 struct LogosSource {
     /// Local path where the logos are stored.

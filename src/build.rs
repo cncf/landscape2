@@ -8,22 +8,20 @@ use crate::{
     data::{get_landscape_data, LandscapeData},
     datasets::Datasets,
     github::collect_github_data,
+    logos::prepare_logo,
     settings::{get_landscape_settings, LandscapeSettings},
     tmpl, BuildArgs, Credentials, LogosSource,
 };
 use anyhow::{format_err, Result};
 use askama::Template;
 use futures::stream::{self, StreamExt};
-use lazy_static::lazy_static;
-use regex::Regex;
-use reqwest::StatusCode;
 use rust_embed::RustEmbed;
-use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
     fs::{self, File},
     io::Write,
     path::Path,
+    sync::Arc,
     time::Instant,
 };
 use tracing::{debug, error, info, instrument};
@@ -34,6 +32,9 @@ const DATASETS_PATH: &str = "data";
 
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
+
+/// Maximum number of logos to prepare concurrently.
+const PREPARE_LOGOS_MAX_CONCURRENCY: usize = 20;
 
 /// Embed web application assets into binary.
 /// (these assets will be built automatically from the build script)
@@ -161,36 +162,6 @@ fn generate_datasets(
     Ok(datasets)
 }
 
-/// Helper function to get the logo content from the corresponding source.
-#[instrument(fields(?file_name), skip_all, err)]
-async fn get_logo_svg(
-    http_client: reqwest::Client,
-    logos_source: &LogosSource,
-    file_name: &str,
-) -> Result<String> {
-    let svg = if let Some(path) = &logos_source.logos_path {
-        fs::read_to_string(path.join(file_name))?
-    } else {
-        let logos_url = logos_source.logos_url.as_ref().unwrap().trim_end_matches('/');
-        let logo_url = format!("{logos_url}/{file_name}");
-        let resp = http_client.get(logo_url).send().await?;
-        if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status code getting logo: {}",
-                resp.status()
-            ));
-        }
-        resp.text().await?
-    };
-
-    Ok(svg)
-}
-
-lazy_static! {
-    /// Regular expression used to clean SVG logos' title.
-    static ref SVG_TITLE: Regex = Regex::new("<title>.*</title>",).expect("exprs in SVG_TITLE to be valid");
-}
-
 /// Prepare logos and copy them to the output directory, updating the logo
 /// reference on each landscape item.
 #[instrument(skip_all, err)]
@@ -202,33 +173,46 @@ async fn prepare_logos(
     debug!("preparing logos");
 
     // Get logos from the source and copy them to the output directory
+    let mut concurrency = num_cpus::get();
+    if concurrency > PREPARE_LOGOS_MAX_CONCURRENCY {
+        concurrency = PREPARE_LOGOS_MAX_CONCURRENCY;
+    }
     let http_client = reqwest::Client::new();
+    let logos_source = Arc::new(logos_source.clone());
     let logos: HashMap<Uuid, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
-            // Get logo SVG
-            let Ok(svg) = get_logo_svg(http_client.clone(), logos_source, &item.logo).await else {
-                return (item.id, None);
-            };
-
-            // Remove SVG title if present
-            let svg = SVG_TITLE.replace(&svg, "");
-
-            // Calculate SVG file digest
-            let digest = hex::encode(Sha256::digest(svg.as_bytes()));
+            // Prepare logo
+            let http_client = http_client.clone();
+            let logos_source = logos_source.clone();
+            let file_name = item.logo.clone();
+            let logo =
+                match tokio::spawn(async move { prepare_logo(http_client, &logos_source, &file_name).await })
+                    .await
+                {
+                    Ok(Ok(logo)) => logo,
+                    Ok(Err(err)) => {
+                        error!(?err, ?item.logo, "error preparing logo");
+                        return (item.id, None);
+                    }
+                    Err(err) => {
+                        error!(?err, ?item.logo, "error executing prepare_logo task");
+                        return (item.id, None);
+                    }
+                };
 
             // Copy logo to output dir using the digest(+.svg) as filename
-            let logo = format!("{digest}.svg");
-            let Ok(mut file) = fs::File::create(output_dir.join(LOGOS_PATH).join(&logo)) else {
-                error!(?logo, "error creating logo file in output dir");
+            let file_name = format!("{}.svg", logo.digest);
+            let Ok(mut file) = fs::File::create(output_dir.join(LOGOS_PATH).join(&file_name)) else {
+                error!(?file_name, "error creating logo file in output dir");
                 return (item.id, None);
             };
-            if let Err(err) = file.write_all(svg.as_bytes()) {
-                error!(?err, ?logo, "error writing logo to file in output dir");
+            if let Err(err) = file.write_all(&logo.svg_data) {
+                error!(?err, ?file_name, "error writing logo to file in output dir");
             };
 
-            (item.id, Some(format!("{LOGOS_PATH}/{logo}")))
+            (item.id, Some(format!("{LOGOS_PATH}/{file_name}")))
         })
-        .buffer_unordered(10)
+        .buffer_unordered(concurrency)
         .collect()
         .await;
 
