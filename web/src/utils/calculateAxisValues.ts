@@ -1,4 +1,8 @@
 const calculateAxisValues = (min: number, max: number, tickCount: number): number[] => {
+  if (max <= 3) {
+    return [min, max];
+  }
+
   const span = max - min;
   let step = Math.pow(10, Math.floor(Math.log(span / tickCount) / Math.LN10));
   const err = (tickCount / span) * step;
