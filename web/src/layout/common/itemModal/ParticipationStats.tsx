@@ -1,3 +1,4 @@
+import { isInteger } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
@@ -30,22 +31,12 @@ const ParticipationStats = (props: Props) => {
 
   return (
     <div className="d-flex flex-row mt-3">
-      {!isAllZero && (
-        <div className={`d-flex flex-row align-items-center ${styles.chart}`}>
-          <div className={`fst-italic text-muted text-center ${styles.axisLegend}`}>Commits</div>
-          <div className="d-flex flex-column-reverse justify-content-between h-100">
-            {axisValues.map((value: number) => {
-              return <div className={`text-end pe-1 ${styles.axisValue}`}>{value}</div>;
-            })}
-          </div>
-        </div>
-      )}
       <div className="flex-grow-1">
-        <div className={`mb-2 border-bottom border-start pt-2 ${styles.chart}`}>
+        <div className={`mb-2 border-bottom border-end pt-2 ${styles.chart}`}>
           <div className="d-flex flex-row justify-content-between align-items-end h-100 w-100">
             {isAllZero ? (
               <div
-                className={`alert alert-primary text-muted mx-auto mb-3 px-5 py-2 text-center border ${styles.message}`}
+                className={`alert alert-primary text-muted mx-auto mb-4 px-5 py-2 text-center border ${styles.message}`}
               >
                 No activity in the last year
               </div>
@@ -77,6 +68,18 @@ const ParticipationStats = (props: Props) => {
           </div>
         )}
       </div>
+      {!isAllZero && (
+        <div className={`d-flex flex-row align-items-center ${styles.chart}`}>
+          <div className="d-flex flex-column-reverse justify-content-between h-100">
+            {axisValues.map((value: number) => {
+              return (
+                <div className={`text-end ps-1 ${styles.axisValue}`}>{isInteger(value) ? value : value.toFixed(1)}</div>
+              );
+            })}
+          </div>
+          <div className={`fst-italic text-muted text-center ms-1 ${styles.axisLegend}`}>Commits</div>
+        </div>
+      )}
     </div>
   );
 };
