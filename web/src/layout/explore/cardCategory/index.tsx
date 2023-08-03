@@ -17,6 +17,7 @@ interface Props {
   fullDataReady: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
+  visible: boolean;
 }
 
 interface SelectedSection {
@@ -104,7 +105,9 @@ const CardCategory = memo(function CardCategory(props: Props) {
       setVisibleItems(sortItems(selectedSection.category, selectedSection.subcategory));
       // Scroll to top
       setTimeout(() => {
-        window.scrollTo(0, 0);
+        if (props.visible && !isUndefined(menu)) {
+          window.scrollTo(0, 0);
+        }
       }, 100);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

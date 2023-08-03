@@ -32,6 +32,7 @@ const Content = memo(function Content(props: Props) {
           fullDataReady={props.fullDataReady}
           data={props.data}
           categories_overridden={props.categories_overridden}
+          visible={props.selectedViewMode === ViewMode.Card}
         />
       </div>
     </>
