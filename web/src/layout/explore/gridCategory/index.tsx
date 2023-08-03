@@ -1,8 +1,10 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { SVGIconKind } from '../../../types';
+import arePropsEqual from '../../../utils/areEqualProps';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData } from '../../../utils/prepareData';
@@ -17,7 +19,7 @@ interface Props {
   categories_overridden?: string[];
 }
 
-const GridCategory = (props: Props) => {
+const GridCategory = memo(function GridCategory(props: Props) {
   const colorsList = generateColorsArray(Object.keys(props.data).length);
 
   return (
@@ -78,6 +80,6 @@ const GridCategory = (props: Props) => {
       })}
     </>
   );
-};
+}, arePropsEqual);
 
 export default GridCategory;

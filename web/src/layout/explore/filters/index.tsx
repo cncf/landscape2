@@ -22,7 +22,6 @@ interface Props {
 }
 
 const Filters = memo(function Filters(props: Props) {
-  // const Filters = (props: Props) => {
   const [tmpActiveFilters, setTmpActiveFilters] = useState<ActiveFilters>(props.activeFilters);
   const [filtersFromData, setFiltersFromData] = useState<FiltersPerGroup | undefined>();
   const [filters, setFilters] = useState<FilterSection[]>([]);

@@ -18,16 +18,19 @@ export interface Props {
 const SEARCH_DELAY = 3 * 100; // 300ms
 
 const SearchbarSection = memo(function SearchbarSection(props: Props) {
-  const sortOptions = (opts: FilterOption[]): FilterOption[] => {
-    return sortBy(opts, (opt: FilterOption) => !(props.activeFilters || []).includes(opt.value));
-  };
-
   const inputEl = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState<string>('');
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const activeFiltersRef = useRef(props.activeFilters); // Ref to activeFilters to use from setTimeout
+  activeFiltersRef.current = props.activeFilters;
+
+  const sortOptions = (opts: FilterOption[]): FilterOption[] => {
+    return sortBy(opts, (opt: FilterOption) => !(activeFiltersRef.current || []).includes(opt.value));
+  };
+
   const [visibleOptions, setVisibleOptions] = useState<FilterOption[]>(
     props.section ? sortOptions(props.section.options) : []
   );
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const onChange = useCallback(
     (value: string, checked: boolean) => {
@@ -93,11 +96,11 @@ const SearchbarSection = memo(function SearchbarSection(props: Props) {
     if (!isNull(searchTimeout)) {
       clearTimeout(searchTimeout);
     }
-    setSearchTimeout(
-      setTimeout(() => {
+    setSearchTimeout(() => {
+      return setTimeout(() => {
         filterOptions();
-      }, SEARCH_DELAY)
-    );
+      }, SEARCH_DELAY);
+    });
   }, [value]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   useEffect(() => {
