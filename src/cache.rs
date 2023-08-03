@@ -19,6 +19,7 @@ pub(crate) struct Cache {
 impl Cache {
     /// Create a new Cache instance.
     pub(crate) fn new(cache_dir: &Option<PathBuf>) -> Result<Self> {
+        // Try to use user's cache directory if no cache_dir has been provided
         let cache_dir = match cache_dir {
             Some(cache_dir) => Some(cache_dir.clone()),
             None => dirs::cache_dir(),
@@ -29,8 +30,9 @@ impl Cache {
             if !cache_dir.exists() {
                 fs::create_dir_all(&cache_dir)?;
             }
-            let cache_file_path = cache_dir.join(CACHE_FILE);
-            Ok(Self { cache_file_path })
+            Ok(Self {
+                cache_file_path: cache_dir.join(CACHE_FILE),
+            })
         } else {
             Err(format_err!(
                 "error setting up cache: no cache directory provided and user's cache directory could not be found"
