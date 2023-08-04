@@ -1,19 +1,14 @@
-use crate::{crunchbase::CrunchbaseData, github::GithubData};
 use anyhow::{format_err, Result};
-use serde::{Deserialize, Serialize};
 use std::{fs, io::Write, path::PathBuf};
 use tracing::instrument;
 
-/// Path where the cache file will be written to inside the cache directory.
+/// Path where the cache files will be written to inside the cache directory.
 const CACHE_PATH: &str = "landscape";
-
-/// Cache file used to store data.
-const CACHE_FILE: &str = "cached_data.json";
 
 /// Cache used to store data collected from external services.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Cache {
-    pub cache_file_path: PathBuf,
+    pub cache_dir: PathBuf,
 }
 
 impl Cache {
@@ -30,39 +25,30 @@ impl Cache {
             if !cache_dir.exists() {
                 fs::create_dir_all(&cache_dir)?;
             }
-            Ok(Self {
-                cache_file_path: cache_dir.join(CACHE_FILE),
-            })
-        } else {
-            Err(format_err!(
-                "error setting up cache: no cache directory provided and user's cache directory could not be found"
-            ))
+            return Ok(Self { cache_dir });
         }
+
+        Err(format_err!(
+            "error setting up cache: no cache directory provided and user's cache directory could not be found"
+        ))
     }
 
-    /// Read data from the cache file if available.
+    /// Read data from the cache file provided if available.
     #[instrument(skip_all, err)]
-    pub(crate) fn read(&self) -> Result<Option<CachedData>> {
-        if self.cache_file_path.exists() {
-            let cached_data_json = fs::read(&self.cache_file_path)?;
-            let cached_data: CachedData = serde_json::from_slice(&cached_data_json)?;
-            return Ok(Some(cached_data));
+    pub(crate) fn read(&self, file_name: &str) -> Result<Option<Vec<u8>>> {
+        let path = self.cache_dir.join(file_name);
+        if !path.exists() {
+            return Ok(None);
         }
-        Ok(None)
+        Ok(Some(fs::read(&path)?))
     }
 
     /// Write provided data to cache file.
     #[instrument(skip_all, err)]
-    pub(crate) fn write(&self, data: CachedData) -> Result<()> {
-        let mut cache_file = fs::File::create(&self.cache_file_path)?;
-        cache_file.write_all(serde_json::to_vec_pretty(&data)?.as_ref())?;
+    pub(crate) fn write(&self, file_name: &str, data: &[u8]) -> Result<()> {
+        let path = self.cache_dir.join(file_name);
+        let mut file = fs::File::create(path)?;
+        file.write_all(data)?;
         Ok(())
     }
-}
-
-/// Represents some cached data, usually collected from external services.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CachedData {
-    pub crunchbase_data: CrunchbaseData,
-    pub github_data: GithubData,
 }
