@@ -28,11 +28,17 @@ const GridItem = (props: Props) => {
   const [tooltipAlignment, setTooltipAlignment] = useState<'right' | 'left' | 'center'>('center');
   const [elWidth, setElWidth] = useState<number>(0);
   const [fullVersion, setFullVersion] = useState<boolean>(isUndefined(props.item.has_repositories));
+  const [hasRepositories, setHasRepositories] = useState<boolean>(
+    props.item.has_repositories || 'repositories' in props.item
+  );
 
   useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
 
   useEffect(() => {
-    setFullVersion(isUndefined(props.item.has_repositories));
+    if (isUndefined(props.item.has_repositories)) {
+      setFullVersion(true);
+      setHasRepositories('repositories' in props.item);
+    }
   }, [props.item]);
 
   useEffect(() => {
@@ -86,8 +92,7 @@ const GridItem = (props: Props) => {
         { [`border-2 ${styles.bigCard}`]: props.item.featured },
         { [styles.withLabel]: props.item.featured && props.item.featured.label },
         {
-          [styles.withRepo]:
-            (!fullVersion && props.item.has_repositories) || (fullVersion && 'repositories' in props.item),
+          [styles.withRepo]: hasRepositories,
         }
       )}
     >
