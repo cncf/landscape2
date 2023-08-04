@@ -3,7 +3,7 @@
 #![allow(non_upper_case_globals)]
 
 use crate::{
-    cache::{Cache, CachedData},
+    cache::Cache,
     crunchbase::collect_crunchbase_data,
     data::{get_landscape_data, LandscapeData},
     datasets::Datasets,
@@ -54,6 +54,9 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     // Setup output directory, creating it when needed
     setup_output_dir(&args.output_dir)?;
 
+    // Setup cache
+    let cache = Cache::new(&args.cache_dir)?;
+
     // Get landscape data from the source provided
     let mut landscape_data = get_landscape_data(&args.data_source).await?;
 
@@ -65,21 +68,13 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     landscape_data.add_member_subcategory(&settings.members_category);
 
     // Prepare logos and copy them to the output directory
-    prepare_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
+    prepare_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
-    let cache = Cache::new(&args.cache_dir)?;
-    let cached_data = cache.read()?;
-    let cb_cached_data = cached_data.as_ref().map(|c| &c.crunchbase_data);
-    let gh_cached_data = cached_data.as_ref().map(|c| &c.github_data);
     let (crunchbase_data, github_data) = tokio::try_join!(
-        collect_crunchbase_data(&credentials.crunchbase_api_key, &landscape_data, cb_cached_data),
-        collect_github_data(&credentials.github_tokens, &landscape_data, gh_cached_data)
+        collect_crunchbase_data(&cache, &credentials.crunchbase_api_key, &landscape_data),
+        collect_github_data(&cache, &credentials.github_tokens, &landscape_data)
     )?;
-    cache.write(CachedData {
-        crunchbase_data: crunchbase_data.clone(),
-        github_data: github_data.clone(),
-    })?;
 
     // Add data collected from external services to the landscape data
     landscape_data.add_crunchbase_data(crunchbase_data)?;
@@ -166,6 +161,7 @@ fn generate_datasets(
 /// reference on each landscape item.
 #[instrument(skip_all, err)]
 async fn prepare_logos(
+    cache: &Cache,
     logos_source: &LogosSource,
     landscape_data: &mut LandscapeData,
     output_dir: &Path,
@@ -182,23 +178,25 @@ async fn prepare_logos(
     let logos: HashMap<Uuid, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
             // Prepare logo
+            let cache = cache.clone();
             let http_client = http_client.clone();
             let logos_source = logos_source.clone();
             let file_name = item.logo.clone();
-            let logo =
-                match tokio::spawn(async move { prepare_logo(http_client, &logos_source, &file_name).await })
-                    .await
-                {
-                    Ok(Ok(logo)) => logo,
-                    Ok(Err(err)) => {
-                        error!(?err, ?item.logo, "error preparing logo");
-                        return (item.id, None);
-                    }
-                    Err(err) => {
-                        error!(?err, ?item.logo, "error executing prepare_logo task");
-                        return (item.id, None);
-                    }
-                };
+            let logo = match tokio::spawn(async move {
+                prepare_logo(&cache, http_client, &logos_source, &file_name).await
+            })
+            .await
+            {
+                Ok(Ok(logo)) => logo,
+                Ok(Err(err)) => {
+                    error!(?err, ?item.logo, "error preparing logo");
+                    return (item.id, None);
+                }
+                Err(err) => {
+                    error!(?err, ?item.logo, "error executing prepare_logo task");
+                    return (item.id, None);
+                }
+            };
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);

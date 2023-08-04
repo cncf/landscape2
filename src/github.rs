@@ -2,6 +2,7 @@
 //! from GitHub for each of the landscape items repositories (when applicable),
 //! as well as the functionality used to collect that information.
 
+use crate::cache::Cache;
 use crate::data::LandscapeData;
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
@@ -19,6 +20,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tracing::{debug, instrument, warn};
 
+/// File used to cache data collected from GitHub.
+const GITHUB_CACHE_FILE: &str = "github.json";
+
 /// How long the GitHub data in the cache is valid (in days).
 const GITHUB_CACHE_TTL: i64 = 7;
 
@@ -26,11 +30,19 @@ const GITHUB_CACHE_TTL: i64 = 7;
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
 pub(crate) async fn collect_github_data(
+    cache: &Cache,
     tokens: &Option<Vec<String>>,
     landscape_data: &LandscapeData,
-    cached_data: Option<&GithubData>,
 ) -> Result<GithubData> {
     debug!("collecting repositories information from github (this may take a while)");
+
+    // Read cached data (if available)
+    let mut cached_data: Option<GithubData> = None;
+    if let Ok(Some(json_data)) = cache.read(GITHUB_CACHE_FILE) {
+        if let Ok(github_data) = serde_json::from_slice(&json_data) {
+            cached_data = Some(github_data);
+        }
+    };
 
     // Setup GitHub API clients pool if any tokens have been provided
     let gh_pool: Option<Pool<DynGH>> = if let Some(tokens) = tokens {
@@ -66,7 +78,7 @@ pub(crate) async fn collect_github_data(
     let github_data: GithubData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
-            if let Some(cached_repo) = cached_data.and_then(|cache| {
+            if let Some(cached_repo) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|repo| {
                     if repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now() {
                         Some(repo)
@@ -99,6 +111,9 @@ pub(crate) async fn collect_github_data(
             }
         })
         .collect();
+
+    // Write data (in json format) to cache
+    cache.write(GITHUB_CACHE_FILE, &serde_json::to_vec_pretty(&github_data)?)?;
 
     Ok(github_data)
 }

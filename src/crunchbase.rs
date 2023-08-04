@@ -2,7 +2,7 @@
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
-use crate::data::LandscapeData;
+use crate::{cache::Cache, data::LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -17,6 +17,9 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
 
+/// File used to cache data collected from Crunchbase.
+const CRUNCHBASE_CACHE_FILE: &str = "crunchbase.json";
+
 /// How long the Crunchbase data in the cache is valid (in days).
 const CRUNCHBASE_CACHE_TTL: i64 = 7;
 
@@ -24,11 +27,19 @@ const CRUNCHBASE_CACHE_TTL: i64 = 7;
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
 pub(crate) async fn collect_crunchbase_data(
+    cache: &Cache,
     api_key: &Option<String>,
     landscape_data: &LandscapeData,
-    cached_data: Option<&CrunchbaseData>,
 ) -> Result<CrunchbaseData> {
     debug!("collecting organizations information from crunchbase (this may take a while)");
+
+    // Read cached data (if available)
+    let mut cached_data: Option<CrunchbaseData> = None;
+    if let Ok(Some(json_data)) = cache.read(CRUNCHBASE_CACHE_FILE) {
+        if let Ok(crunchbase_data) = serde_json::from_slice(&json_data) {
+            cached_data = Some(crunchbase_data);
+        }
+    };
 
     // Setup Crunchbase API client if an api key was provided
     let cb: Option<DynCB> = if let Some(api_key) = api_key {
@@ -53,7 +64,7 @@ pub(crate) async fn collect_crunchbase_data(
     let crunchbase_data: CrunchbaseData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
-            if let Some(cached_org) = cached_data.and_then(|cache| {
+            if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|org| {
                     if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
                         Some(org)
@@ -86,6 +97,12 @@ pub(crate) async fn collect_crunchbase_data(
             }
         })
         .collect();
+
+    // Write data (in json format) to cache
+    cache.write(
+        CRUNCHBASE_CACHE_FILE,
+        &serde_json::to_vec_pretty(&crunchbase_data)?,
+    )?;
 
     Ok(crunchbase_data)
 }
