@@ -27,16 +27,22 @@ export const useOutsideClick = (
         onClickOutside(e);
       }
     },
-    [isOutside, onClickOutside, enabled]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [enabled]
   );
 
   useEffect(() => {
-    document.addEventListener('mousedown', onEvent);
+    if (enabled) {
+      document.addEventListener('mousedown', onEvent);
+    } else {
+      document.removeEventListener('mousedown', onEvent);
+    }
 
     return () => {
       document.removeEventListener('mousedown', onEvent);
     };
-  }, [refs, onClickOutside, onEvent]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
 
   return [isActive];
 };
