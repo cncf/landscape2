@@ -10,7 +10,7 @@ use crate::{
     github::collect_github_data,
     logos::prepare_logo,
     settings::{get_landscape_settings, LandscapeSettings},
-    tmpl, BuildArgs, Credentials, LogosSource,
+    tmpl, BuildArgs, LogosSource,
 };
 use anyhow::{format_err, Result};
 use askama::Template;
@@ -18,6 +18,7 @@ use futures::stream::{self, StreamExt};
 use rust_embed::RustEmbed;
 use std::{
     collections::HashMap,
+    env,
     fs::{self, File},
     io::Write,
     path::Path,
@@ -27,8 +28,14 @@ use std::{
 use tracing::{debug, error, info, instrument};
 use uuid::Uuid;
 
+/// Environment variable containing the Crunchbase API key.
+const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
+
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
+
+/// Environment variable containing a comma separated list of GitHub tokens.
+const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
 
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
@@ -36,16 +43,23 @@ const LOGOS_PATH: &str = "logos";
 /// Maximum number of logos to prepare concurrently.
 const PREPARE_LOGOS_MAX_CONCURRENCY: usize = 20;
 
+/// External services credentials.
+#[derive(Debug, Default)]
+struct Credentials {
+    crunchbase_api_key: Option<String>,
+    github_tokens: Option<Vec<String>>,
+}
+
 /// Embed web application assets into binary.
 /// (these assets will be built automatically from the build script)
 #[derive(RustEmbed)]
 #[folder = "web/dist"]
 struct WebAssets;
 
-/// Build landscape static site.
+/// Build landscape website.
 #[instrument(skip_all)]
-pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result<()> {
-    info!("building landscape site..");
+pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
+    info!("building landscape website..");
     let start = Instant::now();
 
     // Check required web assets are present
@@ -71,6 +85,7 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     prepare_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
+    let credentials = read_credentials();
     let (crunchbase_data, github_data) = tokio::try_join!(
         collect_crunchbase_data(&cache, &credentials.crunchbase_api_key, &landscape_data),
         collect_github_data(&cache, &credentials.github_tokens, &landscape_data)
@@ -90,7 +105,7 @@ pub(crate) async fn build(args: &BuildArgs, credentials: &Credentials) -> Result
     copy_web_assets(&args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
-    info!("landscape site built! (took: {:.3}s)", duration);
+    info!("landscape website built! (took: {:.3}s)", duration);
 
     Ok(())
 }
@@ -224,6 +239,21 @@ async fn prepare_logos(
     }
 
     Ok(())
+}
+
+/// Read external services credentials from environment.
+#[instrument]
+fn read_credentials() -> Credentials {
+    let mut credentials = Credentials::default();
+
+    if let Ok(crunchbase_api_key) = env::var(CRUNCHBASE_API_KEY) {
+        credentials.crunchbase_api_key = Some(crunchbase_api_key);
+    }
+    if let Ok(github_tokens) = env::var(GITHUB_TOKENS) {
+        credentials.github_tokens = Some(github_tokens.split(',').map(ToString::to_string).collect());
+    }
+
+    credentials
 }
 
 /// Render index file and write it to the output directory.
