@@ -71,9 +71,11 @@ const ParticipationStats = (props: Props) => {
       {!isAllZero && (
         <div className={`d-flex flex-row align-items-center ${styles.chart}`}>
           <div className="d-flex flex-column-reverse justify-content-between h-100">
-            {axisValues.map((value: number) => {
+            {axisValues.map((value: number, index: number) => {
               return (
-                <div className={`text-end ps-1 ${styles.axisValue}`}>{isInteger(value) ? value : value.toFixed(1)}</div>
+                <div key={`part_${index}_${value}`} className={`text-end ps-1 ${styles.axisValue}`}>
+                  {isInteger(value) ? value : value.toFixed(1)}
+                </div>
               );
             })}
           </div>

@@ -3,7 +3,6 @@ import { isUndefined } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 
-import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { BaseItem, Item, OutletContext } from '../../../types';
 import Image from '../../common/Image';
 import { Loading } from '../../common/Loading';
@@ -31,8 +30,6 @@ const GridItem = (props: Props) => {
   const [hasRepositories, setHasRepositories] = useState<boolean>(
     props.item.has_repositories || 'repositories' in props.item
   );
-
-  useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
 
   useEffect(() => {
     if (isUndefined(props.item.has_repositories)) {
@@ -108,8 +105,12 @@ const GridItem = (props: Props) => {
               minWidth: `${DEFAULT_DROPDOWN_WIDTH}px`,
               left: tooltipAlignment === 'center' ? `${-(DEFAULT_DROPDOWN_WIDTH - elWidth) / 2}px` : 'auto',
             }}
-            onMouseEnter={() => setOnDropdownHover(true)}
-            onMouseLeave={() => setOnDropdownHover(false)}
+            onMouseEnter={() => {
+              setOnDropdownHover(true);
+            }}
+            onMouseLeave={() => {
+              setOnDropdownHover(false);
+            }}
           >
             <div className={`d-block position-absolute ${styles.arrow}`} />
             {!fullVersion ? <Loading /> : <Card item={props.item} />}
