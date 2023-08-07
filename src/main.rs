@@ -4,7 +4,7 @@
 use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
 mod build;
 mod cache;
@@ -13,14 +13,9 @@ mod data;
 mod datasets;
 mod github;
 mod logos;
+mod s3;
 mod settings;
 mod tmpl;
-
-/// Environment variable containing the Crunchbase API key.
-const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
-
-/// Environment variable containing a comma separated list of GitHub tokens.
-const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
 
 /// CLI arguments.
 #[derive(Parser)]
@@ -33,8 +28,11 @@ struct Cli {
 /// Commands available.
 #[derive(Subcommand)]
 enum Command {
-    /// Build landscape static site.
+    /// Build landscape website.
     Build(BuildArgs),
+
+    /// Deploy landscape website.
+    Deploy(DeployArgs),
 }
 
 /// Build command arguments.
@@ -74,7 +72,7 @@ struct DataSource {
     data_url: Option<String>,
 }
 
-/// Logos location.
+/// Landscape logos location.
 #[derive(Args, Clone)]
 #[group(required = true, multiple = false)]
 struct LogosSource {
@@ -100,6 +98,34 @@ struct SettingsSource {
     settings_url: Option<String>,
 }
 
+/// Deploy command arguments.
+#[derive(Debug, Args)]
+#[command(args_conflicts_with_subcommands = true)]
+struct DeployArgs {
+    /// Provider used to deploy the landscape website.
+    #[command(subcommand)]
+    provider: Provider,
+}
+
+/// Provider used to deploy the landscape website.
+#[derive(Debug, Subcommand)]
+enum Provider {
+    /// Deploy landscape website to AWS S3.
+    S3(S3Args),
+}
+
+/// AWS S3 provider arguments.
+#[derive(Debug, Args)]
+struct S3Args {
+    /// Bucket to copy the landscape website files to.
+    #[arg(long)]
+    bucket: String,
+
+    /// Location of the landscape website files (build subcommand output).
+    #[arg(long)]
+    landscape_dir: PathBuf,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // Setup logging
@@ -108,27 +134,14 @@ async fn main() -> Result<()> {
     }
     tracing_subscriber::fmt::init();
 
-    // Read credentials from environment
-    let mut credentials = Credentials::default();
-    if let Ok(crunchbase_api_key) = env::var(CRUNCHBASE_API_KEY) {
-        credentials.crunchbase_api_key = Some(crunchbase_api_key);
-    }
-    if let Ok(github_tokens) = env::var(GITHUB_TOKENS) {
-        credentials.github_tokens = Some(github_tokens.split(',').map(ToString::to_string).collect());
-    }
-
     // Run command
     let cli = Cli::parse();
     match &cli.command {
-        Command::Build(args) => build(args, &credentials).await?,
+        Command::Build(args) => build(args).await?,
+        Command::Deploy(args) => match &args.provider {
+            Provider::S3(args) => s3::deploy(args).await?,
+        },
     }
 
     Ok(())
-}
-
-/// Services credentials.
-#[derive(Debug, Default)]
-pub(crate) struct Credentials {
-    pub crunchbase_api_key: Option<String>,
-    pub github_tokens: Option<Vec<String>>,
 }

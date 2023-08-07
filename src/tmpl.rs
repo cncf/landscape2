@@ -1,5 +1,5 @@
 //! This module defines some templates used during the generation of the
-//! landscape static site.
+//! landscape website.
 
 use crate::datasets::Datasets;
 use askama::Template;
