@@ -41,7 +41,7 @@ export const useOutsideClick = (
     return () => {
       document.removeEventListener('mousedown', onEvent);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   return [isActive];
