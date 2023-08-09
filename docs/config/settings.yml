@@ -1,0 +1,111 @@
+# Landscape2 settings file
+#
+# This settings file allows customizing some aspects of the landscape.
+
+# Groups (optional)
+#
+# In some cases, specially when a landscape contains lots of items, it may be
+# interesting to organize them in groups. Each group will be displayed on a
+# different tab in the landscape web application. Each entry must contain the
+# name of the group (it will be displayed as is) and a list with the categories
+# (as defined in the landscape.yml data file) that will be part of this group.
+#
+# groups:
+#   - name: <GROUP_NAME>
+#     categories:
+#       - <CATEGORY1_NAME>
+#       - <CATEGORY2_NAME>
+#
+groups:
+  - name: Projects and products
+    categories:
+      - App Definition and Development
+      - Orchestration & Management
+      - Runtime
+      - Provisioning
+      - Observability and Analysis
+      - Serverless
+      - Wasm
+  - name: Members
+    categories:
+      - CNCF Members
+  - name: Certified partners and providers
+    categories:
+      - Platform
+      - Special
+
+# Name of the members category (optional)
+#
+# Landscapes usually have a special category dedicated to the members of the
+# corresponding foundation. It is possible to use any name for that category,
+# but it is important that we define it here as there are some special
+# operations that depend on it.
+#
+# members_category: <CATEGORY_NAME>
+#
+members_category: CNCF Members
+
+# Featured items (optional)
+#
+# This section allows highlighting items that match certain criteria. You can
+# define a list of rules and the matching items will be featured in a special
+# way in the landscape.
+#
+# Each rule must define a field for the check as well as the values that will
+# trigger a match. At the moment the fields supported are:
+#
+#   - project
+#   - subcategory
+#
+# When a given item's field matches any of the values provided, it will be
+# considered a featured item. For each option, it is possible to also define an
+# order (which item would be displayed first) and a label for the item.
+#
+# featured_items:
+#   - field: subcategory
+#     options:
+#       - value: <SUBCATEGORY1_NAME>
+#       - value: <SUBCATEGORY2_NAME>
+#
+featured_items:
+  - field: project
+    options:
+      - value: graduated
+        order: 1
+        label: CNCF Graduated
+      - value: incubating
+        order: 2
+        label: CNCF Incubating
+  - field: subcategory
+    options:
+      - value: Platinum
+      - value: Gold
+
+# Overriden categories (optional)
+#
+# Categories information is read from the `landscape.yml` data file. The way
+# categories are displayed in the web application is computed dynamically based
+# on the number of categories and subcategories, as well as the number of items
+# on each. Sometimes, however, we may want subcategories to be displayed in a
+# specific order within a category (this happens often in the Members category).
+# In those cases, it is possible to define that order by overriding a category.
+#
+# This option can also be used to not display one or more subcategories in the
+# landscape. To achieve that, we only need to exclude the subcategory from the
+# subcategories list when overriding a category.
+#
+# categories:
+#   - name: <CATEGORY_NAME>
+#     subcategories:
+#       - <SUBCATEGORY1_NAME>
+#       - <SUBCATEGORY2_NAME>
+#
+categories:
+  - name: CNCF Members
+    subcategories:
+      - Platinum
+      - Gold
+      - Silver
+      - End User Supporter
+      - Nonprofit
+      - Academic
