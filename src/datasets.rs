@@ -118,14 +118,11 @@ mod base {
 /// information is used by the web application to power features that require
 /// some extra data not available in the base dataset.
 mod full {
-    use crate::data::{Category, Item, LandscapeData};
+    use crate::data::{Item, LandscapeData};
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Full {
-        #[serde(skip_serializing_if = "Vec::is_empty")]
-        pub categories: Vec<Category>,
-
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
@@ -133,10 +130,7 @@ mod full {
     impl Full {
         /// Create a new Full instance from the landscape data provided.
         pub(crate) fn new(data: LandscapeData) -> Self {
-            Full {
-                categories: data.categories,
-                items: data.items,
-            }
+            Full { items: data.items }
         }
     }
 }
