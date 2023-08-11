@@ -18,6 +18,7 @@ use regex::Regex;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::env;
 use tracing::{debug, instrument, warn};
 
 /// File used to cache data collected from GitHub.
@@ -26,14 +27,13 @@ const GITHUB_CACHE_FILE: &str = "github.json";
 /// How long the GitHub data in the cache is valid (in days).
 const GITHUB_CACHE_TTL: i64 = 7;
 
+/// Environment variable containing a comma separated list of GitHub tokens.
+const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
+
 /// Collect GitHub data for each of the items repositories in the landscape,
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
-pub(crate) async fn collect_github_data(
-    cache: &Cache,
-    tokens: &Option<Vec<String>>,
-    landscape_data: &LandscapeData,
-) -> Result<GithubData> {
+pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &LandscapeData) -> Result<GithubData> {
     debug!("collecting repositories information from github (this may take a while)");
 
     // Read cached data (if available)
@@ -45,7 +45,10 @@ pub(crate) async fn collect_github_data(
     };
 
     // Setup GitHub API clients pool if any tokens have been provided
-    let gh_pool: Option<Pool<DynGH>> = if let Some(tokens) = tokens {
+    let tokens: Result<Vec<String>> = env::var(GITHUB_TOKENS)
+        .map(|t| t.split(',').map(ToString::to_string).collect())
+        .map_err(Into::into);
+    let gh_pool: Option<Pool<DynGH>> = if let Ok(tokens) = &tokens {
         let mut gh_clients: Vec<DynGH> = vec![];
         for token in tokens {
             let gh = Box::new(GHApi::new(token)?);
@@ -70,11 +73,7 @@ pub(crate) async fn collect_github_data(
     urls.dedup();
 
     // Collect repositories information from GitHub, reusing cached data when available
-    let concurrency = if let Some(tokens) = tokens {
-        tokens.len()
-    } else {
-        1
-    };
+    let concurrency = if let Ok(tokens) = tokens { tokens.len() } else { 1 };
     let github_data: GithubData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();

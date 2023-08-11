@@ -9,8 +9,9 @@ use crate::{
     datasets::Datasets,
     github::collect_github_data,
     logos::prepare_logo,
+    projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{get_landscape_settings, LandscapeSettings},
-    tmpl, BuildArgs, LogosSource,
+    BuildArgs, LogosSource,
 };
 use anyhow::{format_err, Result};
 use askama::Template;
@@ -18,7 +19,6 @@ use futures::stream::{self, StreamExt};
 use rust_embed::RustEmbed;
 use std::{
     collections::HashMap,
-    env,
     fs::{self, File},
     io::Write,
     path::Path,
@@ -28,27 +28,17 @@ use std::{
 use tracing::{debug, error, info, instrument};
 use uuid::Uuid;
 
-/// Environment variable containing the Crunchbase API key.
-const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
-
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
 
-/// Environment variable containing a comma separated list of GitHub tokens.
-const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
+/// Path where some documents will be written to in the output directory.
+const DOCS_PATH: &str = "docs";
 
 /// Path where the logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
 
 /// Maximum number of logos to prepare concurrently.
 const PREPARE_LOGOS_MAX_CONCURRENCY: usize = 20;
-
-/// External services credentials.
-#[derive(Debug, Default)]
-struct Credentials {
-    crunchbase_api_key: Option<String>,
-    github_tokens: Option<Vec<String>>,
-}
 
 /// Embed web application assets into binary.
 /// (these assets will be built automatically from the build script)
@@ -85,10 +75,9 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     prepare_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
-    let credentials = read_credentials();
     let (crunchbase_data, github_data) = tokio::try_join!(
-        collect_crunchbase_data(&cache, &credentials.crunchbase_api_key, &landscape_data),
-        collect_github_data(&cache, &credentials.github_tokens, &landscape_data)
+        collect_crunchbase_data(&cache, &landscape_data),
+        collect_github_data(&cache, &landscape_data)
     )?;
 
     // Add data collected from external services to the landscape data
@@ -103,6 +92,9 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
+
+    // Generate projects.* files
+    generate_projects_files(&landscape_data, &args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website built! (took: {:.3}s)", duration);
@@ -170,6 +162,25 @@ fn generate_datasets(
     full_file.write_all(&serde_json::to_vec(&datasets.full)?)?;
 
     Ok(datasets)
+}
+
+/// Generate the projects.md and projects.csv files from the landscape data.
+#[instrument(skip_all, err)]
+fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) -> Result<()> {
+    debug!("generating projects.* files");
+    let projects: Vec<Project> = landscape_data.into();
+
+    // projects.md
+    let projects_md = ProjectsMd { projects: &projects }.render()?;
+    let docs_path = output_dir.join(DOCS_PATH);
+    let mut file = File::create(docs_path.join("projects.md"))?;
+    file.write_all(projects_md.as_bytes())?;
+
+    // projects.csv
+    let w = csv::Writer::from_path(docs_path.join("projects.csv"))?;
+    generate_projects_csv(w, &projects)?;
+
+    Ok(())
 }
 
 /// Prepare logos and copy them to the output directory, updating the logo
@@ -241,26 +252,18 @@ async fn prepare_logos(
     Ok(())
 }
 
-/// Read external services credentials from environment.
-#[instrument]
-fn read_credentials() -> Credentials {
-    let mut credentials = Credentials::default();
-
-    if let Ok(crunchbase_api_key) = env::var(CRUNCHBASE_API_KEY) {
-        credentials.crunchbase_api_key = Some(crunchbase_api_key);
-    }
-    if let Ok(github_tokens) = env::var(GITHUB_TOKENS) {
-        credentials.github_tokens = Some(github_tokens.split(',').map(ToString::to_string).collect());
-    }
-
-    credentials
+/// Template for the index document.
+#[derive(Debug, Clone, Template)]
+#[template(path = "index.html", escape = "none")]
+struct Index<'a> {
+    pub datasets: &'a Datasets,
 }
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
 fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
-    let index = tmpl::Index { datasets }.render()?;
+    let index = Index { datasets }.render()?;
     let mut file = File::create(output_dir.join("index.html"))?;
     file.write_all(index.as_bytes())?;
 
@@ -279,6 +282,11 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
     let datasets_path = output_dir.join(DATASETS_PATH);
     if !datasets_path.exists() {
         fs::create_dir(datasets_path)?;
+    }
+
+    let docs_path = output_dir.join(DOCS_PATH);
+    if !docs_path.exists() {
+        fs::create_dir(docs_path)?;
     }
 
     let logos_path = output_dir.join(LOGOS_PATH);

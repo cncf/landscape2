@@ -14,7 +14,7 @@ use mockall::automock;
 use regex::Regex;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, env, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
 
 /// File used to cache data collected from Crunchbase.
@@ -23,12 +23,14 @@ const CRUNCHBASE_CACHE_FILE: &str = "crunchbase.json";
 /// How long the Crunchbase data in the cache is valid (in days).
 const CRUNCHBASE_CACHE_TTL: i64 = 7;
 
+/// Environment variable containing the Crunchbase API key.
+const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
+
 /// Collect Crunchbase data for each of the items orgs in the landscape,
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
 pub(crate) async fn collect_crunchbase_data(
     cache: &Cache,
-    api_key: &Option<String>,
     landscape_data: &LandscapeData,
 ) -> Result<CrunchbaseData> {
     debug!("collecting organizations information from crunchbase (this may take a while)");
@@ -42,8 +44,8 @@ pub(crate) async fn collect_crunchbase_data(
     };
 
     // Setup Crunchbase API client if an api key was provided
-    let cb: Option<DynCB> = if let Some(api_key) = api_key {
-        Some(Arc::new(CBApi::new(api_key)?))
+    let cb: Option<DynCB> = if let Ok(api_key) = env::var(CRUNCHBASE_API_KEY) {
+        Some(Arc::new(CBApi::new(&api_key)?))
     } else {
         warn!("crunchbase api key not provided: no information will be collected from crunchbase");
         None
