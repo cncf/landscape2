@@ -1,6 +1,6 @@
+import { throttle } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 
-import throttle from '../../../utils/throttle';
 import styles from './CardTitle.module.css';
 
 interface Props {

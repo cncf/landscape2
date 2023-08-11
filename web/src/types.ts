@@ -163,6 +163,10 @@ export type ActiveFilters = {
   [key in FilterCategory]?: string[];
 };
 
+export interface CardMenu {
+  [key: string]: string[];
+}
+
 export enum FilterCategory {
   Project = 'project',
   Organization = 'organization',
@@ -181,6 +185,7 @@ export enum ViewMode {
 
 export enum SVGIconKind {
   ArrowRight,
+  ArrowTop,
   Artwork,
   Blog,
   Calendar,

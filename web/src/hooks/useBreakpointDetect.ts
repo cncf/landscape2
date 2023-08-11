@@ -1,7 +1,7 @@
+import { throttle } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import { Breakpoint } from '../types';
-import throttle from '../utils/throttle';
 
 const getDeviceConfig = (width: number): Breakpoint | undefined => {
   if (width < 576) {

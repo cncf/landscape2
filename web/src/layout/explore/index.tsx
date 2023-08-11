@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import { isUndefined, throttle } from 'lodash';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -20,7 +20,6 @@ import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
-import throttle from '../../utils/throttle';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import Content from './Content';
@@ -69,7 +68,7 @@ const Landscape = (props: Props) => {
     updatedSearchParams.set(param, value);
 
     navigate(
-      { pathname: location.pathname, search: updatedSearchParams.toString() },
+      { ...location, search: updatedSearchParams.toString(), hash: '' },
       {
         replace: true,
       }
@@ -297,6 +296,7 @@ const Landscape = (props: Props) => {
                 return (
                   <div key={group.name} className={classNames({ 'd-none': !isSelected }, { 'd-block': isSelected })}>
                     <Content
+                      isSelected={isSelected}
                       containerWidth={containerWidth}
                       fullDataReady={!isUndefined(landscapeData)}
                       data={groupsData[group.name]}
@@ -310,6 +310,7 @@ const Landscape = (props: Props) => {
             </>
           ) : (
             <Content
+              isSelected
               containerWidth={containerWidth}
               fullDataReady={!isUndefined(landscapeData)}
               data={groupsData.default}
