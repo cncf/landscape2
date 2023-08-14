@@ -13,9 +13,9 @@ mod data;
 mod datasets;
 mod github;
 mod logos;
+mod projects;
 mod s3;
 mod settings;
-mod tmpl;
 
 /// CLI arguments.
 #[derive(Parser)]

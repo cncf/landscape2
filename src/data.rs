@@ -235,6 +235,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.artwork_url = extra.artwork_url;
+                        item.audits = extra.audits;
                         item.blog_url = extra.blog_url;
                         item.chat_channel = extra.chat_channel;
                         item.clomonitor_name = extra.clomonitor_name;
@@ -251,6 +252,11 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         if let Some(accepted) = extra.accepted {
                             if let Ok(v) = NaiveDate::parse_from_str(&accepted, DATE_FORMAT) {
                                 item.accepted_at = Some(v);
+                            }
+                        }
+                        if let Some(archived) = extra.archived {
+                            if let Ok(v) = NaiveDate::parse_from_str(&archived, DATE_FORMAT) {
+                                item.archived_at = Some(v);
                             }
                         }
                         if let Some(graduated) = extra.graduated {
@@ -334,7 +340,13 @@ pub(crate) struct Item {
     pub accepted_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub archived_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub artwork_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub audits: Option<Vec<ItemAudit>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blog_url: Option<String>,
@@ -429,6 +441,16 @@ impl Item {
     }
 }
 
+/// Landscape item audit information.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct ItemAudit {
+    pub date: Option<NaiveDate>,
+    #[serde(rename = "type")]
+    pub kind: Option<String>,
+    pub url: Option<String>,
+    pub vendor: Option<String>,
+}
+
 /// Landscape item featured information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct ItemFeatured {
@@ -486,6 +508,7 @@ mod legacy {
     //! This module defines some types used to parse the landscape data file in
     //! legacy format and convert it to the new one.
 
+    use super::ItemAudit;
     use serde::{Deserialize, Serialize};
 
     /// Landscape data (legacy format).
@@ -538,6 +561,8 @@ mod legacy {
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(super) struct ItemExtra {
         pub accepted: Option<String>,
+        pub archived: Option<String>,
+        pub audits: Option<Vec<ItemAudit>>,
         pub annual_review_date: Option<String>,
         pub annual_review_url: Option<String>,
         pub artwork_url: Option<String>,
