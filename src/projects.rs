@@ -8,7 +8,7 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 
-/// Project information.
+/// Project information used to generate the projects.md and projects.csv files.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Project {
     pub accepted_at: String,
