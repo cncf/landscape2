@@ -31,7 +31,7 @@ enum Command {
     /// Build landscape website.
     Build(BuildArgs),
 
-    /// Deploy landscape website.
+    /// Deploy landscape website (experimental).
     Deploy(DeployArgs),
 }
 
