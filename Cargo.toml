@@ -7,9 +7,9 @@ edition = "2021"
 rust-version = "1.70"
 
 [dependencies]
-anyhow = "1.0.72"
+anyhow = "1.0.74"
 askama = { version = "0.12.0", features = ["serde-json"] }
-async-trait = "0.1.72"
+async-trait = "0.1.73"
 aws-config = "0.56.0"
 aws-sdk-s3 = "0.29.0"
 chrono = { version = "0.4.26", features = ["serde"] }
@@ -29,10 +29,10 @@ regex = "1.9.3"
 reqwest = { version = "0.11.18", features = ["native-tls-vendored"] }
 rust-embed = "6.8.1"
 serde = { version = "1.0.183", features = ["derive"] }
-serde_json = "1.0.104"
+serde_json = "1.0.105"
 serde_yaml = "0.9.25"
 sha2 = "0.10.7"
-tokio = { version = "1.29.1", features = [
+tokio = { version = "1.31.0", features = [
     "macros",
     "process",
     "rt-multi-thread",
@@ -49,5 +49,5 @@ walkdir = "2.3.3"
 mockall = "0.11.4"
 
 [build-dependencies]
-anyhow = "1.0.72"
+anyhow = "1.0.74"
 which = "4.4.0"
