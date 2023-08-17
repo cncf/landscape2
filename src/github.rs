@@ -45,10 +45,11 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     };
 
     // Setup GitHub API clients pool if any tokens have been provided
-    let tokens: Result<Vec<String>> = env::var(GITHUB_TOKENS)
-        .map(|t| t.split(',').map(ToString::to_string).collect())
-        .map_err(Into::into);
-    let gh_pool: Option<Pool<DynGH>> = if let Ok(tokens) = &tokens {
+    let tokens: Option<Vec<String>> = match env::var(GITHUB_TOKENS) {
+        Ok(tokens) if !tokens.is_empty() => Some(tokens.split(',').map(ToString::to_string).collect()),
+        Ok(_) | Err(_) => None,
+    };
+    let gh_pool: Option<Pool<DynGH>> = if let Some(tokens) = &tokens {
         let mut gh_clients: Vec<DynGH> = vec![];
         for token in tokens {
             let gh = Box::new(GHApi::new(token)?);
@@ -73,7 +74,11 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     urls.dedup();
 
     // Collect repositories information from GitHub, reusing cached data when available
-    let concurrency = if let Ok(tokens) = tokens { tokens.len() } else { 1 };
+    let concurrency = if let Some(tokens) = tokens {
+        tokens.len()
+    } else {
+        1
+    };
     let github_data: GithubData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
