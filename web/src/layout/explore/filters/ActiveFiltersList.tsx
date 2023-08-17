@@ -33,7 +33,7 @@ const ActiveFiltersList = memo(function ActiveFiltersList(props: Props) {
             return (
               <div className="d-flex flex-row" key={`active_${f}`} role="list">
                 {props.activeFilters[f as FilterCategory]?.map((c: string) => {
-                  if (f === FilterCategory.Project && c === 'cncf') return null;
+                  if (f === FilterCategory.Maturity && c === 'cncf') return null;
                   return (
                     <span
                       role="listitem"
@@ -45,7 +45,7 @@ const ActiveFiltersList = memo(function ActiveFiltersList(props: Props) {
                           <small className="text-uppercase fw-normal me-2">{f}:</small>
                           <span
                             className={
-                              [FilterCategory.Project, FilterCategory.CompanyType].includes(f as FilterCategory)
+                              [FilterCategory.Maturity, FilterCategory.CompanyType].includes(f as FilterCategory)
                                 ? 'text-uppercase'
                                 : ''
                             }

@@ -5,7 +5,7 @@
 //! The landscape data representation used in this module doesn't match the
 //! legacy format used by the existing landscapes data files. To maintain
 //! backwards compatibility, this module provides a `legacy` submodule that
-//! allows parsing the legacy format and convert to the new one.
+//! allows parsing the legacy format and convert it to the new one.
 
 use crate::{
     crunchbase::{CrunchbaseData, Organization},
@@ -47,16 +47,15 @@ pub(crate) struct LandscapeData {
 
 impl LandscapeData {
     /// Create a new landscape data instance from the file provided.
-    #[instrument(skip_all, err)]
     pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
         let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
+        legacy_data.validate()?;
 
         Ok(LandscapeData::from(legacy_data))
     }
 
     /// Create a new landscape data instance from the url provided.
-    #[instrument(skip_all, err)]
     pub(crate) async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
@@ -67,6 +66,7 @@ impl LandscapeData {
         }
         let raw_data = resp.text().await?;
         let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
+        legacy_data.validate()?;
 
         Ok(LandscapeData::from(legacy_data))
     }
@@ -95,10 +95,15 @@ impl LandscapeData {
 
         for rule in rules {
             match rule.field.as_str() {
-                "project" => {
+                "maturity" => {
                     for item in &mut self.items {
-                        if let Some(project) = item.project.as_ref() {
-                            if let Some(option) = rule.options.iter().find(|o| o.value == *project) {
+                        if let Some(item_maturity) = item.maturity.as_ref() {
+                            let option =
+                                rule.options.iter().find(|o| match Maturity::try_from(o.value.as_str()) {
+                                    Ok(option_maturity) => option_maturity == *item_maturity,
+                                    Err(_) => false,
+                                });
+                            if let Some(option) = option {
                                 item.featured = Some(ItemFeatured {
                                     order: option.order,
                                     label: option.label.clone(),
@@ -194,19 +199,15 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         crunchbase_url: legacy_item.crunchbase,
                         enduser: legacy_item.enduser,
                         homepage_url: legacy_item.homepage_url,
+                        joined_at: legacy_item.joined,
                         logo: legacy_item.logo,
+                        maturity: legacy_item.project,
                         openssf_best_practices_url: legacy_item.url_for_bestpractices,
-                        project: legacy_item.project,
                         twitter_url: legacy_item.twitter,
                         unnamed_organization: legacy_item.unnamed_organization,
                         ..Default::default()
                     };
                     item.set_id();
-                    if let Some(joined) = legacy_item.joined {
-                        if let Ok(v) = NaiveDate::parse_from_str(&joined, DATE_FORMAT) {
-                            item.joined_at = Some(v);
-                        }
-                    }
 
                     // Repositories
                     let mut repositories = vec![];
@@ -234,6 +235,9 @@ impl From<legacy::LandscapeData> for LandscapeData {
 
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
+                        item.accepted_at = extra.accepted;
+                        item.latest_annual_review_at = extra.annual_review_date;
+                        item.archived_at = extra.archived;
                         item.artwork_url = extra.artwork_url;
                         item.audits = extra.audits;
                         item.blog_url = extra.blog_url;
@@ -242,38 +246,14 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.devstats_url = extra.dev_stats_url;
                         item.discord_url = extra.discord_url;
                         item.github_discussions_url = extra.github_discussions_url;
+                        item.graduated_at = extra.graduated;
+                        item.incubating_at = extra.incubating;
                         item.mailing_list_url = extra.mailing_list_url;
                         item.latest_annual_review_url = extra.annual_review_url;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
                         item.youtube_url = extra.youtube_url;
-
-                        if let Some(accepted) = extra.accepted {
-                            if let Ok(v) = NaiveDate::parse_from_str(&accepted, DATE_FORMAT) {
-                                item.accepted_at = Some(v);
-                            }
-                        }
-                        if let Some(archived) = extra.archived {
-                            if let Ok(v) = NaiveDate::parse_from_str(&archived, DATE_FORMAT) {
-                                item.archived_at = Some(v);
-                            }
-                        }
-                        if let Some(graduated) = extra.graduated {
-                            if let Ok(v) = NaiveDate::parse_from_str(&graduated, DATE_FORMAT) {
-                                item.graduated_at = Some(v);
-                            }
-                        }
-                        if let Some(incubating) = extra.incubating {
-                            if let Ok(v) = NaiveDate::parse_from_str(&incubating, DATE_FORMAT) {
-                                item.incubating_at = Some(v);
-                            }
-                        }
-                        if let Some(annual_review_date) = extra.annual_review_date {
-                            if let Ok(v) = NaiveDate::parse_from_str(&annual_review_date, DATE_FORMAT) {
-                                item.latest_annual_review_at = Some(v);
-                            }
-                        }
 
                         // Summary information
                         let mut summary = ItemSummary {
@@ -394,6 +374,9 @@ pub(crate) struct Item {
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub maturity: Option<Maturity>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub member_subcategory: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -404,9 +387,6 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub openssf_best_practices_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub project: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,
@@ -444,11 +424,11 @@ impl Item {
 /// Landscape item audit information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct ItemAudit {
-    pub date: Option<NaiveDate>,
+    pub date: NaiveDate,
     #[serde(rename = "type")]
-    pub kind: Option<String>,
-    pub url: Option<String>,
-    pub vendor: Option<String>,
+    pub kind: String,
+    pub url: String,
+    pub vendor: String,
 }
 
 /// Landscape item featured information.
@@ -489,6 +469,41 @@ pub(crate) struct ItemSummary {
     pub use_case: Option<String>,
 }
 
+/// Project maturity level.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(super) enum Maturity {
+    Archived,
+    Graduated,
+    Incubating,
+    Sandbox,
+}
+
+impl std::fmt::Display for Maturity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Archived => write!(f, "archived"),
+            Self::Graduated => write!(f, "graduated"),
+            Self::Incubating => write!(f, "incubating"),
+            Self::Sandbox => write!(f, "sandbox"),
+        }
+    }
+}
+
+impl TryFrom<&str> for Maturity {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self> {
+        match value {
+            "archived" => Ok(Self::Archived),
+            "graduated" => Ok(Self::Graduated),
+            "incubating" => Ok(Self::Incubating),
+            "sandbox" => Ok(Self::Sandbox),
+            _ => Err(format_err!("invalid maturity level")),
+        }
+    }
+}
+
 /// Repository information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Repository {
@@ -508,13 +523,74 @@ mod legacy {
     //! This module defines some types used to parse the landscape data file in
     //! legacy format and convert it to the new one.
 
-    use super::ItemAudit;
+    use super::{ItemAudit, Maturity};
+    use crate::{crunchbase::CRUNCHBASE_URL, github::GITHUB_REPO_URL};
+    use anyhow::{format_err, Context, Result};
+    use chrono::NaiveDate;
+    use lazy_static::lazy_static;
+    use regex::Regex;
     use serde::{Deserialize, Serialize};
+    use url::Url;
 
     /// Landscape data (legacy format).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(super) struct LandscapeData {
         pub landscape: Vec<Category>,
+    }
+
+    impl LandscapeData {
+        /// Validate landscape data.
+        pub(super) fn validate(&self) -> Result<()> {
+            for (category_index, category) in self.landscape.iter().enumerate() {
+                // Check category name
+                if category.name.is_empty() {
+                    return Err(format_err!("category [{category_index}] name is required"));
+                }
+
+                for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
+                    // Check subcategory name
+                    if subcategory.name.is_empty() {
+                        return Err(format_err!(
+                            "subcategory [{subcategory_index}] name is required (category: [{}]) ",
+                            category.name
+                        ));
+                    }
+
+                    for (item_index, item) in subcategory.items.iter().enumerate() {
+                        // Prepare context for errors
+                        let item_id = if item.name.is_empty() {
+                            format!("{item_index}")
+                        } else {
+                            item.name.clone()
+                        };
+                        let ctx = format!(
+                            "item [{}] is not valid (category: [{}] | subcategory: [{}])",
+                            item_id, category.name, subcategory.name
+                        );
+
+                        // Check name
+                        if item.name.is_empty() {
+                            return Err(format_err!("name is required")).context(ctx);
+                        }
+
+                        // Check homepage
+                        if item.homepage_url.is_empty() {
+                            return Err(format_err!("hompage_url is required")).context(ctx);
+                        }
+
+                        // Check logo
+                        if item.logo.is_empty() {
+                            return Err(format_err!("logo is required")).context(ctx);
+                        }
+
+                        // Check urls
+                        validate_urls(item).context(ctx)?;
+                    }
+                }
+            }
+
+            Ok(())
+        }
     }
 
     /// Landscape category.
@@ -542,8 +618,8 @@ mod legacy {
         pub crunchbase: Option<String>,
         pub enduser: Option<bool>,
         pub extra: Option<ItemExtra>,
-        pub joined: Option<String>,
-        pub project: Option<String>,
+        pub joined: Option<NaiveDate>,
+        pub project: Option<Maturity>,
         pub repo_url: Option<String>,
         pub twitter: Option<String>,
         pub url_for_bestpractices: Option<String>,
@@ -560,10 +636,10 @@ mod legacy {
     /// Extra information for a landscape item.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(super) struct ItemExtra {
-        pub accepted: Option<String>,
-        pub archived: Option<String>,
+        pub accepted: Option<NaiveDate>,
+        pub archived: Option<NaiveDate>,
         pub audits: Option<Vec<ItemAudit>>,
-        pub annual_review_date: Option<String>,
+        pub annual_review_date: Option<NaiveDate>,
         pub annual_review_url: Option<String>,
         pub artwork_url: Option<String>,
         pub blog_url: Option<String>,
@@ -573,8 +649,8 @@ mod legacy {
         pub discord_url: Option<String>,
         pub docker_url: Option<String>,
         pub github_discussions_url: Option<String>,
-        pub graduated: Option<String>,
-        pub incubating: Option<String>,
+        pub graduated: Option<NaiveDate>,
+        pub incubating: Option<NaiveDate>,
         pub mailing_list_url: Option<String>,
         pub slack_url: Option<String>,
         pub specification: Option<bool>,
@@ -588,5 +664,121 @@ mod legacy {
         pub summary_release_rate: Option<String>,
         pub summary_tags: Option<String>,
         pub youtube_url: Option<String>,
+    }
+
+    /// Validate the urls of the item provided.
+    fn validate_urls(item: &Item) -> Result<()> {
+        // Check urls in item
+        let homepage_url = Some(item.homepage_url.clone());
+        let urls = [
+            ("best_practices", &item.url_for_bestpractices),
+            ("crunchbase", &item.crunchbase),
+            ("homepage", &homepage_url),
+            ("repository", &item.repo_url),
+            ("twitter", &item.twitter),
+        ];
+        for (name, url) in urls {
+            validate_url(name, url)?;
+        }
+
+        // Check additional repositories
+        if let Some(additional_repos) = &item.additional_repos {
+            for r in additional_repos {
+                let repo_url = Some(r.repo_url.clone());
+                validate_url("additional_repository", &repo_url)?;
+            }
+        }
+
+        // Check urls in item extra
+        if let Some(extra) = &item.extra {
+            let urls = [
+                ("annual_review", &extra.annual_review_url),
+                ("artwork", &extra.artwork_url),
+                ("blog", &extra.blog_url),
+                ("dev_stats", &extra.dev_stats_url),
+                ("discord", &extra.discord_url),
+                ("docker", &extra.docker_url),
+                ("github_discussions", &extra.github_discussions_url),
+                ("mailing_list", &extra.mailing_list_url),
+                ("slack", &extra.slack_url),
+                ("stack_overflow", &extra.stack_overflow_url),
+                ("youtube", &extra.youtube_url),
+            ];
+            for (name, url) in urls {
+                validate_url(name, url)?;
+            }
+
+            // Check audits urls
+            if let Some(audits) = &extra.audits {
+                for a in audits {
+                    let audit_url = Some(a.url.clone());
+                    validate_url("audit", &audit_url)?;
+                }
+            }
+        };
+
+        Ok(())
+    }
+
+    /// Validate the url provided.
+    fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
+        if let Some(url) = url {
+            let invalid_url = |reason: &str| Err(format_err!("invalid {kind} url: {reason}"));
+
+            // Parse url
+            let url = match Url::parse(url) {
+                Ok(url) => url,
+                Err(err) => return invalid_url(&err.to_string()),
+            };
+
+            // Check scheme
+            if url.scheme() != "http" && url.scheme() != "https" {
+                return invalid_url("invalid scheme");
+            }
+
+            // Some checks specific to the url kind provided
+            match kind {
+                "additional_repository" | "repository" => {
+                    if !GITHUB_REPO_URL.is_match(url.as_str()) {
+                        return invalid_url(&format!("expecting: {}", GITHUB_REPO_URL.as_str()));
+                    }
+                }
+                "best_practices" => {
+                    if !BEST_PRACTICES_URL.is_match(url.as_str()) {
+                        return invalid_url(&format!("expecting: {}", BEST_PRACTICES_URL.as_str()));
+                    }
+                }
+                "crunchbase" => {
+                    if !CRUNCHBASE_URL.is_match(url.as_str()) {
+                        return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
+                    }
+                }
+                "stack_overflow" => {
+                    if url.host_str().is_some_and(|host| !host.contains("stackoverflow.com")) {
+                        return invalid_url("invalid stack overflow url");
+                    }
+                }
+                "twitter" => {
+                    if url.host_str().is_some_and(|host| !host.contains("twitter.com")) {
+                        return invalid_url("invalid twitter url");
+                    }
+                }
+                "youtube" => {
+                    if url.host_str().is_some_and(|host| !host.contains("youtube.com")) {
+                        return invalid_url("invalid youtube url");
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        Ok(())
+    }
+
+    lazy_static! {
+        /// Best practices url regular expression.
+        static ref BEST_PRACTICES_URL: Regex =
+            Regex::new(r"(https://bestpractices.coreinfrastructure.org/(en/)?projects/\d+)",)
+                .expect("exprs in BEST_PRACTICES_URL to be valid");
     }
 }

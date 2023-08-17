@@ -82,7 +82,7 @@ const GridItem = (props: Props) => {
 
   return (
     <div
-      style={!isUndefined(props.item.project) ? { border: `1px solid ${props.borderColor}` } : {}}
+      style={!isUndefined(props.item.maturity) ? { border: `1px solid ${props.borderColor}` } : {}}
       className={classNames(
         'card rounded-0 position-relative p-0',
         styles.card,

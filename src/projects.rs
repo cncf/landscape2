@@ -40,7 +40,7 @@ impl From<&LandscapeData> for Vec<Project> {
             .cloned()
             .filter_map(|item| {
                 // Prepare maturity
-                let Some(maturity) = item.project else {
+                let Some(maturity) = item.maturity else {
                     return None;
                 };
 
@@ -52,7 +52,7 @@ impl From<&LandscapeData> for Vec<Project> {
                 };
 
                 // Prepare security audits info
-                let last_security_audit = item.audits.as_ref().and_then(|a| a.last().and_then(|a| a.date));
+                let last_security_audit = item.audits.as_ref().and_then(|a| a.last().map(|a| a.date));
                 let num_security_audits = item.audits.as_ref().map(Vec::len);
 
                 // Create project instance and return it
@@ -62,7 +62,7 @@ impl From<&LandscapeData> for Vec<Project> {
                     graduated_at: fmt_date(&item.graduated_at),
                     homepage_url: item.homepage_url,
                     incubating_at: fmt_date(&item.incubating_at),
-                    maturity,
+                    maturity: maturity.to_string(),
                     name: item.name.to_lowercase(),
                     num_security_audits: num_security_audits.unwrap_or_default().to_string(),
                     last_security_audit: fmt_date(&last_security_audit),

@@ -267,7 +267,7 @@ const Searchbar = (props: Props) => {
                       >
                         <div className="d-flex flex-row align-items-baseline">
                           <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
-                          {!isUndefined(item.project) && (
+                          {!isUndefined(item.maturity) && (
                             <div className={`d-flex flex-nowrap position-relative ${styles.badges}`}>
                               <div
                                 title="CNCF"
@@ -276,7 +276,7 @@ const Searchbar = (props: Props) => {
                                 CNCF
                               </div>
 
-                              <MaturityBadge level={item.project} className={`ms-2 ${styles.badge}`} />
+                              <MaturityBadge level={item.maturity} className={`ms-2 ${styles.badge}`} />
                             </div>
                           )}
                         </div>

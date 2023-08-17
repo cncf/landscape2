@@ -101,12 +101,12 @@
   left: 1rem;
 }
 
-.projectBadge {
+.maturityBadge {
   width: 100px;
   background-color: var(--bs-gray-500);
 }
 
-.activeProjectBadge {
+.activeMaturityBadge {
   background-color: var(--light-blue);
 }
 
