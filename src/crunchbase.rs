@@ -44,7 +44,11 @@ pub(crate) async fn collect_crunchbase_data(
     };
 
     // Setup Crunchbase API client if an api key was provided
-    let cb: Option<DynCB> = if let Ok(api_key) = env::var(CRUNCHBASE_API_KEY) {
+    let api_key = match env::var(CRUNCHBASE_API_KEY) {
+        Ok(api_key) if !api_key.is_empty() => Some(api_key),
+        Ok(_) | Err(_) => None,
+    };
+    let cb: Option<DynCB> = if let Some(api_key) = api_key {
         Some(Arc::new(CBApi::new(&api_key)?))
     } else {
         warn!("crunchbase api key not provided: no information will be collected from crunchbase");

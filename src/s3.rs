@@ -8,7 +8,7 @@ use futures::stream::{self, StreamExt};
 use mime_guess::mime;
 use std::{
     collections::HashMap,
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     time::Instant,
 };
@@ -33,6 +33,9 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
     info!("deploying landscape website..");
     let start = Instant::now();
 
+    // Check required environment variables
+    check_env_vars()?;
+
     // Setup AWS S3 client
     let config = aws_config::load_from_env().await;
     let s3_client = aws_sdk_s3::Client::new(&config);
@@ -48,6 +51,21 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website deployed! (took: {:.3}s)", duration);
+
+    Ok(())
+}
+
+/// Check that the required environment variables have been provided.
+#[instrument(skip_all, err)]
+fn check_env_vars() -> Result<()> {
+    let required_env_vars = ["AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"];
+
+    for var in required_env_vars {
+        let result = env::var(var);
+        if result.is_err() || result.expect("var to be set").is_empty() {
+            return Err(format_err!("required environment variable {var} not provided"));
+        }
+    }
 
     Ok(())
 }
