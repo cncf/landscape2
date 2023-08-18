@@ -55,6 +55,7 @@ select:focus {
 a,
 .btn-link {
   text-decoration: none;
+  color: inherit;
 }
 
 @media (hover: hover) {

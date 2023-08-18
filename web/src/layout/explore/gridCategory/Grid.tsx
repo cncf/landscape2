@@ -80,7 +80,9 @@ const Grid = memo(function Grid(props: Props) {
                     { 'border-top-0': props.categoryIndex !== 0 },
                     { 'border-bottom-0 col-12': subcat.percentage === 100 }
                   )}
-                  style={subcat.style ? { ...subcat.style } : { maxWidth: `${subcat.percentage}%` }}
+                  style={
+                    subcat.style && !props.isOverriden ? { ...subcat.style } : { maxWidth: `${subcat.percentage}%` }
+                  }
                 >
                   <div
                     className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
