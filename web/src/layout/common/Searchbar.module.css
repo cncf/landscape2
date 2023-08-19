@@ -87,6 +87,15 @@
   .searchBar {
     width: 300px;
   }
+
+  .title {
+    font-size: 0.75rem;
+  }
+
+  .legend {
+    font-size: 0.65rem;
+    line-height: 0.75rem;
+  }
 }
 
 @media only screen and (max-width: 991.98px) {
