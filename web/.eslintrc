@@ -9,6 +9,7 @@
   "parserOptions": { "ecmaVersion": "latest", "sourceType": "module" },
   "plugins": ["react-refresh", "simple-import-sort"],
   "rules": {
+    "@typescript-eslint/no-non-null-assertion": "warn",
     "react-refresh/only-export-components": "warn",
     "semi": "error",
     "simple-import-sort/imports": "error",

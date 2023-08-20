@@ -122,7 +122,7 @@ export function transformGridLayout(input: TransformGridLayoutInput): GridCatego
 }
 
 // Get the grid layout of the category provided.
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput): GridCategoryLayout {
   // Calculate number of rows needed to display the subcategories
   let rowsCount;
@@ -168,8 +168,10 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   const totalItemsCount = subcategories.reduce((t, s) => (t += s.itemsCount), 0);
   const weights = new Map(subcategories.map((s) => [s.name, s.itemsCount / totalItemsCount]));
   for (const row of rows) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const rowWeights = row.reduce((t, c) => (t += weights.get(c.subcategoryName)!), 0);
     for (const c of row) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       c.percentage = Number(((weights.get(c.subcategoryName)! / rowWeights) * 100).toFixed(2));
     }
   }
