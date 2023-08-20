@@ -179,8 +179,7 @@ const SearchbarSection = memo(function SearchbarSection(props: Props) {
                   return (
                     <CheckBox
                       key={`filter_${opt.value}`}
-                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                      name={props.section!.value}
+                      name={props.section?.value as string}
                       value={opt.value}
                       labelClassName="mw-100 text-muted"
                       className="my-1"
