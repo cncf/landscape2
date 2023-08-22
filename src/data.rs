@@ -760,12 +760,12 @@ mod legacy {
                 }
                 "twitter" => {
                     if url.host_str().is_some_and(|host| !host.contains("twitter.com")) {
-                        return invalid_url("invalid twitter url");
+                        return invalid_url("expecting https://twitter.com/...");
                     }
                 }
                 "youtube" => {
                     if url.host_str().is_some_and(|host| !host.contains("youtube.com")) {
-                        return invalid_url("invalid youtube url");
+                        return invalid_url("expecting https://youtube.com/...");
                     }
                 }
                 _ => {}
