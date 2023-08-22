@@ -352,7 +352,8 @@ fn get_location_value(headquarters_address: &Option<Vec<CBAddress>>, location_ty
 }
 
 lazy_static! {
-    static ref CRUNCHBASE_URL: Regex =
+    /// Crunchbase url regular expression.
+    pub(crate) static ref CRUNCHBASE_URL: Regex =
         Regex::new("^https://www.crunchbase.com/organization/(?P<permalink>[^/]+)/?$")
             .expect("exprs in CRUNCHBASE_URL to be valid");
 }

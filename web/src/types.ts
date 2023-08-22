@@ -28,7 +28,7 @@ export interface BaseItem {
   logo: string;
   subcategory: string;
   featured?: Featured;
-  project?: string;
+  maturity?: string;
 }
 
 export interface Featured {
@@ -168,7 +168,7 @@ export interface CardMenu {
 }
 
 export enum FilterCategory {
-  Project = 'project',
+  Maturity = 'project',
   Organization = 'organization',
   License = 'license',
   Country = 'country',

@@ -36,7 +36,7 @@ export const COLORS: string[] = ['rgba(1, 107, 204, 0.70)', 'rgba(0, 42, 81, 0.7
 
 export const FILTERS: FilterSection[] = [
   {
-    value: FilterCategory.Project,
+    value: FilterCategory.Maturity,
     title: 'Project',
     options: [
       {

@@ -90,7 +90,7 @@ const Filters = memo(function Filters(props: Props) {
   const licenseFilter = getSection(FilterCategory.License);
   const industryFilter = getSection(FilterCategory.Industry);
   const companyTypeFilter = getSection(FilterCategory.CompanyType);
-  const projectFilter = getSection(FilterCategory.Project);
+  const maturityFilter = getSection(FilterCategory.Maturity);
 
   return (
     <Modal
@@ -143,12 +143,12 @@ const Filters = memo(function Filters(props: Props) {
         {!isUndefined(filtersFromData) ? (
           <>
             <div className="row g-5">
-              {projectFilter && (
+              {maturityFilter && (
                 <div className="col-4">
                   <Section
                     title="Project status"
-                    section={getSectionInPredefinedFilters(FilterCategory.Project)}
-                    activeFilters={tmpActiveFilters[FilterCategory.Project]}
+                    section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
+                    activeFilters={tmpActiveFilters[FilterCategory.Maturity]}
                     updateActiveFilters={updateActiveFilters}
                     resetFilter={resetFilter}
                   />

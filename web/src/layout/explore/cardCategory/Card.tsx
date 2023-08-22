@@ -53,7 +53,7 @@ const Card = (props: Props) => {
   }
 
   // If homepage_url is undefined or is equal to main repository url
-  // and project field is undefined,
+  // and maturity field is undefined,
   // we use the homepage_url fron crunchbase
   if (isUndefined(websiteUrl) || websiteUrl === mainRepoUrl) {
     if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
@@ -77,12 +77,12 @@ const Card = (props: Props) => {
           )}
 
           <div className={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
-            {!isUndefined(props.item.project) ? (
+            {!isUndefined(props.item.maturity) ? (
               <>
                 <div title="CNCF" className="badge rounded-0 bg-primary">
                   CNCF
                 </div>
-                <MaturityBadge level={props.item.project} className="mx-2" />
+                <MaturityBadge level={props.item.maturity} className="mx-2" />
               </>
             ) : (
               <>
@@ -121,7 +121,7 @@ const Card = (props: Props) => {
               </ExternalLink>
             )}
 
-            {isUndefined(props.item.project) && !isUndefined(props.item.crunchbase_url) && (
+            {isUndefined(props.item.maturity) && !isUndefined(props.item.crunchbase_url) && (
               <ExternalLink title="Crunchbase" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
                 <SVGIcon kind={SVGIconKind.Crunchbase} />
               </ExternalLink>
@@ -146,7 +146,7 @@ const Card = (props: Props) => {
         className={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >
         <div className="d-flex flex-row align-items-baseline">
-          {(isUndefined(props.item.project) || isUndefined(props.item.crunchbase_data)) && (
+          {(isUndefined(props.item.maturity) || isUndefined(props.item.crunchbase_data)) && (
             <>
               <small className="me-1 text-black-50">Funding:</small>
               <div className="fw-semibold">

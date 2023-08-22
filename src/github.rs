@@ -397,8 +397,10 @@ impl GH for GHApi {
 }
 
 lazy_static! {
-    static ref GITHUB_REPO_URL: Regex = Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
-        .expect("exprs in GITHUB_REPO_URL to be valid");
+    /// GitHub repository url regular expression.
+    pub(crate) static ref GITHUB_REPO_URL: Regex =
+        Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
+            .expect("exprs in GITHUB_REPO_URL to be valid");
 }
 
 /// Extract the owner and repository from the repository url provided.

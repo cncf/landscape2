@@ -67,7 +67,7 @@ const ItemModal = (props: Props) => {
   }
 
   // If homepage_url is undefined or is equal to main repository url
-  // and project field is undefined,
+  // and maturity field is undefined,
   // we use the homepage_url fron crunchbase
   if (itemInfo && (isUndefined(websiteUrl) || (mainRepo && websiteUrl === mainRepo.url))) {
     if (itemInfo.crunchbase_data && itemInfo.crunchbase_data.homepage_url) {
@@ -111,12 +111,12 @@ const ItemModal = (props: Props) => {
               <div className="d-flex flex-row align-items-center">
                 <div className={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo.name}</div>
                 <div className={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
-                  {!isUndefined(itemInfo.project) && (
+                  {!isUndefined(itemInfo.maturity) && (
                     <>
                       <div title="CNCF" className="badge rounded-0 bg-primary">
                         CNCF
                       </div>
-                      <MaturityBadge level={itemInfo.project} className="mx-2" />
+                      <MaturityBadge level={itemInfo.maturity} className="mx-2" />
 
                       {!isUndefined(itemInfo.accepted_at) && (
                         <div
@@ -205,7 +205,7 @@ const ItemModal = (props: Props) => {
                       </ExternalLink>
                     )}
 
-                    {isUndefined(itemInfo.project) && !isUndefined(itemInfo.crunchbase_url) && (
+                    {isUndefined(itemInfo.maturity) && !isUndefined(itemInfo.crunchbase_url) && (
                       <ExternalLink title="Crunchbase" className={`ms-3 ${styles.link}`} href={itemInfo.crunchbase_url}>
                         <SVGIcon kind={SVGIconKind.Crunchbase} />
                       </ExternalLink>
@@ -260,17 +260,15 @@ const ItemModal = (props: Props) => {
           {/* Description */}
           <div className={`mb-3 mt-4 text-muted ${styles.description}`}>{description}</div>
 
-          {/* Project status */}
-          {!isUndefined(itemInfo.project) && (
+          {/* Maturity */}
+          {!isUndefined(itemInfo.maturity) && (
             <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>
-                Project status
-              </div>
+              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
 
               <div className="position-relative mt-2">
                 <div className="d-flex flex-row justify-content-between">
                   <div className="d-flex flex-column align-items-center">
-                    <div className={`badge rounded-1 p-2 ${styles.projectBadge} ${styles.activeProjectBadge}`}>
+                    <div className={`badge rounded-1 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
                       {itemInfo.accepted_at ? (
                         <>
                           {itemInfo.accepted_at === itemInfo.incubating_at ||
@@ -289,8 +287,10 @@ const ItemModal = (props: Props) => {
 
                   <div className="d-flex flex-column align-items-center">
                     <div
-                      className={classNames('badge rounded-1 p-2', styles.projectBadge, {
-                        [styles.activeProjectBadge]: ['incubating', 'graduated', 'archived'].includes(itemInfo.project),
+                      className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
+                        [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(
+                          itemInfo.maturity
+                        ),
                       })}
                     >
                       {itemInfo.incubating_at || '-'}
@@ -302,8 +302,8 @@ const ItemModal = (props: Props) => {
 
                   <div className="d-flex flex-column align-items-center">
                     <div
-                      className={classNames('badge rounded-1 p-2', styles.projectBadge, {
-                        [styles.activeProjectBadge]: ['graduated', 'archived'].includes(itemInfo.project),
+                      className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
+                        [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(itemInfo.maturity),
                       })}
                     >
                       {itemInfo.graduated_at || '-'}
@@ -313,7 +313,7 @@ const ItemModal = (props: Props) => {
                     </small>
                   </div>
                 </div>
-                <div className={`${styles.line} ${itemInfo.project}Line`} />
+                <div className={`${styles.line} ${itemInfo.maturity}Line`} />
               </div>
             </div>
           )}

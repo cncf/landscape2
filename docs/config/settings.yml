@@ -54,7 +54,7 @@ members_category: CNCF Members
 # Each rule must define a field for the check as well as the values that will
 # trigger a match. At the moment the fields supported are:
 #
-#   - project
+#   - maturity
 #   - subcategory
 #
 # When a given item's field matches any of the values provided, it will be
@@ -68,7 +68,7 @@ members_category: CNCF Members
 #       - value: <SUBCATEGORY2_NAME>
 #
 featured_items:
-  - field: project
+  - field: maturity
     options:
       - value: graduated
         order: 1

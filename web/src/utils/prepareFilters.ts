@@ -35,12 +35,12 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   const licenses: string[] = [];
   const countries: string[] = [];
   const companyTypes: string[] = [];
-  const projectTypes: string[] = [];
+  const maturityTypes: string[] = [];
   let categories: string[] = [];
 
   items.forEach((i: Item) => {
-    if (i.project) {
-      projectTypes.push(i.project);
+    if (i.maturity) {
+      maturityTypes.push(i.maturity);
     }
 
     if (i.crunchbase_data) {
@@ -124,11 +124,11 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       });
     }
 
-    if (projectTypes.length > 0) {
+    if (maturityTypes.length > 0) {
       filters.push({
-        value: FilterCategory.Project,
+        value: FilterCategory.Maturity,
         title: 'Project',
-        options: [...new Set(projectTypes)].sort().map((pr: string) => ({
+        options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
           value: cleanValue(pr),
           name: pr,
         })),

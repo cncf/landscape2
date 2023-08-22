@@ -37,7 +37,7 @@ impl Datasets {
 /// the initial page and power the features available on it.
 mod base {
     use crate::{
-        data::{Category, CategoryName, ItemFeatured, LandscapeData},
+        data::{Category, CategoryName, ItemFeatured, LandscapeData, Maturity},
         settings::{Group, LandscapeSettings},
     };
     use serde::{Deserialize, Serialize};
@@ -71,7 +71,7 @@ mod base {
         pub featured: Option<ItemFeatured>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub project: Option<String>,
+        pub maturity: Option<Maturity>,
     }
 
     impl Base {
@@ -102,7 +102,7 @@ mod base {
                     id: item.id,
                     name: item.name.clone(),
                     logo: item.logo.clone(),
-                    project: item.project.clone(),
+                    maturity: item.maturity.clone(),
                     subcategory: item.subcategory.clone(),
                 });
             }

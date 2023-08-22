@@ -60,12 +60,12 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         }
       }
 
-      //  Project filter
-      if (activeFilters[FilterCategory.Project]) {
-        if (isUndefined(item.project) && !activeFilters[FilterCategory.Project].includes('non-cncf')) {
+      //  Maturity filter
+      if (activeFilters[FilterCategory.Maturity]) {
+        if (isUndefined(item.maturity) && !activeFilters[FilterCategory.Maturity].includes('non-cncf')) {
           return false;
         } else {
-          if (!isUndefined(item.project) && !activeFilters[FilterCategory.Project].includes(item.project)) {
+          if (!isUndefined(item.maturity) && !activeFilters[FilterCategory.Maturity].includes(item.maturity)) {
             return false;
           }
         }
