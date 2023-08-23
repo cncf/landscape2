@@ -527,8 +527,6 @@ mod legacy {
     use crate::{crunchbase::CRUNCHBASE_URL, github::GITHUB_REPO_URL};
     use anyhow::{format_err, Context, Result};
     use chrono::NaiveDate;
-    use lazy_static::lazy_static;
-    use regex::Regex;
     use serde::{Deserialize, Serialize};
     use url::Url;
 
@@ -743,11 +741,6 @@ mod legacy {
                         return invalid_url(&format!("expecting: {}", GITHUB_REPO_URL.as_str()));
                     }
                 }
-                "best_practices" => {
-                    if !BEST_PRACTICES_URL.is_match(url.as_str()) {
-                        return invalid_url(&format!("expecting: {}", BEST_PRACTICES_URL.as_str()));
-                    }
-                }
                 "crunchbase" => {
                     if !CRUNCHBASE_URL.is_match(url.as_str()) {
                         return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
@@ -773,12 +766,5 @@ mod legacy {
         }
 
         Ok(())
-    }
-
-    lazy_static! {
-        /// Best practices url regular expression.
-        static ref BEST_PRACTICES_URL: Regex =
-            Regex::new(r"(https://bestpractices.coreinfrastructure.org/(en/)?projects/\d+)",)
-                .expect("exprs in BEST_PRACTICES_URL to be valid");
     }
 }
