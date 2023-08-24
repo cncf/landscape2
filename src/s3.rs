@@ -91,7 +91,9 @@ async fn get_deployed_objects(
         if let Some(objects) = output.contents {
             for object in objects {
                 let Some(key) = object.key else { continue };
-                let Some(created_at) = object.last_modified else { continue };
+                let Some(created_at) = object.last_modified else {
+                    continue;
+                };
                 deployed_objects.insert(key, created_at);
             }
         }
