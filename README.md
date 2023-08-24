@@ -1,6 +1,6 @@
 # Landscape2
 
-[![CI](https://github.com/tegioz/landscape2/actions/workflows/ci.yml/badge.svg)](https://github.com/tegioz/landscape2/actions/workflows/ci.yml)
+[![CI](https://github.com/cncf/landscape2/actions/workflows/ci.yml/badge.svg)](https://github.com/cncf/landscape2/actions/workflows/ci.yml)
 
 **Landscape2** is a tool that generates interactive landscapes websites.
 
