@@ -90,8 +90,8 @@ impl LandscapeData {
     #[instrument(skip_all, err)]
     pub(crate) fn add_featured_items_data(&mut self, settings: &LandscapeSettings) -> Result<()> {
         let Some(rules) = &settings.featured_items else {
-        return Ok(());
-    };
+            return Ok(());
+        };
 
         for rule in rules {
             match rule.field.as_str() {
