@@ -5,13 +5,14 @@
 use crate::{
     cache::Cache,
     crunchbase::collect_crunchbase_data,
-    data::{get_landscape_data, LandscapeData},
+    data::LandscapeData,
     datasets::Datasets,
     github::collect_github_data,
+    guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{get_landscape_settings, LandscapeSettings},
-    BuildArgs, LogosSource,
+    settings::LandscapeSettings,
+    BuildArgs, GuideSource, LogosSource,
 };
 use anyhow::{format_err, Result};
 use askama::Template;
@@ -62,14 +63,17 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let cache = Cache::new(&args.cache_dir)?;
 
     // Get landscape data from the source provided
-    let mut landscape_data = get_landscape_data(&args.data_source).await?;
+    let mut landscape_data = LandscapeData::new(&args.data_source).await?;
 
     // Get landscape settings from the source provided
-    let settings = get_landscape_settings(&args.settings_source).await?;
+    let settings = LandscapeSettings::new(&args.settings_source).await?;
 
     // Add some extra information to the landscape based on the settings
     landscape_data.add_featured_items_data(&settings)?;
     landscape_data.add_member_subcategory(&settings.members_category);
+
+    // Prepare guide and copy it to the output directory
+    let includes_guide = prepare_guide(&args.guide_source, &args.output_dir).await?.is_some();
 
     // Prepare logos and copy them to the output directory
     prepare_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
@@ -88,7 +92,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let datasets = generate_datasets(&landscape_data, &settings, &args.output_dir)?;
 
     // Render index file and write it to the output directory
-    render_index(&datasets, &args.output_dir)?;
+    render_index(&datasets, includes_guide, &args.output_dir)?;
 
     // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
@@ -105,6 +109,8 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 /// Check web assets are present, to make sure the web app has been built.
 #[instrument(skip_all, err)]
 fn check_web_assets() -> Result<()> {
+    debug!("checking web assets are present");
+
     if !WebAssets::iter().any(|path| path.starts_with("assets/")) {
         return Err(format_err!(
             "web assets not found, please make sure they have been built"
@@ -117,6 +123,8 @@ fn check_web_assets() -> Result<()> {
 /// Copy web assets files to the output directory.
 #[instrument(skip_all, err)]
 fn copy_web_assets(output_dir: &Path) -> Result<()> {
+    debug!("copying web assets to output directory");
+
     for asset_path in WebAssets::iter() {
         // The index document is a template that we'll render, so we don't want
         // to copy it as is.
@@ -125,7 +133,6 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
         }
 
         if let Some(embedded_file) = WebAssets::get(&asset_path) {
-            debug!(?asset_path, "copying file");
             if let Some(parent_path) = Path::new(asset_path.as_ref()).parent() {
                 fs::create_dir_all(output_dir.join(parent_path))?;
             }
@@ -148,9 +155,8 @@ fn generate_datasets(
     output_dir: &Path,
 ) -> Result<Datasets> {
     debug!("generating datasets");
-    let datasets = Datasets::new(landscape_data, settings)?;
 
-    debug!("copying datasets to output directory");
+    let datasets = Datasets::new(landscape_data, settings)?;
     let datasets_path = output_dir.join(DATASETS_PATH);
 
     // Base
@@ -167,7 +173,8 @@ fn generate_datasets(
 /// Generate the projects.md and projects.csv files from the landscape data.
 #[instrument(skip_all, err)]
 fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) -> Result<()> {
-    debug!("generating projects.* files");
+    debug!("generating projects files");
+
     let projects: Vec<Project> = landscape_data.into();
 
     // projects.md
@@ -181,6 +188,20 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
     generate_projects_csv(w, &projects)?;
 
     Ok(())
+}
+
+/// Prepare guide and copy it to the output directory.
+#[instrument(skip_all, err)]
+async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<()>> {
+    debug!("preparing guide");
+
+    let Some(guide) = LandscapeGuide::new(guide_source).await? else {
+        return Ok(None);
+    };
+    let path = output_dir.join(DATASETS_PATH).join("guide.json");
+    File::create(path)?.write_all(&serde_json::to_vec(&guide)?)?;
+
+    Ok(Some(()))
 }
 
 /// Prepare logos and copy them to the output directory, updating the logo
@@ -257,13 +278,19 @@ async fn prepare_logos(
 #[template(path = "index.html", escape = "none")]
 struct Index<'a> {
     pub datasets: &'a Datasets,
+    pub includes_guide: bool,
 }
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
+fn render_index(datasets: &Datasets, includes_guide: bool, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
-    let index = Index { datasets }.render()?;
+
+    let index = Index {
+        datasets,
+        includes_guide,
+    }
+    .render()?;
     let mut file = File::create(output_dir.join("index.html"))?;
     file.write_all(index.as_bytes())?;
 
@@ -274,6 +301,8 @@ fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
 /// paths inside it when needed.
 #[instrument(fields(?output_dir), skip_all, err)]
 fn setup_output_dir(output_dir: &Path) -> Result<()> {
+    debug!("setting up output directory");
+
     if !output_dir.exists() {
         debug!("creating output directory");
         fs::create_dir_all(output_dir)?;

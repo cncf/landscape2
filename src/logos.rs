@@ -81,10 +81,14 @@ async fn get_svg(
     logos_source: &LogosSource,
     file_name: &str,
 ) -> Result<Vec<u8>> {
-    let svg_data = if let Some(path) = &logos_source.logos_path {
-        fs::read(path.join(file_name))?
-    } else {
-        let logos_url = logos_source.logos_url.as_ref().unwrap().trim_end_matches('/');
+    // Try from path
+    if let Some(path) = &logos_source.logos_path {
+        return fs::read(path.join(file_name)).map_err(Into::into);
+    };
+
+    // Try from url
+    if let Some(logos_url) = &logos_source.logos_url {
+        let logos_url = logos_url.trim_end_matches('/');
         let logo_url = format!("{logos_url}/{file_name}");
         let resp = http_client.get(logo_url).send().await?;
         if resp.status() != StatusCode::OK {
@@ -93,10 +97,10 @@ async fn get_svg(
                 resp.status()
             ));
         }
-        resp.bytes().await?.to_vec()
+        return Ok(resp.bytes().await?.to_vec());
     };
 
-    Ok(svg_data)
+    Err(format_err!("logos path or url not provided"))
 }
 
 /// Get SVG bounding box (smallest rectangle in which the object fits).

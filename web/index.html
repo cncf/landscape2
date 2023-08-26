@@ -13,6 +13,7 @@
     <% } else { %>
       <script>
         window.baseDS = {{ datasets.base|json|safe }};
+        window.includesGuide = {{ includes_guide }};
       </script>
     <% } %>
   </head>
