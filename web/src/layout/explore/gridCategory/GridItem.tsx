@@ -1,17 +1,18 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
-import { useEffect, useRef, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useContext, useEffect, useRef, useState } from 'react';
 
-import { BaseItem, Item, OutletContext } from '../../../types';
+import { BaseItem, Item } from '../../../types';
 import Image from '../../common/Image';
 import { Loading } from '../../common/Loading';
+import { AppContext, Context } from '../../context/AppContext';
 import Card from '../cardCategory/Card';
 import styles from './GridItem.module.css';
 
 interface Props {
   item: BaseItem | Item;
   borderColor?: string;
+  showMoreInfo: boolean;
 }
 
 const DEFAULT_DROPDOWN_WIDTH = 450;
@@ -20,7 +21,7 @@ const DEFAULT_MARGIN = 30;
 const GridItem = (props: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const wrapper = useRef<HTMLDivElement>(null);
-  const { updateActiveItemId } = useOutletContext() as OutletContext;
+  const { updateActiveItemId } = useContext(AppContext) as Context;
   const [visibleDropdown, setVisibleDropdown] = useState(false);
   const [onLinkHover, setOnLinkHover] = useState(false);
   const [onDropdownHover, setOnDropdownHover] = useState(false);
@@ -123,9 +124,11 @@ const GridItem = (props: Props) => {
           className={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
           onClick={(e) => {
             e.preventDefault();
-            updateActiveItemId(props.item.id);
-            setOnLinkHover(false);
-            setVisibleDropdown(false);
+            if (props.showMoreInfo) {
+              updateActiveItemId(props.item.id);
+              setOnLinkHover(false);
+              setVisibleDropdown(false);
+            }
           }}
           onMouseEnter={(e) => {
             e.preventDefault();

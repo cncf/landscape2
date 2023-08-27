@@ -1,13 +1,14 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
 import cleanEmojis from '../../../utils/cleanEmojis';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import prettifyNumber from '../../../utils/prettifyNumber';
+import { AppContext, Context } from '../../context/AppContext';
 import ExternalLink from '../ExternalLink';
 import Image from '../Image';
 import { Loading } from '../Loading';
@@ -17,22 +18,13 @@ import SVGIcon from '../SVGIcon';
 import styles from './ItemModal.module.css';
 import ParticipationStats from './ParticipationStats';
 
-interface Props {
-  activeItemId?: string;
-  removeActiveItem: () => void;
-}
-
-const ItemModal = (props: Props) => {
-  const [fullDataReady, setFullDataReady] = useState<boolean>(false);
+const ItemModal = () => {
+  const { activeItemId, updateActiveItemId, fullDataReady } = useContext(AppContext) as Context;
   const [itemInfo, setItemInfo] = useState<Item | null | undefined>(undefined);
   let description = 'This item does not have a description available yet';
   let stars: number | undefined;
   let mainRepo: Repository | undefined;
   let websiteUrl: string | undefined = itemInfo ? itemInfo.homepage_url : undefined;
-
-  itemsDataGetter.isReady({
-    updateStatus: (status: boolean) => setFullDataReady(status),
-  });
 
   if (
     itemInfo &&
@@ -83,23 +75,23 @@ const ItemModal = (props: Props) => {
     async function fetchItemInfo() {
       try {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        setItemInfo(await itemsDataGetter.get(props.activeItemId!));
+        setItemInfo(await itemsDataGetter.get(activeItemId!));
       } catch {
         setItemInfo(null);
       }
     }
 
-    if (props.activeItemId && fullDataReady) {
+    if (activeItemId && fullDataReady) {
       fetchItemInfo();
     } else {
       setItemInfo(undefined);
     }
-  }, [props.activeItemId, fullDataReady]);
+  }, [activeItemId, fullDataReady]);
 
-  if (isUndefined(props.activeItemId)) return null;
+  if (isUndefined(activeItemId)) return null;
 
   return (
-    <Modal size="xl" open modalDialogClassName={styles.modalDialog} onClose={() => props.removeActiveItem()}>
+    <Modal size="xl" open modalDialogClassName={styles.modalDialog} onClose={() => updateActiveItemId()}>
       {itemInfo ? (
         <div className="d-flex flex-column p-3">
           <div className="d-flex flex-row align-items-center">

@@ -1,8 +1,3 @@
-export interface OutletContext {
-  activeItemId?: string;
-  updateActiveItemId: (itemId?: string) => void;
-}
-
 export interface BaseData {
   groups?: Group[];
   categories: Category[];
@@ -201,6 +196,7 @@ export enum SVGIconKind {
   GitHubCircle,
   Guide,
   Link,
+  MagnifyingGlass,
   MailingList,
   NotImage,
   OpenssfBestPractices,

@@ -1,3 +1,4 @@
+import { ActiveSection } from '../layout/context/AppContext';
 import { Item, LandscapeData } from '../types';
 
 export interface ItemsDataHandler {
@@ -42,6 +43,14 @@ export class ItemsDataGetter {
   public async get(id: string): Promise<Item | undefined> {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.find((i: Item) => id === i.id);
+    }
+  }
+
+  public async filterItemsBySection(activeSection: ActiveSection): Promise<Item[] | undefined> {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      return this.landscapeData.items.filter(
+        (i: Item) => activeSection.subcategory === i.subcategory && activeSection.category === i.category
+      );
     }
   }
 }

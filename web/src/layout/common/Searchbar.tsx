@@ -1,9 +1,10 @@
 import classNames from 'classnames';
 import { isNull, isUndefined } from 'lodash';
-import { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { BaseItem, SVGIconKind } from '../../types';
+import { AppContext, Context } from '../context/AppContext';
 import HoverableItem from './HoverableItem';
 import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
@@ -11,13 +12,13 @@ import SVGIcon from './SVGIcon';
 
 interface Props {
   items: BaseItem[];
-  openItem: (itemId: string) => void;
 }
 
 const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
+  const { updateActiveItemId } = useContext(AppContext) as Context;
   const inputEl = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef(null);
   const [value, setValue] = useState<string>('');
@@ -66,7 +67,7 @@ const Searchbar = (props: Props) => {
     forceBlur();
     setValue('');
     cleanItemsSearch();
-    props.openItem(selectedItemId);
+    updateActiveItemId(selectedItemId);
   };
 
   const forceBlur = (): void => {

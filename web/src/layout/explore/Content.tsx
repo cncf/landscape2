@@ -9,7 +9,6 @@ import GridCategory from './gridCategory';
 interface Props {
   isSelected: boolean;
   containerWidth: number;
-  fullDataReady: boolean;
   data: CategoriesData;
   selectedViewMode: ViewMode;
   cardWidth: number;
@@ -31,7 +30,6 @@ const Content = memo(function Content(props: Props) {
       <div className={props.selectedViewMode === ViewMode.Card ? 'd-block' : 'd-none'}>
         <CardCategory
           isVisible={props.isSelected && props.selectedViewMode === ViewMode.Card}
-          fullDataReady={props.fullDataReady}
           data={props.data}
           categories_overridden={props.categories_overridden}
         />

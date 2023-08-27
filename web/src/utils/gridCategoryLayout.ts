@@ -51,7 +51,7 @@ export interface GridDimensions {
 const PADDING = 20;
 const GAP = 5;
 
-const calculateItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {
+export const calculateItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {
   return Math.floor((containerWidth * (percentage / 100) - PADDING - GAP) / (itemWidth + GAP));
 };
 
@@ -94,7 +94,7 @@ const calculateHighestSubcategory = (
   return { sizes: sizes, maxRowsIndex: maxRowsIndex, forceWidthIndex: forceWidthIndex };
 };
 
-const calculateWidthInPx = (columnsNumber: number, itemWidth: number): string => {
+export const calculateWidthInPx = (columnsNumber: number, itemWidth: number): string => {
   return `${columnsNumber * (itemWidth + GAP) + PADDING}px`;
 };
 

@@ -1,0 +1,37 @@
+.loadingWrapper {
+  min-height: 500px;
+}
+
+.wrapper {
+  background-color: var(--bs-white);
+  /* Tooltip height + Subcategory title height + Featured card height */
+  min-height: calc(262px + 35px + 68px * 2);
+}
+
+.catTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  width: 2.5rem;
+  font-size: 0.8rem;
+}
+
+.subcatTitle {
+  font-size: 0.8rem;
+  height: 2rem;
+}
+
+.content {
+  background-color: var(--bs-gray-100);
+  padding: 0.6rem;
+}
+
+.grid {
+  --card-size-width: 75px;
+  --card-size-height: 68px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--card-size-width));
+  grid-auto-rows: var(--card-size-height);
+  gap: var(--card-gap);
+}

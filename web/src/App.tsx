@@ -9,8 +9,6 @@ import Layout from './layout';
 import Landscape from './layout/explore';
 import Guide from './layout/guide';
 import NotFound from './layout/notFound';
-import Stats from './layout/stats';
-import Acquisitions from './layout/stats';
 import itemsDataGetter from './utils/itemsDataGetter';
 
 const App = () => {
@@ -29,8 +27,6 @@ const App = () => {
         <Route path="/" element={<Layout items={data.items} />}>
           <Route index element={<Landscape data={data} />} />
           <Route path="/guide" element={<Guide />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/acquisitions" element={<Acquisitions />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

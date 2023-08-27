@@ -9,7 +9,6 @@ import styles from './Header.module.css';
 
 interface Props {
   items: BaseItem[];
-  onClickItem: (itemId: string) => void;
 }
 
 const Header = (props: Props) => {
@@ -35,23 +34,11 @@ const Header = (props: Props) => {
           >
             Guide
           </NavLink>
-          <NavLink
-            className={`btn btn-link position-relative ms-3 ms-xl-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
-            to="/stats"
-          >
-            Stats
-          </NavLink>
-          <NavLink
-            className={`btn btn-link position-relative ms-3 ms-xl-4 text-light text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
-            to="/acquisitions"
-          >
-            Acquisitions
-          </NavLink>
         </div>
 
         <div className={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>
           <div className="d-none d-lg-block position-relative me-2 me-xl-4">
-            <Searchbar items={props.items} openItem={props.onClickItem} />
+            <Searchbar items={props.items} />
           </div>
           <a
             className={`btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0`}
