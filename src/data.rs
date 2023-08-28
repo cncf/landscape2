@@ -543,6 +543,8 @@ mod legacy {
     impl LandscapeData {
         /// Validate landscape data.
         pub(super) fn validate(&self) -> Result<()> {
+            let mut items_seen = Vec::new();
+
             for (category_index, category) in self.landscape.iter().enumerate() {
                 // Check category name
                 if category.name.is_empty() {
@@ -574,6 +576,10 @@ mod legacy {
                         if item.name.is_empty() {
                             return Err(format_err!("name is required")).context(ctx);
                         }
+                        if items_seen.contains(&item.name) {
+                            return Err(format_err!("duplicate item name")).context(ctx);
+                        }
+                        items_seen.push(item.name.clone());
 
                         // Check homepage
                         if item.homepage_url.is_empty() {
