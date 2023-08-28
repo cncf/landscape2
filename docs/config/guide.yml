@@ -1,0 +1,141 @@
+# Landscape2 guide
+#
+# This file allows defining the content of the landscape guide.
+
+# The landscape guide is organized into categories and subcategories. Each of
+# these entities requires a name and some content. The content can be provided
+# in markdown format. Categories and subcategories names are not required to
+# match the ones defined in the landscape data file but, when they do, those
+# categories/subcategories will be enriched with some extra information. So
+# whenever possible, it's highly recommended that they do.
+
+# We recommend using headings of level 4-6 within the content blocks as levels
+# 1-3 are reserved to illustrate the hierarchy of categories and subcategories.
+
+# The following example contains a subset of the CNCF landscape guide content:
+
+categories:
+  - category: "Introduction"
+    keywords: []
+    content: >
+      If you've researched cloud native applications and technologies, you've probably come
+      across the [CNCF cloud native landscape](https://landscape.cncf.io). Unsurprisingly,
+      the sheer scale of it can be overwhelming. So many categories and so many technologies.
+      How do you make sense of it?
+
+      As with anything else, if you break it down and analyze it one piece at a time, you'll
+      find it's not that complex and makes a lot of sense. In fact, the map is neatly organized
+      by functionality and, once you understand what each category represents, navigating it
+      becomes a lot easier.
+
+      In this guide, we'll break this mammoth landscape down and provide a high-level overview
+      of its layers, columns, and categories.
+
+    subcategories:
+      - subcategory: "What is the cloud native landscape?"
+        content: >
+          The goal of the cloud native landscape is to compile and organize all cloud native open
+          source projects and proprietary products into categories, providing an overview of the
+          current ecosystem. Organizations that have a cloud native project or product can
+          [submit a PR](https://github.com/cncf/landscape/) to request it to be added to the
+          landscape.
+
+      - subcategory: "How to use this guide"
+        content: >
+          In this guide, you'll find one chapter per layer and column which discusses each category
+          within it. Categories are broken down into: what it is, the problem it addresses, how it
+          helps, and technical 101. While the first three sections assume no technical background,
+          the technical 101 is targeted to engineers just getting started with cloud native. We
+          also included a section for associated buzzwords and lists CNCF projects.
+
+          > ##### INFOBOX
+          >
+          > When looking at the landscape, you'll note a few distinctions:
+          >  * *Projects in large boxes* are CNCF-hosted open source projects. Some are still in
+          >    the incubation phase (light blue/purple frame), while others are graduated
+          >    projects (dark blue frame).
+          >  * *Projects in small white boxes* are open source projects.
+          >  * *Products in gray boxes* are proprietary products.
+          >
+          > Please note that new projects are continuously becoming part of the CNCF so
+          > always refer to the actual landscape - things are moving fast!
+
+      - subcategory: "Contribute to the CNCF Landscape"
+        content: >
+          Are you searching for an exciting project to contribute to within the CNCF ecosystem?
+          Look no further! The CNCF hosts a wide range of projects that span cloud-native computing.
+          To find the perfect project for your skills and interests, check out our comprehensive
+          contribution guide at [Getting Started](https://contribute.cncf.io/contributors/getting-started/).
+          It provides you step-by-step instructions on getting started and offers valuable insights for
+          both newcomers and experienced contributors. Join our vibrant community and make your mark on
+          cloud-native innovation today!
+
+  - category: "Provisioning"
+    keywords: []
+    content: >
+      Provisioning is the first layer in the cloud native landscape. It encompasses tools that
+      are used to *create and harden* the foundation on which cloud native apps are built.
+      You'll find tools to automatically configure, create, and manage the infrastructure,
+      as well as  for scanning, signing, and storing container images. The layer also extends
+      to security with tools that enable policy setting and enforcement, embedded authentication
+      and authorization, and the handling of secrets distribution. That's a mouthful, so let's
+      discuss each category at a time.
+
+    subcategories:
+      - subcategory: "Automation & Configuration"
+        keywords:
+          - "Infrastructure-as-Code (IaC)"
+          - "Automation"
+          - "Declarative Configuration"
+        content: >
+          #### What it is
+
+          Automation and configuration tools speed up the creation and configuration of compute
+          resources (virtual machines, networks, firewall rules, load balancers, etc.). Tools in
+          this category either handle different parts of the provisioning process or try to control
+          everything end-to-end. Most provide the ability to integrate with other projects and
+          products in the space.
+
+          #### Problem it addresses
+
+          Traditionally, IT processes relied on lengthy and labor intensive manual release cycles,
+          typically between three to six months. Those cycles came with lots of human processes and
+          controls that slowed down changes to production environments. These slow release cycles
+          and static environments aren't compatible with cloud native development. To deliver on
+          rapid development cycles, infrastructure must be provisioned dynamically and without
+          human intervention.
+
+          #### How it helps
+
+          Tools of this category allow engineers to build computing environments without human
+          intervention. By codifying the environment setup it becomes reproducible with the click
+          of a button. While manual setup is error prone, once codified, environment creation
+          matches the exact desired state -- a huge advantage.
+
+          While tools may take different approaches, they all aim at reducing the required work
+          to provision resources through automation.
+
+          #### Technical 101
+
+          As we move from old-style human-driven provisioning to a new on-demand scaling model
+          driven by the cloud, the patterns and tools we used before no longer meet our needs.
+          Most organizations can't afford a large 24x7 staff to create, configure, and manage
+          servers. Automated tools like Terraform reduce the level of effort required to scale
+          tens of servers and networks with hundreds of firewall rules. Tools like Puppet, Chef,
+          and Ansible provision and/or configure these new servers and applications
+          programmatically as they are spun up and allow them to be consumed by developers.
+
+          Some tools interact directly with the infrastructure APIs provided by platforms like
+          AWS or vSphere, while others focus on configuring the individual machines to make them
+          part of a Kubernetes cluster. Many, like Chef and Terraform, can interoperate to provision
+          and configure the environment. Others, like OpenStack, exist to provide an
+          Infrastructure-as-a-Service (IaaS) environment that other tools could consume.
+          Fundamentally, you'll need one or more tools in this space as part of laying down the
+          computing environment, CPU, memory, storage, and networking, for your Kubernetes clusters.
+          You'll also need a subset of these to create and manage the Kubernetes clusters
+          themselves.
+
+          There are now over 5 CNCF projects in this space, more if you count projects like Cluster
+          API which don't appear on the landscape. There is also a very robust set of other open
+          source and vendor provided tools.
+

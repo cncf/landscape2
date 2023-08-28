@@ -13,6 +13,7 @@ mod crunchbase;
 mod data;
 mod datasets;
 mod github;
+mod guide;
 mod logos;
 mod projects;
 mod s3;
@@ -51,6 +52,10 @@ struct BuildArgs {
     #[command(flatten)]
     data_source: DataSource,
 
+    /// Guide source.
+    #[command(flatten)]
+    guide_source: GuideSource,
+
     /// Logos source.
     #[command(flatten)]
     logos_source: LogosSource,
@@ -75,6 +80,19 @@ struct DataSource {
     /// Landscape data file url.
     #[arg(long)]
     data_url: Option<String>,
+}
+
+/// Landscape guide location.
+#[derive(Args)]
+#[group(required = false, multiple = false)]
+struct GuideSource {
+    /// Landscape guide file local path.
+    #[arg(long)]
+    guide_file: Option<PathBuf>,
+
+    /// Landscape guide file url.
+    #[arg(long)]
+    guide_url: Option<String>,
 }
 
 /// Landscape logos location.

@@ -17,20 +17,6 @@ use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
 use tracing::{debug, instrument};
 
-/// Get landscape settings from the source provided.
-#[instrument(skip_all, err)]
-pub(crate) async fn get_landscape_settings(src: &SettingsSource) -> Result<LandscapeSettings> {
-    let settings = if let Some(file) = &src.settings_file {
-        debug!(?file, "getting landscape settings from file");
-        LandscapeSettings::new_from_file(file)
-    } else {
-        debug!(url = ?src.settings_url.as_ref().unwrap(), "getting landscape settings from url");
-        LandscapeSettings::new_from_url(src.settings_url.as_ref().unwrap()).await
-    }?;
-
-    Ok(settings)
-}
-
 /// Landscape settings.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct LandscapeSettings {
@@ -45,6 +31,49 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub members_category: Option<String>,
+}
+
+impl LandscapeSettings {
+    /// Create a new landscape settings instance from the source provided.
+    #[instrument(skip_all, err)]
+    pub(crate) async fn new(src: &SettingsSource) -> Result<Self> {
+        // Try from file
+        if let Some(file) = &src.settings_file {
+            debug!(?file, "getting landscape settings from file");
+            return LandscapeSettings::new_from_file(file);
+        };
+
+        // Try from url
+        if let Some(url) = &src.settings_url {
+            debug!(?url, "getting landscape settings from url");
+            return LandscapeSettings::new_from_url(url).await;
+        };
+
+        Err(format_err!("settings file or url not provided"))
+    }
+
+    /// Create a new landscape settings instance from the file provided.
+    fn new_from_file(file: &Path) -> Result<Self> {
+        let raw_data = fs::read_to_string(file)?;
+        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
+
+        Ok(settings)
+    }
+
+    /// Create a new landscape settings instance from the url provided.
+    async fn new_from_url(url: &str) -> Result<Self> {
+        let resp = reqwest::get(url).await?;
+        if resp.status() != StatusCode::OK {
+            return Err(format_err!(
+                "unexpected status code getting landscape settings file: {}",
+                resp.status()
+            ));
+        }
+        let raw_data = resp.text().await?;
+        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
+
+        Ok(settings)
+    }
 }
 
 /// Landscape group. A group provides a mechanism to organize sets of
@@ -74,29 +103,4 @@ pub(crate) struct FeaturedItemRuleOption {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
-}
-
-impl LandscapeSettings {
-    /// Create a new landscape settings instance from the file provided.
-    pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
-        let raw_data = fs::read_to_string(file)?;
-        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
-
-        Ok(settings)
-    }
-
-    /// Create a new landscape settings instance from the url provided.
-    pub(crate) async fn new_from_url(url: &str) -> Result<Self> {
-        let resp = reqwest::get(url).await?;
-        if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status code getting landscape settings file: {}",
-                resp.status()
-            ));
-        }
-        let raw_data = resp.text().await?;
-        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
-
-        Ok(settings)
-    }
 }

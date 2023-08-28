@@ -24,20 +24,6 @@ use uuid::Uuid;
 /// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
 
-/// Get landscape data from the source provided.
-#[instrument(skip_all, err)]
-pub(crate) async fn get_landscape_data(src: &DataSource) -> Result<LandscapeData> {
-    let data = if let Some(file) = &src.data_file {
-        debug!(?file, "getting landscape data from file");
-        LandscapeData::new_from_file(file)
-    } else {
-        debug!(url = ?src.data_url.as_ref().unwrap(), "getting landscape data from url");
-        LandscapeData::new_from_url(src.data_url.as_ref().unwrap()).await
-    }?;
-
-    Ok(data)
-}
-
 /// Landscape data.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct LandscapeData {
@@ -46,8 +32,26 @@ pub(crate) struct LandscapeData {
 }
 
 impl LandscapeData {
+    /// Create a new landscape data instance from the source provided.
+    #[instrument(skip_all, err)]
+    pub(crate) async fn new(src: &DataSource) -> Result<Self> {
+        // Try from file
+        if let Some(file) = &src.data_file {
+            debug!(?file, "getting landscape data from file");
+            return LandscapeData::new_from_file(file);
+        };
+
+        // Try from url
+        if let Some(url) = &src.data_url {
+            debug!(?url, "getting landscape data from url");
+            return LandscapeData::new_from_url(url).await;
+        };
+
+        Err(format_err!("data file or url not provided"))
+    }
+
     /// Create a new landscape data instance from the file provided.
-    pub(crate) fn new_from_file(file: &Path) -> Result<Self> {
+    fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
         let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
         legacy_data.validate()?;
@@ -56,7 +60,7 @@ impl LandscapeData {
     }
 
     /// Create a new landscape data instance from the url provided.
-    pub(crate) async fn new_from_url(url: &str) -> Result<Self> {
+    async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
             return Err(format_err!(
