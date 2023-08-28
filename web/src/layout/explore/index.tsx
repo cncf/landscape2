@@ -298,7 +298,6 @@ const Landscape = (props: Props) => {
                     <Content
                       isSelected={isSelected}
                       containerWidth={containerWidth}
-                      fullDataReady={!isUndefined(landscapeData)}
                       data={groupsData[group.name]}
                       cardWidth={ZOOM_LEVELS[levelZoom][0]}
                       selectedViewMode={selectedViewMode}
@@ -312,7 +311,6 @@ const Landscape = (props: Props) => {
             <Content
               isSelected
               containerWidth={containerWidth}
-              fullDataReady={!isUndefined(landscapeData)}
               data={groupsData.default}
               cardWidth={ZOOM_LEVELS[levelZoom][0]}
               selectedViewMode={selectedViewMode}

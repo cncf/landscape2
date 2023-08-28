@@ -1,11 +1,13 @@
 import { orderBy } from 'lodash';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
 
-import { BaseItem, CardMenu, Item, OutletContext } from '../../../types';
+import { BaseItem, CardMenu, Item } from '../../../types';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
+import { AppContext, Context } from '../../context/AppContext';
 import Card from './Card';
 import styles from './Content.module.css';
 
@@ -16,7 +18,7 @@ interface Props {
 }
 const Content = (props: Props) => {
   const navigate = useNavigate();
-  const { updateActiveItemId } = useOutletContext() as OutletContext;
+  const { updateActiveItemId } = useContext(AppContext) as Context;
 
   const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
     return orderBy(

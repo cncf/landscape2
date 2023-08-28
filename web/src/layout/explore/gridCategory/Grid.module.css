@@ -18,5 +18,4 @@
   grid-template-columns: repeat(auto-fit, var(--card-size-width));
   grid-auto-rows: var(--card-size-height);
   gap: var(--card-gap);
-  /* justify-content: center; */
 }
