@@ -4,7 +4,7 @@
 
 **Landscape2** is a tool that generates interactive landscapes websites.
 
-You can check out how the generated landscapes look like by visiting this [demo of the CNCF landscape](https://d3p7z0397yhzys.cloudfront.net).
+You can check out how the generated landscapes look like by visiting this [demo of the CNCF landscape](https://cncf.landscape2.io).
 
 <br/>
 <table>
