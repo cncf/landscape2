@@ -15,7 +15,6 @@ import styles from './GridCategory.module.css';
 interface Props {
   containerWidth: number;
   data: CategoriesData;
-  cardWidth: number;
   categories_overridden?: string[];
 }
 
@@ -66,7 +65,6 @@ const GridCategory = memo(function GridCategory(props: Props) {
             <div className="d-flex flex-column align-items-stretch w-100">
               <Grid
                 containerWidth={props.containerWidth}
-                itemWidth={props.cardWidth}
                 categoryName={cat}
                 isOverriden={isOverriden}
                 subcategories={subcategories}

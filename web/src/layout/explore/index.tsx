@@ -3,26 +3,24 @@ import { isUndefined, throttle } from 'lodash';
 import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
-import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
-import {
-  ActiveFilters,
-  BaseData,
-  BaseItem,
-  Breakpoint,
-  FilterCategory,
-  Group,
-  Item,
-  SVGIconKind,
-  ViewMode,
-} from '../../types';
+import { GROUP_PARAM, VIEW_MODE_PARAM } from '../../data';
+import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, SVGIconKind, ViewMode } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
-import { FullDataContext, FullDataProps } from '../context/AppContext';
+import {
+  ActionsContext,
+  AppActionsContext,
+  FullDataContext,
+  FullDataProps,
+  ViewModeContext,
+  ViewModeProps,
+  ZoomLevelContext,
+  ZoomLevelProps,
+} from '../context/AppContext';
 import Content from './Content';
 import Filters from './filters';
 import ActiveFiltersList from './filters/ActiveFiltersList';
@@ -37,20 +35,16 @@ const TITLE_GAP = 40;
 const Landscape = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const point = useBreakpointDetect();
   const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
+  const { selectedViewMode } = useContext(ViewModeContext) as ViewModeProps;
+  const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
+  const { updateViewMode, updateZoomLevel } = useContext(AppActionsContext) as ActionsContext;
   const [searchParams] = useSearchParams();
   const container = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [landscapeData, setLandscapeData] = useState<Item[] | undefined>();
-  const [levelZoom, setLevelZoom] = useState<number>(
-    point ? DEFAULT_ZOOM_LEVELS[point] : DEFAULT_ZOOM_LEVELS[Breakpoint.XL]
-  );
   const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
     props.data.groups ? searchParams.get(GROUP_PARAM) || props.data.groups[0].name : undefined
-  );
-  const [selectedViewMode, setSelectedViewMode] = useState<ViewMode>(
-    (searchParams.get(VIEW_MODE_PARAM) as ViewMode) || DEFAULT_VIEW_MODE
   );
   const [visibleItems, setVisibleItems] = useState<(BaseItem | Item)[]>(props.data.items);
   const [visibleFiltersModal, setVisibleFiltersModal] = useState<boolean>(false);
@@ -90,13 +84,6 @@ const Landscape = (props: Props) => {
       setVisibleItems(landscapeData);
     }
   }, [landscapeData]);
-
-  // Update card-size variable depending on zoom level
-  useEffect(() => {
-    const bodyStyles = document.body.style;
-    bodyStyles.setProperty('--card-size-width', `${ZOOM_LEVELS[levelZoom][0]}px`);
-    bodyStyles.setProperty('--card-size-height', `${ZOOM_LEVELS[levelZoom][1]}px`);
-  }, [levelZoom]);
 
   const removeFilter = useCallback(
     (name: FilterCategory, value: string) => {
@@ -140,12 +127,6 @@ const Landscape = (props: Props) => {
     setNumVisibleItems(countVisibleItems(newData[selectedGroup || 'default']));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleItems, selectedGroup]);
-
-  useEffect(() => {
-    if (point) {
-      setLevelZoom(DEFAULT_ZOOM_LEVELS[point]);
-    }
-  }, [point]);
 
   useEffect(() => {
     const checkContainerWidth = throttle(() => {
@@ -226,7 +207,7 @@ const Landscape = (props: Props) => {
                     })}
                     onClick={() => {
                       if (!isActive) {
-                        setSelectedViewMode(value);
+                        updateViewMode(value);
                         updateQueryString(VIEW_MODE_PARAM, value);
                       }
                     }}
@@ -247,10 +228,9 @@ const Landscape = (props: Props) => {
                   <button
                     title="Increase zoom level"
                     className="btn btn-outline-primary rounded-0 fw-semibold"
-                    disabled={levelZoom === 0}
+                    disabled={zoomLevel === 0}
                     onClick={() => {
-                      const newZoomLevel = levelZoom - 1;
-                      setLevelZoom(newZoomLevel);
+                      updateZoomLevel(zoomLevel - 1);
                     }}
                   >
                     <div className={styles.btnSymbol}>-</div>
@@ -258,10 +238,9 @@ const Landscape = (props: Props) => {
                   <button
                     title="Decrease zoom level"
                     className="btn btn-outline-primary rounded-0 fw-semibold"
-                    disabled={levelZoom === 10}
+                    disabled={zoomLevel === 10}
                     onClick={() => {
-                      const newZoomLevel = levelZoom + 1;
-                      setLevelZoom(newZoomLevel);
+                      updateZoomLevel(zoomLevel + 1);
                     }}
                   >
                     <div className={styles.btnSymbol}>+</div>
@@ -298,7 +277,7 @@ const Landscape = (props: Props) => {
       )}
 
       <div className="d-flex w-100 pt-1">
-        <div ref={container} className={`d-flex flex-column flex-grow-1 w-100 zoom-${levelZoom}`}>
+        <div ref={container} className={`d-flex flex-column flex-grow-1 w-100 zoom-${zoomLevel}`}>
           {props.data.groups ? (
             <>
               {props.data.groups.map((group: Group) => {
@@ -309,8 +288,6 @@ const Landscape = (props: Props) => {
                       isSelected={isSelected}
                       containerWidth={containerWidth}
                       data={groupsData[group.name]}
-                      cardWidth={ZOOM_LEVELS[levelZoom][0]}
-                      selectedViewMode={selectedViewMode}
                       categories_overridden={props.data.categories_overridden}
                     />
                   </div>
@@ -322,8 +299,6 @@ const Landscape = (props: Props) => {
               isSelected
               containerWidth={containerWidth}
               data={groupsData.default}
-              cardWidth={ZOOM_LEVELS[levelZoom][0]}
-              selectedViewMode={selectedViewMode}
               categories_overridden={props.data.categories_overridden}
             />
           )}

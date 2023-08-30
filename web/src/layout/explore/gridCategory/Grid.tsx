@@ -3,6 +3,7 @@ import { isUndefined } from 'lodash';
 import { memo, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
 import arePropsEqual from '../../../utils/areEqualProps';
 import getGridCategoryLayout, {
@@ -15,14 +16,13 @@ import getGridCategoryLayout, {
 import { SubcategoryData } from '../../../utils/prepareData';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
-import { ActionsContext, AppActionsContext } from '../../context/AppContext';
+import { ActionsContext, AppActionsContext, ZoomLevelContext, ZoomLevelProps } from '../../context/AppContext';
 import styles from './Grid.module.css';
 import GridItem from './GridItem';
 
 interface Props {
   categoryData: { [key: string]: SubcategoryData };
   containerWidth: number;
-  itemWidth: number;
   categoryName: string;
   isOverriden: boolean;
   subcategories: SubcategoryDetails[];
@@ -31,8 +31,10 @@ interface Props {
 }
 
 const Grid = memo(function Grid(props: Props) {
+  const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
   const { updateActiveSection } = useContext(AppActionsContext) as ActionsContext;
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
+  const itemWidth = ZOOM_LEVELS[zoomLevel][0];
 
   useEffect(() => {
     if (props.containerWidth > 0) {
@@ -40,19 +42,19 @@ const Grid = memo(function Grid(props: Props) {
         transformGridLayout({
           grid: getGridCategoryLayout({
             containerWidth: props.containerWidth,
-            itemWidth: props.itemWidth,
+            itemWidth: itemWidth,
             categoryName: props.categoryName,
             isOverriden: props.isOverriden,
             subcategories: props.subcategories,
           }),
-          itemWidth: props.itemWidth,
+          itemWidth: itemWidth,
           containerWidth: props.containerWidth,
           subcategories: props.subcategories,
         })
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.containerWidth, props.itemWidth, props.subcategories]);
+  }, [props.containerWidth, itemWidth, props.subcategories]);
 
   if (isUndefined(grid)) return null;
 
