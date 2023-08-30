@@ -1,13 +1,14 @@
 import { orderBy } from 'lodash';
-import { useContext } from 'react';
+import { memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
 
 import { BaseItem, CardMenu, Item } from '../../../types';
+import arePropsEqual from '../../../utils/areEqualProps';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
-import { AppContext, Context } from '../../context/AppContext';
+import { ActionsContext, AppActionsContext } from '../../context/AppContext';
 import Card from './Card';
 import styles from './Content.module.css';
 
@@ -16,9 +17,9 @@ interface Props {
   data: CategoriesData;
   isVisible: boolean;
 }
-const Content = (props: Props) => {
+const Content = memo(function Content(props: Props) {
   const navigate = useNavigate();
-  const { updateActiveItemId } = useContext(AppContext) as Context;
+  const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
 
   const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
     return orderBy(
@@ -88,6 +89,6 @@ const Content = (props: Props) => {
       })}
     </>
   );
-};
+}, arePropsEqual);
 
 export default Content;

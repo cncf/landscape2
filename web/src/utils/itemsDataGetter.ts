@@ -1,25 +1,16 @@
 import { ActiveSection } from '../layout/context/AppContext';
 import { Item, LandscapeData } from '../types';
 
-export interface ItemsDataHandler {
-  updateLandscapeData(items: Item[]): void;
-}
-
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;
 }
 
 export class ItemsDataGetter {
-  private updateData?: ItemsDataHandler;
   private updateStatus?: ItemsDataStatus;
   public ready = false;
   public landscapeData?: LandscapeData;
 
-  public subscribe(updateData: ItemsDataHandler) {
-    this.updateData = updateData;
-  }
-
-  public isReady(updateStatus: ItemsDataStatus) {
+  public subscribe(updateStatus: ItemsDataStatus) {
     this.updateStatus = updateStatus;
   }
 
@@ -30,9 +21,6 @@ export class ItemsDataGetter {
         .then((data) => {
           this.landscapeData = data;
           this.ready = true;
-          if (this.updateData) {
-            this.updateData.updateLandscapeData(data.items);
-          }
           if (this.updateStatus) {
             this.updateStatus.updateStatus(true);
           }
@@ -40,7 +28,13 @@ export class ItemsDataGetter {
     }
   }
 
-  public async get(id: string): Promise<Item | undefined> {
+  public async getAll(): Promise<Item[] | undefined> {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      return this.landscapeData.items;
+    }
+  }
+
+  public async findById(id: string): Promise<Item | undefined> {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.find((i: Item) => id === i.id);
     }

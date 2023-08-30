@@ -4,7 +4,7 @@ import { ChangeEvent, KeyboardEvent, useContext, useEffect, useRef, useState } f
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { BaseItem, SVGIconKind } from '../../types';
-import { AppContext, Context } from '../context/AppContext';
+import { ActionsContext, AppActionsContext } from '../context/AppContext';
 import HoverableItem from './HoverableItem';
 import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
@@ -18,7 +18,7 @@ const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
-  const { updateActiveItemId } = useContext(AppContext) as Context;
+  const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
   const inputEl = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef(null);
   const [value, setValue] = useState<string>('');
