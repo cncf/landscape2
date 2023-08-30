@@ -20,17 +20,29 @@ use tracing::{debug, instrument};
 /// Landscape settings.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct LandscapeSettings {
+    pub foundation: String,
+    pub images: Images,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub colors: Option<Colors>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub featured_items: Option<Vec<FeaturedItemRule>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grid_items_size: Option<GridItemsSize>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub groups: Option<Vec<Group>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub members_category: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub social_networks: Option<SocialNetworks>,
 }
 
 impl LandscapeSettings {
@@ -76,12 +88,15 @@ impl LandscapeSettings {
     }
 }
 
-/// Landscape group. A group provides a mechanism to organize sets of
-/// categories in the web application.
+/// Colors used across the landscape UI.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Group {
-    pub name: String,
-    pub categories: Vec<CategoryName>,
+pub(crate) struct Colors {
+    pub color1: String,
+    pub color2: String,
+    pub color3: String,
+    pub color4: String,
+    pub color5: String,
+    pub color6: String,
 }
 
 /// Featured item rule information. A featured item is specially highlighted in
@@ -103,4 +118,71 @@ pub(crate) struct FeaturedItemRuleOption {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
+}
+
+/// Grid items size.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum GridItemsSize {
+    Small,
+    Medium,
+    Large,
+}
+
+/// Landscape group. A group provides a mechanism to organize sets of
+/// categories in the web application.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Group {
+    pub name: String,
+    pub categories: Vec<CategoryName>,
+}
+
+/// Images urls.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Images {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub favicon: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub footer_logo: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub header_logo: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub open_graph: Option<String>,
+}
+
+/// Social networks urls.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct SocialNetworks {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub facebook: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flickr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub github: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub instagram: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub linkedin: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slack: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub twitch: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub twitter: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wechat: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub youtube: Option<String>,
 }

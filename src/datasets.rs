@@ -21,9 +21,13 @@ pub(crate) struct Datasets {
 
 impl Datasets {
     /// Create a new datasets instance.
-    pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Result<Self> {
+    pub(crate) fn new(
+        landscape_data: &LandscapeData,
+        settings: &LandscapeSettings,
+        includes_guide: bool,
+    ) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(landscape_data, settings),
+            base: Base::new(landscape_data, settings, includes_guide),
             full: Full::new(landscape_data.clone()),
         };
 
@@ -38,24 +42,37 @@ impl Datasets {
 mod base {
     use crate::{
         data::{Category, CategoryName, ItemFeatured, LandscapeData, Maturity},
-        settings::{Group, LandscapeSettings},
+        settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
     use serde::{Deserialize, Serialize};
     use uuid::Uuid;
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Base {
+        pub foundation: String,
+        pub images: Images,
+        pub includes_guide: bool,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories_overridden: Vec<CategoryName>,
 
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub colors: Option<Colors>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub grid_items_size: Option<GridItemsSize>,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub groups: Vec<Group>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub social_networks: Option<SocialNetworks>,
     }
 
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -76,10 +93,20 @@ mod base {
 
     impl Base {
         /// Create a new Base instance from the data and settings provided.
-        pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
+        pub(crate) fn new(
+            landscape_data: &LandscapeData,
+            settings: &LandscapeSettings,
+            includes_guide: bool,
+        ) -> Self {
             let mut base = Base {
-                groups: settings.groups.clone().unwrap_or(vec![]),
+                foundation: settings.foundation.clone(),
+                images: settings.images.clone(),
+                includes_guide,
                 categories: landscape_data.categories.clone(),
+                colors: settings.colors.clone(),
+                grid_items_size: settings.grid_items_size.clone(),
+                groups: settings.groups.clone().unwrap_or(vec![]),
+                social_networks: settings.social_networks.clone(),
                 ..Default::default()
             };
 

@@ -11,12 +11,13 @@ use crate::{
     guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::LandscapeSettings,
+    settings::{Images, LandscapeSettings},
     BuildArgs, GuideSource, LogosSource,
 };
-use anyhow::{format_err, Result};
+use anyhow::{format_err, Context, Result};
 use askama::Template;
 use futures::stream::{self, StreamExt};
+use reqwest::StatusCode;
 use rust_embed::RustEmbed;
 use std::{
     collections::HashMap,
@@ -27,6 +28,7 @@ use std::{
     time::Instant,
 };
 use tracing::{debug, error, info, instrument};
+use url::Url;
 use uuid::Uuid;
 
 /// Path where the datasets will be written to in the output directory.
@@ -35,7 +37,10 @@ const DATASETS_PATH: &str = "data";
 /// Path where some documents will be written to in the output directory.
 const DOCS_PATH: &str = "docs";
 
-/// Path where the logos will be written to in the output directory.
+/// Path where some images will be written to in the output directory.
+const IMAGES_PATH: &str = "images";
+
+/// Path where the item logos will be written to in the output directory.
 const LOGOS_PATH: &str = "logos";
 
 /// Maximum number of logos to prepare concurrently.
@@ -66,17 +71,20 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let mut landscape_data = LandscapeData::new(&args.data_source).await?;
 
     // Get landscape settings from the source provided
-    let settings = LandscapeSettings::new(&args.settings_source).await?;
+    let mut settings = LandscapeSettings::new(&args.settings_source).await?;
 
     // Add some extra information to the landscape based on the settings
     landscape_data.add_featured_items_data(&settings)?;
     landscape_data.add_member_subcategory(&settings.members_category);
 
+    // Get settings images and update their urls to the local copy
+    settings.images = get_settings_images(&settings, &args.output_dir).await?;
+
     // Prepare guide and copy it to the output directory
     let includes_guide = prepare_guide(&args.guide_source, &args.output_dir).await?.is_some();
 
-    // Prepare logos and copy them to the output directory
-    prepare_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
+    // Prepare items logos and copy them to the output directory
+    prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
     let (crunchbase_data, github_data) = tokio::try_join!(
@@ -89,10 +97,10 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_github_data(github_data)?;
 
     // Generate datasets for web application
-    let datasets = generate_datasets(&landscape_data, &settings, &args.output_dir)?;
+    let datasets = generate_datasets(&landscape_data, &settings, includes_guide, &args.output_dir)?;
 
     // Render index file and write it to the output directory
-    render_index(&datasets, includes_guide, &args.output_dir)?;
+    render_index(&datasets, &args.output_dir)?;
 
     // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
@@ -152,11 +160,12 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
 fn generate_datasets(
     landscape_data: &LandscapeData,
     settings: &LandscapeSettings,
+    includes_guide: bool,
     output_dir: &Path,
 ) -> Result<Datasets> {
     debug!("generating datasets");
 
-    let datasets = Datasets::new(landscape_data, settings)?;
+    let datasets = Datasets::new(landscape_data, settings, includes_guide)?;
     let datasets_path = output_dir.join(DATASETS_PATH);
 
     // Base
@@ -190,6 +199,54 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
     Ok(())
 }
 
+/// Get settings images and copy them to the output directory.
+#[instrument(skip_all, err)]
+async fn get_settings_images(settings: &LandscapeSettings, output_dir: &Path) -> Result<Images> {
+    // Helper function to process the image provided
+    async fn process_image(url: &Option<String>, output_dir: &Path) -> Result<Option<String>> {
+        let Some(url) = url else {
+            return Ok(None);
+        };
+
+        // Fetch image from url
+        let resp = reqwest::get(url).await?;
+        if resp.status() != StatusCode::OK {
+            return Err(format_err!(
+                "unexpected status ({}) code getting logo {url}",
+                resp.status()
+            ));
+        }
+        let img = resp.bytes().await?.to_vec();
+
+        // Write image to output dir
+        let url = Url::parse(url).context("invalid image url")?;
+        let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
+            return Err(format_err!("invalid image url: {url}"));
+        };
+        let img_path = Path::new(IMAGES_PATH).join(file_name);
+        let mut file = fs::File::create(output_dir.join(&img_path))?;
+        file.write_all(&img)?;
+
+        Ok(Some(img_path.to_string_lossy().into_owned()))
+    }
+
+    debug!("getting settings images");
+
+    let (favicon, footer_logo, header_logo) = tokio::try_join!(
+        process_image(&settings.images.favicon, output_dir),
+        process_image(&settings.images.footer_logo, output_dir),
+        process_image(&settings.images.header_logo, output_dir),
+    )?;
+    let images = Images {
+        favicon,
+        footer_logo,
+        header_logo,
+        open_graph: settings.images.open_graph.clone(),
+    };
+
+    Ok(images)
+}
+
 /// Prepare guide and copy it to the output directory.
 #[instrument(skip_all, err)]
 async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<()>> {
@@ -204,10 +261,10 @@ async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<
     Ok(Some(()))
 }
 
-/// Prepare logos and copy them to the output directory, updating the logo
-/// reference on each landscape item.
+/// Prepare items logos and copy them to the output directory, updating the
+/// logo reference on each landscape item.
 #[instrument(skip_all, err)]
-async fn prepare_logos(
+async fn prepare_items_logos(
     cache: &Cache,
     logos_source: &LogosSource,
     landscape_data: &mut LandscapeData,
@@ -278,19 +335,14 @@ async fn prepare_logos(
 #[template(path = "index.html", escape = "none")]
 struct Index<'a> {
     pub datasets: &'a Datasets,
-    pub includes_guide: bool,
 }
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(datasets: &Datasets, includes_guide: bool, output_dir: &Path) -> Result<()> {
+fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
 
-    let index = Index {
-        datasets,
-        includes_guide,
-    }
-    .render()?;
+    let index = Index { datasets }.render()?;
     let mut file = File::create(output_dir.join("index.html"))?;
     file.write_all(index.as_bytes())?;
 
@@ -316,6 +368,11 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
     let docs_path = output_dir.join(DOCS_PATH);
     if !docs_path.exists() {
         fs::create_dir(docs_path)?;
+    }
+
+    let images_path = output_dir.join(IMAGES_PATH);
+    if !images_path.exists() {
+        fs::create_dir(images_path)?;
     }
 
     let logos_path = output_dir.join(LOGOS_PATH);
