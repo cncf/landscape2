@@ -10,7 +10,7 @@ import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
 import { Loading } from '../../common/Loading';
-import { AppContext, Context } from '../../context/AppContext';
+import { FullDataContext, FullDataProps } from '../../context/AppContext';
 import ButtonToTopScroll from './ButtonToTopScroll';
 import Content from './Content';
 import Menu from './Menu';
@@ -24,7 +24,7 @@ interface Props {
 const TITLE_OFFSET = 16;
 
 const CardCategory = memo(function CardCategory(props: Props) {
-  const { fullDataReady } = useContext(AppContext) as Context;
+  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
   const navigate = useNavigate();
   const [menu, setMenu] = useState<CardMenu | undefined>();
   const [initialFullRender, setInitialFullRender] = useState<boolean>(false);

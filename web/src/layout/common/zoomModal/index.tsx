@@ -6,7 +6,14 @@ import { BaseItem, Item } from '../../../types';
 import { calculateItemsPerRow, calculateWidthInPx } from '../../../utils/gridCategoryLayout';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
-import { AppContext, Context } from '../../context/AppContext';
+import {
+  ActionsContext,
+  AppActionsContext,
+  FullDataContext,
+  FullDataProps,
+  ZoomContext,
+  ZoomProps,
+} from '../../context/AppContext';
 import GridItem from '../../explore/gridCategory/GridItem';
 import FullScreenModal from '../FullScreenModal';
 import { Loading } from '../Loading';
@@ -16,7 +23,9 @@ const GAP = 96 + 40; // Padding | Title
 const CARD_WIDTH = 75;
 
 const ZoomModal = () => {
-  const { activeSection, updateActiveSection, fullDataReady } = useContext(AppContext) as Context;
+  const { visibleZoomView } = useContext(ZoomContext) as ZoomProps;
+  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
+  const { updateActiveSection } = useContext(AppActionsContext) as ActionsContext;
   const modal = useRef<HTMLDivElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<Item[] | undefined | null>();
@@ -38,24 +47,24 @@ const ZoomModal = () => {
     async function fetchItems() {
       try {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        setItems(await itemsDataGetter.filterItemsBySection(activeSection!));
+        setItems(await itemsDataGetter.filterItemsBySection(visibleZoomView!));
       } catch {
         setItems(null);
       }
     }
 
-    if (activeSection && fullDataReady) {
+    if (visibleZoomView && fullDataReady) {
       fetchItems();
     } else {
       setItems(undefined);
     }
-  }, [activeSection, fullDataReady]);
+  }, [visibleZoomView, fullDataReady]);
 
   useEffect(() => {
-    if (container && container.current && activeSection) {
+    if (container && container.current && visibleZoomView) {
       setContainerWidth(checkNumColumns(container.current.offsetWidth - GAP));
     }
-  }, [container, activeSection]);
+  }, [container, visibleZoomView]);
 
   useEffect(() => {
     const checkContainerWidth = throttle(() => {
@@ -72,7 +81,7 @@ const ZoomModal = () => {
     return () => window.removeEventListener('resize', checkContainerWidth);
   }, []);
 
-  if (isUndefined(activeSection)) return null;
+  if (isUndefined(visibleZoomView)) return null;
 
   return (
     <FullScreenModal open refs={[modal]} onClose={() => updateActiveSection()}>
@@ -86,10 +95,10 @@ const ZoomModal = () => {
             >
               <div
                 className={`text-white border border-3 border-white fw-semibold p-2 py-5 ${styles.catTitle}`}
-                style={{ backgroundColor: activeSection.bgColor }}
+                style={{ backgroundColor: visibleZoomView.bgColor }}
               >
                 <div className="d-flex flex-row align-items-start justify-content-end">
-                  <div>{activeSection.category}</div>
+                  <div>{visibleZoomView.category}</div>
                 </div>
               </div>
 
@@ -99,9 +108,9 @@ const ZoomModal = () => {
                 >
                   <div
                     className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
-                    style={{ backgroundColor: activeSection.bgColor }}
+                    style={{ backgroundColor: visibleZoomView.bgColor }}
                   >
-                    <div className="text-truncate">{activeSection.subcategory}</div>
+                    <div className="text-truncate">{visibleZoomView.subcategory}</div>
                   </div>
                 </div>
                 <div className={`h-100 overflow-auto ${styles.content}`}>

@@ -15,7 +15,7 @@ import getGridCategoryLayout, {
 import { SubcategoryData } from '../../../utils/prepareData';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
-import { AppContext, Context } from '../../context/AppContext';
+import { ActionsContext, AppActionsContext } from '../../context/AppContext';
 import styles from './Grid.module.css';
 import GridItem from './GridItem';
 
@@ -31,7 +31,7 @@ interface Props {
 }
 
 const Grid = memo(function Grid(props: Props) {
-  const { updateActiveSection } = useContext(AppContext) as Context;
+  const { updateActiveSection } = useContext(AppActionsContext) as ActionsContext;
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
 
   useEffect(() => {
@@ -117,8 +117,8 @@ const Grid = memo(function Grid(props: Props) {
                       {sortedItems.map((item: BaseItem | Item) => {
                         return (
                           <GridItem
-                            item={item}
                             key={`item_${item.name}`}
+                            item={item}
                             borderColor={props.backgroundColor}
                             showMoreInfo
                           />

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { isUndefined, throttle } from 'lodash';
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
@@ -22,6 +22,7 @@ import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
+import { FullDataContext, FullDataProps } from '../context/AppContext';
 import Content from './Content';
 import Filters from './filters';
 import ActiveFiltersList from './filters/ActiveFiltersList';
@@ -37,6 +38,7 @@ const Landscape = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const point = useBreakpointDetect();
+  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
   const [searchParams] = useSearchParams();
   const container = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
@@ -56,12 +58,6 @@ const Landscape = (props: Props) => {
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
   const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
 
-  itemsDataGetter.subscribe({
-    updateLandscapeData: (items: Item[]) => {
-      setLandscapeData(items);
-    },
-  });
-
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
     updatedSearchParams.delete(param);
@@ -74,6 +70,20 @@ const Landscape = (props: Props) => {
       }
     );
   };
+
+  useEffect(() => {
+    async function fetchItems() {
+      try {
+        setLandscapeData(await itemsDataGetter.getAll());
+      } catch {
+        setLandscapeData(undefined);
+      }
+    }
+
+    if (fullDataReady) {
+      fetchItems();
+    }
+  }, [fullDataReady]);
 
   useEffect(() => {
     if (landscapeData) {

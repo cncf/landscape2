@@ -1,11 +1,12 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { memo, useContext, useEffect, useRef, useState } from 'react';
 
 import { BaseItem, Item } from '../../../types';
+import arePropsEqual from '../../../utils/areEqualProps';
 import Image from '../../common/Image';
 import { Loading } from '../../common/Loading';
-import { AppContext, Context } from '../../context/AppContext';
+import { ActionsContext, AppActionsContext, FullDataContext, FullDataProps } from '../../context/AppContext';
 import Card from '../cardCategory/Card';
 import styles from './GridItem.module.css';
 
@@ -18,26 +19,16 @@ interface Props {
 const DEFAULT_DROPDOWN_WIDTH = 450;
 const DEFAULT_MARGIN = 30;
 
-const GridItem = (props: Props) => {
+const GridItem = memo(function GridItem(props: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const wrapper = useRef<HTMLDivElement>(null);
-  const { updateActiveItemId } = useContext(AppContext) as Context;
+  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
+  const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
   const [visibleDropdown, setVisibleDropdown] = useState(false);
   const [onLinkHover, setOnLinkHover] = useState(false);
   const [onDropdownHover, setOnDropdownHover] = useState(false);
   const [tooltipAlignment, setTooltipAlignment] = useState<'right' | 'left' | 'center'>('center');
   const [elWidth, setElWidth] = useState<number>(0);
-  const [fullVersion, setFullVersion] = useState<boolean>(isUndefined(props.item.has_repositories));
-  const [hasRepositories, setHasRepositories] = useState<boolean>(
-    props.item.has_repositories || 'repositories' in props.item
-  );
-
-  useEffect(() => {
-    if (isUndefined(props.item.has_repositories)) {
-      setFullVersion(true);
-      setHasRepositories('repositories' in props.item);
-    }
-  }, [props.item]);
 
   useEffect(() => {
     const calculateTooltipPosition = () => {
@@ -90,7 +81,7 @@ const GridItem = (props: Props) => {
         { [`border-2 ${styles.bigCard}`]: props.item.featured },
         { [styles.withLabel]: props.item.featured && props.item.featured.label },
         {
-          [styles.withRepo]: hasRepositories,
+          [styles.withRepo]: 'repositories' in props.item || props.item.has_repositories,
         }
       )}
     >
@@ -114,7 +105,7 @@ const GridItem = (props: Props) => {
             }}
           >
             <div className={`d-block position-absolute ${styles.arrow}`} />
-            {!fullVersion ? <Loading /> : <Card item={props.item} />}
+            {!fullDataReady ? <Loading /> : <Card item={props.item} />}
           </div>
         )}
       </div>
@@ -156,6 +147,6 @@ const GridItem = (props: Props) => {
       </div>
     </div>
   );
-};
+}, arePropsEqual);
 
 export default GridItem;
