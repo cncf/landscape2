@@ -1429,6 +1429,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "askama",
+ "askama_escape",
  "async-trait",
  "aws-config",
  "aws-sdk-s3",
