@@ -13,7 +13,7 @@ askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.73"
 aws-config = "0.56.1"
 aws-sdk-s3 = "0.30.0"
-chrono = { version = "0.4.26", features = ["serde"] }
+chrono = { version = "0.4.28", features = ["serde"] }
 clap = { version = "4.3.24", features = ["derive"] }
 csv = "1.2.2"
 deadpool = "0.9.5"
