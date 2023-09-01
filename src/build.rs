@@ -382,3 +382,18 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
 
     Ok(())
 }
+
+mod filters {
+    use askama_escape::JsonEscapeBuffer;
+    use serde::Serialize;
+
+    /// Serialize to JSON.
+    ///
+    /// Based on the `json` built-in filter except the output is not pretty
+    /// printed.
+    pub fn json_compact<S: Serialize>(s: S) -> askama::Result<String> {
+        let mut writer = JsonEscapeBuffer::new();
+        serde_json::to_writer(&mut writer, &s)?;
+        Ok(writer.finish())
+    }
+}

@@ -4,17 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Landscape</title>
-    <% if (isDev){ %>
-      <script>
-        fetch("./static/base.json")
-        .then(res => res.json())
-        .then(data => window.baseDS = data);
-      </script>
+    <% if (isDev) { %>
+    <script>
+      fetch("./static/base.json")
+      .then(res => res.json())
+      .then(data => window.baseDS = data);
+    </script>
     <% } else { %>
-      <script>
-        window.baseDS = {{ datasets.base|json|safe }};
-        window.includesGuide = {{ datasets.base.includes_guide }};
-      </script>
+    <script>
+        window.baseDS = {{ datasets.base|json_compact|safe }};
+    </script>
     <% } %>
   </head>
   <body>
