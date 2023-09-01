@@ -43,7 +43,7 @@ tokio = { version = "1.32.0", features = [
 ] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-url = "2.4.0"
+url = "2.4.1"
 usvg = "0.35.0"
 uuid = { version = "1.4.1", features = ["serde", "v5"] }
 walkdir = "2.3.3"
