@@ -30,7 +30,7 @@ export const Loading: React.FC<ILoadingProps> = (props: ILoadingProps) => {
       {isUndefined(props.noWrapper) || !props.noWrapper ? (
         <div
           className={classnames(
-            'position-absolute top-0 bottom-0 start-0 end-0',
+            'top-0 bottom-0 start-0 end-0',
             { 'p-5': isUndefined(props.smallSize) || !props.smallSize },
             `position-${props.position || 'absolute'}`,
             styles.wrapper,

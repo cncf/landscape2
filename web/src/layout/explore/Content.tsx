@@ -8,10 +8,9 @@ import CardCategory from './cardCategory';
 import GridCategory from './gridCategory';
 
 interface Props {
-  isSelected: boolean;
-  containerWidth: number;
   data: CategoriesData;
   categories_overridden?: string[];
+  hideLoading: () => void;
 }
 
 // Memoized version of content to avoid unnecessary
@@ -20,20 +19,28 @@ const Content = memo(function Content(props: Props) {
 
   return (
     <>
-      <div className={selectedViewMode === ViewMode.Grid ? 'd-block' : 'd-none'}>
-        <GridCategory
-          containerWidth={props.containerWidth}
-          data={props.data}
-          categories_overridden={props.categories_overridden}
-        />
-      </div>
-      <div className={selectedViewMode === ViewMode.Card ? 'd-block' : 'd-none'}>
-        <CardCategory
-          isVisible={props.isSelected && selectedViewMode === ViewMode.Card}
-          data={props.data}
-          categories_overridden={props.categories_overridden}
-        />
-      </div>
+      {(() => {
+        switch (selectedViewMode) {
+          case ViewMode.Grid:
+            return (
+              <GridCategory
+                data={props.data}
+                categories_overridden={props.categories_overridden}
+                hideLoading={props.hideLoading}
+              />
+            );
+          case ViewMode.Card:
+            return (
+              <CardCategory
+                data={props.data}
+                categories_overridden={props.categories_overridden}
+                hideLoading={props.hideLoading}
+              />
+            );
+          default:
+            return null;
+        }
+      })()}
     </>
   );
 }, arePropsEqual);

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { isUndefined, throttle } from 'lodash';
-import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { isUndefined } from 'lodash';
+import { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { GROUP_PARAM, VIEW_MODE_PARAM } from '../../data';
@@ -9,6 +9,7 @@ import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
+import { Loading } from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import {
@@ -30,8 +31,6 @@ interface Props {
   data: BaseData;
 }
 
-const TITLE_GAP = 40;
-
 const Landscape = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,8 +39,6 @@ const Landscape = (props: Props) => {
   const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
   const { updateViewMode, updateZoomLevel } = useContext(AppActionsContext) as ActionsContext;
   const [searchParams] = useSearchParams();
-  const container = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
   const [landscapeData, setLandscapeData] = useState<Item[] | undefined>();
   const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
     props.data.groups ? searchParams.get(GROUP_PARAM) || props.data.groups[0].name : undefined
@@ -51,6 +48,28 @@ const Landscape = (props: Props) => {
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
   const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
+  const [visibleLoading, setVisibleLoading] = useState<boolean>(false);
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const hideLoading = useCallback(() => {
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      setLoadingTimeout(null);
+    }
+    setVisibleLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showLoading = () => {
+    console.log('show');
+    setVisibleLoading(true);
+    setLoadingTimeout(
+      setTimeout(() => {
+        console.log('hide');
+        setVisibleLoading(false);
+      }, 500)
+    );
+  };
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
@@ -117,6 +136,7 @@ const Landscape = (props: Props) => {
   }, []);
 
   useEffect(() => {
+    showLoading();
     setVisibleItems(filterData(landscapeData || props.data.items, activeFilters));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
@@ -127,21 +147,6 @@ const Landscape = (props: Props) => {
     setNumVisibleItems(countVisibleItems(newData[selectedGroup || 'default']));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleItems, selectedGroup]);
-
-  useEffect(() => {
-    const checkContainerWidth = throttle(() => {
-      if (container && container.current) {
-        setContainerWidth(container.current.offsetWidth - TITLE_GAP);
-      }
-    }, 400);
-    window.addEventListener('resize', checkContainerWidth);
-
-    if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
-    }
-
-    return () => window.removeEventListener('resize', checkContainerWidth);
-  }, []);
 
   if (isUndefined(groupsData)) return null;
 
@@ -177,6 +182,7 @@ const Landscape = (props: Props) => {
                           !isUndefined(selectedGroup) && group.name === selectedGroup,
                       })}
                       onClick={() => {
+                        showLoading();
                         setSelectedGroup(group.name);
                         updateQueryString(GROUP_PARAM, group.name);
                       }}
@@ -207,6 +213,7 @@ const Landscape = (props: Props) => {
                     })}
                     onClick={() => {
                       if (!isActive) {
+                        showLoading();
                         updateViewMode(value);
                         updateQueryString(VIEW_MODE_PARAM, value);
                       }
@@ -276,32 +283,14 @@ const Landscape = (props: Props) => {
         </div>
       )}
 
-      <div className="d-flex w-100 pt-1">
-        <div ref={container} className={`d-flex flex-column flex-grow-1 w-100 zoom-${zoomLevel}`}>
-          {props.data.groups ? (
-            <>
-              {props.data.groups.map((group: Group) => {
-                const isSelected = selectedGroup === group.name;
-                return (
-                  <div key={group.name} className={classNames({ 'd-none': !isSelected }, { 'd-block': isSelected })}>
-                    <Content
-                      isSelected={isSelected}
-                      containerWidth={containerWidth}
-                      data={groupsData[group.name]}
-                      categories_overridden={props.data.categories_overridden}
-                    />
-                  </div>
-                );
-              })}
-            </>
-          ) : (
-            <Content
-              isSelected
-              containerWidth={containerWidth}
-              data={groupsData.default}
-              categories_overridden={props.data.categories_overridden}
-            />
-          )}
+      <div className={classNames('position-relative d-flex w-100 pt-1', { [styles.contentLoading]: visibleLoading })}>
+        <div className={`d-flex flex-column flex-grow-1 w-100 zoom-${zoomLevel}`}>
+          {visibleLoading && <Loading position="fixed" className={styles.loading} />}
+          <Content
+            data={groupsData[selectedGroup || 'default']}
+            categories_overridden={props.data.categories_overridden}
+            hideLoading={hideLoading}
+          />
         </div>
       </div>
 

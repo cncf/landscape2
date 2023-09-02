@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
-import { memo } from 'react';
+import { isUndefined, throttle } from 'lodash';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { SVGIconKind } from '../../../types';
@@ -13,16 +13,40 @@ import Grid from './Grid';
 import styles from './GridCategory.module.css';
 
 interface Props {
-  containerWidth: number;
   data: CategoriesData;
   categories_overridden?: string[];
+  hideLoading: () => void;
 }
 
+const TITLE_GAP = 40;
+
 const GridCategory = memo(function GridCategory(props: Props) {
+  const container = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
   const colorsList = generateColorsArray(Object.keys(props.data).length);
 
+  useEffect(() => {
+    const checkContainerWidth = throttle(() => {
+      if (container && container.current) {
+        setContainerWidth(container.current.offsetWidth - TITLE_GAP);
+      }
+    }, 400);
+    window.addEventListener('resize', checkContainerWidth);
+
+    if (container && container.current) {
+      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
+    }
+
+    return () => window.removeEventListener('resize', checkContainerWidth);
+  }, []);
+
+  useEffect(() => {
+    props.hideLoading();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.data]);
+
   return (
-    <>
+    <div ref={container}>
       {Object.keys(props.data).map((cat: string, index: number) => {
         const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
         const subcategories: SubcategoryDetails[] = [];
@@ -64,7 +88,7 @@ const GridCategory = memo(function GridCategory(props: Props) {
 
             <div className="d-flex flex-column align-items-stretch w-100">
               <Grid
-                containerWidth={props.containerWidth}
+                containerWidth={containerWidth}
                 categoryName={cat}
                 isOverriden={isOverriden}
                 subcategories={subcategories}
@@ -76,7 +100,7 @@ const GridCategory = memo(function GridCategory(props: Props) {
           </div>
         );
       })}
-    </>
+    </div>
   );
 }, arePropsEqual);
 

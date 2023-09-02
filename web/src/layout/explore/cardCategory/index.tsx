@@ -16,9 +16,9 @@ import Content from './Content';
 import Menu from './Menu';
 
 interface Props {
-  isVisible: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
+  hideLoading: () => void;
 }
 
 const TITLE_OFFSET = 16;
@@ -102,7 +102,7 @@ const CardCategory = memo(function CardCategory(props: Props) {
       }
     };
 
-    if (props.isVisible && menu && fullDataReady) {
+    if (menu && fullDataReady) {
       const firstItem = getFirstItem();
       if (firstItem) {
         if (initialFullRender) {
@@ -128,15 +128,20 @@ const CardCategory = memo(function CardCategory(props: Props) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [menu, props.isVisible, fullDataReady]);
+  }, [menu, fullDataReady]);
+
+  useEffect(() => {
+    props.hideLoading();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.data]);
 
   if (isUndefined(menu)) return null;
 
   return (
     <div className="d-flex flex-row mt-2">
-      <Menu menu={menu} isVisible={props.isVisible} />
+      <Menu menu={menu} />
       <div className="d-flex flex-column flex-grow-1">
-        {fullDataReady ? <Content menu={menu} data={props.data} isVisible={props.isVisible} /> : <Loading />}
+        {fullDataReady ? <Content menu={menu} data={props.data} /> : <Loading />}
         <ButtonToTopScroll firstSection={getFirstItem()} />
       </div>
     </div>

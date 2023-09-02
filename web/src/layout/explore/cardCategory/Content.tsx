@@ -1,4 +1,4 @@
-import { orderBy } from 'lodash';
+import { isUndefined, orderBy } from 'lodash';
 import { memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
@@ -15,18 +15,13 @@ import styles from './Content.module.css';
 interface Props {
   menu: CardMenu;
   data: CategoriesData;
-  isVisible: boolean;
 }
 const Content = memo(function Content(props: Props) {
   const navigate = useNavigate();
   const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
 
-  const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
-    return orderBy(
-      props.data[firstCategory][firstSubcategory].items,
-      [(item: BaseItem) => item.name.toString()],
-      'asc'
-    );
+  const sortItems = (cat: string, subcat: string): BaseItem[] => {
+    return orderBy(props.data[cat][subcat].items, [(item: BaseItem) => item.name.toString()], 'asc');
   };
 
   const handleEnter = (id: string) => {
@@ -50,10 +45,15 @@ const Content = memo(function Content(props: Props) {
   return (
     <>
       {Object.keys(props.menu).map((cat: string) => {
+        if (isUndefined(props.data[cat])) return null;
+
         return (
           <div key={`list_cat_${cat}`}>
             {props.menu[cat].map((subcat: string) => {
               const id = convertStringSpaces(`${cat}/${subcat}`);
+
+              if (isUndefined(props.data[cat][subcat])) return null;
+
               return (
                 <Waypoint
                   key={`list_subcat_${subcat}`}

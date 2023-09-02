@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { isUndefined } from 'lodash';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router';
 
 import { COLORS } from '../../../data';
@@ -12,24 +12,12 @@ import styles from './Menu.module.css';
 
 interface Props {
   menu?: CardMenu;
-  isVisible: boolean;
 }
 
 const Menu = (props: Props) => {
   const bgColor = COLORS[0];
   const navigate = useNavigate();
   const menu = useRef<HTMLDivElement>(null);
-  const [offsetActive, setOffsetActive] = useState<boolean>(false);
-
-  useLayoutEffect(() => {
-    if (props.isVisible && menu && menu.current) {
-      if (menu.current.clientHeight > window.innerHeight) {
-        setOffsetActive(true);
-      } else {
-        setOffsetActive(false);
-      }
-    }
-  }, [props.isVisible]);
 
   const updateRoute = (hash: string) => {
     navigate(
@@ -45,7 +33,7 @@ const Menu = (props: Props) => {
   return (
     <div>
       <div className={`d-flex flex-column me-4 sticky-top ${styles.toc}`}>
-        <div id="menu" className={classNames({ [`offcanvas-body ${styles.content}`]: offsetActive })}>
+        <div id="menu" className={`offcanvas-body ${styles.content}`}>
           <div ref={menu}>
             {Object.keys(props.menu).map((cat: string, index: number) => {
               const categories = !isUndefined(props.menu) ? props.menu[cat] : [];
