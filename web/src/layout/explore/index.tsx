@@ -49,27 +49,11 @@ const Landscape = (props: Props) => {
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
   const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
   const [visibleLoading, setVisibleLoading] = useState<boolean>(false);
-  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const hideLoading = useCallback(() => {
-    if (loadingTimeout) {
-      clearTimeout(loadingTimeout);
-      setLoadingTimeout(null);
-    }
     setVisibleLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const showLoading = () => {
-    console.log('show');
-    setVisibleLoading(true);
-    setLoadingTimeout(
-      setTimeout(() => {
-        console.log('hide');
-        setVisibleLoading(false);
-      }, 500)
-    );
-  };
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
@@ -136,7 +120,7 @@ const Landscape = (props: Props) => {
   }, []);
 
   useEffect(() => {
-    showLoading();
+    setVisibleLoading(true);
     setVisibleItems(filterData(landscapeData || props.data.items, activeFilters));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
@@ -182,7 +166,7 @@ const Landscape = (props: Props) => {
                           !isUndefined(selectedGroup) && group.name === selectedGroup,
                       })}
                       onClick={() => {
-                        showLoading();
+                        setVisibleLoading(true);
                         setSelectedGroup(group.name);
                         updateQueryString(GROUP_PARAM, group.name);
                       }}
@@ -213,7 +197,7 @@ const Landscape = (props: Props) => {
                     })}
                     onClick={() => {
                       if (!isActive) {
-                        showLoading();
+                        setVisibleLoading(true);
                         updateViewMode(value);
                         updateQueryString(VIEW_MODE_PARAM, value);
                       }
