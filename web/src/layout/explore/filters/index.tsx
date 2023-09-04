@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { memo, MouseEvent, useCallback, useEffect, useState } from 'react';
 
 import { FILTERS } from '../../../data';

@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 

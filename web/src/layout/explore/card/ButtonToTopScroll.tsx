@@ -1,5 +1,6 @@
 import classNames from 'classnames';
-import { isNull, throttle } from 'lodash';
+import isNull from 'lodash/isNull';
+import throttle from 'lodash/throttle';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 

@@ -1,0 +1,3 @@
+.loading {
+  min-height: calc(100vh - 92px - 36px);
+}

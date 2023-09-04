@@ -1,5 +1,6 @@
 import classNames from 'classnames';
-import { isNull, isUndefined } from 'lodash';
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
 import { ChangeEvent, KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';

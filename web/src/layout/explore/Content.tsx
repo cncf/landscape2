@@ -4,14 +4,15 @@ import { ViewMode } from '../../types';
 import arePropsEqual from '../../utils/areEqualProps';
 import { CategoriesData } from '../../utils/prepareData';
 import { ViewModeContext, ViewModeProps } from '../context/AppContext';
-import CardCategory from './cardCategory';
-import GridCategory from './gridCategory';
+import CardCategory from './card';
+import GridCategory from './grid';
 
 interface Props {
   isSelected: boolean;
   containerWidth: number;
   data: CategoriesData;
   categories_overridden?: string[];
+  finishLoading: () => void;
 }
 
 // Memoized version of content to avoid unnecessary
@@ -20,18 +21,21 @@ const Content = memo(function Content(props: Props) {
 
   return (
     <>
-      <div className={selectedViewMode === ViewMode.Grid ? 'd-block' : 'd-none'}>
+      <div style={selectedViewMode === ViewMode.Grid ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}>
         <GridCategory
+          isVisible={props.isSelected && selectedViewMode === ViewMode.Grid}
           containerWidth={props.containerWidth}
           data={props.data}
           categories_overridden={props.categories_overridden}
+          finishLoading={props.finishLoading}
         />
       </div>
-      <div className={selectedViewMode === ViewMode.Card ? 'd-block' : 'd-none'}>
+      <div style={selectedViewMode === ViewMode.Card ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}>
         <CardCategory
           isVisible={props.isSelected && selectedViewMode === ViewMode.Card}
           data={props.data}
           categories_overridden={props.categories_overridden}
+          finishLoading={props.finishLoading}
         />
       </div>
     </>

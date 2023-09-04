@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { CSSProperties } from 'react';
 
 // Input used to calculate the grid category layout.

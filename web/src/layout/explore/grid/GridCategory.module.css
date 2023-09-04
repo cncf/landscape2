@@ -46,3 +46,7 @@
   gap: var(--card-gap);
   /* justify-content: center; */
 }
+
+.loading {
+  min-height: calc(100vh - 92px - 36px);
+}

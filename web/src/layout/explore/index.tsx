@@ -1,14 +1,17 @@
 import classNames from 'classnames';
-import { isUndefined, throttle } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
+import throttle from 'lodash/throttle';
 import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { GROUP_PARAM, VIEW_MODE_PARAM } from '../../data';
+import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, SVGIconKind, ViewMode } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
+import { Loading } from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import {
@@ -22,13 +25,17 @@ import {
   ZoomLevelProps,
 } from '../context/AppContext';
 import Content from './Content';
+import styles from './Explore.module.css';
 import Filters from './filters';
 import ActiveFiltersList from './filters/ActiveFiltersList';
-import styles from './Landscape.module.css';
 
 interface Props {
   data: BaseData;
 }
+
+export type LoadedContent = {
+  [key in ViewMode]: string[];
+};
 
 const TITLE_GAP = 40;
 
@@ -51,6 +58,42 @@ const Landscape = (props: Props) => {
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
   const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
   const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
+  const [visibleLoading, setVisibleLoading] = useState<boolean>(true);
+
+  const getLoadedData = (): LoadedContent => {
+    const data: LoadedContent = { [ViewMode.Card]: [], [ViewMode.Grid]: [] };
+
+    if (selectedViewMode) {
+      data[selectedViewMode] = [selectedGroup || 'default'];
+    }
+
+    return data;
+  };
+
+  const [loaded, setLoaded] = useState<LoadedContent>(getLoadedData());
+
+  useBodyScroll(visibleLoading, 'loading');
+
+  const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
+    if (viewMode) {
+      const group = groupName || selectedGroup || 'default';
+      if (!loaded[viewMode].includes(groupName || 'default')) {
+        setVisibleLoading(true);
+        setLoaded({
+          ...loaded,
+          [viewMode]: [...loaded[viewMode], group],
+        });
+      } else {
+        setVisibleLoading(false);
+      }
+    } else {
+      setVisibleLoading(false);
+    }
+  };
+
+  const finishLoading = useCallback(() => {
+    setVisibleLoading(false);
+  }, []);
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
@@ -58,7 +101,7 @@ const Landscape = (props: Props) => {
     updatedSearchParams.set(param, value);
 
     navigate(
-      { ...location, search: updatedSearchParams.toString(), hash: '' },
+      { ...location, search: updatedSearchParams.toString(), hash: undefined },
       {
         replace: true,
       }
@@ -177,6 +220,7 @@ const Landscape = (props: Props) => {
                           !isUndefined(selectedGroup) && group.name === selectedGroup,
                       })}
                       onClick={() => {
+                        checkIfVisibleLoading(selectedViewMode, group.name);
                         setSelectedGroup(group.name);
                         updateQueryString(GROUP_PARAM, group.name);
                       }}
@@ -207,6 +251,7 @@ const Landscape = (props: Props) => {
                     })}
                     onClick={() => {
                       if (!isActive) {
+                        checkIfVisibleLoading(value, selectedGroup);
                         updateViewMode(value);
                         updateQueryString(VIEW_MODE_PARAM, value);
                       }
@@ -276,19 +321,30 @@ const Landscape = (props: Props) => {
         </div>
       )}
 
-      <div className="d-flex w-100 pt-1">
-        <div ref={container} className={`d-flex flex-column flex-grow-1 w-100 zoom-${zoomLevel}`}>
+      <div className="position-relative d-flex w-100 pt-1">
+        <div
+          ref={container}
+          className={classNames('d-flex flex-column flex-grow-1 w-100', styles.container, `zoom-${zoomLevel}`, {
+            [styles.loadingContent]: visibleLoading,
+          })}
+        >
+          {visibleLoading && <Loading spinnerClassName="position-fixed top-50 start-50" />}
+
           {props.data.groups ? (
             <>
               {props.data.groups.map((group: Group) => {
                 const isSelected = selectedGroup === group.name;
                 return (
-                  <div key={group.name} className={classNames({ 'd-none': !isSelected }, { 'd-block': isSelected })}>
+                  <div
+                    key={group.name}
+                    style={isSelected ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}
+                  >
                     <Content
                       isSelected={isSelected}
                       containerWidth={containerWidth}
                       data={groupsData[group.name]}
                       categories_overridden={props.data.categories_overridden}
+                      finishLoading={finishLoading}
                     />
                   </div>
                 );
@@ -300,6 +356,7 @@ const Landscape = (props: Props) => {
               containerWidth={containerWidth}
               data={groupsData.default}
               categories_overridden={props.data.categories_overridden}
+              finishLoading={finishLoading}
             />
           )}
         </div>

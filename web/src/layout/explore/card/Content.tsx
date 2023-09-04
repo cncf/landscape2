@@ -1,4 +1,4 @@
-import { orderBy } from 'lodash';
+import orderBy from 'lodash/orderBy';
 import { memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
@@ -17,8 +17,42 @@ interface Props {
   data: CategoriesData;
   isVisible: boolean;
 }
-const Content = memo(function Content(props: Props) {
+
+interface WaypointProps {
+  id: string;
+  children: JSX.Element;
+  isVisible: boolean;
+}
+
+const WaypointItem = (props: WaypointProps) => {
   const navigate = useNavigate();
+
+  const handleEnter = () => {
+    if (`#${props.id}` !== location.hash && props.isVisible) {
+      navigate(
+        { ...location, hash: props.id },
+        {
+          replace: true,
+        }
+      );
+
+      if (!isElementInView(`btn_${props.id}`)) {
+        const target = window.document.getElementById(`btn_${props.id}`);
+        if (target) {
+          target.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    }
+  };
+
+  return (
+    <Waypoint topOffset="3%" bottomOffset="97%" onEnter={handleEnter} fireOnRapidScroll={false}>
+      {props.children}
+    </Waypoint>
+  );
+};
+
+const Content = memo(function Content(props: Props) {
   const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
 
   const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
@@ -29,24 +63,6 @@ const Content = memo(function Content(props: Props) {
     );
   };
 
-  const handleEnter = (id: string) => {
-    if (`#${id}` !== location.hash) {
-      navigate(
-        { ...location, hash: id },
-        {
-          replace: true,
-        }
-      );
-
-      if (!isElementInView(`btn_${id}`)) {
-        const target = window.document.getElementById(`btn_${id}`);
-        if (target) {
-          target.scrollIntoView({ block: 'nearest' });
-        }
-      }
-    }
-  };
-
   return (
     <>
       {Object.keys(props.menu).map((cat: string) => {
@@ -54,14 +70,9 @@ const Content = memo(function Content(props: Props) {
           <div key={`list_cat_${cat}`}>
             {props.menu[cat].map((subcat: string) => {
               const id = convertStringSpaces(`${cat}/${subcat}`);
+
               return (
-                <Waypoint
-                  key={`list_subcat_${subcat}`}
-                  topOffset="3%"
-                  bottomOffset="97%"
-                  onEnter={() => handleEnter(id)}
-                  fireOnRapidScroll={false}
-                >
+                <WaypointItem key={`list_subcat_${subcat}`} id={id} isVisible={props.isVisible}>
                   <div>
                     <div id={id} className={`fw-semibold p-2 mb-4 text-truncate w-100 ${styles.title}`}>
                       {cat} / {subcat}
@@ -81,7 +92,7 @@ const Content = memo(function Content(props: Props) {
                       })}
                     </div>
                   </div>
-                </Waypoint>
+                </WaypointItem>
               );
             })}
           </div>

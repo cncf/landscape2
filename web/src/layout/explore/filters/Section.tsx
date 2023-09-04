@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { ChangeEvent, Fragment, memo, useCallback } from 'react';
 
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';

@@ -1,4 +1,5 @@
-import { isEqual, isUndefined } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import isUndefined from 'lodash/isUndefined';
 import { memo, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +10,6 @@ import goToElement from '../../../utils/goToElement';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
-import { Loading } from '../../common/Loading';
 import { FullDataContext, FullDataProps } from '../../context/AppContext';
 import ButtonToTopScroll from './ButtonToTopScroll';
 import Content from './Content';
@@ -19,6 +19,7 @@ interface Props {
   isVisible: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
+  finishLoading: () => void;
 }
 
 const TITLE_OFFSET = 16;
@@ -26,6 +27,7 @@ const TITLE_OFFSET = 16;
 const CardCategory = memo(function CardCategory(props: Props) {
   const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
   const navigate = useNavigate();
+  const [firstLoad, setFirstLoad] = useState<boolean>(props.isVisible);
   const [menu, setMenu] = useState<CardMenu | undefined>();
   const [initialFullRender, setInitialFullRender] = useState<boolean>(false);
 
@@ -130,16 +132,30 @@ const CardCategory = memo(function CardCategory(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menu, props.isVisible, fullDataReady]);
 
+  useEffect(() => {
+    if (props.isVisible) {
+      props.finishLoading();
+      if (!firstLoad) {
+        setFirstLoad(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.isVisible]);
+
   if (isUndefined(menu)) return null;
 
   return (
-    <div className="d-flex flex-row mt-2">
-      <Menu menu={menu} isVisible={props.isVisible} />
-      <div className="d-flex flex-column flex-grow-1">
-        {fullDataReady ? <Content menu={menu} data={props.data} isVisible={props.isVisible} /> : <Loading />}
-        <ButtonToTopScroll firstSection={getFirstItem()} />
-      </div>
-    </div>
+    <>
+      {firstLoad && (
+        <div className="d-flex flex-row mt-2">
+          <Menu menu={menu} isVisible={props.isVisible} />
+          <div className="d-flex flex-column flex-grow-1">
+            {fullDataReady && <Content menu={menu} data={props.data} isVisible={props.isVisible} />}
+            <ButtonToTopScroll firstSection={getFirstItem()} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }, arePropsEqual);
 

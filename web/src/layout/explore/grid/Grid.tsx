@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { memo, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import moment from 'moment';
 import { useContext, useEffect, useState } from 'react';
 

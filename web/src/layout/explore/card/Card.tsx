@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
 import cleanEmojis from '../../../utils/cleanEmojis';

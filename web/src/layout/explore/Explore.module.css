@@ -33,3 +33,11 @@
 .btnGroupLegend {
   font-size: 0.75rem;
 }
+
+.container {
+  min-height: 400px;
+}
+
+.loadingContent {
+  min-height: calc(100vh - 92px - 36px);
+}
