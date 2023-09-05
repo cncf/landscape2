@@ -7,10 +7,8 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use crate::{
-    data::{Category, CategoryName},
-    SettingsSource,
-};
+use super::data::{Category, CategoryName};
+use crate::SettingsSource;
 use anyhow::{format_err, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -114,10 +112,10 @@ pub(crate) struct FeaturedItemRuleOption {
     pub value: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub order: Option<usize>,
+    pub label: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub label: Option<String>,
+    pub order: Option<usize>,
 }
 
 /// Grid items size.

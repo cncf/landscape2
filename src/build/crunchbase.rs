@@ -2,7 +2,7 @@
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
-use crate::{cache::Cache, data::LandscapeData};
+use super::{cache::Cache, LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -117,11 +117,13 @@ pub(crate) async fn collect_crunchbase_data(
 pub(crate) type CrunchbaseData = HashMap<CrunchbaseUrl, Organization>;
 
 /// Type alias to represent a crunchbase url.
-pub(crate) type CrunchbaseUrl = String;
+type CrunchbaseUrl = String;
 
 /// Organization information collected from Crunchbase.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Organization {
+    pub generated_at: DateTime<Utc>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
 
@@ -136,9 +138,6 @@ pub(crate) struct Organization {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub funding: Option<i64>,
-
-    /// Represents the moment at which this instance was generated
-    pub generated_at: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage_url: Option<String>,
@@ -177,8 +176,8 @@ pub(crate) struct Organization {
 impl Organization {
     /// Create a new Organization instance from information obtained from the
     /// Crunchbase API.
-    pub(crate) async fn new(cb: DynCB, cb_url: &str) -> Result<Self> {
-        // Collec some information from Crunchbase
+    async fn new(cb: DynCB, cb_url: &str) -> Result<Self> {
+        // Collect some information from Crunchbase
         let permalink = get_permalink(cb_url)?;
         let cb_org = cb.get_organization(&permalink).await?;
 
@@ -224,24 +223,24 @@ impl Organization {
 const CRUNCHBASE_API_URL: &str = "https://api.crunchbase.com/api/v4";
 
 /// Type alias to represent a CB trait object.
-pub(crate) type DynCB = Arc<dyn CB + Send + Sync>;
+type DynCB = Arc<dyn CB + Send + Sync>;
 
 /// Trait that defines some operations a CB implementation must support.
 #[async_trait]
 #[cfg_attr(test, automock)]
-pub(crate) trait CB {
+trait CB {
     /// Get organization information.
     async fn get_organization(&self, permalink: &str) -> Result<CBOrganizationEntity>;
 }
 
 /// CB implementation backed by the Crunchbase API.
-pub struct CBApi {
+struct CBApi {
     http_client: reqwest::Client,
 }
 
 impl CBApi {
     /// Create a new CBApi instance.
-    pub fn new(key: &str) -> Result<Self> {
+    fn new(key: &str) -> Result<Self> {
         // Setup HTTP client ready to make requests to the Crunchbase API
         let user_agent = format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
         let mut headers = header::HeaderMap::new();
@@ -286,13 +285,13 @@ impl CB for CBApi {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBOrganizationEntity {
+struct CBOrganizationEntity {
     properties: CBOrganization,
     cards: CBCards,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBOrganization {
+struct CBOrganization {
     categories: Option<Vec<CBEntityIdentifier>>,
     company_type: Option<String>,
     funding_total: Option<CBFundingTotal>,
@@ -307,32 +306,32 @@ pub(crate) struct CBOrganization {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBEntityIdentifier {
+struct CBEntityIdentifier {
     value: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBFundingTotal {
+struct CBFundingTotal {
     value_usd: Option<i64>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBValue {
+struct CBValue {
     value: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBCards {
+struct CBCards {
     headquarters_address: Option<Vec<CBAddress>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBAddress {
+struct CBAddress {
     location_identifiers: Option<Vec<CBLocationIdentifier>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct CBLocationIdentifier {
+struct CBLocationIdentifier {
     location_type: Option<String>,
     value: Option<String>,
 }

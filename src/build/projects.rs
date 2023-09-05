@@ -1,7 +1,7 @@
 //! This module defines the functionality to generate the `projects.md` and
 //! `projects.csv` files from the information available in the landscape.
 
-use crate::data::{LandscapeData, DATE_FORMAT};
+use super::{data::DATE_FORMAT, LandscapeData};
 use anyhow::Result;
 use askama::Template;
 use chrono::NaiveDate;

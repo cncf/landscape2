@@ -7,12 +7,12 @@
 //! backwards compatibility, this module provides a `legacy` submodule that
 //! allows parsing the legacy format and convert it to the new one.
 
-use crate::{
+use super::{
     crunchbase::{CrunchbaseData, Organization},
     github::{self, GithubData},
     settings::LandscapeSettings,
-    DataSource,
 };
+use crate::DataSource;
 use anyhow::{format_err, Result};
 use chrono::NaiveDate;
 use reqwest::StatusCode;
@@ -75,7 +75,7 @@ impl LandscapeData {
         Ok(LandscapeData::from(legacy_data))
     }
 
-    /// Add Crunchbase data to the landscape data.
+    /// Add items Crunchbase data.
     #[instrument(skip_all, err)]
     pub(crate) fn add_crunchbase_data(&mut self, crunchbase_data: CrunchbaseData) -> Result<()> {
         for item in &mut self.items {
@@ -133,7 +133,7 @@ impl LandscapeData {
         Ok(())
     }
 
-    /// Add GitHub data to the landscape data.
+    /// Add items repositories GitHub data.
     #[instrument(skip_all, err)]
     pub(crate) fn add_github_data(&mut self, github_data: GithubData) -> Result<()> {
         for item in &mut self.items {
@@ -199,14 +199,15 @@ impl From<legacy::LandscapeData> for LandscapeData {
                     let mut item = Item {
                         name: legacy_item.name,
                         category: legacy_category.name.clone(),
-                        subcategory: legacy_subcategory.name.clone(),
                         crunchbase_url: legacy_item.crunchbase,
+                        description: legacy_item.description.clone(),
                         enduser: legacy_item.enduser,
-                        homepage_url: legacy_item.homepage_url,
                         joined_at: legacy_item.joined,
+                        homepage_url: legacy_item.homepage_url,
                         logo: legacy_item.logo,
                         maturity: legacy_item.project,
                         openssf_best_practices_url: legacy_item.url_for_bestpractices,
+                        subcategory: legacy_subcategory.name.clone(),
                         twitter_url: legacy_item.twitter,
                         unnamed_organization: legacy_item.unnamed_organization,
                         ..Default::default()
@@ -240,7 +241,6 @@ impl From<legacy::LandscapeData> for LandscapeData {
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.accepted_at = extra.accepted;
-                        item.latest_annual_review_at = extra.annual_review_date;
                         item.archived_at = extra.archived;
                         item.artwork_url = extra.artwork_url;
                         item.audits = extra.audits;
@@ -252,8 +252,9 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.github_discussions_url = extra.github_discussions_url;
                         item.graduated_at = extra.graduated;
                         item.incubating_at = extra.incubating;
-                        item.mailing_list_url = extra.mailing_list_url;
+                        item.latest_annual_review_at = extra.annual_review_date;
                         item.latest_annual_review_url = extra.annual_review_url;
+                        item.mailing_list_url = extra.mailing_list_url;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
@@ -348,6 +349,9 @@ pub(crate) struct Item {
     pub crunchbase_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub devstats_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -418,6 +422,34 @@ pub(crate) struct Item {
 }
 
 impl Item {
+    /// Get item's description.
+    #[allow(dead_code)]
+    pub(crate) fn description(&self) -> Option<&String> {
+        // Use item's description if available
+        let mut description = self.description.as_ref();
+
+        // Otherwise, use primary repository description if available
+        if description.is_none() || description.unwrap().is_empty() {
+            description =
+                self.primary_repository().and_then(|r| r.github_data.as_ref().map(|gh| &gh.description));
+        }
+
+        // Otherwise, use Crunchbase data description
+        if description.is_none() || description.unwrap().is_empty() {
+            description = self.crunchbase_data.as_ref().and_then(|cb| cb.description.as_ref());
+        }
+
+        description
+    }
+
+    /// Get primary repository if available.
+    #[allow(dead_code)]
+    pub(crate) fn primary_repository(&self) -> Option<&Repository> {
+        self.repositories
+            .as_ref()
+            .and_then(|repos| repos.iter().find(|r| r.primary.unwrap_or_default()))
+    }
+
     /// Generate and set the item's id.
     fn set_id(&mut self) {
         let key = format!("{}##{}##{}", &self.category, &self.subcategory, &self.name);
@@ -476,7 +508,7 @@ pub(crate) struct ItemSummary {
 /// Project maturity level.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
-pub(super) enum Maturity {
+pub(crate) enum Maturity {
     Archived,
     Graduated,
     Incubating,
@@ -528,7 +560,7 @@ mod legacy {
     //! legacy format and convert it to the new one.
 
     use super::{ItemAudit, Maturity};
-    use crate::{crunchbase::CRUNCHBASE_URL, github::GITHUB_REPO_URL};
+    use crate::build::{crunchbase::CRUNCHBASE_URL, github::GITHUB_REPO_URL};
     use anyhow::{format_err, Context, Result};
     use chrono::NaiveDate;
     use serde::{Deserialize, Serialize};
@@ -536,13 +568,13 @@ mod legacy {
 
     /// Landscape data (legacy format).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct LandscapeData {
+    pub(crate) struct LandscapeData {
         pub landscape: Vec<Category>,
     }
 
     impl LandscapeData {
         /// Validate landscape data.
-        pub(super) fn validate(&self) -> Result<()> {
+        pub(crate) fn validate(&self) -> Result<()> {
             let mut items_seen = Vec::new();
 
             for (category_index, category) in self.landscape.iter().enumerate() {
@@ -603,27 +635,28 @@ mod legacy {
 
     /// Landscape category.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct Category {
+    pub(crate) struct Category {
         pub name: String,
         pub subcategories: Vec<SubCategory>,
     }
 
     /// Landscape subcategory.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct SubCategory {
+    pub(crate) struct SubCategory {
         pub name: String,
         pub items: Vec<Item>,
     }
 
     /// Landscape item (project, product, member, etc).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct Item {
+    pub(crate) struct Item {
         pub name: String,
         pub homepage_url: String,
         pub logo: String,
         pub additional_repos: Option<Vec<Repository>>,
         pub branch: Option<String>,
         pub crunchbase: Option<String>,
+        pub description: Option<String>,
         pub enduser: Option<bool>,
         pub extra: Option<ItemExtra>,
         pub joined: Option<NaiveDate>,
@@ -636,14 +669,14 @@ mod legacy {
 
     /// Landscape item repository.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct Repository {
+    pub(crate) struct Repository {
         pub repo_url: String,
         pub branch: Option<String>,
     }
 
     /// Extra information for a landscape item.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(super) struct ItemExtra {
+    pub(crate) struct ItemExtra {
         pub accepted: Option<NaiveDate>,
         pub archived: Option<NaiveDate>,
         pub audits: Option<Vec<ItemAudit>>,

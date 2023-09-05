@@ -6,7 +6,7 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, full::Full};
-use crate::{data::LandscapeData, settings::LandscapeSettings};
+use super::{settings::LandscapeSettings, LandscapeData};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -40,13 +40,14 @@ impl Datasets {
 /// This dataset contains the minimal data the web application needs to render
 /// the initial page and power the features available on it.
 mod base {
-    use crate::{
+    use crate::build::{
         data::{Category, CategoryName, ItemFeatured, LandscapeData, Maturity},
         settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
     use serde::{Deserialize, Serialize};
     use uuid::Uuid;
 
+    /// Base dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Base {
         pub foundation: String,
@@ -75,6 +76,7 @@ mod base {
         pub social_networks: Option<SocialNetworks>,
     }
 
+    /// Base dataset item information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Item {
         pub category: String,
@@ -145,9 +147,10 @@ mod base {
 /// information is used by the web application to power features that require
 /// some extra data not available in the base dataset.
 mod full {
-    use crate::data::{Item, LandscapeData};
+    use crate::build::data::{Item, LandscapeData};
     use serde::{Deserialize, Serialize};
 
+    /// Full dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Full {
         #[serde(skip_serializing_if = "Vec::is_empty")]
