@@ -1,5 +1,8 @@
 .active {
-  animation: fadeIn 0.25s 1 ease-in-out forwards;
+  animation-name: fadeIn;
+  animation-duration: 0.15s;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
   z-index: 1080;
 }
 
@@ -24,7 +27,10 @@
 }
 
 .activeBackdrop {
-  animation: fadeIn50 0.15s 1 ease-in-out forwards;
+  animation-name: fadeIn50;
+  animation-duration: 0.15s;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
 }
 
 @keyframes fadeIn {

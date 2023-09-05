@@ -1,4 +1,5 @@
-import { isEqual, reduce } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import reduce from 'lodash/reduce';
 
 interface Props {
   [key: string]: unknown;

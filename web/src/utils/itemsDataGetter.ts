@@ -18,8 +18,8 @@ export class ItemsDataGetter {
     if (!this.ready) {
       fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
         .then((res) => res.json())
-        .then((data) => {
-          this.landscapeData = data;
+        .then((data: LandscapeData) => {
+          this.landscapeData = { ...data };
           this.ready = true;
           if (this.updateStatus) {
             this.updateStatus.updateStatus(true);
@@ -28,19 +28,20 @@ export class ItemsDataGetter {
     }
   }
 
-  public async getAll(): Promise<Item[] | undefined> {
+  public getAll(): Item[] {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items;
     }
+    return [];
   }
 
-  public async findById(id: string): Promise<Item | undefined> {
+  public findById(id: string): Item | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.find((i: Item) => id === i.id);
     }
   }
 
-  public async filterItemsBySection(activeSection: ActiveSection): Promise<Item[] | undefined> {
+  public filterItemsBySection(activeSection: ActiveSection): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
         (i: Item) => activeSection.subcategory === i.subcategory && activeSection.category === i.category

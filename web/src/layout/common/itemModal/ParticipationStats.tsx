@@ -1,4 +1,4 @@
-import { isInteger } from 'lodash';
+import isInteger from 'lodash/isInteger';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 

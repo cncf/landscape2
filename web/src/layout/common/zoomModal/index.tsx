@@ -1,4 +1,5 @@
-import { isUndefined, throttle } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
+import throttle from 'lodash/throttle';
 import { useContext, useEffect, useRef, useState } from 'react';
 
 import { COLORS } from '../../../data';
@@ -14,7 +15,7 @@ import {
   ZoomContext,
   ZoomProps,
 } from '../../context/AppContext';
-import GridItem from '../../explore/gridCategory/GridItem';
+import GridItem from '../../explore/grid/GridItem';
 import FullScreenModal from '../FullScreenModal';
 import { Loading } from '../Loading';
 import styles from './ZoomModal.module.css';
@@ -127,7 +128,7 @@ const ZoomModal = () => {
           </div>
         ) : (
           <div className={`d-flex flex-column p-5 ${styles.loadingWrapper}`}>
-            <Loading />
+            <Loading transparentBg />
           </div>
         )}
       </div>

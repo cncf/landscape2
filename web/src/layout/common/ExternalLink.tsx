@@ -1,6 +1,6 @@
 import './ExternalLink.module.css';
 
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 
 import { SVGIconKind } from '../../types';
 import SVGIcon from './SVGIcon';

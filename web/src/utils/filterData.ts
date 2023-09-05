@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 
 import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
 

@@ -1,4 +1,6 @@
-import { isNull, isUndefined, sortBy } from 'lodash';
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
+import sortBy from 'lodash/sortBy';
 import { ChangeEvent, memo, useCallback, useEffect, useRef, useState } from 'react';
 
 import { FilterCategory, FilterOption, FilterSection, SVGIconKind } from '../../../types';

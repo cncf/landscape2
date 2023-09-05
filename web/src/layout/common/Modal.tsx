@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { MouseEvent, useEffect, useRef, useState } from 'react';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
