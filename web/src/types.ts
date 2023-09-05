@@ -22,6 +22,7 @@ export interface BaseItem {
   name: string;
   logo: string;
   subcategory: string;
+  description?: string;
   featured?: Featured;
   maturity?: string;
 }

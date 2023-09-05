@@ -4,8 +4,8 @@ import moment from 'moment';
 import { useContext, useEffect, useState } from 'react';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
-import cleanEmojis from '../../../utils/cleanEmojis';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
+import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import {
@@ -30,32 +30,12 @@ const ItemModal = () => {
   const { visibleItemId } = useContext(ItemContext) as ItemProps;
   const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
   const [itemInfo, setItemInfo] = useState<Item | null | undefined>(undefined);
-  let description = 'This item does not have a description available yet';
+  const description = getItemDescription(itemInfo);
   let stars: number | undefined;
   let mainRepo: Repository | undefined;
   let websiteUrl: string | undefined = itemInfo ? itemInfo.homepage_url : undefined;
 
-  if (
-    itemInfo &&
-    itemInfo.crunchbase_data &&
-    itemInfo.crunchbase_data.description &&
-    itemInfo.crunchbase_data.description !== ''
-  ) {
-    description = cleanEmojis(itemInfo.crunchbase_data.description);
-  }
-
   if (itemInfo && itemInfo.repositories) {
-    const primaryRepo = itemInfo.repositories.find((repo: Repository) => repo.primary);
-
-    if (
-      primaryRepo &&
-      primaryRepo.github_data &&
-      primaryRepo.github_data.description &&
-      primaryRepo.github_data.description !== ''
-    ) {
-      description = cleanEmojis(primaryRepo.github_data.description);
-    }
-
     itemInfo.repositories.forEach((repo: Repository) => {
       if (repo.primary) {
         mainRepo = repo;
