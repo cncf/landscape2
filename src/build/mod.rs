@@ -2,18 +2,17 @@
 
 #![allow(non_upper_case_globals)]
 
-use crate::{
+use self::{
     cache::Cache,
     crunchbase::collect_crunchbase_data,
-    data::LandscapeData,
     datasets::Datasets,
     github::collect_github_data,
     guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{Images, LandscapeSettings},
-    BuildArgs, GuideSource, LogosSource,
 };
+use crate::{BuildArgs, GuideSource, LogosSource};
 use anyhow::{format_err, Context, Result};
 use askama::Template;
 use futures::stream::{self, StreamExt};
@@ -30,6 +29,17 @@ use std::{
 use tracing::{debug, error, info, instrument};
 use url::Url;
 use uuid::Uuid;
+
+mod cache;
+mod crunchbase;
+mod data;
+mod datasets;
+mod github;
+mod guide;
+mod logos;
+mod projects;
+mod settings;
+pub(crate) use data::LandscapeData;
 
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
@@ -334,7 +344,7 @@ async fn prepare_items_logos(
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
 struct Index<'a> {
-    pub datasets: &'a Datasets,
+    datasets: &'a Datasets,
 }
 
 /// Render index file and write it to the output directory.
@@ -391,7 +401,7 @@ mod filters {
     ///
     /// Based on the `json` built-in filter except the output is not pretty
     /// printed.
-    pub fn json_compact<S: Serialize>(s: S) -> askama::Result<String> {
+    pub(crate) fn json_compact<S: Serialize>(s: S) -> askama::Result<String> {
         let mut writer = JsonEscapeBuffer::new();
         serde_json::to_writer(&mut writer, &s)?;
         Ok(writer.finish())

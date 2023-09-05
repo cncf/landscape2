@@ -1,7 +1,8 @@
 //! This module provides some helper functions to prepare logos to be displayed
 //! on the landscape web application.
 
-use crate::{cache::Cache, LogosSource};
+use super::cache::Cache;
+use crate::LogosSource;
 use anyhow::{format_err, Result};
 use lazy_static::lazy_static;
 use regex::bytes::Regex;

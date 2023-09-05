@@ -2,8 +2,7 @@
 //! from GitHub for each of the landscape items repositories (when applicable),
 //! as well as the functionality used to collect that information.
 
-use crate::cache::Cache;
-use crate::data::LandscapeData;
+use super::{cache::Cache, LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -134,29 +133,25 @@ pub(crate) struct Repository {
     pub contributors: Contributors,
     pub description: String,
     pub first_commit: Commit,
-
-    /// Represents the moment at which this instance was generated
     pub generated_at: DateTime<Utc>,
+    pub latest_commit: Commit,
+    pub participation_stats: Vec<i64>,
+    pub stars: i64,
+    pub url: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub languages: Option<HashMap<String, i64>>,
-
-    pub latest_commit: Commit,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub latest_release: Option<Release>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
-
-    pub participation_stats: Vec<i64>,
-    pub stars: i64,
-    pub url: String,
 }
 
 impl Repository {
     /// Create a new Repository instance from information available on GitHub.
-    pub(crate) async fn new(gh: Object<DynGH>, repo_url: &str) -> Result<Self> {
+    async fn new(gh: Object<DynGH>, repo_url: &str) -> Result<Self> {
         // Collect some information from GitHub
         let (owner, repo) = get_owner_and_repo(repo_url)?;
         let gh_repo = gh.get_repository(&owner, &repo).await?;
@@ -196,8 +191,8 @@ impl Repository {
 /// Commit information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Commit {
-    ts: Option<DateTime<Utc>>,
-    url: String,
+    pub ts: Option<DateTime<Utc>>,
+    pub url: String,
 }
 
 impl From<octorust::types::CommitDataType> for Commit {
@@ -216,15 +211,15 @@ impl From<octorust::types::CommitDataType> for Commit {
 /// Contributors information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Contributors {
-    count: usize,
-    url: String,
+    pub count: usize,
+    pub url: String,
 }
 
 /// Release information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Release {
-    ts: Option<DateTime<Utc>>,
-    url: String,
+    pub ts: Option<DateTime<Utc>>,
+    pub url: String,
 }
 
 impl From<octorust::types::Release> for Release {
@@ -240,12 +235,12 @@ impl From<octorust::types::Release> for Release {
 const GITHUB_API_URL: &str = "https://api.github.com";
 
 /// Type alias to represent a GH trait object.
-pub(crate) type DynGH = Box<dyn GH + Send + Sync>;
+type DynGH = Box<dyn GH + Send + Sync>;
 
 /// Trait that defines some operations a GH implementation must support.
 #[async_trait]
 #[cfg_attr(test, automock)]
-pub(crate) trait GH {
+trait GH {
     /// Get number of repository contributors.
     async fn get_contributors_count(&self, owner: &str, repo: &str) -> Result<usize>;
 
@@ -269,14 +264,14 @@ pub(crate) trait GH {
 }
 
 /// GH implementation backed by the GitHub API.
-pub struct GHApi {
+struct GHApi {
     gh_client: octorust::Client,
     http_client: reqwest::Client,
 }
 
 impl GHApi {
     /// Create a new GHApi instance.
-    pub fn new(token: &str) -> Result<Self> {
+    fn new(token: &str) -> Result<Self> {
         // Setup octorust GitHub API client
         let user_agent = format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
         let gh_client = octorust::Client::new(user_agent.clone(), Credentials::Token(token.to_string()))?;

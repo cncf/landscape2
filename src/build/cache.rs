@@ -1,3 +1,5 @@
+//! This module defines the cache used to cache files across builds.
+
 use anyhow::{format_err, Result};
 use std::{fs, io::Write, path::PathBuf};
 use tracing::instrument;
@@ -8,7 +10,7 @@ const CACHE_PATH: &str = "landscape";
 /// Cache used to store data collected from external services.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Cache {
-    pub cache_dir: PathBuf,
+    cache_dir: PathBuf,
 }
 
 impl Cache {

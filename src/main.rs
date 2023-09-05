@@ -4,20 +4,12 @@
 use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
+use deploy::s3;
 use std::path::PathBuf;
 use validate::validate_data;
 
 mod build;
-mod cache;
-mod crunchbase;
-mod data;
-mod datasets;
-mod github;
-mod guide;
-mod logos;
-mod projects;
-mod s3;
-mod settings;
+mod deploy;
 mod validate;
 
 /// CLI arguments.

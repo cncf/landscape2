@@ -1,6 +1,6 @@
 //! This module defines the functionality of the validate CLI subcommand.
 
-use crate::{data::LandscapeData, DataSource};
+use crate::{build::LandscapeData, DataSource};
 use anyhow::{Context, Result};
 use tracing::instrument;
 
