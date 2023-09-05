@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
-import cleanEmojis from '../../../utils/cleanEmojis';
+import getItemDescription from '../../../utils/getItemDescription';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import ExternalLink from '../../common/ExternalLink';
 import Image from '../../common/Image';
@@ -16,31 +16,12 @@ interface Props {
 }
 
 const Card = (props: Props) => {
-  let description = 'This item does not have a description available yet';
+  const description = getItemDescription(props.item);
   let stars: number | undefined;
   let mainRepoUrl: string | undefined;
   let websiteUrl: string | undefined = props.item.homepage_url;
 
-  if (
-    props.item.crunchbase_data &&
-    props.item.crunchbase_data.description &&
-    props.item.crunchbase_data.description !== ''
-  ) {
-    description = cleanEmojis(props.item.crunchbase_data.description);
-  }
-
   if (props.item.repositories) {
-    const primaryRepo = props.item.repositories.find((repo: Repository) => repo.primary);
-
-    if (
-      primaryRepo &&
-      primaryRepo.github_data &&
-      primaryRepo.github_data.description &&
-      primaryRepo.github_data.description !== ''
-    ) {
-      description = cleanEmojis(primaryRepo.github_data.description);
-    }
-
     props.item.repositories.forEach((repo: Repository) => {
       if (repo.primary) {
         mainRepoUrl = repo.url;
