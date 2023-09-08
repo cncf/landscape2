@@ -6,6 +6,7 @@ use self::{
     cache::Cache,
     crunchbase::collect_crunchbase_data,
     datasets::Datasets,
+    export::generate_items_csv,
     github::collect_github_data,
     guide::LandscapeGuide,
     logos::prepare_logo,
@@ -34,6 +35,7 @@ mod cache;
 mod crunchbase;
 mod data;
 mod datasets;
+mod export;
 mod github;
 mod guide;
 mod logos;
@@ -114,6 +116,9 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
+
+    // Generate items.csv file
+    generate_items_csv_file(&landscape_data, &args.output_dir)?;
 
     // Generate projects.* files
     generate_projects_files(&landscape_data, &args.output_dir)?;
@@ -205,6 +210,18 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
     // projects.csv
     let w = csv::Writer::from_path(docs_path.join("projects.csv"))?;
     generate_projects_csv(w, &projects)?;
+
+    Ok(())
+}
+
+/// Generate the items.csv file from the landscape data.
+#[instrument(skip_all, err)]
+fn generate_items_csv_file(landscape_data: &LandscapeData, output_dir: &Path) -> Result<()> {
+    debug!("generating items csv file");
+
+    let docs_path = output_dir.join(DOCS_PATH);
+    let w = csv::Writer::from_path(docs_path.join("items.csv"))?;
+    generate_items_csv(w, landscape_data)?;
 
     Ok(())
 }
