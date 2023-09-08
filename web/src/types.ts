@@ -18,7 +18,7 @@ export interface Category {
 export interface BaseItem {
   id: string;
   category: string;
-  has_repositories?: boolean;
+  oss?: boolean;
   name: string;
   logo: string;
   subcategory: string;

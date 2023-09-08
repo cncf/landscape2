@@ -137,6 +137,7 @@ impl LandscapeData {
     #[instrument(skip_all, err)]
     pub(crate) fn add_github_data(&mut self, github_data: GithubData) -> Result<()> {
         for item in &mut self.items {
+            // Add GH data to each of the items repositories
             if item.repositories.is_some() {
                 let mut repositories = vec![];
                 for mut repo in item.repositories.clone().unwrap_or_default() {
@@ -146,6 +147,16 @@ impl LandscapeData {
                     repositories.push(repo);
                 }
                 item.repositories = Some(repositories);
+            }
+
+            // Set item's oss field
+            if item
+                .primary_repository()
+                .and_then(|repo| repo.github_data.as_ref())
+                .and_then(|gh_data| gh_data.license.as_ref())
+                .is_some()
+            {
+                item.oss = Some(true);
             }
         }
         Ok(())
@@ -395,6 +406,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub openssf_best_practices_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oss: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,

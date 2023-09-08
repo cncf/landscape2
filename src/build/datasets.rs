@@ -80,7 +80,6 @@ mod base {
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Item {
         pub category: String,
-        pub has_repositories: bool,
         pub id: Uuid,
         pub name: String,
         pub logo: String,
@@ -91,6 +90,9 @@ mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub maturity: Option<Maturity>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oss: Option<bool>,
     }
 
     impl Base {
@@ -127,12 +129,12 @@ mod base {
                 base.items.push(Item {
                     category: item.category.clone(),
                     featured: item.featured.clone(),
-                    has_repositories: !item.repositories.as_ref().unwrap_or(&vec![]).is_empty(),
                     id: item.id,
                     name: item.name.clone(),
                     logo: item.logo.clone(),
                     maturity: item.maturity.clone(),
                     subcategory: item.subcategory.clone(),
+                    oss: item.oss,
                 });
             }
 

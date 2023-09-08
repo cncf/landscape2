@@ -87,6 +87,7 @@ impl From<&data::Item> for Item {
             mailing_list_url: di.mailing_list_url.clone(),
             member: di.member_subcategory.clone(),
             name: di.name.clone(),
+            oss: di.oss,
             slack_url: di.slack_url.clone(),
             subcategory: di.subcategory.clone(),
             youtube_url: di.youtube_url.clone(),
@@ -137,7 +138,6 @@ impl From<&data::Item> for Item {
 
                 if let Some(license) = &gh_data.license {
                     item.license = Some(license.clone());
-                    item.oss = Some(true);
                 }
 
                 if let Some(date) = gh_data.latest_commit.ts {
