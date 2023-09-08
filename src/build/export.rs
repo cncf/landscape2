@@ -4,6 +4,7 @@
 use super::{data, LandscapeData};
 use crate::build::data::DATE_FORMAT;
 use anyhow::Result;
+use chrono::NaiveDate;
 use serde::Serialize;
 use std::fs::File;
 
@@ -66,9 +67,12 @@ struct Item {
 
 impl From<&data::Item> for Item {
     fn from(di: &data::Item) -> Self {
+        // Helper closure to format dates
+        let fmt_date = |date: NaiveDate| date.format(DATE_FORMAT).to_string();
+
         // Setup item
         let mut item: Item = Item {
-            accepted: di.accepted_at.map(|date| date.format(DATE_FORMAT).to_string()),
+            accepted: di.accepted_at.map(fmt_date),
             artwork_url: di.artwork_url.clone(),
             blog_url: di.blog_url.clone(),
             category: di.category.clone(),
@@ -76,9 +80,9 @@ impl From<&data::Item> for Item {
             crunchbase_url: di.crunchbase_url.clone(),
             description: di.description().cloned(),
             dev_stats_url: di.devstats_url.clone(),
-            graduated: di.graduated_at.map(|date| date.format(DATE_FORMAT).to_string()),
+            graduated: di.graduated_at.map(fmt_date),
             homepage: di.homepage_url.clone(),
-            incubation: di.incubating_at.map(|date| date.format(DATE_FORMAT).to_string()),
+            incubation: di.incubating_at.map(fmt_date),
             logo: di.logo.clone(),
             mailing_list_url: di.mailing_list_url.clone(),
             member: di.member_subcategory.clone(),
@@ -137,19 +141,18 @@ impl From<&data::Item> for Item {
                 }
 
                 if let Some(date) = gh_data.latest_commit.ts {
-                    item.github_latest_commit_date = Some(date.date_naive().format(DATE_FORMAT).to_string());
+                    item.github_latest_commit_date = Some(fmt_date(date.date_naive()));
                 }
 
                 if let Some(release) = &gh_data.latest_release {
                     if let Some(date) = release.ts {
-                        item.github_latest_release_date =
-                            Some(date.date_naive().format(DATE_FORMAT).to_string());
+                        item.github_latest_release_date = Some(fmt_date(date.date_naive()));
                     }
                     item.github_latest_release_link = Some(release.url.clone());
                 }
 
                 if let Some(date) = gh_data.first_commit.ts {
-                    item.github_start_commit_date = Some(date.date_naive().format(DATE_FORMAT).to_string());
+                    item.github_start_commit_date = Some(fmt_date(date.date_naive()));
                 }
             }
         }
@@ -157,7 +160,7 @@ impl From<&data::Item> for Item {
         // Last audit values
         if let Some(audits) = &di.audits {
             if let Some(last_audit) = audits.last() {
-                item.last_audit_date = Some(last_audit.date.format(DATE_FORMAT).to_string());
+                item.last_audit_date = Some(fmt_date(last_audit.date));
                 item.last_audit_url = Some(String::from(&last_audit.url));
             }
         }

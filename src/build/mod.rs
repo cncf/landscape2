@@ -117,11 +117,11 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     // Copy web assets files to the output directory
     copy_web_assets(&args.output_dir)?;
 
-    // Generate projects.* files
-    generate_projects_files(&landscape_data, &args.output_dir)?;
-
     // Generate items.csv file
     generate_items_csv_file(&landscape_data, &args.output_dir)?;
+
+    // Generate projects.* files
+    generate_projects_files(&landscape_data, &args.output_dir)?;
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website built! (took: {:.3}s)", duration);
