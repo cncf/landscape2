@@ -186,11 +186,10 @@ impl From<&data::Item> for Item {
 
 /// Generate CSV file with some information about each item.
 pub(crate) fn generate_items_csv(mut w: csv::Writer<File>, landscape_data: &LandscapeData) -> Result<()> {
-    // Write one record for each item
-    for di in &landscape_data.items {
-        w.serialize(Item::from(di))?;
-    }
-
+    let mut items: Vec<Item> = landscape_data.items.iter().map(Item::from).collect();
+    items.sort_by_key(|i| i.name.to_lowercase());
+    items.iter().try_for_each(|i| w.serialize(i))?;
     w.flush()?;
+
     Ok(())
 }
