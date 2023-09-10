@@ -8,6 +8,7 @@
 //! allows parsing the legacy format and convert it to the new one.
 
 use super::{
+    best_practices::BestPracticesData,
     crunchbase::{CrunchbaseData, Organization},
     github::{self, GithubData},
     settings::LandscapeSettings,
@@ -73,6 +74,21 @@ impl LandscapeData {
         legacy_data.validate()?;
 
         Ok(LandscapeData::from(legacy_data))
+    }
+
+    /// Add items OpenSSF best practices data.
+    #[instrument(skip_all)]
+    pub(crate) fn add_best_practices_data(&mut self, best_practices_data: BestPracticesData) {
+        for item in &mut self.items {
+            if item.openssf_best_practices_url.is_some() {
+                continue;
+            }
+            if let Some(primary_repo) = item.primary_repository() {
+                if let Some(project) = best_practices_data.get(&primary_repo.url) {
+                    item.openssf_best_practices_url = Some(project.url());
+                }
+            }
+        }
     }
 
     /// Add items Crunchbase data.

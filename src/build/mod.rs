@@ -13,7 +13,7 @@ use self::{
     projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{Images, LandscapeSettings},
 };
-use crate::{BuildArgs, GuideSource, LogosSource};
+use crate::{build::best_practices::collect_best_practices_data, BuildArgs, GuideSource, LogosSource};
 use anyhow::{format_err, Context, Result};
 use askama::Template;
 use futures::stream::{self, StreamExt};
@@ -31,6 +31,7 @@ use tracing::{debug, error, info, instrument};
 use url::Url;
 use uuid::Uuid;
 
+mod best_practices;
 mod cache;
 mod crunchbase;
 mod data;
@@ -99,12 +100,14 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect data from external services
-    let (crunchbase_data, github_data) = tokio::try_join!(
+    let (best_practices_data, crunchbase_data, github_data) = tokio::try_join!(
+        collect_best_practices_data(&cache),
         collect_crunchbase_data(&cache, &landscape_data),
         collect_github_data(&cache, &landscape_data)
     )?;
 
     // Add data collected from external services to the landscape data
+    landscape_data.add_best_practices_data(best_practices_data);
     landscape_data.add_crunchbase_data(crunchbase_data)?;
     landscape_data.add_github_data(github_data)?;
 
