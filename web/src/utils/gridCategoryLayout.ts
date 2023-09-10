@@ -1,5 +1,16 @@
-import isUndefined from 'lodash/isUndefined';
-import { CSSProperties } from 'react';
+// Width reserved for each column in a row (in px). This value is used to
+// calculate how many columns we'll have in a row. Columns may end up taking
+// less space if the number of items is small.
+const COLUMN_RESERVED_WIDTH = 500;
+
+// Minimum number of items (non featured) that must fit in a column.
+const MIN_COLUMN_ITEMS = 4;
+
+// Lateral padding used in the container where items will be displayed (in px).
+const CONTAINER_PADDING = 11;
+
+// Space between items (in px).
+const ITEMS_SPACING = 6;
 
 // Input used to calculate the grid category layout.
 export interface GetGridCategoryLayoutInput {
@@ -28,130 +39,34 @@ export type LayoutRow = LayoutColumn[];
 export interface LayoutColumn {
   subcategoryName: string;
   percentage: number;
-  style?: CSSProperties;
-}
-
-export interface TransformGridLayoutInput {
-  grid: GridCategoryLayout;
-  containerWidth: number;
-  itemWidth: number;
-  subcategories: SubcategoryDetails[];
-}
-
-export interface GridDimensions {
-  sizes: {
-    columns: number;
-    rows: number;
-    spaces: number;
-  }[];
-  maxRowsIndex?: number;
-  forceWidthIndex: number[];
-}
-
-const PADDING = 20;
-const GAP = 5;
-
-export const calculateItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {
-  return Math.floor((containerWidth * (percentage / 100) - PADDING - GAP) / (itemWidth + GAP));
-};
-
-const allEqual = (arr: number[]): boolean => arr.every((v) => v === arr[0]);
-
-const calculateHighestSubcategory = (
-  row: LayoutRow,
-  containerWidth: number,
-  itemWidth: number,
-  subcategories: SubcategoryDetails[]
-): GridDimensions => {
-  let maxRowsIndex: number | undefined;
-  const rowsInSub: number[] = [];
-  const forceWidthIndex: number[] = [];
-
-  const sizes = row.map((subcat: LayoutColumn, index: number) => {
-    const itemsPerRow = calculateItemsPerRow(subcat.percentage, containerWidth, itemWidth);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const subcatData: SubcategoryDetails = subcategories.find(
-      (s: SubcategoryDetails) => s.name === subcat.subcategoryName
-    )!;
-    const totalSpaces: number =
-      subcatData.itemsCount - subcatData.itemsFeaturedCount + subcatData.itemsFeaturedCount * 4;
-    const totalRows = totalSpaces / itemsPerRow;
-    rowsInSub.push(Math.ceil(totalRows));
-    if (itemsPerRow % 2 !== 0 && itemsPerRow < subcatData.itemsFeaturedCount * 2) {
-      forceWidthIndex.push(index);
-    }
-    return { columns: itemsPerRow, rows: totalRows, spaces: totalSpaces };
-  });
-
-  if (!allEqual(rowsInSub)) {
-    const max = Math.max(...rowsInSub);
-    const items = rowsInSub.filter((element) => max === element);
-    if (items.length === 1) {
-      maxRowsIndex = rowsInSub.indexOf(max);
-    }
-  }
-
-  return { sizes: sizes, maxRowsIndex: maxRowsIndex, forceWidthIndex: forceWidthIndex };
-};
-
-export const calculateWidthInPx = (columnsNumber: number, itemWidth: number): string => {
-  return `${columnsNumber * (itemWidth + GAP) + PADDING}px`;
-};
-
-export function transformGridLayout(input: TransformGridLayoutInput): GridCategoryLayout {
-  return input.grid.map((row: LayoutRow) => {
-    const gridDimensions = calculateHighestSubcategory(row, input.containerWidth, input.itemWidth, input.subcategories);
-    return row.map((subcat: LayoutColumn, subcatIndex: number) => {
-      let style: CSSProperties | undefined;
-
-      // Use an even number of columns to prevent featured items from leaving a gap
-      if (gridDimensions.forceWidthIndex.length > 0 && gridDimensions.forceWidthIndex.includes(subcatIndex)) {
-        const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns + 1, input.itemWidth);
-        style = { maxWidth: `${subcat.percentage}%`, minWidth: width };
-      } else {
-        if (!isUndefined(gridDimensions.maxRowsIndex)) {
-          if (gridDimensions.maxRowsIndex !== subcatIndex) {
-            const width = calculateWidthInPx(gridDimensions.sizes[subcatIndex].columns, input.itemWidth);
-            style = { maxWidth: `${subcat.percentage}%`, width: width };
-          }
-        }
-      }
-      return { ...subcat, style: style };
-    });
-  });
 }
 
 // Get the grid layout of the category provided.
-
 export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput): GridCategoryLayout {
   // Calculate number of rows needed to display the subcategories
   let rowsCount;
   if (input.isOverriden) {
     rowsCount = input.subcategories.length;
   } else {
-    rowsCount = Math.ceil(input.subcategories.length / (input.containerWidth / 500));
+    const maxColumns = Math.floor(input.containerWidth / COLUMN_RESERVED_WIDTH);
+    rowsCount = Math.ceil(input.subcategories.length / maxColumns);
   }
 
-  // Create our own version of the subcategories with some adjustments
-  const minItems = Math.round((input.containerWidth / input.itemWidth) * 0.75);
+  // Extend subcategories with some adjustments
   const subcategories = input.subcategories.map((s) => {
-    // Account for featured items (each one takes the space of ~4 items)
-    let itemsCount = s.itemsCount + s.itemsFeaturedCount * 3;
-
-    // Make sure each subcategory has a minimum number of items
-    itemsCount = itemsCount < minItems ? minItems : itemsCount;
+    // Normalized items count considering featured items (each one takes the space of ~4 items)
+    const normalizedItemsCount = s.itemsCount + s.itemsFeaturedCount * 3;
 
     return {
-      name: s.name,
-      itemsCount: itemsCount,
-      originalItemsCount: s.itemsCount,
+      ...s,
+      normalizedItemsCount,
     };
   });
 
   // Distribute subcategories in rows (one column per subcategory)
   // (we'll assign the next available largest category to each of the rows)
   if (!input.isOverriden) {
-    subcategories.sort((a, b) => b.originalItemsCount - a.originalItemsCount);
+    subcategories.sort((a, b) => b.normalizedItemsCount - a.normalizedItemsCount);
   }
   const rows: LayoutRow[] = Array.from({ length: rowsCount }, () => []);
   let currentRow = 0;
@@ -163,16 +78,42 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
     currentRow = currentRow == rows.length - 1 ? 0 : currentRow + 1;
   }
 
-  // Calculate columns width percentage based on the subcategory weight in the
-  // row (we need to account for the minimum width a column must have)
-  const totalItemsCount = subcategories.reduce((t, s) => (t += s.itemsCount), 0);
-  const weights = new Map(subcategories.map((s) => [s.name, s.itemsCount / totalItemsCount]));
+  // Calculate columns width percentage from the subcategory weight in the row
+  const totalItemsCount = subcategories.reduce((t, s) => (t += s.normalizedItemsCount), 0);
+  const weights = new Map(subcategories.map((s) => [s.name, s.normalizedItemsCount / totalItemsCount]));
   for (const row of rows) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const rowWeights = row.reduce((t, c) => (t += weights.get(c.subcategoryName)!), 0);
-    for (const c of row) {
+    for (const col of row) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      c.percentage = Number(((weights.get(c.subcategoryName)! / rowWeights) * 100).toFixed(2));
+      col.percentage = (weights.get(col.subcategoryName)! / rowWeights) * 100;
+    }
+  }
+
+  // Adjust columns percentages to respect the minimum width for a column
+  const minWidth = 2 * CONTAINER_PADDING + (MIN_COLUMN_ITEMS - 1) * ITEMS_SPACING + input.itemWidth * MIN_COLUMN_ITEMS;
+  const minPercentage = (minWidth * 100) / input.containerWidth;
+  for (const row of rows) {
+    const owers = [];
+    let owed = 0;
+
+    // Pass 1: increase percentage of columns not reaching the minimum
+    for (const col of row) {
+      if (col.percentage < minPercentage) {
+        col.percentage = minPercentage;
+        owed += minPercentage - col.percentage;
+      } else {
+        owers.push(col.subcategoryName);
+      }
+    }
+
+    // Pass 2: take percentage owed from the other columns
+    if (owed > 0) {
+      for (const col of row) {
+        if (owers.indexOf(col.subcategoryName) > -1) {
+          col.percentage -= owed / owers.length;
+        }
+      }
     }
   }
 

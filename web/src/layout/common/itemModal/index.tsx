@@ -299,104 +299,9 @@ const ItemModal = () => {
             </div>
           )}
 
-          {/* Organization */}
-          {itemInfo.crunchbase_data && (
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
-              <div className="d-flex flex-row align-items-center">
-                <div className={`fw-semibold text-truncate fs-6`}>{itemInfo.crunchbase_data.name}</div>
-
-                {itemInfo.crunchbase_data.kind && (
-                  <div
-                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
-                  >
-                    {itemInfo.crunchbase_data.kind}
-                  </div>
-                )}
-                {itemInfo.crunchbase_data.company_type && (
-                  <div
-                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
-                  >
-                    {formatProfitLabel(itemInfo.crunchbase_data.company_type)}
-                  </div>
-                )}
-              </div>
-              <div className={`text-muted pt-1 ${styles.location}`}>
-                {itemInfo.crunchbase_data.city}
-                {!isUndefined(itemInfo.crunchbase_data.country) ? `, ${itemInfo.crunchbase_data.country}` : ''}
-              </div>
-              <div className="mt-3">
-                <small className="text-muted">{itemInfo.crunchbase_data.description}</small>
-              </div>
-              <div className="row g-4 my-0 mb-2">
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.funding ? prettifyNumber(itemInfo.crunchbase_data.funding) : '-'}
-                    </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Funding</small>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    {itemInfo.crunchbase_data.num_employees_min && itemInfo.crunchbase_data.num_employees_max ? (
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
-                        {itemInfo.crunchbase_data.num_employees_min
-                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_min)
-                          : '-'}
-                        -
-                        {itemInfo.crunchbase_data.num_employees_max
-                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_max)
-                          : '-'}
-                      </div>
-                    ) : (
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>-</div>
-                    )}
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Employees</small>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold text-uppercase ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.stock_exchange ? itemInfo.crunchbase_data.stock_exchange : '-'}
-                    </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Stock exchange</small>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.ticker ? itemInfo.crunchbase_data.ticker : '-'}
-                    </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Ticker</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Repositories */}
           {!isUndefined(itemInfo.repositories) && (
-            <div className={`position-relative mt-4 border ${styles.fieldset}`}>
+            <div className={`position-relative my-4 border ${styles.fieldset}`}>
               <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
               {!isUndefined(mainRepo) && (
                 <>
@@ -529,6 +434,101 @@ const ItemModal = () => {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Organization */}
+          {itemInfo.crunchbase_data && (
+            <div className={`position-relative mt-4 border ${styles.fieldset}`}>
+              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
+              <div className="d-flex flex-row align-items-center">
+                <div className={`fw-semibold text-truncate fs-6`}>{itemInfo.crunchbase_data.name}</div>
+
+                {itemInfo.crunchbase_data.kind && (
+                  <div
+                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                  >
+                    {itemInfo.crunchbase_data.kind}
+                  </div>
+                )}
+                {itemInfo.crunchbase_data.company_type && (
+                  <div
+                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                  >
+                    {formatProfitLabel(itemInfo.crunchbase_data.company_type)}
+                  </div>
+                )}
+              </div>
+              <div className={`text-muted pt-1 ${styles.location}`}>
+                {itemInfo.crunchbase_data.city}
+                {!isUndefined(itemInfo.crunchbase_data.country) ? `, ${itemInfo.crunchbase_data.country}` : ''}
+              </div>
+              <div className="mt-3">
+                <small className="text-muted">{itemInfo.crunchbase_data.description}</small>
+              </div>
+              <div className="row g-4 my-0 mb-2">
+                <div className="col">
+                  <div
+                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                  >
+                    <div className={`fw-bold ${styles.highlightedTitle}`}>
+                      {itemInfo.crunchbase_data.funding ? prettifyNumber(itemInfo.crunchbase_data.funding) : '-'}
+                    </div>
+                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                      <small>Funding</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div
+                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                  >
+                    {itemInfo.crunchbase_data.num_employees_min && itemInfo.crunchbase_data.num_employees_max ? (
+                      <div className={`fw-bold ${styles.highlightedTitle}`}>
+                        {itemInfo.crunchbase_data.num_employees_min
+                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_min)
+                          : '-'}
+                        -
+                        {itemInfo.crunchbase_data.num_employees_max
+                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_max)
+                          : '-'}
+                      </div>
+                    ) : (
+                      <div className={`fw-bold ${styles.highlightedTitle}`}>-</div>
+                    )}
+                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                      <small>Employees</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div
+                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                  >
+                    <div className={`fw-bold text-uppercase ${styles.highlightedTitle}`}>
+                      {itemInfo.crunchbase_data.stock_exchange ? itemInfo.crunchbase_data.stock_exchange : '-'}
+                    </div>
+                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                      <small>Stock exchange</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div
+                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                  >
+                    <div className={`fw-bold ${styles.highlightedTitle}`}>
+                      {itemInfo.crunchbase_data.ticker ? itemInfo.crunchbase_data.ticker : '-'}
+                    </div>
+                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
+                      <small>Ticker</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

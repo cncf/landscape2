@@ -4,7 +4,6 @@ import { useContext, useEffect, useRef, useState } from 'react';
 
 import { COLORS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
-import { calculateItemsPerRow, calculateWidthInPx } from '../../../utils/gridCategoryLayout';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import {
@@ -22,6 +21,19 @@ import styles from './ZoomModal.module.css';
 
 const GAP = 96 + 40; // Padding | Title
 const CARD_WIDTH = 75;
+const PADDING = 20;
+const CARD_GAP = 5;
+const CARD_GAP_NO_BORDER = 5 - 2; // gap - border
+
+const calculateItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {
+  return Math.floor(
+    (containerWidth * (percentage / 100) - PADDING - CARD_GAP_NO_BORDER) / (itemWidth + CARD_GAP_NO_BORDER)
+  );
+};
+
+const calculateWidthInPx = (columnsNumber: number, itemWidth: number): string => {
+  return `${columnsNumber * (itemWidth + CARD_GAP) + PADDING}px`;
+};
 
 const ZoomModal = () => {
   const { visibleZoomView } = useContext(ZoomContext) as ZoomProps;
@@ -92,7 +104,7 @@ const ZoomModal = () => {
             <div
               ref={modal}
               className={`d-flex flex-row m-auto ${styles.wrapper}`}
-              style={{ width: containerWidth !== '' ? containerWidth : '100%' }}
+              style={{ width: containerWidth !== '' ? containerWidth : '100%', maxWidth: '100%' }}
             >
               <div
                 className={`text-white border border-3 border-white fw-semibold p-2 py-5 ${styles.catTitle}`}
