@@ -100,15 +100,16 @@ const Searchbar = (props: Props) => {
         cleanItemsSearch();
       }
     } else {
-      cleanItemsSearch();
+      setItemsList([]);
+      setVisibleDropdown(true);
     }
   };
 
   const search = () => {
-    onSearch(value);
     cleanTimeout();
     cleanItemsSearch();
-    forceBlur();
+    onSearch(value);
+    // forceBlur();
   };
 
   const cleanTimeout = () => {
@@ -160,14 +161,18 @@ const Searchbar = (props: Props) => {
 
   useEffect(() => {
     const isInputFocused = inputEl.current === document.activeElement;
-    if (value.length >= MIN_CHARACTERS_SEARCH && isInputFocused) {
-      cleanTimeout();
-      setDropdownTimeout(
-        setTimeout(() => {
-          setHighlightedItem(null);
-          onSearch(value);
-        }, SEARCH_DELAY)
-      );
+    if (isInputFocused) {
+      if (value.length >= MIN_CHARACTERS_SEARCH) {
+        cleanTimeout();
+        setDropdownTimeout(
+          setTimeout(() => {
+            setHighlightedItem(null);
+            onSearch(value);
+          }, SEARCH_DELAY)
+        );
+      } else {
+        cleanItemsSearch();
+      }
     }
 
     return () => {
@@ -194,7 +199,12 @@ const Searchbar = (props: Props) => {
           spellCheck="false"
           placeholder="Search projects, products and members"
           onKeyDown={onKeyDown}
-          onBlur={() => setValue('')}
+          onBlur={() => {
+            setValue('');
+            if (!isNull(itemsList) && itemsList.length === 0) {
+              cleanItemsSearch();
+            }
+          }}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
         />
 
@@ -227,71 +237,79 @@ const Searchbar = (props: Props) => {
       {visibleDropdown && !isNull(itemsList) && (
         <div
           ref={dropdownRef}
-          className={`dropdown-menu dropdown-menu-left p-0 shadow-sm w-100 rounded-0 show noFocus overflow-auto ${styles.dropdown} ${styles.visibleScroll}`}
+          className={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto ${
+            styles.dropdown
+          } ${styles.visibleScroll} ${styles[`listLength-${itemsList.length}`]}`}
           role="listbox"
           id="search-list"
         >
-          <HoverableItem onLeave={() => setHighlightedItem(null)}>
-            {itemsList.map((item: BaseItem, index: number) => {
-              return (
-                <HoverableItem
-                  key={`item_${item.name}`}
-                  onHover={() => setHighlightedItem(index)}
-                  onLeave={() => setHighlightedItem(null)}
-                >
-                  <button
-                    type="button"
-                    className={classNames(
-                      'btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3',
-                      styles.btnProject,
-                      { [styles.activeDropdownItem]: index === highlightedItem }
-                    )}
-                    onClick={() => {
-                      openItemModal(item.id);
-                    }}
-                    aria-label={`Open ${item.name} detail`}
-                    role="option"
-                    aria-selected={index === highlightedItem}
-                    id={`sl-opt${index}`}
+          {itemsList.length === 0 ? (
+            <div className="p-4 text-center fst-italic text-muted">
+              <small>We couldn't find any items that match that criteria.</small>
+            </div>
+          ) : (
+            <HoverableItem onLeave={() => setHighlightedItem(null)}>
+              {itemsList.map((item: BaseItem, index: number) => {
+                return (
+                  <HoverableItem
+                    key={`item_${item.name}`}
+                    onHover={() => setHighlightedItem(index)}
+                    onLeave={() => setHighlightedItem(null)}
                   >
-                    <div className="d-flex flex-row align-items-center w-100">
-                      <div
-                        className={`d-flex align-items-center justify-content-center me-3 ${styles.miniImageWrapper}`}
-                      >
-                        <img
-                          alt={`${item.name} logo`}
-                          className={`m-auto ${styles.logo}`}
-                          src={import.meta.env.MODE === 'development' ? `../../static/${item.logo}` : `${item.logo}`}
-                        />
-                      </div>
-                      <div
-                        className={`flex-grow-1 d-flex flex-column text-start justify-content-between h-100 ${styles.truncateWrapper}`}
-                      >
-                        <div className="d-flex flex-row align-items-baseline">
-                          <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
-                          {!isUndefined(item.maturity) && (
-                            <div className={`d-flex flex-nowrap position-relative ${styles.badges}`}>
-                              <div
-                                title="CNCF"
-                                className={`d-none d-xxl-flex badge rounded-0 bg-primary ms-2 ${styles.badge}`}
-                              >
-                                CNCF
-                              </div>
+                    <button
+                      type="button"
+                      className={classNames(
+                        'btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3',
+                        styles.btnProject,
+                        { [styles.activeDropdownItem]: index === highlightedItem }
+                      )}
+                      onClick={() => {
+                        openItemModal(item.id);
+                      }}
+                      aria-label={`Open ${item.name} detail`}
+                      role="option"
+                      aria-selected={index === highlightedItem}
+                      id={`sl-opt${index}`}
+                    >
+                      <div className="d-flex flex-row align-items-center w-100">
+                        <div
+                          className={`d-flex align-items-center justify-content-center me-3 ${styles.miniImageWrapper}`}
+                        >
+                          <img
+                            alt={`${item.name} logo`}
+                            className={`m-auto ${styles.logo}`}
+                            src={import.meta.env.MODE === 'development' ? `../../static/${item.logo}` : `${item.logo}`}
+                          />
+                        </div>
+                        <div
+                          className={`flex-grow-1 d-flex flex-column text-start justify-content-between h-100 ${styles.truncateWrapper}`}
+                        >
+                          <div className="d-flex flex-row align-items-baseline">
+                            <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
+                            {!isUndefined(item.maturity) && (
+                              <div className={`d-flex flex-nowrap position-relative ${styles.badges}`}>
+                                <div
+                                  title="CNCF"
+                                  className={`d-none d-xxl-flex badge rounded-0 bg-primary ms-2 ${styles.badge}`}
+                                >
+                                  CNCF
+                                </div>
 
-                              <MaturityBadge level={item.maturity} className={`ms-2 ${styles.badge}`} />
-                            </div>
-                          )}
-                        </div>
-                        <div className={`text-muted text-truncate ${styles.legend}`}>
-                          {item.category} / {item.subcategory}
+                                <MaturityBadge level={item.maturity} className={`ms-2 ${styles.badge}`} />
+                              </div>
+                            )}
+                          </div>
+                          <div className={`text-muted text-truncate ${styles.legend}`}>
+                            {item.category} / {item.subcategory}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </button>
-                </HoverableItem>
-              );
-            })}
-          </HoverableItem>
+                    </button>
+                  </HoverableItem>
+                );
+              })}
+            </HoverableItem>
+          )}
         </div>
       )}
     </>
