@@ -22,9 +22,27 @@
 /* Dropdown */
 .dropdown {
   margin-top: 0.5rem;
+  min-height: 74px;
   max-height: 350px;
   overscroll-behavior: contain;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+.listLength-0,
+.listLength-1 {
+  height: 76px;
+}
+
+.listLength-2 {
+  height: 150px;
+}
+
+.listLength-3 {
+  height: 224px;
+}
+
+.listLength-4 {
+  height: 298px;
 }
 
 .activeDropdownItem {
@@ -95,6 +113,10 @@
   .legend {
     font-size: 0.65rem;
     line-height: 0.75rem;
+  }
+
+  .listLength-0 {
+    height: 98px;
   }
 }
 
