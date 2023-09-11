@@ -97,7 +97,7 @@ const GridItem = memo(
           { [`border-2 ${styles.bigCard}`]: props.item.featured },
           { [styles.withLabel]: props.item.featured && props.item.featured.label },
           {
-            [styles.withRepo]: 'repositories' in props.item || props.item.has_repositories,
+            [styles.withRepo]: !isUndefined(props.item.oss) && props.item.oss,
           }
         )}
       >
