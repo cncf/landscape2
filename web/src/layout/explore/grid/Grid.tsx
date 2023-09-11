@@ -11,7 +11,6 @@ import getGridCategoryLayout, {
   LayoutColumn,
   LayoutRow,
   SubcategoryDetails,
-  transformGridLayout,
 } from '../../../utils/gridCategoryLayout';
 import { SubcategoryData } from '../../../utils/prepareData';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
@@ -39,16 +38,11 @@ const Grid = memo(function Grid(props: Props) {
   useEffect(() => {
     if (props.containerWidth > 0) {
       setGrid(
-        transformGridLayout({
-          grid: getGridCategoryLayout({
-            containerWidth: props.containerWidth,
-            itemWidth: itemWidth,
-            categoryName: props.categoryName,
-            isOverriden: props.isOverriden,
-            subcategories: props.subcategories,
-          }),
-          itemWidth: itemWidth,
+        getGridCategoryLayout({
           containerWidth: props.containerWidth,
+          itemWidth: itemWidth,
+          categoryName: props.categoryName,
+          isOverriden: props.isOverriden,
           subcategories: props.subcategories,
         })
       );
@@ -63,7 +57,7 @@ const Grid = memo(function Grid(props: Props) {
       {grid.map((row: LayoutRow, rowIndex: number) => {
         return (
           <div
-            className={classNames('row g-0 w-100', { 'flex-grow-1': rowIndex === grid.length - 1 })}
+            className={classNames('d-flex flex-nowrap w-100', { 'flex-grow-1': rowIndex === grid.length - 1 })}
             key={`cat_${props.categoryIndex}row_${rowIndex}`}
           >
             {row.map((subcat: LayoutColumn) => {
@@ -81,9 +75,7 @@ const Grid = memo(function Grid(props: Props) {
                     { 'border-top-0': props.categoryIndex !== 0 },
                     { 'border-bottom-0 col-12': subcat.percentage === 100 }
                   )}
-                  style={
-                    subcat.style && !props.isOverriden ? { ...subcat.style } : { maxWidth: `${subcat.percentage}%` }
-                  }
+                  style={{ maxWidth: `${subcat.percentage}%` }}
                 >
                   <div
                     className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}

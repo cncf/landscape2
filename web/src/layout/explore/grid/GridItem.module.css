@@ -5,7 +5,7 @@
 }
 
 .cardContent {
-  padding: 0.15rem;
+  padding: 0.2rem;
   vertical-align: top;
 }
 
@@ -64,11 +64,25 @@
 :global(.zoom-1) .cardContent,
 :global(.zoom-2) .cardContent,
 :global(.zoom-3) .cardContent {
-  padding: 0.1rem;
+  padding: 0.25rem;
+}
+
+:global(.zoom-0) .cardContent,
+:global(.zoom-1) .cardContent,
+:global(.zoom-2) .cardContent,
+:global(.zoom-3) .cardContent {
+  padding: 0.15rem;
+}
+
+:global(.zoom-0) .bigCard .cardContent,
+:global(.zoom-1) .bigCard .cardContent,
+:global(.zoom-2) .bigCard .cardContent,
+:global(.zoom-3) .bigCard .cardContent {
+  padding: 0.25rem;
 }
 
 :global(.zoom-2) .bigCard.withLabel .cardContent,
-:global(.zoom-3) .bigCard .cardContent {
+:global(.zoom-3) .bigCard.withLabel .cardContent {
   padding-bottom: 1rem;
 }
 
