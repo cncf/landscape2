@@ -2,8 +2,10 @@ import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
 import { useContext, useEffect, useRef, useState } from 'react';
 
-import { COLORS } from '../../../data';
+import { COLORS, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
+import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
+import calculateGridWidthInPx from '../../../utils/calculateGridWidthInPx';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import {
@@ -20,20 +22,7 @@ import { Loading } from '../Loading';
 import styles from './ZoomModal.module.css';
 
 const GAP = 96 + 40; // Padding | Title
-const CARD_WIDTH = 75;
-const PADDING = 20;
-const CARD_GAP = 5;
-const CARD_GAP_NO_BORDER = 5 - 2; // gap - border
-
-const calculateItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {
-  return Math.floor(
-    (containerWidth * (percentage / 100) - PADDING - CARD_GAP_NO_BORDER) / (itemWidth + CARD_GAP_NO_BORDER)
-  );
-};
-
-const calculateWidthInPx = (columnsNumber: number, itemWidth: number): string => {
-  return `${columnsNumber * (itemWidth + CARD_GAP) + PADDING}px`;
-};
+const CARD_WIDTH = ZOOM_LEVELS[10][0];
 
 const ZoomModal = () => {
   const { visibleZoomView } = useContext(ZoomContext) as ZoomProps;
@@ -45,12 +34,12 @@ const ZoomModal = () => {
   const [containerWidth, setContainerWidth] = useState<string>('');
 
   const checkNumColumns = (containerWidth: number): string => {
-    const numItems = calculateItemsPerRow(100, containerWidth, CARD_WIDTH);
+    const numItems = calculateGridItemsPerRow(100, containerWidth, CARD_WIDTH);
     if (containerWidth > 0) {
       if (numItems % 2 === 0) {
-        return calculateWidthInPx(numItems - 1, CARD_WIDTH);
+        return calculateGridWidthInPx(numItems - 1, CARD_WIDTH);
       } else {
-        return calculateWidthInPx(numItems, CARD_WIDTH);
+        return calculateGridWidthInPx(numItems, CARD_WIDTH);
       }
     }
     return '';

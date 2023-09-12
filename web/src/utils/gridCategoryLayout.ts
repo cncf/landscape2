@@ -100,8 +100,8 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
     // Pass 1: increase percentage of columns not reaching the minimum
     for (const col of row) {
       if (col.percentage < minPercentage) {
-        col.percentage = minPercentage;
         owed += minPercentage - col.percentage;
+        col.percentage = minPercentage;
       } else {
         owers.push(col.subcategoryName);
       }

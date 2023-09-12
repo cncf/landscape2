@@ -6,12 +6,14 @@ import { Link } from 'react-router-dom';
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
 import arePropsEqual from '../../../utils/areEqualProps';
+import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
   LayoutRow,
   SubcategoryDetails,
 } from '../../../utils/gridCategoryLayout';
+import ItemIterator from '../../../utils/itemsIterator';
 import { SubcategoryData } from '../../../utils/prepareData';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
@@ -28,6 +30,38 @@ interface Props {
   backgroundColor: string;
   categoryIndex: number;
 }
+
+interface ItemsListProps {
+  items: (BaseItem | Item)[];
+  itemsPerRow: number;
+  borderColor: string;
+}
+
+const MIN_ITEMS_PER_ROW = 4;
+
+const ItemsList = (props: ItemsListProps) => {
+  const [itemsPerRow, setItemsPerRow] = useState(props.itemsPerRow <= 0 ? MIN_ITEMS_PER_ROW : props.itemsPerRow);
+
+  useEffect(() => {
+    if (props.itemsPerRow >= MIN_ITEMS_PER_ROW) {
+      setItemsPerRow(props.itemsPerRow);
+    }
+  }, [props.itemsPerRow]);
+
+  return (
+    <div className={styles.items}>
+      {(() => {
+        const items = [];
+        for (const item of new ItemIterator(props.items, itemsPerRow)) {
+          if (item) {
+            items.push(<GridItem key={`item_${item.name}`} item={item} borderColor={props.borderColor} showMoreInfo />);
+          }
+        }
+        return items;
+      })()}
+    </div>
+  );
+};
 
 const Grid = memo(function Grid(props: Props) {
   const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
@@ -107,18 +141,11 @@ const Grid = memo(function Grid(props: Props) {
                     </div>
                   </div>
                   <div className={`flex-grow-1 ${styles.itemsContainer}`}>
-                    <div className={styles.items}>
-                      {sortedItems.map((item: BaseItem | Item) => {
-                        return (
-                          <GridItem
-                            key={`item_${item.name}`}
-                            item={item}
-                            borderColor={props.backgroundColor}
-                            showMoreInfo
-                          />
-                        );
-                      })}
-                    </div>
+                    <ItemsList
+                      borderColor={props.backgroundColor}
+                      items={sortedItems}
+                      itemsPerRow={calculateGridItemsPerRow(subcat.percentage, props.containerWidth, itemWidth)}
+                    />
                   </div>
                 </div>
               );
