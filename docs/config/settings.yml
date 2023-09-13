@@ -55,6 +55,11 @@ categories:
       - End User Supporter
       - Nonprofit
       - Academic
+  - name: Special
+    subcategories:
+      - Kubernetes Certified Service Provider
+      - Kubernetes Training Partner
+      - Certified CNFs
 
 # Colors (optional)
 #
