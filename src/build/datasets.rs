@@ -41,7 +41,7 @@ impl Datasets {
 /// the initial page and power the features available on it.
 mod base {
     use crate::build::{
-        data::{Category, CategoryName, ItemFeatured, LandscapeData, Maturity},
+        data::{Category, CategoryName, ItemFeatured, LandscapeData},
         settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
     use serde::{Deserialize, Serialize};
@@ -89,7 +89,7 @@ mod base {
         pub featured: Option<ItemFeatured>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub maturity: Option<Maturity>,
+        pub maturity: Option<String>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub oss: Option<bool>,

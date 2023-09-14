@@ -65,7 +65,9 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     for item in &landscape_data.items {
         if let Some(repositories) = &item.repositories {
             for repo in repositories {
-                urls.push(&repo.url);
+                if GITHUB_REPO_URL.is_match(&repo.url) {
+                    urls.push(&repo.url);
+                }
             }
         }
     }
