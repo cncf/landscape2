@@ -102,12 +102,7 @@ impl LandscapeData {
                 "maturity" => {
                     for item in &mut self.items {
                         if let Some(item_maturity) = item.maturity.as_ref() {
-                            let option =
-                                rule.options.iter().find(|o| match Maturity::try_from(o.value.as_str()) {
-                                    Ok(option_maturity) => option_maturity == *item_maturity,
-                                    Err(_) => false,
-                                });
-                            if let Some(option) = option {
+                            if let Some(option) = rule.options.iter().find(|o| o.value == *item_maturity) {
                                 item.featured = Some(ItemFeatured {
                                     order: option.order,
                                     label: option.label.clone(),
@@ -393,7 +388,7 @@ pub(crate) struct Item {
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub maturity: Option<Maturity>,
+    pub maturity: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_subcategory: Option<String>,
@@ -519,41 +514,6 @@ pub(crate) struct ItemSummary {
     pub use_case: Option<String>,
 }
 
-/// Project maturity level.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) enum Maturity {
-    Archived,
-    Graduated,
-    Incubating,
-    Sandbox,
-}
-
-impl std::fmt::Display for Maturity {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Archived => write!(f, "archived"),
-            Self::Graduated => write!(f, "graduated"),
-            Self::Incubating => write!(f, "incubating"),
-            Self::Sandbox => write!(f, "sandbox"),
-        }
-    }
-}
-
-impl TryFrom<&str> for Maturity {
-    type Error = anyhow::Error;
-
-    fn try_from(value: &str) -> Result<Self> {
-        match value {
-            "archived" => Ok(Self::Archived),
-            "graduated" => Ok(Self::Graduated),
-            "incubating" => Ok(Self::Incubating),
-            "sandbox" => Ok(Self::Sandbox),
-            _ => Err(format_err!("invalid maturity level")),
-        }
-    }
-}
-
 /// Repository information.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Repository {
@@ -573,8 +533,8 @@ mod legacy {
     //! This module defines some types used to parse the landscape data file in
     //! legacy format and convert it to the new one.
 
-    use super::{ItemAudit, Maturity};
-    use crate::build::{crunchbase::CRUNCHBASE_URL, github::GITHUB_REPO_URL};
+    use super::ItemAudit;
+    use crate::build::crunchbase::CRUNCHBASE_URL;
     use anyhow::{format_err, Context, Result};
     use chrono::NaiveDate;
     use serde::{Deserialize, Serialize};
@@ -674,7 +634,7 @@ mod legacy {
         pub enduser: Option<bool>,
         pub extra: Option<ItemExtra>,
         pub joined: Option<NaiveDate>,
-        pub project: Option<Maturity>,
+        pub project: Option<String>,
         pub repo_url: Option<String>,
         pub twitter: Option<String>,
         pub url_for_bestpractices: Option<String>,
@@ -793,11 +753,6 @@ mod legacy {
 
             // Some checks specific to the url kind provided
             match kind {
-                "additional_repository" | "repository" => {
-                    if !GITHUB_REPO_URL.is_match(url.as_str()) {
-                        return invalid_url(&format!("expecting: {}", GITHUB_REPO_URL.as_str()));
-                    }
-                }
                 "crunchbase" => {
                     if !CRUNCHBASE_URL.is_match(url.as_str()) {
                         return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
