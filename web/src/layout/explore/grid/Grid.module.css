@@ -4,13 +4,14 @@
 }
 
 .subcatTitle {
-  font-size: 0.8rem;
-  height: 2rem;
+  font-size: 0.65rem;
+  height: 1.5rem;
+  padding: 0 0.75rem;
 }
 
 .itemsContainer {
-  background-color: var(--bs-gray-100);
-  padding: 9px;
+  background-color: #fdfdfe;
+  padding: 12px;
 }
 
 .items {

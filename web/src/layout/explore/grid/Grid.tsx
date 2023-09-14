@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import isUndefined from 'lodash/isUndefined';
 import { memo, useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
@@ -64,6 +63,7 @@ const ItemsList = (props: ItemsListProps) => {
 };
 
 const Grid = memo(function Grid(props: Props) {
+  const gridItemsSize = window.baseDS.grid_items_size;
   const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
   const { updateActiveSection } = useContext(AppActionsContext) as ActionsContext;
   const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
@@ -112,33 +112,35 @@ const Grid = memo(function Grid(props: Props) {
                   style={{ maxWidth: `${subcat.percentage}%` }}
                 >
                   <div
-                    className={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
+                    className={`d-flex align-items-center text-white w-100 fw-medium ${styles.subcatTitle}`}
                     style={{ backgroundColor: props.backgroundColor }}
                   >
                     <div className="text-truncate">{subcat.subcategoryName}</div>
-                    <div>
+                    {/* <div>
                       <Link
                         to="/guide"
                         className={`btn btn-link text-white opacity-75 ps-2 pe-1 disabled ${styles.btnIcon}`}
                       >
                         <SVGIcon kind={SVGIconKind.Guide} />
                       </Link>
-                    </div>
+                    </div> */}
 
-                    <div>
-                      <button
-                        onClick={() =>
-                          updateActiveSection({
-                            category: props.categoryName,
-                            subcategory: subcat.subcategoryName,
-                            bgColor: props.backgroundColor,
-                          })
-                        }
-                        className={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
-                      >
-                        <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
-                      </button>
-                    </div>
+                    {(isUndefined(gridItemsSize) || gridItemsSize !== 'large') && (
+                      <div>
+                        <button
+                          onClick={() =>
+                            updateActiveSection({
+                              category: props.categoryName,
+                              subcategory: subcat.subcategoryName,
+                              bgColor: props.backgroundColor,
+                            })
+                          }
+                          className={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
+                        >
+                          <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className={`flex-grow-1 ${styles.itemsContainer}`}>
                     <ItemsList

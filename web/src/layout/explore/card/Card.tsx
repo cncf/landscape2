@@ -1,9 +1,11 @@
 import isUndefined from 'lodash/isUndefined';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
+import cutString from '../../../utils/cutString';
 import getItemDescription from '../../../utils/getItemDescription';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import ExternalLink from '../../common/ExternalLink';
+import FoundationBadge from '../../common/FoundationBadge';
 import Image from '../../common/Image';
 import MaturityBadge from '../../common/MaturityBadge';
 import SVGIcon from '../../common/SVGIcon';
@@ -60,17 +62,15 @@ const Card = (props: Props) => {
           <div className={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
             {!isUndefined(props.item.maturity) ? (
               <>
-                <div title="CNCF" className="badge rounded-0 bg-primary">
-                  CNCF
-                </div>
-                <MaturityBadge level={props.item.maturity} className="mx-2" />
+                <FoundationBadge />
+                <MaturityBadge level={cutString(props.item.maturity, 20)} className="ms-2" />
               </>
             ) : (
               <>
                 {!isUndefined(props.item.member_subcategory) && (
                   <div
                     title={`${props.item.member_subcategory} member`}
-                    className={`badge rounded-0 text-uppercase me-2 border ${styles.badgeOutlineDark}`}
+                    className={`badge rounded-0 text-uppercase border ${styles.badgeOutlineDark}`}
                   >
                     {props.item.member_subcategory} member
                   </div>
@@ -79,31 +79,31 @@ const Card = (props: Props) => {
             )}
 
             {websiteUrl && (
-              <ExternalLink title="Website" className={`me-2 ${styles.link}`} href={websiteUrl}>
+              <ExternalLink title="Website" className={`ms-2 ${styles.link}`} href={websiteUrl}>
                 <SVGIcon kind={SVGIconKind.World} />
               </ExternalLink>
             )}
 
             {!isUndefined(mainRepoUrl) && (
-              <ExternalLink title="Repository" className={`me-2 ${styles.link}`} href={mainRepoUrl}>
+              <ExternalLink title="Repository" className={`ms-2 ${styles.link}`} href={mainRepoUrl}>
                 <SVGIcon kind={SVGIconKind.GitHubCircle} />
               </ExternalLink>
             )}
 
             {!isUndefined(props.item.devstats_url) && (
-              <ExternalLink title="Devstats" className={`me-2 ${styles.link}`} href={props.item.devstats_url}>
+              <ExternalLink title="Devstats" className={`ms-2 ${styles.link}`} href={props.item.devstats_url}>
                 <SVGIcon kind={SVGIconKind.Stats} />
               </ExternalLink>
             )}
 
             {!isUndefined(props.item.twitter_url) && (
-              <ExternalLink title="Twitter" className={`me-2 ${styles.link}`} href={props.item.twitter_url}>
+              <ExternalLink title="Twitter" className={`ms-2 ${styles.link}`} href={props.item.twitter_url}>
                 <SVGIcon kind={SVGIconKind.Twitter} />
               </ExternalLink>
             )}
 
             {isUndefined(props.item.maturity) && !isUndefined(props.item.crunchbase_url) && (
-              <ExternalLink title="Crunchbase" className={`me-2 ${styles.link}`} href={props.item.crunchbase_url}>
+              <ExternalLink title="Crunchbase" className={`ms-2 ${styles.link}`} href={props.item.crunchbase_url}>
                 <SVGIcon kind={SVGIconKind.Crunchbase} />
               </ExternalLink>
             )}
@@ -113,7 +113,7 @@ const Card = (props: Props) => {
                 title={`Accepted at ${props.item.accepted_at}`}
                 className="d-flex flex-row align-items-center accepted-date"
               >
-                <SVGIcon kind={SVGIconKind.Calendar} className="me-1 text-muted" />
+                <SVGIcon kind={SVGIconKind.Calendar} className="ms-1 text-muted" />
                 <div>
                   <small>{props.item.accepted_at.split('-')[0]}</small>
                 </div>

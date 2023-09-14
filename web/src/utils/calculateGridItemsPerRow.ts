@@ -1,4 +1,4 @@
-const PADDING = 18;
+const PADDING = 24;
 const CARD_GAP = 5;
 
 const calculateGridItemsPerRow = (percentage: number, containerWidth: number, itemWidth: number): number => {

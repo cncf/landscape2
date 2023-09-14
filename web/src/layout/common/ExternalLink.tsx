@@ -62,7 +62,7 @@ const ExternalLink = (props: Props) => {
       ) : (
         <a
           title={props.title}
-          className={`link text-dark ${props.className}`}
+          className={`link ${props.className}`}
           href={props.href}
           target={props.target || '_blank'}
           rel="noopener noreferrer"

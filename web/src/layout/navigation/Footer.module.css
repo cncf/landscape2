@@ -1,16 +1,13 @@
 .footer {
-  padding: 4rem;
+  padding: 3rem 4rem;
 }
 
-.content {
-  max-width: calc(100% - 200px);
-}
-
-.logoCNCFWrapper {
+.logoWrapper {
   margin-right: 5rem;
+  margin-top: 0.15rem;
 }
 
-.logoCNCF {
+.logo {
   height: 34px;
 }
 
@@ -30,16 +27,23 @@
   width: 450px;
 }
 
-.copyrightWrapper {
-  position: absolute;
-}
-
 .copyright {
   font-size: 0.7rem;
+  color: var(--bs-gray-400);
 }
 
 .hr {
   margin: 2rem 0;
+}
+
+.socialIcons {
+  font-size: 1.5rem;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--color2);
+  }
 }
 
 @media only screen and (max-width: 991.98px) {
@@ -60,17 +64,9 @@
     width: 100%;
     text-align: center;
   }
-
-  .copyrightWrapper {
-    position: relative;
-  }
 }
 
 @media only screen and (max-width: 575.98px) {
-  .content {
-    max-width: 100%;
-  }
-
   .about {
     max-width: 100%;
   }

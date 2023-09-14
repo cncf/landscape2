@@ -79,7 +79,7 @@
 }
 
 .link:hover {
-  color: var(--bs-primary);
+  color: var(--color1);
 }
 
 .link svg {
@@ -96,7 +96,7 @@
 .fieldsetTitle {
   font-size: 0.8rem;
   line-height: 0.8rem;
-  color: var(--dark-blue);
+  color: var(--color4);
   top: -0.35rem;
   left: 1rem;
 }
@@ -107,7 +107,8 @@
 }
 
 .activeMaturityBadge {
-  background-color: var(--light-blue);
+  position: relative;
+  background-color: var(--color3);
 }
 
 .line::after {
@@ -117,7 +118,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background-color: var(--light-blue);
+  background-color: var(--color3);
   z-index: -1;
 }
 
@@ -149,7 +150,7 @@
 }
 
 .highlightedTitle {
-  color: var(--light-blue);
+  color: var(--color3);
   font-size: 2rem;
 }
 

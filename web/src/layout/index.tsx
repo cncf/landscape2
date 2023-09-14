@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
-import { BaseItem } from '../types';
+import { BaseData } from '../types';
 import ItemModal from './common/itemModal';
 import NoData from './common/NoData';
 import ZoomModal from './common/zoomModal';
@@ -9,14 +9,14 @@ import Footer from './navigation/Footer';
 import Header from './navigation/Header';
 
 interface Props {
-  items: BaseItem[];
+  data: BaseData;
 }
 
 const Layout = (props: Props) => {
   return (
-    <AppContextProvider>
+    <AppContextProvider foundation={props.data.foundation}>
       <div className="h-100 d-flex flex-column">
-        <Header items={props.items} />
+        <Header logo={props.data.images.header_logo} items={props.data.items} />
         <div className="d-flex flex-column flex-grow-1">
           <div className="d-block d-lg-none mx-5">
             <NoData>
@@ -30,7 +30,7 @@ const Layout = (props: Props) => {
             <Outlet />
           </main>
         </div>
-        <Footer />
+        <Footer logo={props.data.images.footer_logo} />
         <ItemModal />
         <ZoomModal />
       </div>

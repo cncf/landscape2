@@ -1,9 +1,6 @@
 // Required
 @import '../node_modules/bootstrap/scss/functions';
 
-// Default variable overrides
-$primary: #006bcc;
-$secondary: #f0a;
 $spacer: 1rem;
 $btn-hover-bg-tint-amount: 35%;
 $gutters: (
@@ -32,11 +29,6 @@ $container-max-widths: (
   xl: 1080px,
   xxl: 1320px,
   xxxl: 1860px,
-);
-
-$theme-colors: (
-  'primary': $primary,
-  'secondary': $secondary,
 );
 
 $font-family-sans-serif:
@@ -99,3 +91,6 @@ $font-family-sans-serif:
 
 // Utilities
 @import '../node_modules/bootstrap/scss/utilities/api';
+
+// Light theme
+@import './light.scss';

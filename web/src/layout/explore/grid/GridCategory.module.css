@@ -2,8 +2,13 @@
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  width: 2.5rem;
-  font-size: 0.8rem;
+  width: 3rem;
+  font-size: 0.7rem;
+  padding: 1rem 0rem;
+}
+
+.catTitleText {
+  max-height: 120px;
 }
 
 .btnIcon {
@@ -32,11 +37,6 @@
   -webkit-line-clamp: 2;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-}
-
-.itemsContainer {
-  background-color: var(--bs-gray-100);
-  padding: 0.8rem;
 }
 
 .items {

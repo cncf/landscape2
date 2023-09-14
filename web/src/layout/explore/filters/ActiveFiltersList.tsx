@@ -3,6 +3,7 @@ import { memo } from 'react';
 
 import { ActiveFilters, FilterCategory, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
+import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './ActiveFiltersList.module.css';
 
@@ -33,7 +34,8 @@ const ActiveFiltersList = memo(function ActiveFiltersList(props: Props) {
             return (
               <div className="d-flex flex-row" key={`active_${f}`} role="list">
                 {props.activeFilters[f as FilterCategory]?.map((c: string) => {
-                  if (f === FilterCategory.Maturity && c === 'cncf') return null;
+                  // Do not render maturity filter when is foundation name
+                  if (f === FilterCategory.Maturity && c === getFoundationNameLabel()) return null;
                   return (
                     <span
                       role="listitem"

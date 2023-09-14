@@ -6,6 +6,10 @@ import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
 import { Breakpoint, ViewMode } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 
+export type FoundationProps = {
+  foundation: string;
+};
+
 export type FullDataProps = {
   fullDataReady: boolean;
 };
@@ -41,8 +45,10 @@ export interface ActiveSection {
 
 interface Props {
   children: JSX.Element;
+  foundation: string;
 }
 
+export const FoundationContext = createContext<FoundationProps | null>(null);
 export const FullDataContext = createContext<FullDataProps | null>(null);
 export const ItemContext = createContext<ItemProps | null>(null);
 export const ZoomContext = createContext<ZoomProps | null>(null);
@@ -143,17 +149,19 @@ const AppContextProvider = (props: Props) => {
   });
 
   return (
-    <FullDataContext.Provider value={fullDataValue}>
-      <ItemContext.Provider value={itemValue}>
-        <ZoomContext.Provider value={zoomValue}>
-          <ViewModeContext.Provider value={viewModeValue}>
-            <ZoomLevelContext.Provider value={zoomLevelValue}>
-              <AppActionsContext.Provider value={contextActionsValue}>{props.children}</AppActionsContext.Provider>
-            </ZoomLevelContext.Provider>
-          </ViewModeContext.Provider>
-        </ZoomContext.Provider>
-      </ItemContext.Provider>
-    </FullDataContext.Provider>
+    <FoundationContext.Provider value={{ foundation: props.foundation }}>
+      <FullDataContext.Provider value={fullDataValue}>
+        <ItemContext.Provider value={itemValue}>
+          <ZoomContext.Provider value={zoomValue}>
+            <ViewModeContext.Provider value={viewModeValue}>
+              <ZoomLevelContext.Provider value={zoomLevelValue}>
+                <AppActionsContext.Provider value={contextActionsValue}>{props.children}</AppActionsContext.Provider>
+              </ZoomLevelContext.Provider>
+            </ViewModeContext.Provider>
+          </ZoomContext.Provider>
+        </ItemContext.Provider>
+      </FullDataContext.Provider>
+    </FoundationContext.Provider>
   );
 };
 

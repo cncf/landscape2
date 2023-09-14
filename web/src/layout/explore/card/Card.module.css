@@ -63,7 +63,7 @@
 }
 
 .link:hover {
-  color: var(--bs-primary);
+  color: var(--color1);
 }
 
 .link svg {

@@ -1,6 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 
 import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
+import getFoundationNameLabel from './getFoundationNameLabel';
 
 const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
   if (Object.keys(activeFilters).length > 0) {
@@ -62,7 +63,10 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       //  Maturity filter
       if (activeFilters[FilterCategory.Maturity]) {
-        if (isUndefined(item.maturity) && !activeFilters[FilterCategory.Maturity].includes('non-cncf')) {
+        if (
+          isUndefined(item.maturity) &&
+          !activeFilters[FilterCategory.Maturity].includes(`non-${getFoundationNameLabel()}`)
+        ) {
           return false;
         } else {
           if (!isUndefined(item.maturity) && !activeFilters[FilterCategory.Maturity].includes(item.maturity)) {

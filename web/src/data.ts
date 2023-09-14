@@ -1,4 +1,5 @@
-import { Breakpoint, FilterCategory, FilterSection, ViewMode } from './types';
+import { Breakpoint, FilterCategory, FilterSection, GridItemsSize, ViewMode, ZoomLevelsPerSize } from './types';
+import getFoundationNameLabel from './utils/getFoundationNameLabel';
 
 export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
@@ -16,23 +17,58 @@ export const DEFAULT_ZOOM_LEVELS = {
   [Breakpoint.SM]: 1,
   [Breakpoint.XS]: 0,
 };
+
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
+export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 
-export const ZOOM_LEVELS = [
-  [25, 23],
-  [30, 27],
-  [35, 32],
-  [40, 36],
-  [46, 41],
-  [50, 45],
-  [55, 50],
-  [60, 54],
-  [65, 59],
-  [70, 63],
-  [75, 68],
-];
+const FOUNDATION = window.baseDS.foundation;
+const GRID_SIZE = window.baseDS.grid_items_size || DEFAULT_GRID_ITEMS_SIZE;
 
-export const COLORS: string[] = ['rgba(1, 107, 204, 0.70)', 'rgba(0, 42, 81, 0.70)'];
+export const ZOOM_LEVELS_PER_SIZE: ZoomLevelsPerSize = {
+  [GridItemsSize.Small]: [
+    [25, 23],
+    [30, 27],
+    [35, 32],
+    [40, 36],
+    [46, 41],
+    [50, 45],
+    [55, 50],
+    [60, 54],
+    [65, 59],
+    [70, 63],
+    [75, 68],
+  ],
+  [GridItemsSize.Medium]: [
+    [40, 36],
+    [46, 41],
+    [50, 45],
+    [55, 50],
+    [60, 54],
+    [65, 59],
+    [70, 63],
+    [75, 68],
+    [80, 72],
+    [85, 77],
+    [90, 81],
+  ],
+  [GridItemsSize.Large]: [
+    [55, 50],
+    [60, 54],
+    [65, 59],
+    [70, 63],
+    [75, 68],
+    [80, 72],
+    [85, 77],
+    [90, 81],
+    [95, 85],
+    [100, 90],
+    [105, 94],
+  ],
+};
+
+export const ZOOM_LEVELS = ZOOM_LEVELS_PER_SIZE[GRID_SIZE as GridItemsSize];
+
+export const COLORS: string[] = ['var(--color5)', 'var(--color6)'];
 
 export const FILTERS: FilterSection[] = [
   {
@@ -40,30 +76,13 @@ export const FILTERS: FilterSection[] = [
     title: 'Project',
     options: [
       {
-        value: 'cncf',
-        name: 'CNCF Projects',
-        suboptions: [
-          {
-            value: 'graduated',
-            name: 'Graduated',
-          },
-          {
-            value: 'incubating',
-            name: 'Incubating',
-          },
-          {
-            value: 'sandbox',
-            name: 'Sandbox',
-          },
-          {
-            value: 'archived',
-            name: 'Archived',
-          },
-        ],
+        value: getFoundationNameLabel(),
+        name: `${FOUNDATION} Projects`,
+        suboptions: [],
       },
       {
-        value: 'non-cncf',
-        name: 'Non CNCF Projects',
+        value: `non-${getFoundationNameLabel()}`,
+        name: `Non ${FOUNDATION} Projects`,
       },
     ],
   },

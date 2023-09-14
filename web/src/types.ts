@@ -1,8 +1,30 @@
 export interface BaseData {
+  foundation: string;
+  images: {
+    footer_logo?: string;
+    header_logo: string;
+  };
+  colors?: {
+    [key: string]: string;
+  };
+  grid_items_size?: string;
   groups?: Group[];
   categories: Category[];
   categories_overridden?: string[];
   items: BaseItem[];
+  members_category?: string;
+  social_networks?: {
+    facebook?: string;
+    flickr?: string;
+    github?: string;
+    instagram?: string;
+    linkedin?: string;
+    slack?: string;
+    twitch?: string;
+    twitter?: string;
+    wechat?: string;
+    youtube?: string;
+  };
 }
 
 export interface Group {
@@ -192,11 +214,15 @@ export enum SVGIconKind {
   Discussions,
   Docker,
   Documentation,
+  Facebook,
   Filters,
+  Flickr,
   GitHub,
   GitHubCircle,
   Guide,
+  Instagram,
   Link,
+  LinkedIn,
   MagnifyingGlass,
   MailingList,
   NotImage,
@@ -205,9 +231,11 @@ export enum SVGIconKind {
   Slack,
   StackOverflow,
   Stats,
+  Twitch,
   Twitter,
   Youtube,
   Warning,
+  WeChat,
   World,
 }
 
@@ -219,4 +247,27 @@ export enum Breakpoint {
   MD = 'md',
   SM = 'sm',
   XS = 'xs',
+}
+
+export enum GridItemsSize {
+  Small = 'small',
+  Medium = 'medium',
+  Large = 'large',
+}
+
+export type ZoomLevelsPerSize = {
+  [key in GridItemsSize]: number[][];
+};
+
+export enum SocialNetwork {
+  Facebook = 'facebook',
+  Flickr = 'flickr',
+  GitHub = 'github',
+  Instagram = 'instagram',
+  LinkedIn = 'linkedin',
+  Slack = 'slack',
+  Twitch = 'twitch',
+  Twitter = 'twitter',
+  WeChat = 'wechat',
+  Youtube = 'youtube',
 }

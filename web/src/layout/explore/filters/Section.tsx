@@ -3,11 +3,13 @@ import isUndefined from 'lodash/isUndefined';
 import { ChangeEvent, Fragment, memo, useCallback } from 'react';
 
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';
+import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import { CheckBox } from '../../common/Checkbox';
 import styles from './Section.module.css';
 
 interface Props {
   section?: FilterSection;
+  extraMaturity?: FilterSection;
   activeFilters?: string[];
   title?: string;
   inLine?: boolean;
@@ -71,9 +73,18 @@ const Section = memo(function Section(props: Props) {
         <div className={classNames({ 'd-flex flex-row': props.inLine })}>
           {props.section.options.map((opt: FilterOption) => {
             let subOpts;
-            if (opt.suboptions) {
+            let suboptions = opt.suboptions;
+            if (
+              opt.value === getFoundationNameLabel() &&
+              props.section?.value === FilterCategory.Maturity &&
+              !isUndefined(props.extraMaturity)
+            ) {
+              suboptions = props.extraMaturity.options;
+              subOpts = props.extraMaturity.options.map((subOpt: FilterOption) => subOpt.value);
+            } else if (opt.suboptions) {
               subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
             }
+
             return (
               <div
                 key={`f_${props.section?.value}_opt_${opt.value}`}
@@ -81,9 +92,9 @@ const Section = memo(function Section(props: Props) {
               >
                 {renderCheckBox(opt, props.section?.value as FilterCategory, subOpts)}
                 <div className="ms-3">
-                  {opt.suboptions && (
+                  {suboptions && (
                     <>
-                      {opt.suboptions.map((subOpt: FilterOption) => (
+                      {suboptions.map((subOpt: FilterOption) => (
                         <Fragment key={`f_${props.section?.value}_subopt_${subOpt.value}`}>
                           {renderCheckBox(subOpt, props.section?.value as FilterCategory)}
                         </Fragment>

@@ -3,6 +3,7 @@ import { memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
 
+import { COLORS } from '../../../data';
 import { BaseItem, CardMenu, Item } from '../../../types';
 import arePropsEqual from '../../../utils/areEqualProps';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
@@ -46,19 +47,20 @@ const WaypointItem = (props: WaypointProps) => {
   };
 
   return (
-    <Waypoint topOffset="3%" bottomOffset="97%" onEnter={handleEnter} fireOnRapidScroll={false}>
+    <Waypoint topOffset="20px" bottomOffset="97%" onEnter={handleEnter} fireOnRapidScroll={false}>
       {props.children}
     </Waypoint>
   );
 };
 
 const Content = memo(function Content(props: Props) {
+  const bgColor = COLORS[0];
   const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
 
   const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
     return orderBy(
       props.data[firstCategory][firstSubcategory].items,
-      [(item: BaseItem) => item.name.toString()],
+      [(item: BaseItem) => item.name.toLowerCase().toString()],
       'asc'
     );
   };
@@ -74,8 +76,14 @@ const Content = memo(function Content(props: Props) {
               return (
                 <WaypointItem key={`list_subcat_${subcat}`} id={id} isVisible={props.isVisible}>
                   <div>
-                    <div id={id} className={`fw-semibold p-2 mb-4 text-truncate w-100 ${styles.title}`}>
-                      {cat} / {subcat}
+                    <div id={id} className={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
+                      <div
+                        className={`text-white p-2 text-nowrap text-truncate ${styles.categoryTitle}`}
+                        style={{ backgroundColor: bgColor }}
+                      >
+                        {cat}
+                      </div>
+                      <div className={`p-2 flex-grow-1 text-truncate ${styles.subcategoryTitle}`}>{subcat}</div>
                     </div>
                     <div className="row g-4 mb-4">
                       {sortItems(cat, subcat).map((item: Item) => {

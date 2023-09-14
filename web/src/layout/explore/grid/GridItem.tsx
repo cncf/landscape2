@@ -90,11 +90,11 @@ const GridItem = memo(
 
     return (
       <div
-        style={!isUndefined(props.item.maturity) ? { border: `1px solid ${props.borderColor}` } : {}}
+        style={props.item.featured ? { border: `2px solid ${props.borderColor}` } : {}}
         className={classNames(
           'card rounded-0 position-relative p-0',
           styles.card,
-          { [`border-2 ${styles.bigCard}`]: props.item.featured },
+          { [styles.bigCard]: props.item.featured },
           { [styles.withLabel]: props.item.featured && props.item.featured.label },
           {
             [styles.withRepo]: !isUndefined(props.item.oss) && props.item.oss,

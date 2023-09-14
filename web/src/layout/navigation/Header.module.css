@@ -1,6 +1,5 @@
 .logo {
   min-height: 3rem;
-  margin-left: -4px;
 }
 
 .searchIcon {
@@ -13,7 +12,7 @@
 }
 
 .link {
-  color: var(--bs-primary);
+  color: var(--color1) !important;
   letter-spacing: 2px;
 }
 
@@ -22,7 +21,7 @@
 }
 
 .link:not(:global(.active)):hover:before {
-  background-color: var(--bs-primary);
+  background-color: var(--color1);
   content: '';
   height: 4px;
   left: 0;
@@ -33,7 +32,7 @@
 }
 
 .link:global(.active):before {
-  background-color: var(--bs-primary);
+  background-color: var(--color1);
   content: '';
   height: 4px;
   left: 0;

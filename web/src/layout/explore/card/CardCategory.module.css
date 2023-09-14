@@ -1,3 +1,3 @@
-.loading {
-  min-height: calc(100vh - 92px - 36px);
+.content {
+  width: calc(100% - 270px - 1.5rem);
 }
