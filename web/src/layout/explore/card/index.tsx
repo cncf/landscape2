@@ -12,6 +12,7 @@ import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
 import { FullDataContext, FullDataProps } from '../../context/AppContext';
 import ButtonToTopScroll from './ButtonToTopScroll';
+import styles from './CardCategory.module.css';
 import Content from './Content';
 import Menu from './Menu';
 
@@ -149,7 +150,7 @@ const CardCategory = memo(function CardCategory(props: Props) {
       {firstLoad && (
         <div className="d-flex flex-row mt-2">
           <Menu menu={menu} isVisible={props.isVisible} />
-          <div className="d-flex flex-column flex-grow-1">
+          <div className={`d-flex flex-column ${styles.content}`}>
             {fullDataReady && <Content menu={menu} data={props.data} isVisible={props.isVisible} />}
             <ButtonToTopScroll firstSection={getFirstItem()} />
           </div>

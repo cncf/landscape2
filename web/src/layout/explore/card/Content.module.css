@@ -1,7 +1,15 @@
 .title {
   font-size: 0.8rem;
   min-width: 0;
-  background-color: var(--bs-gray-300);
+}
+
+.categoryTitle {
+  max-width: 50%;
+}
+
+.subcategoryTitle {
+  background-color: var(--bs-gray-100);
+  margin-left: 3px;
 }
 
 .card {
@@ -19,6 +27,6 @@
 }
 
 .card:hover {
-  border-color: var(--bs-primary) !important;
+  border-color: var(--color1) !important;
   box-shadow: 0px 0px 5px 0px var(--bs-focus-ring-color);
 }

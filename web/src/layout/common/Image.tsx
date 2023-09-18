@@ -15,7 +15,7 @@ const Image = (props: Props) => {
   return (
     <>
       {error ? (
-        <SVGIcon kind={SVGIconKind.NotImage} className={props.className} />
+        <SVGIcon kind={SVGIconKind.NotImage} className={`opacity-25 ${props.className}`} />
       ) : (
         <img
           alt={`${props.name} logo`}

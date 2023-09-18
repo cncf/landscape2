@@ -1,14 +1,12 @@
 import classNames from 'classnames';
 import isUndefined from 'lodash/isUndefined';
 import { memo, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
-import { SVGIconKind } from '../../../types';
 import arePropsEqual from '../../../utils/areEqualProps';
+import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData } from '../../../utils/prepareData';
-import SVGIcon from '../../common/SVGIcon';
 import Grid from './Grid';
 import styles from './GridCategory.module.css';
 
@@ -65,27 +63,26 @@ const GridCategory = memo(function GridCategory(props: Props) {
               <div key={`cat_${cat}`} className="d-flex flex-row">
                 <div
                   className={classNames(
-                    'text-white border border-3 border-white fw-semibold p-2 border-end-0 py-5',
+                    'text-white border border-3 border-white fw-medium border-end-0 d-flex flex-row align-items-center justify-content-end',
                     styles.catTitle,
-                    { 'border-bottom-0': index !== 0 }
+                    { 'border-bottom-0': index !== 0 },
+                    { 'border-top-0': index === Object.keys(props.data).length - 1 }
                   )}
                   style={{ backgroundColor: colorsList[index] }}
                 >
-                  <div className="d-flex flex-row align-items-start justify-content-end">
-                    <div>{cat}</div>
+                  <div className={`text-center ${styles.catTitleText}`}>{cutString(cat, 33)}</div>
 
-                    <div>
+                  {/* <div>
                       <Link
                         to="/guide"
                         className={`btn btn-link text-white opacity-75 px-0 p-0 mt-2 disabled ${styles.btnIcon} ${styles.btnInCatTitle}`}
                       >
                         <SVGIcon kind={SVGIconKind.Guide} />
                       </Link>
-                    </div>
-                  </div>
+                    </div> */}
                 </div>
 
-                <div className="d-flex flex-column align-items-stretch w-100">
+                <div className="d-flex flex-column w-100 align-items-stretch">
                   <Grid
                     containerWidth={props.containerWidth}
                     categoryName={cat}

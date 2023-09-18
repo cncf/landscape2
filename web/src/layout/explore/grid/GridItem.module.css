@@ -1,7 +1,7 @@
 .card {
   width: var(--card-size-width);
   height: var(--card-size-height);
-  background-color: #f1f3f5;
+  background-color: #f6f7f9;
 }
 
 .cardContent {

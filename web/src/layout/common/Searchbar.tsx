@@ -6,6 +6,7 @@ import { ChangeEvent, KeyboardEvent, useContext, useEffect, useRef, useState } f
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { BaseItem, SVGIconKind } from '../../types';
 import { ActionsContext, AppActionsContext } from '../context/AppContext';
+import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
 import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
@@ -288,13 +289,7 @@ const Searchbar = (props: Props) => {
                             <span className={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
                             {!isUndefined(item.maturity) && (
                               <div className={`d-flex flex-nowrap position-relative ${styles.badges}`}>
-                                <div
-                                  title="CNCF"
-                                  className={`d-none d-xxl-flex badge rounded-0 bg-primary ms-2 ${styles.badge}`}
-                                >
-                                  CNCF
-                                </div>
-
+                                <FoundationBadge className={`d-none d-xxl-flex ms-2 ${styles.badge}`} />
                                 <MaturityBadge level={item.maturity} className={`ms-2 ${styles.badge}`} />
                               </div>
                             )}

@@ -17,6 +17,7 @@ import {
   ItemProps,
 } from '../../context/AppContext';
 import ExternalLink from '../ExternalLink';
+import FoundationBadge from '../FoundationBadge';
 import Image from '../Image';
 import { Loading } from '../Loading';
 import MaturityBadge from '../MaturityBadge';
@@ -60,6 +61,62 @@ const ItemModal = () => {
     return moment(date).format("MMM 'YY");
   };
 
+  const getMaturitySection = (item: Item): JSX.Element | null => {
+    if (
+      isUndefined(item.maturity) ||
+      (isUndefined(item.accepted_at) && isUndefined(item.incubating_at) && isUndefined(item.graduated_at))
+    )
+      return null;
+
+    return (
+      <div className={`position-relative my-4 border ${styles.fieldset}`}>
+        <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
+
+        <div className="position-relative mt-2">
+          <div className="d-flex flex-row justify-content-between">
+            <div className="d-flex flex-column align-items-center">
+              <div className={`badge rounded-1 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
+                {item.accepted_at ? (
+                  <>
+                    {item.accepted_at === item.incubating_at || item.accepted_at === item.graduated_at
+                      ? '-'
+                      : item.accepted_at}
+                  </>
+                ) : (
+                  '-'
+                )}
+              </div>
+              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Sandbox</small>
+            </div>
+
+            <div className="d-flex flex-column align-items-center">
+              <div
+                className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
+                  [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(item.maturity),
+                })}
+              >
+                {item.incubating_at || '-'}
+              </div>
+              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Incubating</small>
+            </div>
+
+            <div className="d-flex flex-column align-items-center">
+              <div
+                className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
+                  [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(item.maturity),
+                })}
+              >
+                {item.graduated_at || '-'}
+              </div>
+              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Graduated</small>
+            </div>
+          </div>
+          <div className={`${styles.line} ${item.maturity}Line`} />
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
     async function fetchItemInfo() {
       try {
@@ -89,14 +146,12 @@ const ItemModal = () => {
             </div>
 
             <div className={`d-flex flex-column justify-content-between ms-3 ${styles.itemInfo}`}>
-              <div className="d-flex flex-row align-items-center">
+              <div className="d-flex flex-row align-items-center me-3">
                 <div className={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo.name}</div>
                 <div className={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
                   {!isUndefined(itemInfo.maturity) && (
                     <>
-                      <div title="CNCF" className="badge rounded-0 bg-primary">
-                        CNCF
-                      </div>
+                      <FoundationBadge />
                       <MaturityBadge level={itemInfo.maturity} className="mx-2" />
 
                       {!isUndefined(itemInfo.accepted_at) && (
@@ -242,62 +297,7 @@ const ItemModal = () => {
           <div className={`mb-3 mt-4 text-muted ${styles.description}`}>{description}</div>
 
           {/* Maturity */}
-          {!isUndefined(itemInfo.maturity) && (
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
-
-              <div className="position-relative mt-2">
-                <div className="d-flex flex-row justify-content-between">
-                  <div className="d-flex flex-column align-items-center">
-                    <div className={`badge rounded-1 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
-                      {itemInfo.accepted_at ? (
-                        <>
-                          {itemInfo.accepted_at === itemInfo.incubating_at ||
-                          itemInfo.accepted_at === itemInfo.graduated_at
-                            ? '-'
-                            : itemInfo.accepted_at}
-                        </>
-                      ) : (
-                        '-'
-                      )}
-                    </div>
-                    <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>
-                      Sandbox
-                    </small>
-                  </div>
-
-                  <div className="d-flex flex-column align-items-center">
-                    <div
-                      className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
-                        [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(
-                          itemInfo.maturity
-                        ),
-                      })}
-                    >
-                      {itemInfo.incubating_at || '-'}
-                    </div>
-                    <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>
-                      Incubating
-                    </small>
-                  </div>
-
-                  <div className="d-flex flex-column align-items-center">
-                    <div
-                      className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
-                        [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(itemInfo.maturity),
-                      })}
-                    >
-                      {itemInfo.graduated_at || '-'}
-                    </div>
-                    <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>
-                      Graduated
-                    </small>
-                  </div>
-                </div>
-                <div className={`${styles.line} ${itemInfo.maturity}Line`} />
-              </div>
-            </div>
-          )}
+          {getMaturitySection(itemInfo)}
 
           {/* Repositories */}
           {!isUndefined(itemInfo.repositories) && (
@@ -325,7 +325,7 @@ const ItemModal = () => {
                           <div
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
-                            <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                               {prettifyNumber(mainRepo.github_data.stars, 1)}
                             </div>
                             <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -338,7 +338,7 @@ const ItemModal = () => {
                           <div
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
-                            <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                               {prettifyNumber(mainRepo.github_data.contributors.count)}
                             </div>
                             <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -351,7 +351,7 @@ const ItemModal = () => {
                           <div
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
-                            <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                               {formatDate(mainRepo.github_data.first_commit.ts)}
                             </div>
                             <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -364,7 +364,7 @@ const ItemModal = () => {
                           <div
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
-                            <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                               {formatDate(mainRepo.github_data.latest_commit.ts)}
                             </div>
                             <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -377,7 +377,7 @@ const ItemModal = () => {
                           <div
                             className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                           >
-                            <div className={`fw-bold ${styles.highlightedTitle}`}>
+                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                               {mainRepo.github_data.latest_release
                                 ? formatDate(mainRepo.github_data.latest_release.ts)
                                 : '-'}
@@ -471,7 +471,7 @@ const ItemModal = () => {
                   <div
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
-                    <div className={`fw-bold ${styles.highlightedTitle}`}>
+                    <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                       {itemInfo.crunchbase_data.funding ? prettifyNumber(itemInfo.crunchbase_data.funding) : '-'}
                     </div>
                     <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -485,7 +485,7 @@ const ItemModal = () => {
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
                     {itemInfo.crunchbase_data.num_employees_min && itemInfo.crunchbase_data.num_employees_max ? (
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>
+                      <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                         {itemInfo.crunchbase_data.num_employees_min
                           ? prettifyNumber(itemInfo.crunchbase_data.num_employees_min)
                           : '-'}
@@ -495,7 +495,7 @@ const ItemModal = () => {
                           : '-'}
                       </div>
                     ) : (
-                      <div className={`fw-bold ${styles.highlightedTitle}`}>-</div>
+                      <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>-</div>
                     )}
                     <div className={`fw-semibold ${styles.highlightedLegend}`}>
                       <small>Employees</small>
@@ -507,7 +507,7 @@ const ItemModal = () => {
                   <div
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
-                    <div className={`fw-bold text-uppercase ${styles.highlightedTitle}`}>
+                    <div className={`fw-bold text-uppercase text-nowrap ${styles.highlightedTitle}`}>
                       {itemInfo.crunchbase_data.stock_exchange ? itemInfo.crunchbase_data.stock_exchange : '-'}
                     </div>
                     <div className={`fw-semibold ${styles.highlightedLegend}`}>
@@ -520,7 +520,7 @@ const ItemModal = () => {
                   <div
                     className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
                   >
-                    <div className={`fw-bold ${styles.highlightedTitle}`}>
+                    <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
                       {itemInfo.crunchbase_data.ticker ? itemInfo.crunchbase_data.ticker : '-'}
                     </div>
                     <div className={`fw-semibold ${styles.highlightedLegend}`}>

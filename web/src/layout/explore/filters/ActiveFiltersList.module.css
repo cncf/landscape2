@@ -7,8 +7,8 @@
 .filterBadge {
   padding: 0.1rem 0.35rem;
   font-size: 0.7rem;
-  color: var(--dark-blue);
-  border-color: var(--dark-blue) !important;
+  color: var(--color4);
+  border-color: var(--color4) !important;
 }
 
 .btnLegend {

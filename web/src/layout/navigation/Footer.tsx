@@ -1,42 +1,149 @@
-import { NavLink } from 'react-router-dom';
+import { isEmpty, isUndefined } from 'lodash';
 
-import CNCFLogo from '../../assets/images/CNCF_logo_white.svg';
-import logo from '../../assets/images/cncf-landscape-horizontal-white.svg';
-import qr from '../../assets/images/qr-l.svg';
 import { SVGIconKind } from '../../types';
+import ExternalLink from '../common/ExternalLink';
 import SVGIcon from '../common/SVGIcon';
 import styles from './Footer.module.css';
 
-const Footer = () => {
+interface Props {
+  logo?: string;
+}
+
+const Footer = (props: Props) => {
+  const renderSocialNetworkLinks = (): JSX.Element => {
+    return (
+      <div className={`d-flex flex-row ${styles.socialIcons}`}>
+        {!isUndefined(window.baseDS.social_networks?.twitter) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.twitter as string}
+          >
+            <SVGIcon kind={SVGIconKind.Twitter} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.github) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.github as string}
+          >
+            <SVGIcon kind={SVGIconKind.GitHub} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.linkedin) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.linkedin as string}
+          >
+            <SVGIcon kind={SVGIconKind.LinkedIn} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.instagram) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.instagram as string}
+          >
+            <SVGIcon kind={SVGIconKind.Instagram} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.wechat) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.wechat as string}
+          >
+            <SVGIcon kind={SVGIconKind.WeChat} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.youtube) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.youtube as string}
+          >
+            <SVGIcon kind={SVGIconKind.Youtube} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.flickr) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.flickr as string}
+          >
+            <SVGIcon kind={SVGIconKind.Flickr} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.facebook) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.facebook as string}
+          >
+            <SVGIcon kind={SVGIconKind.Facebook} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.twitch) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.twitch as string}
+          >
+            <SVGIcon kind={SVGIconKind.Twitch} />
+          </ExternalLink>
+        )}
+        {!isUndefined(window.baseDS.social_networks?.slack) && (
+          <ExternalLink
+            className={`me-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.slack as string}
+          >
+            <SVGIcon kind={SVGIconKind.Slack} />
+          </ExternalLink>
+        )}
+      </div>
+    );
+  };
+
   return (
     <footer role="contentinfo" className={`bg-black text-white mt-4 ${styles.footer}`}>
       <div className="container-fluid">
         <div className="d-flex flex-column flex-sm-row justify-content-between">
-          <div className={`d-flex flex-column position-relative pb-5 ${styles.content}`}>
-            <div className="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
-              <div className={`mb-4 mb-md-0 ${styles.logoCNCFWrapper}`}>
-                <img className={styles.logoCNCF} alt="Logo CNCF" src={CNCFLogo} />
+          <div className="d-flex flex-column">
+            {(!isUndefined(props.logo) ||
+              (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))) && (
+              <div className="d-flex flex-row justify-content-start align-items-center mb-5">
+                {!isUndefined(window.baseDS.images.footer_logo) && (
+                  <div className={styles.logoWrapper}>
+                    <img
+                      className={styles.logo}
+                      alt="Logo"
+                      src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+                    />
+                  </div>
+                )}
+                {renderSocialNetworkLinks()}
               </div>
+            )}
+            <div className="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
               <div className={styles.footerCol}>
                 <div className="h6 fw-bold text-uppercase">Project</div>
                 <div className="d-flex flex-column text-start">
-                  <NavLink className="link mb-1 opacity-75 text-white disabled text-decoration-none" to="/">
+                  <ExternalLink
+                    className="link mb-1 opacity-75 text-white disabled text-decoration-none"
+                    href="https://github.com/cncf/landscape2"
+                  >
                     <div className="d-flex align-items-center">
                       <SVGIcon kind={SVGIconKind.Documentation} className="me-2" />
                       Documentation
                     </div>
-                  </NavLink>
+                  </ExternalLink>
                 </div>
               </div>
               <div className={styles.footerCol}>
                 <div className="h6 fw-bold text-uppercase">Community</div>
                 <div className="d-flex flex-column text-start">
-                  <NavLink className="link mb-1 opacity-75 text-white disabled text-decoration-none" to="/">
+                  <ExternalLink
+                    className="link mb-1 opacity-75 text-white disabled text-decoration-none"
+                    href="https://github.com/cncf/landscape2"
+                  >
                     <div className="d-flex align-items-center">
                       <SVGIcon kind={SVGIconKind.GitHub} className="me-2" />
                       GitHub
                     </div>
-                  </NavLink>
+                  </ExternalLink>
                 </div>
               </div>
               <div className={`${styles.footerCol} ${styles.about} pe-0`}>
@@ -55,21 +162,35 @@ const Footer = () => {
                 </div>
               </div>
             </div>
+
             <hr className={styles.hr} />
 
-            <div className={`bottom-0 ${styles.copyrightWrapper}`}>
-              <div className={`text-white opacity-75 ${styles.copyright}`}>
+            <div>
+              <div className={`pt-2 ${styles.copyright}`}>
                 Copyright © 2023 The Linux Foundation®. All rights reserved. The Linux Foundation has registered
-                trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our
-                Trademark Usage page. Linux is a registered trademark of Linus Torvalds. Privacy Policy and Terms of
-                Use.
+                trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our{' '}
+                <ExternalLink
+                  className="p-0 fw-semibold text-white"
+                  href="https://www.linuxfoundation.org/trademark-usage"
+                >
+                  Trademark Usage
+                </ExternalLink>{' '}
+                page. Linux is a registered trademark of Linus Torvalds.{' '}
+                <ExternalLink className="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/privacy">
+                  Privacy Policy
+                </ExternalLink>{' '}
+                and{' '}
+                <ExternalLink className="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/terms">
+                  Terms of Use
+                </ExternalLink>
+                . This website contains data received from Crunchbase. This data is not licensed pursuant to the Apache
+                License. It is subject to Crunchbase's Data Access Terms, available at{' '}
+                <ExternalLink className="p-0 fw-semibold text-white" href="https://data.crunchbase.com/docs/terms">
+                  https://data.crunchbase.com/docs/terms
+                </ExternalLink>
+                , and is only permitted to be used with Linux Foundation landscape projects.
               </div>
             </div>
-          </div>
-
-          <div className={`mt-4 mt-md-0 d-flex flex-column ms-0 ms-lg-auto ${styles.footerMobileSection}`}>
-            <img className={`mx-auto mt-1 ${styles.qr}`} alt="QR code" src={qr} />
-            <img className={`mt-3 ${styles.logo}`} alt="Logo Landscape" src={logo} />
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const COLUMN_RESERVED_WIDTH = 500;
 const MIN_COLUMN_ITEMS = 4;
 
 // Lateral padding used in the container where items will be displayed (in px).
-const CONTAINER_PADDING = 11;
+const CONTAINER_PADDING = 14;
 
 // Space between items (in px).
 const ITEMS_SPACING = 6;
@@ -39,6 +39,10 @@ export type LayoutRow = LayoutColumn[];
 export interface LayoutColumn {
   subcategoryName: string;
   percentage: number;
+}
+
+interface Owers {
+  [key: string]: number;
 }
 
 // Get the grid layout of the category provided.
@@ -94,7 +98,7 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   const minWidth = 2 * CONTAINER_PADDING + (MIN_COLUMN_ITEMS - 1) * ITEMS_SPACING + input.itemWidth * MIN_COLUMN_ITEMS;
   const minPercentage = (minWidth * 100) / input.containerWidth;
   for (const row of rows) {
-    const owers = [];
+    const owers: Owers = {};
     let owed = 0;
 
     // Pass 1: increase percentage of columns not reaching the minimum
@@ -103,15 +107,28 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
         owed += minPercentage - col.percentage;
         col.percentage = minPercentage;
       } else {
-        owers.push(col.subcategoryName);
+        owers[col.subcategoryName] = col.percentage;
       }
     }
 
     // Pass 2: take percentage owed from the other columns
     if (owed > 0) {
+      const ownedPerRow = owed / Object.keys(owers).length;
       for (const col of row) {
-        if (owers.indexOf(col.subcategoryName) > -1) {
-          col.percentage -= owed / owers.length;
+        if (Object.keys(owers).includes(col.subcategoryName)) {
+          // When percentage taken means less than minimun,
+          // we only remove until the minimun percentage
+          if (col.percentage - ownedPerRow < minPercentage) {
+            delete owers[col.subcategoryName];
+            owed -= col.percentage - minPercentage;
+            col.percentage = minPercentage;
+          }
+        }
+      }
+
+      for (const col of row) {
+        if (Object.keys(owers).includes(col.subcategoryName)) {
+          col.percentage -= owed / Object.keys(owers).length;
         }
       }
     }

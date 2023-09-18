@@ -1,4 +1,5 @@
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
+import capitalizeFirstLetter from './capitalizeFirstLetter';
 import { GroupData } from './prepareData';
 
 const cleanValue = (t: string): string => {
@@ -130,7 +131,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
         title: 'Project',
         options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
           value: cleanValue(pr),
-          name: pr,
+          name: capitalizeFirstLetter(pr),
         })),
       });
     }

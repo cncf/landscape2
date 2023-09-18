@@ -1,0 +1,42 @@
+[data-theme='light'] {
+  --bs-primary: var(--color1);
+  --bs-secondary: var(--color2);
+
+  .text-secondary {
+    color: var(--color2) !important;
+  }
+
+  .btn-outline-primary {
+    border-color: var(--color1);
+    color: var(--color1);
+
+    &:active,
+    &.active {
+      background-color: var(--color1);
+      color: var(--bs-white);
+    }
+
+    &:not(.disabled):not(:disabled):not(:active):not(.active):hover,
+    &:focus {
+      background-color: var(--color1-hover);
+      color: var(--bs-white);
+    }
+  }
+
+  .btn-secondary {
+    background-color: var(--color2);
+    border-color: var(--color2);
+
+    &:not(.disabled):not(:disabled):hover,
+    &:focus,
+    &:active,
+    &.active {
+      filter: brightness(95%);
+    }
+  }
+
+  .form-check-input:checked {
+    background-color: var(--color2);
+    border-color: var(--color2);
+  }
+}

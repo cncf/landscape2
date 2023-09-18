@@ -148,6 +148,7 @@ const Filters = memo(function Filters(props: Props) {
                   <Section
                     title="Project status"
                     section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
+                    extraMaturity={maturityFilter}
                     activeFilters={tmpActiveFilters[FilterCategory.Maturity]}
                     updateActiveFilters={updateActiveFilters}
                     resetFilter={resetFilter}
