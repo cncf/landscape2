@@ -56,7 +56,6 @@ class ItemIterator implements Iterable<Item | BaseItem> {
       }
 
       const isFeatured = !isUndefined(item.featured);
-
       if (this.itemFits(this.itemsPerRow - this.currentRowItemIndex, isFeatured)) {
         // When a featured item has been added to the line
         if (isFeatured && !this.lineWithFeaturedItem) {
