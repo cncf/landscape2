@@ -4,7 +4,7 @@
 const COLUMN_RESERVED_WIDTH = 500;
 
 // Minimum number of items (non featured) that must fit in a column.
-const MIN_COLUMN_ITEMS = 4;
+export const MIN_COLUMN_ITEMS = 4;
 
 // Lateral padding used in the container where items will be displayed (in px).
 const CONTAINER_PADDING = 14;

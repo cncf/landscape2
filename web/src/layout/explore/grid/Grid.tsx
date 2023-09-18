@@ -10,6 +10,7 @@ import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
   LayoutRow,
+  MIN_COLUMN_ITEMS,
   SubcategoryDetails,
 } from '../../../utils/gridCategoryLayout';
 import ItemIterator from '../../../utils/itemsIterator';
@@ -36,13 +37,11 @@ interface ItemsListProps {
   borderColor: string;
 }
 
-const MIN_ITEMS_PER_ROW = 4;
-
 const ItemsList = (props: ItemsListProps) => {
-  const [itemsPerRow, setItemsPerRow] = useState(props.itemsPerRow <= 0 ? MIN_ITEMS_PER_ROW : props.itemsPerRow);
+  const [itemsPerRow, setItemsPerRow] = useState(props.itemsPerRow <= 0 ? MIN_COLUMN_ITEMS : props.itemsPerRow);
 
   useEffect(() => {
-    if (props.itemsPerRow >= MIN_ITEMS_PER_ROW) {
+    if (props.itemsPerRow >= MIN_COLUMN_ITEMS) {
       setItemsPerRow(props.itemsPerRow);
     }
   }, [props.itemsPerRow]);
