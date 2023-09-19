@@ -5,7 +5,6 @@ import ItemModal from './common/itemModal';
 import NoData from './common/NoData';
 import ZoomModal from './common/zoomModal';
 import AppContextProvider from './context/AppContext';
-import Footer from './navigation/Footer';
 import Header from './navigation/Header';
 
 interface Props {
@@ -26,11 +25,9 @@ const Layout = (props: Props) => {
               </div>
             </NoData>
           </div>
-          <main className="container-fluid px-4 d-none d-lg-block">
-            <Outlet />
-          </main>
+
+          <Outlet />
         </div>
-        <Footer logo={props.data.images.footer_logo} />
         <ItemModal />
         <ZoomModal />
       </div>

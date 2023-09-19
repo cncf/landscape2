@@ -24,6 +24,7 @@ import {
   ZoomLevelContext,
   ZoomLevelProps,
 } from '../context/AppContext';
+import Footer from '../navigation/Footer';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
@@ -31,6 +32,7 @@ import ActiveFiltersList from './filters/ActiveFiltersList';
 
 interface Props {
   data: BaseData;
+  isVisible: boolean;
 }
 
 export type LoadedContent = {
@@ -39,7 +41,7 @@ export type LoadedContent = {
 
 const TITLE_GAP = 40;
 
-const Landscape = (props: Props) => {
+const Explore = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
@@ -186,193 +188,209 @@ const Landscape = (props: Props) => {
     return () => window.removeEventListener('resize', checkContainerWidth);
   }, []);
 
+  useEffect(() => {
+    if (props.isVisible) {
+      checkIfVisibleLoading();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.isVisible]);
+
   if (isUndefined(groupsData)) return null;
 
   return (
     <>
-      <div className="d-flex flex-row align-items-center justify-content-between my-3 py-1">
-        <div className="d-flex flex-row align-items-center">
-          <div>
-            <button
-              title="Filters"
-              className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
-              onClick={() => setVisibleFiltersModal(true)}
+      <main className="container-fluid d-none d-lg-block px-4">
+        <div className="d-flex flex-row align-items-center justify-content-between my-3 py-1">
+          <div className="d-flex flex-row align-items-center">
+            <div>
+              <button
+                title="Filters"
+                className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
+                onClick={() => setVisibleFiltersModal(true)}
+              >
+                <div className="d-flex flex-row align-items-center">
+                  <SVGIcon kind={SVGIconKind.Filters} />
+                  <div className="fw-semibold ps-2">Filters</div>
+                </div>
+              </button>
+            </div>
+            {props.data.groups && (
+              <>
+                <div className={styles.btnGroupLegend}>
+                  <small className="text-muted me-2">GROUPS:</small>
+                </div>
+                <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                  {props.data.groups.map((group: Group) => {
+                    return (
+                      <button
+                        key={`group_${group.name}`}
+                        title={`Group: ${group.name}`}
+                        className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
+                          [`active text-white ${styles.active}`]:
+                            !isUndefined(selectedGroup) && group.name === selectedGroup,
+                        })}
+                        onClick={() => {
+                          checkIfVisibleLoading(selectedViewMode, group.name);
+                          setSelectedGroup(group.name);
+                          updateQueryString(GROUP_PARAM, group.name);
+                        }}
+                      >
+                        {group.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+            <div className={styles.btnGroupLegend}>
+              <small className="text-muted me-2">VIEW MODE:</small>
+            </div>
+            <div
+              className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}
+              role="group"
+              aria-label="View mode options"
             >
-              <div className="d-flex flex-row align-items-center">
-                <SVGIcon kind={SVGIconKind.Filters} />
-                <div className="fw-semibold ps-2">Filters</div>
-              </div>
-            </button>
-          </div>
-          {props.data.groups && (
-            <>
-              <div className={styles.btnGroupLegend}>
-                <small className="text-muted me-2">GROUPS:</small>
-              </div>
-              <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
-                {props.data.groups.map((group: Group) => {
-                  return (
+              {Object.keys(ViewMode).map((mode) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const value = (ViewMode as any)[mode];
+                const isActive = value === selectedViewMode;
+
+                return (
+                  <Fragment key={`view_mode_${value}`}>
                     <button
-                      key={`group_${group.name}`}
-                      title={`Group: ${group.name}`}
-                      className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
-                        [`active text-white ${styles.active}`]:
-                          !isUndefined(selectedGroup) && group.name === selectedGroup,
+                      title={`View mode: ${mode}`}
+                      type="button"
+                      className={classNames('btn btn-outline-primary rounded-0 fw-semibold', {
+                        'active text-white': isActive,
                       })}
                       onClick={() => {
-                        checkIfVisibleLoading(selectedViewMode, group.name);
-                        setSelectedGroup(group.name);
-                        updateQueryString(GROUP_PARAM, group.name);
+                        if (!isActive) {
+                          checkIfVisibleLoading(value, selectedGroup);
+                          updateViewMode(value);
+                          updateQueryString(VIEW_MODE_PARAM, value);
+                        }
                       }}
                     >
-                      {group.name}
+                      {mode}
                     </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-          <div className={styles.btnGroupLegend}>
-            <small className="text-muted me-2">VIEW MODE:</small>
-          </div>
-          <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`} role="group" aria-label="View mode options">
-            {Object.keys(ViewMode).map((mode) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const value = (ViewMode as any)[mode];
-              const isActive = value === selectedViewMode;
-
-              return (
-                <Fragment key={`view_mode_${value}`}>
-                  <button
-                    title={`View mode: ${mode}`}
-                    type="button"
-                    className={classNames('btn btn-outline-primary rounded-0 fw-semibold', {
-                      'active text-white': isActive,
-                    })}
-                    onClick={() => {
-                      if (!isActive) {
-                        checkIfVisibleLoading(value, selectedGroup);
-                        updateViewMode(value);
-                        updateQueryString(VIEW_MODE_PARAM, value);
-                      }
-                    }}
-                  >
-                    {mode}
-                  </button>
-                </Fragment>
-              );
-            })}
-          </div>
-          {selectedViewMode === ViewMode.Grid && (
-            <>
-              <div className={styles.btnGroupLegend}>
-                <small className="text-muted me-2">ZOOM:</small>
-              </div>
-              <div className="d-flex flex-row">
-                <div className={`btn-group btn-group-sm ${styles.btnGroup}`}>
-                  <button
-                    title="Increase zoom level"
-                    className="btn btn-outline-primary rounded-0 fw-semibold"
-                    disabled={zoomLevel === 0}
-                    onClick={() => {
-                      updateZoomLevel(zoomLevel - 1);
-                    }}
-                  >
-                    <div className={styles.btnSymbol}>-</div>
-                  </button>
-                  <button
-                    title="Decrease zoom level"
-                    className="btn btn-outline-primary rounded-0 fw-semibold"
-                    disabled={zoomLevel === 10}
-                    onClick={() => {
-                      updateZoomLevel(zoomLevel + 1);
-                    }}
-                  >
-                    <div className={styles.btnSymbol}>+</div>
-                  </button>
-                </div>
-              </div>
-            </>
-          )}{' '}
-        </div>
-      </div>
-
-      <ActiveFiltersList activeFilters={activeFilters} resetFilters={resetFilters} removeFilter={removeFilter} />
-
-      {numVisibleItems === 0 && (
-        <div className="pt-5">
-          <NoData>
-            <>
-              <div className="fs-4">We couldn't find any items that match the criteria selected.</div>
-              <p className="h6 my-4 lh-base">
-                You can update them and try again or{' '}
-                <button
-                  type="button"
-                  className="btn btn-link lh-1 p-0 text-reset align-baseline"
-                  onClick={resetFilters}
-                  aria-label="Reset filters"
-                >
-                  reset all
-                </button>{' '}
-                the filters.
-              </p>
-            </>
-          </NoData>
-        </div>
-      )}
-
-      <div className="position-relative d-flex w-100 pt-1">
-        <div
-          ref={container}
-          className={classNames('d-flex flex-column flex-grow-1 w-100', styles.container, `zoom-${zoomLevel}`, {
-            [styles.loadingContent]: visibleLoading,
-          })}
-        >
-          {visibleLoading && <Loading spinnerClassName="position-fixed top-50 start-50" />}
-
-          {props.data.groups ? (
-            <>
-              {props.data.groups.map((group: Group) => {
-                const isSelected = selectedGroup === group.name;
-                return (
-                  <div
-                    key={group.name}
-                    style={isSelected ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}
-                  >
-                    <Content
-                      isSelected={isSelected}
-                      containerWidth={containerWidth}
-                      data={groupsData[group.name]}
-                      categories_overridden={props.data.categories_overridden}
-                      finishLoading={finishLoading}
-                    />
-                  </div>
+                  </Fragment>
                 );
               })}
-            </>
-          ) : (
-            <Content
-              isSelected
-              containerWidth={containerWidth}
-              data={groupsData.default}
-              categories_overridden={props.data.categories_overridden}
-              finishLoading={finishLoading}
-            />
-          )}
+            </div>
+            {selectedViewMode === ViewMode.Grid && (
+              <>
+                <div className={styles.btnGroupLegend}>
+                  <small className="text-muted me-2">ZOOM:</small>
+                </div>
+                <div className="d-flex flex-row">
+                  <div className={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                    <button
+                      title="Increase zoom level"
+                      className="btn btn-outline-primary rounded-0 fw-semibold"
+                      disabled={zoomLevel === 0}
+                      onClick={() => {
+                        updateZoomLevel(zoomLevel - 1);
+                      }}
+                    >
+                      <div className={styles.btnSymbol}>-</div>
+                    </button>
+                    <button
+                      title="Decrease zoom level"
+                      className="btn btn-outline-primary rounded-0 fw-semibold"
+                      disabled={zoomLevel === 10}
+                      onClick={() => {
+                        updateZoomLevel(zoomLevel + 1);
+                      }}
+                    >
+                      <div className={styles.btnSymbol}>+</div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}{' '}
+          </div>
         </div>
-      </div>
 
-      <Filters
-        data={props.data}
-        landscapeData={landscapeData}
-        selectedGroup={selectedGroup}
-        visibleFilters={visibleFiltersModal}
-        onClose={onCloseFiltersModal}
-        activeFilters={activeFilters}
-        applyFilters={applyFilters}
-      />
+        <ActiveFiltersList activeFilters={activeFilters} resetFilters={resetFilters} removeFilter={removeFilter} />
+
+        {numVisibleItems === 0 && (
+          <div className="pt-5">
+            <NoData>
+              <>
+                <div className="fs-4">We couldn't find any items that match the criteria selected.</div>
+                <p className="h6 my-4 lh-base">
+                  You can update them and try again or{' '}
+                  <button
+                    type="button"
+                    className="btn btn-link lh-1 p-0 text-reset align-baseline"
+                    onClick={resetFilters}
+                    aria-label="Reset filters"
+                  >
+                    reset all
+                  </button>{' '}
+                  the filters.
+                </p>
+              </>
+            </NoData>
+          </div>
+        )}
+
+        <div className="position-relative d-flex w-100 pt-1">
+          <div
+            ref={container}
+            className={classNames('d-flex flex-column flex-grow-1 w-100', styles.container, `zoom-${zoomLevel}`, {
+              [styles.loadingContent]: visibleLoading,
+            })}
+          >
+            {visibleLoading && <Loading spinnerClassName="position-fixed top-50 start-50" />}
+
+            {props.data.groups ? (
+              <>
+                {props.data.groups.map((group: Group) => {
+                  const isSelected = selectedGroup === group.name;
+                  return (
+                    <div
+                      key={group.name}
+                      style={isSelected ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}
+                    >
+                      <Content
+                        isVisible={props.isVisible}
+                        isSelected={isSelected}
+                        containerWidth={containerWidth}
+                        data={groupsData[group.name]}
+                        categories_overridden={props.data.categories_overridden}
+                        finishLoading={finishLoading}
+                      />
+                    </div>
+                  );
+                })}
+              </>
+            ) : (
+              <Content
+                isVisible={props.isVisible}
+                isSelected
+                containerWidth={containerWidth}
+                data={groupsData.default}
+                categories_overridden={props.data.categories_overridden}
+                finishLoading={finishLoading}
+              />
+            )}
+          </div>
+        </div>
+
+        <Filters
+          data={props.data}
+          landscapeData={landscapeData}
+          selectedGroup={selectedGroup}
+          visibleFilters={visibleFiltersModal}
+          onClose={onCloseFiltersModal}
+          activeFilters={activeFilters}
+          applyFilters={applyFilters}
+        />
+      </main>
+      {!visibleLoading && <Footer logo={window.baseDS.images.footer_logo} />}
     </>
   );
 };
 
-export default Landscape;
+export default Explore;

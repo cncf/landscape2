@@ -17,7 +17,7 @@
 categories:
   - category: "Introduction"
     keywords: []
-    content: >
+    content: |
       If you've researched cloud native applications and technologies, you've probably come
       across the [CNCF cloud native landscape](https://landscape.cncf.io). Unsurprisingly,
       the sheer scale of it can be overwhelming. So many categories and so many technologies.
@@ -33,7 +33,7 @@ categories:
 
     subcategories:
       - subcategory: "What is the cloud native landscape?"
-        content: >
+        content: |
           The goal of the cloud native landscape is to compile and organize all cloud native open
           source projects and proprietary products into categories, providing an overview of the
           current ecosystem. Organizations that have a cloud native project or product can
@@ -41,7 +41,7 @@ categories:
           landscape.
 
       - subcategory: "How to use this guide"
-        content: >
+        content: |
           In this guide, you'll find one chapter per layer and column which discusses each category
           within it. Categories are broken down into: what it is, the problem it addresses, how it
           helps, and technical 101. While the first three sections assume no technical background,
@@ -61,7 +61,7 @@ categories:
           > always refer to the actual landscape - things are moving fast!
 
       - subcategory: "Contribute to the CNCF Landscape"
-        content: >
+        content: |
           Are you searching for an exciting project to contribute to within the CNCF ecosystem?
           Look no further! The CNCF hosts a wide range of projects that span cloud-native computing.
           To find the perfect project for your skills and interests, check out our comprehensive
@@ -72,7 +72,7 @@ categories:
 
   - category: "Provisioning"
     keywords: []
-    content: >
+    content: |
       Provisioning is the first layer in the cloud native landscape. It encompasses tools that
       are used to *create and harden* the foundation on which cloud native apps are built.
       You'll find tools to automatically configure, create, and manage the infrastructure,
@@ -87,7 +87,7 @@ categories:
           - "Infrastructure-as-Code (IaC)"
           - "Automation"
           - "Declarative Configuration"
-        content: >
+        content: |
           #### What it is
 
           Automation and configuration tools speed up the creation and configuration of compute

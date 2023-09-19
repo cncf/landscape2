@@ -1,14 +1,18 @@
 import orderBy from 'lodash/orderBy';
 import { memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Waypoint } from 'react-waypoint';
 
 import { COLORS } from '../../../data';
-import { BaseItem, CardMenu, Item } from '../../../types';
+import { BaseItem, CardMenu, Item, SVGIconKind } from '../../../types';
 import arePropsEqual from '../../../utils/areEqualProps';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import isElementInView from '../../../utils/isElementInView';
+import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoriesData } from '../../../utils/prepareData';
+import slugify from '../../../utils/slugify';
+import SVGIcon from '../../common/SVGIcon';
 import { ActionsContext, AppActionsContext } from '../../context/AppContext';
 import Card from './Card';
 import styles from './Content.module.css';
@@ -78,12 +82,36 @@ const Content = memo(function Content(props: Props) {
                   <div>
                     <div id={id} className={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                       <div
-                        className={`text-white p-2 text-nowrap text-truncate ${styles.categoryTitle}`}
+                        className={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
                         style={{ backgroundColor: bgColor }}
                       >
-                        {cat}
+                        {isSectionInGuide(cat) && (
+                          <div>
+                            <Link
+                              to={`/?tab=guide#${slugify(cat)}`}
+                              state={{ from: 'explore' }}
+                              className={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
+                            >
+                              <SVGIcon kind={SVGIconKind.Guide} />
+                            </Link>
+                          </div>
+                        )}
+                        <div className="text-white text-nowrap text-truncate">{cat}</div>
                       </div>
-                      <div className={`p-2 flex-grow-1 text-truncate ${styles.subcategoryTitle}`}>{subcat}</div>
+                      <div className={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
+                        {isSectionInGuide(cat, subcat) && (
+                          <div>
+                            <Link
+                              to={`/?tab=guide#${slugify(`${cat} ${subcat}`)}`}
+                              state={{ from: 'explore' }}
+                              className={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
+                            >
+                              <SVGIcon kind={SVGIconKind.Guide} />
+                            </Link>
+                          </div>
+                        )}
+                        <div className="flex-grow-1 text-truncate">{subcat}</div>
+                      </div>
                     </div>
                     <div className="row g-4 mb-4">
                       {sortItems(cat, subcat).map((item: Item) => {

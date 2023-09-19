@@ -4,10 +4,10 @@ import throttle from 'lodash/throttle';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { SVGIconKind } from '../../../types';
-import isElementInView from '../../../utils/isElementInView';
-import SVGIcon from '../../common/SVGIcon';
+import { SVGIconKind } from '../../types';
+import isElementInView from '../../utils/isElementInView';
 import styles from './ButtonToTopScroll.module.css';
+import SVGIcon from './SVGIcon';
 
 interface Props {
   firstSection: string | null;

@@ -1,7 +1,11 @@
-import { NavLink } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import classNames from 'classnames';
+import isEmpty from 'lodash/isEmpty';
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
+import { Link, useSearchParams } from 'react-router-dom';
 
-import { BaseItem, SVGIconKind } from '../../types';
+import { DEFAULT_TAB, TAB_PARAM } from '../../data';
+import { BaseItem, SVGIconKind, Tab } from '../../types';
 import ExternalLink from '../common/ExternalLink';
 import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
@@ -13,6 +17,12 @@ interface Props {
 }
 
 const Header = (props: Props) => {
+  const [searchParams] = useSearchParams();
+  const activeTab: Tab =
+    !isNull(searchParams.get(TAB_PARAM)) && Object.values(Tab).includes(searchParams.get(TAB_PARAM) as Tab)
+      ? (searchParams.get(TAB_PARAM) as Tab)
+      : DEFAULT_TAB;
+
   return (
     <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
       <div className="container-fluid d-flex align-items-center p-4">
@@ -27,18 +37,29 @@ const Header = (props: Props) => {
         </div>
 
         <div className="d-none d-md-flex align-items-center">
-          <NavLink
-            className={`btn btn-link position-relative ms-4 ms-xl-5 text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+          <Link
+            className={classNames(
+              'btn btn-link position-relative ms-4 ms-xl-5 text-uppercase fw-bold text-decoration-none p-0',
+              styles.link,
+              { [styles.active]: activeTab === Tab.Explore }
+            )}
             to="/"
           >
             Explore
-          </NavLink>
-          {/* <NavLink
-            className={`btn btn-link position-relative ms-3 ms-xl-4 text-uppercase fw-bold text-decoration-none p-0 disabled ${styles.link}`}
-            to="/guide"
-          >
-            Guide
-          </NavLink> */}
+          </Link>
+          {!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary) && (
+            <Link
+              className={classNames(
+                'btn btn-link position-relative ms-4 ms-xl-5 text-uppercase fw-bold text-decoration-none p-0',
+                styles.link,
+                { [styles.active]: activeTab === Tab.Guide }
+              )}
+              to="/?tab=guide"
+              state={{ from: 'header' }}
+            >
+              Guide
+            </Link>
+          )}
         </div>
 
         <div className={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>

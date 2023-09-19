@@ -1,5 +1,6 @@
 export interface BaseData {
   foundation: string;
+  guide_summary?: GuideSummary;
   images: {
     footer_logo?: string;
     header_logo: string;
@@ -30,6 +31,10 @@ export interface BaseData {
 export interface Group {
   name: string;
   categories: string[];
+}
+
+export interface GuideSummary {
+  [key: string]: string[];
 }
 
 export interface Category {
@@ -185,6 +190,29 @@ export interface CardMenu {
   [key: string]: string[];
 }
 
+export interface Guide {
+  categories: CategoryGuide[];
+}
+
+export interface CategoryGuide {
+  category: string;
+  content?: string;
+  subcategories: SubcategoryGuide[];
+  keywords?: string[];
+}
+
+export interface SubcategoryGuide {
+  subcategory: string;
+  content: string;
+  keywords?: string[];
+}
+
+export interface ToCTitle {
+  title: string;
+  id: string;
+  options?: ToCTitle[];
+}
+
 export enum FilterCategory {
   Maturity = 'project',
   Organization = 'organization',
@@ -270,4 +298,9 @@ export enum SocialNetwork {
   Twitter = 'twitter',
   WeChat = 'wechat',
   Youtube = 'youtube',
+}
+
+export enum Tab {
+  Explore = 'explore',
+  Guide = 'guide',
 }

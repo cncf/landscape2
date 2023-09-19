@@ -14,13 +14,19 @@
 .link {
   color: var(--color1) !important;
   letter-spacing: 2px;
+  border-bottom: 6px solid transparent;
+}
+
+.active {
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
 }
 
 .githubIcon {
   margin-top: -0.25rem;
 }
 
-.link:not(:global(.active)):hover:before {
+.link:not(.active):hover:before {
   background-color: var(--color1);
   content: '';
   height: 4px;
@@ -31,7 +37,7 @@
   bottom: -10px;
 }
 
-.link:global(.active):before {
+.link.active:before {
   background-color: var(--color1);
   content: '';
   height: 4px;

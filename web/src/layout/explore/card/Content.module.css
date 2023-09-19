@@ -30,3 +30,8 @@
   border-color: var(--color1) !important;
   box-shadow: 0px 0px 5px 0px var(--bs-focus-ring-color);
 }
+
+.btnIcon {
+  line-height: 0.8rem;
+  margin-top: -2px;
+}
