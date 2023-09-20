@@ -94,7 +94,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     settings.images = get_settings_images(&settings, &args.output_dir).await?;
 
     // Prepare guide and copy it to the output directory
-    let includes_guide = prepare_guide(&args.guide_source, &args.output_dir).await?.is_some();
+    let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
 
     // Prepare items logos and copy them to the output directory
     prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
@@ -110,7 +110,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_github_data(github_data)?;
 
     // Generate datasets for web application
-    let datasets = generate_datasets(&landscape_data, &settings, includes_guide, &args.output_dir)?;
+    let datasets = generate_datasets(&landscape_data, &settings, &guide, &args.output_dir)?;
 
     // Render index file and write it to the output directory
     render_index(&datasets, &args.output_dir)?;
@@ -176,12 +176,12 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
 fn generate_datasets(
     landscape_data: &LandscapeData,
     settings: &LandscapeSettings,
-    includes_guide: bool,
+    guide: &Option<LandscapeGuide>,
     output_dir: &Path,
 ) -> Result<Datasets> {
     debug!("generating datasets");
 
-    let datasets = Datasets::new(landscape_data, settings, includes_guide)?;
+    let datasets = Datasets::new(landscape_data, settings, guide)?;
     let datasets_path = output_dir.join(DATASETS_PATH);
 
     // Base
@@ -281,7 +281,7 @@ async fn get_settings_images(settings: &LandscapeSettings, output_dir: &Path) ->
 
 /// Prepare guide and copy it to the output directory.
 #[instrument(skip_all, err)]
-async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<()>> {
+async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<LandscapeGuide>> {
     debug!("preparing guide");
 
     let Some(guide) = LandscapeGuide::new(guide_source).await? else {
@@ -290,7 +290,7 @@ async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<
     let path = output_dir.join(DATASETS_PATH).join("guide.json");
     File::create(path)?.write_all(&serde_json::to_vec(&guide)?)?;
 
-    Ok(Some(()))
+    Ok(Some(guide))
 }
 
 /// Prepare items logos and copy them to the output directory, updating the
