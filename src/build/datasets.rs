@@ -6,7 +6,7 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, full::Full};
-use super::{settings::LandscapeSettings, LandscapeData};
+use super::{settings::LandscapeSettings, stats::Stats, LandscapeData};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -17,6 +17,8 @@ pub(crate) struct Datasets {
 
     /// #[full]
     pub full: Full,
+
+    pub stats: Stats,
 }
 
 impl Datasets {
@@ -29,6 +31,7 @@ impl Datasets {
         let datasets = Datasets {
             base: Base::new(landscape_data, settings, includes_guide),
             full: Full::new(landscape_data.clone()),
+            stats: Stats::new(landscape_data, settings),
         };
 
         Ok(datasets)
