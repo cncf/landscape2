@@ -41,6 +41,7 @@ mod guide;
 mod logos;
 mod projects;
 mod settings;
+mod stats;
 pub(crate) use data::LandscapeData;
 
 /// Path where the datasets will be written to in the output directory.
@@ -190,6 +191,10 @@ fn generate_datasets(
     // Full
     let mut full_file = File::create(datasets_path.join("full.json"))?;
     full_file.write_all(&serde_json::to_vec(&datasets.full)?)?;
+
+    // Stats
+    let mut stats_file = File::create(datasets_path.join("stats.json"))?;
+    stats_file.write_all(&serde_json::to_vec(&datasets.stats)?)?;
 
     Ok(datasets)
 }
