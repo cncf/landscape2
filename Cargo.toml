@@ -12,7 +12,7 @@ askama = { version = "0.12.0", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.73"
 aws-config = "0.56.1"
-aws-sdk-s3 = "0.30.0"
+aws-sdk-s3 = "0.31.0"
 chrono = { version = "0.4.30", features = ["serde"] }
 clap = { version = "4.4.2", features = ["derive"] }
 csv = "1.2.2"
