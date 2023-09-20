@@ -6,7 +6,7 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, full::Full};
-use super::{settings::LandscapeSettings, stats::Stats, LandscapeData};
+use super::{guide::LandscapeGuide, settings::LandscapeSettings, stats::Stats, LandscapeData};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -18,6 +18,7 @@ pub(crate) struct Datasets {
     /// #[full]
     pub full: Full,
 
+    /// Stats dataset.
     pub stats: Stats,
 }
 
@@ -26,10 +27,10 @@ impl Datasets {
     pub(crate) fn new(
         landscape_data: &LandscapeData,
         settings: &LandscapeSettings,
-        includes_guide: bool,
+        guide: &Option<LandscapeGuide>,
     ) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(landscape_data, settings, includes_guide),
+            base: Base::new(landscape_data, settings, guide),
             full: Full::new(landscape_data.clone()),
             stats: Stats::new(landscape_data, settings),
         };
@@ -45,9 +46,11 @@ impl Datasets {
 mod base {
     use crate::build::{
         data::{Category, CategoryName, ItemFeatured, LandscapeData},
+        guide::LandscapeGuide,
         settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
     use serde::{Deserialize, Serialize};
+    use std::collections::HashMap;
     use uuid::Uuid;
 
     /// Base dataset information.
@@ -55,7 +58,6 @@ mod base {
     pub(crate) struct Base {
         pub foundation: String,
         pub images: Images,
-        pub includes_guide: bool,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
@@ -72,6 +74,9 @@ mod base {
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub groups: Vec<Group>,
 
+        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        pub guide_summary: GuideSummary,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
 
@@ -79,36 +84,16 @@ mod base {
         pub social_networks: Option<SocialNetworks>,
     }
 
-    /// Base dataset item information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-    pub(crate) struct Item {
-        pub category: String,
-        pub id: Uuid,
-        pub name: String,
-        pub logo: String,
-        pub subcategory: String,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub featured: Option<ItemFeatured>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub maturity: Option<String>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub oss: Option<bool>,
-    }
-
     impl Base {
         /// Create a new Base instance from the data and settings provided.
         pub(crate) fn new(
             landscape_data: &LandscapeData,
             settings: &LandscapeSettings,
-            includes_guide: bool,
+            guide: &Option<LandscapeGuide>,
         ) -> Self {
             let mut base = Base {
                 foundation: settings.foundation.clone(),
                 images: settings.images.clone(),
-                includes_guide,
                 categories: landscape_data.categories.clone(),
                 colors: settings.colors.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
@@ -141,9 +126,45 @@ mod base {
                 });
             }
 
+            // Prepare guide summary
+            if let Some(guide) = guide {
+                if let Some(categories) = &guide.categories {
+                    for category in categories {
+                        let subcategories = if let Some(subcategories) = &category.subcategories {
+                            subcategories.iter().map(|s| s.subcategory.clone()).collect()
+                        } else {
+                            Vec::new()
+                        };
+                        base.guide_summary.insert(category.category.clone(), subcategories);
+                    }
+                }
+            }
+
             base
         }
     }
+
+    /// Base dataset item information.
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Item {
+        pub category: String,
+        pub id: Uuid,
+        pub name: String,
+        pub logo: String,
+        pub subcategory: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub featured: Option<ItemFeatured>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub maturity: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub oss: Option<bool>,
+    }
+
+    /// Type alias to represent the guide summary.
+    type GuideSummary = HashMap<String, Vec<String>>;
 }
 
 /// Full dataset.
