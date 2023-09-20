@@ -66,8 +66,11 @@ impl LandscapeGuide {
         let options = markdown::Options::default();
         if let Some(categories) = guide.categories.as_mut() {
             for c in &mut *categories {
-                c.content = markdown::to_html_with_options(&c.content, &options)
-                    .map_err(|err| format_err!("{err}"))?;
+                if let Some(content) = &c.content {
+                    let html = markdown::to_html_with_options(content, &options)
+                        .map_err(|err| format_err!("{err}"))?;
+                    c.content = Some(html);
+                }
 
                 if let Some(subcategories) = c.subcategories.as_mut() {
                     for sc in &mut *subcategories {
@@ -86,7 +89,9 @@ impl LandscapeGuide {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
     pub category: String,
-    pub content: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,

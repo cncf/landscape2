@@ -8,9 +8,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import Layout from './layout';
-import Landscape from './layout/explore';
-import Guide from './layout/guide';
-import NotFound from './layout/notFound';
+import Landscape from './layout/landscape';
 import { BaseData } from './types';
 import itemsDataGetter from './utils/itemsDataGetter';
 import updateAlphaInColor from './utils/updateAlphaInColor';
@@ -71,8 +69,6 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Layout data={data} />}>
           <Route index element={<Landscape data={data} />} />
-          <Route path="/guide" element={<Guide />} />
-          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </Router>

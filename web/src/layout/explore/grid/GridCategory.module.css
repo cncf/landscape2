@@ -17,8 +17,9 @@
 }
 
 .btnInCatTitle {
-  transform: rotate(90deg);
+  transform: rotate(180deg);
   line-height: 1.25rem;
+  margin-right: -0.25rem;
 }
 
 .icon {

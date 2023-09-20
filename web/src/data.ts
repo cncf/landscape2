@@ -1,6 +1,7 @@
-import { Breakpoint, FilterCategory, FilterSection, GridItemsSize, ViewMode, ZoomLevelsPerSize } from './types';
+import { Breakpoint, FilterCategory, FilterSection, GridItemsSize, Tab, ViewMode, ZoomLevelsPerSize } from './types';
 import getFoundationNameLabel from './utils/getFoundationNameLabel';
 
+export const TAB_PARAM = 'tab';
 export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
 export const MODAL_PARAM = 'modal';
@@ -18,6 +19,7 @@ export const DEFAULT_ZOOM_LEVELS = {
   [Breakpoint.XS]: 0,
 };
 
+export const DEFAULT_TAB = Tab.Explore;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 

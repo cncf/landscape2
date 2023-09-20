@@ -1,0 +1,47 @@
+.guide {
+  color: rgb(56, 64, 74);
+}
+
+.guide blockquote {
+  background-color: var(--bs-gray-100);
+  padding: 1rem 1.5rem;
+  padding-top: 2rem;
+  font-size: 0.8rem;
+  margin-bottom: 1.75rem;
+  margin-top: 2rem;
+  border-left: 3px solid var(--bs-gray-300);
+}
+
+.guide img {
+  max-width: 100%;
+}
+
+.guide *:not(blockquote ul) > ul,
+.guide *:not(blockquote ol) > ol {
+  margin-bottom: 2rem;
+}
+
+.guide *:not(blockquote) > :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--color1);
+}
+
+.guide *:not(blockquote) > :is(h2, h3, h4, h5, h6) {
+  font-weight: 400;
+}
+
+.guide *:not(blockquote) > :is(h4, h5, h6) {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.guide a {
+  color: var(--color1);
+}
+
+.catSection {
+  margin-bottom: 3rem;
+}
+
+.loadingContent {
+  min-height: calc(100vh - 36px);
+}

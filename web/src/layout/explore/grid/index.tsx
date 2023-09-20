@@ -71,15 +71,6 @@ const GridCategory = memo(function GridCategory(props: Props) {
                   style={{ backgroundColor: colorsList[index] }}
                 >
                   <div className={`text-center ${styles.catTitleText}`}>{cutString(cat, 33)}</div>
-
-                  {/* <div>
-                      <Link
-                        to="/guide"
-                        className={`btn btn-link text-white opacity-75 px-0 p-0 mt-2 disabled ${styles.btnIcon} ${styles.btnInCatTitle}`}
-                      >
-                        <SVGIcon kind={SVGIconKind.Guide} />
-                      </Link>
-                    </div> */}
                 </div>
 
                 <div className="d-flex flex-column w-100 align-items-stretch">

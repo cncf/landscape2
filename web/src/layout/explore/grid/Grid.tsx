@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import isUndefined from 'lodash/isUndefined';
 import { memo, useContext, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
@@ -13,8 +14,10 @@ import getGridCategoryLayout, {
   MIN_COLUMN_ITEMS,
   SubcategoryDetails,
 } from '../../../utils/gridCategoryLayout';
+import isSectionInGuide from '../../../utils/isSectionInGuide';
 import ItemIterator from '../../../utils/itemsIterator';
 import { SubcategoryData } from '../../../utils/prepareData';
+import slugify from '../../../utils/slugify';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
 import { ActionsContext, AppActionsContext, ZoomLevelContext, ZoomLevelProps } from '../../context/AppContext';
@@ -115,14 +118,17 @@ const Grid = memo(function Grid(props: Props) {
                     style={{ backgroundColor: props.backgroundColor }}
                   >
                     <div className="text-truncate">{subcat.subcategoryName}</div>
-                    {/* <div>
-                      <Link
-                        to="/guide"
-                        className={`btn btn-link text-white opacity-75 ps-2 pe-1 disabled ${styles.btnIcon}`}
-                      >
-                        <SVGIcon kind={SVGIconKind.Guide} />
-                      </Link>
-                    </div> */}
+                    {isSectionInGuide(props.categoryName, subcat.subcategoryName) && (
+                      <div>
+                        <Link
+                          to={`/?tab=guide#${slugify(`${props.categoryName} ${subcat.subcategoryName}`)}`}
+                          state={{ from: 'explore' }}
+                          className={`btn btn-link text-white ps-2 pe-1 ${styles.btnIcon}`}
+                        >
+                          <SVGIcon kind={SVGIconKind.Guide} />
+                        </Link>
+                      </div>
+                    )}
 
                     {(isUndefined(gridItemsSize) || gridItemsSize !== 'large') && (
                       <div>

@@ -1,4 +1,5 @@
-import { isEmpty, isUndefined } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 
 import { SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
