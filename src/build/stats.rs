@@ -46,6 +46,9 @@ pub(crate) struct MembersStats {
     /// Number of members joined per year-month.
     joined_at: HashMap<YearMonth, u64>,
 
+    /// Running total of number of members joined per year-month.
+    joined_at_rt: HashMap<YearMonth, u64>,
+
     /// Total number of members.
     members: u64,
 
@@ -77,6 +80,7 @@ impl MembersStats {
                 }
             }
         }
+        stats.joined_at_rt = calculate_running_total(&stats.joined_at);
 
         // Return stats collected
         if stats != MembersStats::default() {
@@ -92,8 +96,14 @@ pub(crate) struct ProjectsStats {
     /// Number of projects accepted per year-month.
     accepted_at: HashMap<YearMonth, u64>,
 
+    /// Running total of number of projects accepted per year-month.
+    accepted_at_rt: HashMap<YearMonth, u64>,
+
     /// Number of security audits per year-month.
     audits: HashMap<YearMonth, u64>,
+
+    /// Running total of number of security audits per year-month.
+    audits_rt: HashMap<YearMonth, u64>,
 
     /// Promotions from incubating to graduated per year-month.
     incubating_to_graduated: HashMap<YearMonth, u64>,
@@ -154,6 +164,8 @@ impl ProjectsStats {
                 }
             }
         }
+        stats.accepted_at_rt = calculate_running_total(&stats.accepted_at);
+        stats.audits_rt = calculate_running_total(&stats.audits);
 
         // Return stats collected
         if stats != ProjectsStats::default() {
@@ -292,4 +304,17 @@ where
     } else {
         map.insert(key.clone(), increment);
     }
+}
+
+/// Calculate the running total of the values provided.
+fn calculate_running_total(map: &HashMap<YearMonth, u64>) -> HashMap<YearMonth, u64> {
+    let mut rt = HashMap::new();
+    let mut acc = 0u64;
+
+    for (k, v) in map.iter().sorted_by(|a, b| Ord::cmp(&a.0, &b.0)) {
+        rt.insert(k.clone(), v + acc);
+        acc += v;
+    }
+
+    rt
 }
