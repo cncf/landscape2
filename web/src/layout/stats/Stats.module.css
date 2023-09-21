@@ -1,0 +1,21 @@
+.title {
+  font-size: 1.5rem;
+  color: var(--bs-gray-800) !important;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--bs-gray-800) !important;
+}
+
+.table {
+  font-size: 0.9rem;
+}
+
+.table th {
+  color: var(--bs-gray-700);
+}
+
+.table {
+  border-color: rgb(209, 209, 209) !important;
+}

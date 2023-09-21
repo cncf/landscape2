@@ -27,7 +27,7 @@ const Header = (props: Props) => {
     <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
       <div className="container-fluid d-flex align-items-center p-4">
         <div className="mx-auto mx-md-0">
-          <Link to="/">
+          <Link to="/" className="me-5">
             <img
               className={styles.logo}
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
@@ -39,7 +39,7 @@ const Header = (props: Props) => {
         <div className="d-none d-md-flex align-items-center">
           <Link
             className={classNames(
-              'btn btn-link position-relative ms-4 ms-xl-5 text-uppercase fw-bold text-decoration-none p-0',
+              'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
               styles.link,
               { [styles.active]: activeTab === Tab.Explore }
             )}
@@ -50,7 +50,7 @@ const Header = (props: Props) => {
           {!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary) && (
             <Link
               className={classNames(
-                'btn btn-link position-relative ms-4 ms-xl-5 text-uppercase fw-bold text-decoration-none p-0',
+                'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
                 styles.link,
                 { [styles.active]: activeTab === Tab.Guide }
               )}
@@ -60,6 +60,16 @@ const Header = (props: Props) => {
               Guide
             </Link>
           )}
+          <Link
+            className={classNames(
+              'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
+              styles.link,
+              { [styles.active]: activeTab === Tab.Stats }
+            )}
+            to="/?tab=stats"
+          >
+            Stats
+          </Link>
         </div>
 
         <div className={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>

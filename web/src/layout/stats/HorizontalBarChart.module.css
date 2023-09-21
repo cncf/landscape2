@@ -1,0 +1,3 @@
+.chart :global(.apexcharts-data-labels) text {
+  transform: translateX(5px);
+}

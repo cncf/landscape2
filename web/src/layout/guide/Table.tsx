@@ -1,8 +1,9 @@
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { BaseItem, Item } from '../../types';
+import { FoundationContext, FoundationProps } from '../context/AppContext';
 import styles from './Table.module.css';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const Table = (props: Props) => {
+  const { foundation } = useContext(FoundationContext) as FoundationProps;
   const [items, setItems] = useState<(BaseItem | Item)[] | undefined>();
 
   useEffect(() => {
@@ -29,7 +31,7 @@ const Table = (props: Props) => {
       <thead>
         <tr>
           <th className={`w-50 ${styles.header}`} scope="col">
-            {window.baseDS.foundation} Projects
+            {foundation} Projects
           </th>
           <th className={`w-50 ${styles.header}`} scope="col">
             Keywords

@@ -9,6 +9,10 @@
       fetch("./static/base.json")
       .then(res => res.json())
       .then(data => window.baseDS = data);
+
+      fetch("./static/stats.json")
+      .then(res => res.json())
+      .then(data => window.statsDS = data);
     </script>
     <% } else { %>
     <script>

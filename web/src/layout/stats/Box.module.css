@@ -1,0 +1,26 @@
+.box {
+  background-color: var(--bs-gray-100);
+  border: 6px solid var(--bs-gray-300);
+  width: 220px;
+  max-width: 220px;
+  margin: 0 18px;
+  margin-bottom: 48px;
+}
+
+.data {
+  color: var(--color-stats-1);
+  font-size: 2.5rem;
+  line-height: 3rem;
+}
+
+.legend {
+  font-size: 0.8rem;
+  color: var(--bs-gray-600);
+  height: 1.75rem;
+}
+
+.label {
+  color: var(--bs-gray-600);
+  line-height: 0.7rem;
+  padding-bottom: 0.75rem;
+}

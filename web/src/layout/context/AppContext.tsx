@@ -3,11 +3,15 @@ import { useSearchParams } from 'react-router-dom';
 
 import { DEFAULT_VIEW_MODE, DEFAULT_ZOOM_LEVELS, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import { useBreakpointDetect } from '../../hooks/useBreakpointDetect';
-import { Breakpoint, ViewMode } from '../../types';
+import { Breakpoint, Stats, ViewMode } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 
 export type FoundationProps = {
   foundation: string;
+};
+
+export type StatsProps = {
+  stats: Stats;
 };
 
 export type FullDataProps = {
@@ -49,6 +53,7 @@ interface Props {
 }
 
 export const FoundationContext = createContext<FoundationProps | null>(null);
+export const StatsContext = createContext<StatsProps | null>(null);
 export const FullDataContext = createContext<FullDataProps | null>(null);
 export const ItemContext = createContext<ItemProps | null>(null);
 export const ZoomContext = createContext<ZoomProps | null>(null);
@@ -150,17 +155,19 @@ const AppContextProvider = (props: Props) => {
 
   return (
     <FoundationContext.Provider value={{ foundation: props.foundation }}>
-      <FullDataContext.Provider value={fullDataValue}>
-        <ItemContext.Provider value={itemValue}>
-          <ZoomContext.Provider value={zoomValue}>
-            <ViewModeContext.Provider value={viewModeValue}>
-              <ZoomLevelContext.Provider value={zoomLevelValue}>
-                <AppActionsContext.Provider value={contextActionsValue}>{props.children}</AppActionsContext.Provider>
-              </ZoomLevelContext.Provider>
-            </ViewModeContext.Provider>
-          </ZoomContext.Provider>
-        </ItemContext.Provider>
-      </FullDataContext.Provider>
+      <StatsContext.Provider value={{ stats: window.statsDS }}>
+        <FullDataContext.Provider value={fullDataValue}>
+          <ItemContext.Provider value={itemValue}>
+            <ZoomContext.Provider value={zoomValue}>
+              <ViewModeContext.Provider value={viewModeValue}>
+                <ZoomLevelContext.Provider value={zoomLevelValue}>
+                  <AppActionsContext.Provider value={contextActionsValue}>{props.children}</AppActionsContext.Provider>
+                </ZoomLevelContext.Provider>
+              </ViewModeContext.Provider>
+            </ZoomContext.Provider>
+          </ItemContext.Provider>
+        </FullDataContext.Provider>
+      </StatsContext.Provider>
     </FoundationContext.Provider>
   );
 };
