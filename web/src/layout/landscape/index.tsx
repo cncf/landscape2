@@ -7,6 +7,7 @@ import { DEFAULT_TAB, TAB_PARAM } from '../../data';
 import { BaseData, Tab } from '../../types';
 import Explore from '../explore';
 import Guide from '../guide';
+import Stats from '../stats';
 
 interface Props {
   data: BaseData;
@@ -29,11 +30,14 @@ const Landscape = (props: Props) => {
 
   return (
     <div className="h-100">
-      <div className={classNames({ 'd-none': activeTab !== Tab.Explore })}>
+      <div className={classNames('d-flex flex-column h-100', { 'd-none': activeTab !== Tab.Explore })}>
         {loadedTabs.includes(Tab.Explore) && <Explore data={props.data} isVisible={activeTab === Tab.Explore} />}
       </div>
-      <div className={classNames({ 'd-none': activeTab !== Tab.Guide })}>
+      <div className={classNames('d-flex flex-column h-100', { 'd-none': activeTab !== Tab.Guide })}>
         {loadedTabs.includes(Tab.Guide) && <Guide isVisible={activeTab === Tab.Guide} />}
+      </div>
+      <div className={classNames('d-flex flex-column h-100', { 'd-none': activeTab !== Tab.Stats })}>
+        {loadedTabs.includes(Tab.Stats) && <Stats />}
       </div>
     </div>
   );

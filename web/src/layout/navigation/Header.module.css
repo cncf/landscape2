@@ -1,5 +1,5 @@
 .logo {
-  min-height: 3rem;
+  height: 48px;
 }
 
 .searchIcon {
@@ -15,6 +15,7 @@
   color: var(--color1) !important;
   letter-spacing: 2px;
   border-bottom: 6px solid transparent;
+  margin-left: 2rem;
 }
 
 .active {

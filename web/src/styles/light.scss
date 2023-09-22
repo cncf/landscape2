@@ -1,6 +1,10 @@
 [data-theme='light'] {
   --bs-primary: var(--color1);
   --bs-secondary: var(--color2);
+  --color-font: #38383f;
+
+  --color-stats-1: #0086ff;
+  --color-stats-2: #567241;
 
   .text-secondary {
     color: var(--color2) !important;

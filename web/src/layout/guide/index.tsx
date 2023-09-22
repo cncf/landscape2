@@ -169,7 +169,7 @@ const Guide = (props: Props) => {
 
   return (
     <>
-      <main className="container-fluid d-none d-lg-block px-4 position-relative">
+      <main className="flex-grow-1 container-fluid d-none d-lg-block px-4 position-relative">
         <div className={classNames('d-flex flex-row', { [styles.loadingContent]: isUndefined(guide) })}>
           {isUndefined(guide) ? (
             <Loading spinnerClassName="position-fixed top-50 start-50" />

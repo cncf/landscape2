@@ -224,6 +224,35 @@ export enum FilterCategory {
   CompanyType = 'company-type',
 }
 
+export interface Stats {
+  members?: {
+    joined_at: { [key: string]: number };
+    joined_at_rt: { [key: string]: number };
+    members: number;
+    subcategories: { [key: string]: number };
+  };
+  projects?: {
+    accepted_at: { [key: string]: number };
+    accepted_at_rt: { [key: string]: number };
+    audits: { [key: string]: number };
+    audits_rt: { [key: string]: number };
+    incubating_to_graduated: { [key: string]: number };
+    maturity: { [key: string]: number };
+    projects: number;
+    sandbox_to_incubating: { [key: string]: number };
+  };
+  repositories?: {
+    bytes: number;
+    contributors: number;
+    languages: { [key: string]: number };
+    languages_bytes: { [key: string]: number };
+    licenses: { [key: string]: number };
+    participation_stats: number[];
+    repositories: number;
+    stars: number;
+  };
+}
+
 export enum ViewMode {
   Grid = 'grid',
   Card = 'card',
@@ -303,4 +332,5 @@ export enum SocialNetwork {
 export enum Tab {
   Explore = 'explore',
   Guide = 'guide',
+  Stats = 'stats',
 }

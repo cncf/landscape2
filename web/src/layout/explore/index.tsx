@@ -199,7 +199,7 @@ const Explore = (props: Props) => {
 
   return (
     <>
-      <main className="container-fluid d-none d-lg-block px-4">
+      <main className="flex-grow-1 container-fluid d-none d-lg-block px-4">
         <div className="d-flex flex-row align-items-center justify-content-between my-3 py-1">
           <div className="d-flex flex-row align-items-center">
             <div>
