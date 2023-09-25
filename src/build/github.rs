@@ -83,6 +83,8 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     let github_data: GithubData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
+
+            // Use cached data when available if it hasn't expired yet
             if let Some(cached_repo) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|repo| {
                     if repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now() {
@@ -92,16 +94,14 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
                     }
                 })
             }) {
-                // Use cached data when available if it hasn't expired yet
                 (url, Ok(cached_repo.clone()))
+            }
+            // Otherwise we pull it from GitHub if any tokens were provided
+            else if let Some(gh_pool) = &gh_pool {
+                let gh = gh_pool.get().await.expect("token -when available-");
+                (url.clone(), Repository::new(gh, &url).await)
             } else {
-                // Otherwise we pull it from GitHub if any tokens were provided
-                if let Some(gh_pool) = &gh_pool {
-                    let gh = gh_pool.get().await.expect("token -when available-");
-                    (url.clone(), Repository::new(gh, &url).await)
-                } else {
-                    (url.clone(), Err(format_err!("no tokens provided")))
-                }
+                (url.clone(), Err(format_err!("no tokens provided")))
             }
         })
         .buffer_unordered(concurrency)
@@ -120,6 +120,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     // Write data (in json format) to cache
     cache.write(GITHUB_CACHE_FILE, &serde_json::to_vec_pretty(&github_data)?)?;
 
+    debug!("done!");
     Ok(github_data)
 }
 
