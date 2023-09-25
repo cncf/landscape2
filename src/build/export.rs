@@ -134,10 +134,13 @@ impl From<&data::Item> for Item {
                 item.github_latest_commit_link = Some(gh_data.latest_commit.url.clone());
                 item.github_repo = Some(gh_data.url.clone());
                 item.github_stars = Some(gh_data.stars);
-                item.github_start_commit_link = Some(gh_data.first_commit.url.clone());
 
-                if let Some(license) = &gh_data.license {
-                    item.license = Some(license.clone());
+                if let Some(commit) = &gh_data.first_commit {
+                    item.github_start_commit_link = Some(commit.url.clone());
+
+                    if let Some(date) = commit.ts {
+                        item.github_start_commit_date = Some(fmt_date(date.date_naive()));
+                    }
                 }
 
                 if let Some(date) = gh_data.latest_commit.ts {
@@ -151,8 +154,8 @@ impl From<&data::Item> for Item {
                     item.github_latest_release_link = Some(release.url.clone());
                 }
 
-                if let Some(date) = gh_data.first_commit.ts {
-                    item.github_start_commit_date = Some(fmt_date(date.date_naive()));
+                if let Some(license) = &gh_data.license {
+                    item.license = Some(license.clone());
                 }
             }
         }

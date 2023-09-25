@@ -134,12 +134,14 @@ pub(crate) type RepositoryUrl = String;
 pub(crate) struct Repository {
     pub contributors: Contributors,
     pub description: String,
-    pub first_commit: Commit,
     pub generated_at: DateTime<Utc>,
     pub latest_commit: Commit,
     pub participation_stats: Vec<i64>,
     pub stars: i64,
     pub url: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub first_commit: Option<Commit>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub languages: Option<HashMap<String, i64>>,
@@ -247,7 +249,7 @@ trait GH {
     async fn get_contributors_count(&self, owner: &str, repo: &str) -> Result<usize>;
 
     /// Get first commit.
-    async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
+    async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Option<Commit>>;
 
     /// Get languages used in repository.
     async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>>;
@@ -324,7 +326,7 @@ impl GH for GHApi {
 
     /// [GH::get_first_commit]
     #[instrument(fields(?owner, ?repo, ?ref_), skip_all, err)]
-    async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit> {
+    async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Option<Commit>> {
         // Get last commits page
         let mut last_page = 1;
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/commits?sha={ref_}&per_page=1");
@@ -338,17 +340,17 @@ impl GH for GHApi {
             }
         }
 
-        // Get first repository commit
-        let commit: Commit = self
+        // Get first repository commit and return it if found
+        if let Some(commit) = self
             .gh_client
             .repos()
             .list_commits(owner, repo, ref_, "", "", None, None, 1, last_page)
             .await?
             .pop()
-            .expect("one commit to exist")
-            .into();
-
-        Ok(commit)
+        {
+            return Ok(Some(Commit::from(commit)));
+        }
+        Ok(None)
     }
 
     /// [GH::get_languages]
