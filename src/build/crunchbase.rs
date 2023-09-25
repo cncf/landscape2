@@ -27,7 +27,7 @@ const CRUNCHBASE_CACHE_TTL: i64 = 7;
 const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
 /// Interval for the rate limiter used when sending requests to the CB API.
-const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_millis(500);
+const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_millis(300);
 
 /// Collect Crunchbase data for each of the items orgs in the landscape,
 /// reusing cached data whenever possible.
@@ -73,6 +73,8 @@ pub(crate) async fn collect_crunchbase_data(
     let crunchbase_data: CrunchbaseData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
+
+            // Use cached data when available if it hasn't expired yet
             if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|org| {
                     if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
@@ -82,16 +84,14 @@ pub(crate) async fn collect_crunchbase_data(
                     }
                 })
             }) {
-                // Use cached data when available if it hasn't expired yet
                 (url, Ok(cached_org.clone()))
+            }
+            // Otherwise we pull it from Crunchbase if a key was provided
+            else if let Some(cb) = cb.clone() {
+                limiter.acquire_one().await;
+                (url.clone(), Organization::new(cb, &url).await)
             } else {
-                // Otherwise we pull it from Crunchbase if a key was provided
-                if let Some(cb) = cb.clone() {
-                    limiter.acquire_one().await;
-                    (url.clone(), Organization::new(cb, &url).await)
-                } else {
-                    (url.clone(), Err(format_err!("no api key provided")))
-                }
+                (url.clone(), Err(format_err!("no api key provided")))
             }
         })
         .buffer_unordered(1)
@@ -113,6 +113,7 @@ pub(crate) async fn collect_crunchbase_data(
         &serde_json::to_vec_pretty(&crunchbase_data)?,
     )?;
 
+    debug!("done!");
     Ok(crunchbase_data)
 }
 

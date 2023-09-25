@@ -359,6 +359,7 @@ async fn prepare_items_logos(
         }
     }
 
+    debug!("done!");
     Ok(())
 }
 
