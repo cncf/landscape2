@@ -27,7 +27,7 @@ const CRUNCHBASE_CACHE_TTL: i64 = 7;
 const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
 /// Interval for the rate limiter used when sending requests to the CB API.
-const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_millis(500);
+const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_secs(1);
 
 /// Collect Crunchbase data for each of the items orgs in the landscape,
 /// reusing cached data whenever possible.
@@ -71,8 +71,11 @@ pub(crate) async fn collect_crunchbase_data(
     // Collect information from Crunchbase, reusing cached data when available
     let limiter = RateLimiter::builder().initial(1).interval(CRUNCHBASE_RATE_LIMITER_INTERVAL).build();
     let crunchbase_data: CrunchbaseData = stream::iter(urls)
-        .map(|url| async {
+        .filter_map(|url| async {
             let url = url.clone();
+            let mut org_cb_data = None;
+
+            // Use cached data when available if it hasn't expired yet
             if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|org| {
                     if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
@@ -82,30 +85,24 @@ pub(crate) async fn collect_crunchbase_data(
                     }
                 })
             }) {
-                // Use cached data when available if it hasn't expired yet
-                (url, Ok(cached_org.clone()))
-            } else {
-                // Otherwise we pull it from Crunchbase if a key was provided
-                if let Some(cb) = cb.clone() {
-                    limiter.acquire_one().await;
-                    (url.clone(), Organization::new(cb, &url).await)
-                } else {
-                    (url.clone(), Err(format_err!("no api key provided")))
+                org_cb_data = Some((url, cached_org.clone()));
+            }
+            // Otherwise we pull it from Crunchbase if a key was provided
+            else if let Some(cb) = cb.clone() {
+                limiter.acquire_one().await;
+                if let Ok(organization) = Organization::new(cb, &url).await {
+                    org_cb_data = Some((url.clone(), organization));
                 }
             }
+
+            if let Some(org_cb_data) = org_cb_data {
+                return Some(async { org_cb_data });
+            }
+            None
         })
         .buffer_unordered(1)
-        .collect::<HashMap<String, Result<Organization>>>()
-        .await
-        .into_iter()
-        .filter_map(|(url, result)| {
-            if let Ok(crunchbase_data) = result {
-                Some((url, crunchbase_data))
-            } else {
-                None
-            }
-        })
-        .collect();
+        .collect()
+        .await;
 
     // Write data (in json format) to cache
     cache.write(
@@ -113,6 +110,7 @@ pub(crate) async fn collect_crunchbase_data(
         &serde_json::to_vec_pretty(&crunchbase_data)?,
     )?;
 
+    debug!("done!");
     Ok(crunchbase_data)
 }
 
