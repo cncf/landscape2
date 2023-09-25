@@ -26,6 +26,9 @@ const CRUNCHBASE_CACHE_TTL: i64 = 7;
 /// Environment variable containing the Crunchbase API key.
 const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
+/// Interval for the rate limiter used when sending requests to the CB API.
+const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_millis(500);
+
 /// Collect Crunchbase data for each of the items orgs in the landscape,
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
@@ -66,7 +69,7 @@ pub(crate) async fn collect_crunchbase_data(
     urls.dedup();
 
     // Collect information from Crunchbase, reusing cached data when available
-    let limiter = RateLimiter::builder().initial(1).interval(Duration::from_millis(300)).build();
+    let limiter = RateLimiter::builder().initial(1).interval(CRUNCHBASE_RATE_LIMITER_INTERVAL).build();
     let crunchbase_data: CrunchbaseData = stream::iter(urls)
         .map(|url| async {
             let url = url.clone();
