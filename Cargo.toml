@@ -12,18 +12,18 @@ askama = { version = "0.12.0", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.73"
 aws-config = "0.56.1"
-aws-sdk-s3 = "0.30.0"
-chrono = { version = "0.4.30", features = ["serde"] }
-clap = { version = "4.4.2", features = ["derive"] }
+aws-sdk-s3 = "0.31.2"
+chrono = { version = "0.4.31", features = ["serde"] }
+clap = { version = "4.4.5", features = ["derive"] }
 csv = "1.2.2"
-deadpool = "0.9.5"
+deadpool = "0.10.0"
 dirs = "5.0.1"
 futures = "0.3.28"
 hex = "0.4.3"
 itertools = "0.11.0"
 lazy_static = "1.4.0"
 leaky-bucket = "1.0.1"
-markdown = "1.0.0-alpha.12"
+markdown = "1.0.0-alpha.14"
 mime_guess = "2.0.4"
 num_cpus = "1.16.0"
 octorust = "0.3.2"
@@ -32,7 +32,7 @@ regex = "1.9.5"
 reqwest = { version = "0.11.20", features = ["native-tls-vendored"] }
 rust-embed = "8.0.0"
 serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.105"
+serde_json = "1.0.107"
 serde_yaml = "0.9.25"
 sha2 = "0.10.7"
 tokio = { version = "1.32.0", features = [
