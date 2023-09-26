@@ -1,23 +1,23 @@
 import isUndefined from 'lodash/isUndefined';
-import { MouseEvent as ReactMouseEvent, RefObject, useEffect, useState } from 'react';
+import { Accessor, createEffect, createSignal, JSXElement, onCleanup, onMount, Show } from 'solid-js';
+import { Portal } from 'solid-js/web';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './FullScreenModal.module.css';
 
 interface Props {
-  children: JSX.Element | JSX.Element[];
+  children: JSXElement | JSXElement[];
   open?: boolean;
   onClose?: () => void;
-  refs?: RefObject<HTMLElement>[];
+  initialRefs?: Accessor<HTMLElement>[];
 }
 
 const FullScreenModal = (props: Props) => {
-  const [openStatus, setOpenStatus] = useState(props.open || false);
-  const outsideElements: RefObject<HTMLElement>[] = !isUndefined(props.refs) ? props.refs : [];
+  const [openStatus, setOpenStatus] = createSignal(false);
 
   useBodyScroll(openStatus, 'modal');
-  useOutsideClick(outsideElements, openStatus, () => {
+  useOutsideClick(props.initialRefs || [], openStatus, () => {
     closeModal();
   });
 
@@ -28,42 +28,45 @@ const FullScreenModal = (props: Props) => {
     }
   };
 
-  useEffect(() => {
+  createEffect(() => {
     if (!isUndefined(props.open)) {
       setOpenStatus(props.open);
     }
-  }, [props.open]);
+  });
 
-  useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
-    };
+  const handleEsc = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      closeModal();
+    }
+  };
 
+  onMount(() => {
     window.addEventListener('keydown', handleEsc);
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-    };
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+  });
 
-  if (!openStatus) return null;
+  onCleanup(() => {
+    window.removeEventListener('keydown', handleEsc);
+  });
 
   return (
-    <div className={`position-fixed overflow-hidden p-3 top-0 bottom-0 start-0 end-0 ${styles.modal}`} role="dialog">
-      <div className={`position-absolute ${styles.closeWrapper}`}>
-        <button
-          type="button"
-          className={`btn-close btn-close-white opacity-100 fs-5 ${styles.close}`}
-          onClick={(e: ReactMouseEvent<HTMLButtonElement>) => {
-            e.preventDefault();
-            closeModal();
-          }}
-          aria-label="Close"
-        ></button>
-      </div>
-      <div className="d-flex flex-column h-100 w-100">{props.children}</div>
-    </div>
+    <Show when={openStatus()}>
+      <Portal>
+        <div class={`position-fixed overflow-hidden p-3 top-0 bottom-0 start-0 end-0 ${styles.modal}`} role="dialog">
+          <div class={`position-absolute ${styles.closeWrapper}`}>
+            <button
+              type="button"
+              class={`btn-close btn-close-white opacity-100 fs-5 ${styles.close}`}
+              onClick={(e) => {
+                e.preventDefault();
+                closeModal();
+              }}
+              aria-label="Close"
+            />
+          </div>
+          <div class="d-flex flex-column h-100 w-100">{props.children}</div>
+        </div>
+      </Portal>
+    </Show>
   );
 };
 

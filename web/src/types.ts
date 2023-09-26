@@ -173,6 +173,12 @@ export interface FilterSection {
   };
 }
 
+export interface ActiveSection {
+  category: string;
+  subcategory: string;
+  bgColor?: string;
+}
+
 export interface Option {
   name: string;
   value: string;

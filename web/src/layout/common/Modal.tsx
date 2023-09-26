@@ -1,6 +1,5 @@
-import classNames from 'classnames';
 import isUndefined from 'lodash/isUndefined';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { createEffect, createSignal, JSXElement, Show } from 'solid-js';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
@@ -8,11 +7,11 @@ import styles from './Modal.module.css';
 
 interface Props {
   open: boolean;
-  header?: string | JSX.Element;
-  headerClassName?: string;
-  modalDialogClassName?: string;
-  children: JSX.Element;
-  footer?: JSX.Element;
+  header?: string | JSXElement;
+  headerClass?: string;
+  modalDialogClass?: string;
+  children: JSXElement;
+  footer?: JSXElement;
   onClose: () => void;
   size?: string;
   noScrollable?: boolean;
@@ -20,82 +19,78 @@ interface Props {
 }
 
 const Modal = (props: Props) => {
-  const [openStatus, setOpenStatus] = useState(props.open);
-  const ref = useRef<HTMLDivElement>(null);
+  const [openStatus, setOpenStatus] = createSignal(false);
+  const [ref, setRef] = createSignal<HTMLDivElement>();
 
   useOutsideClick([ref], openStatus, () => {
     closeModal();
   });
+
   useBodyScroll(openStatus, 'modal');
 
   const closeModal = () => {
-    props.onClose();
     setOpenStatus(false);
+    props.onClose();
   };
 
-  useEffect(() => {
+  createEffect(() => {
     setOpenStatus(props.open);
-  }, [props.open]);
-
-  if (!props.open) return null;
+  });
 
   return (
-    <>
-      <div className={`modal-backdrop ${styles.activeBackdrop}`} data-testid="modalBackdrop" />
+    <Show when={openStatus()}>
+      <div class={`modal-backdrop ${styles.activeBackdrop}`} data-testid="modalBackdrop" />
 
-      <div className={`modal d-block ${styles.modal} ${styles.active}`} role="dialog" aria-modal={true}>
+      <div class={`modal d-block ${styles.modal} ${styles.active}`} role="dialog" aria-modal={true}>
         <div
-          className={classNames(
-            `modal-dialog modal-${props.size || 'lg'}`,
-            {
-              'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,
-            },
-            props.modalDialogClassName
-          )}
-          ref={ref}
+          class={`modal-dialog modal-${props.size || 'lg'} ${props.modalDialogClass}`}
+          classList={{
+            'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,
+          }}
+          ref={setRef}
         >
-          <div className={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
+          <div class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
             {props.header && (
-              <div className={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
-                <div className={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
+              <div class={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
+                <div class={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
 
                 <button
                   type="button"
                   title="Close modal"
-                  className="btn-close"
-                  onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                  class="btn-close"
+                  onClick={(e) => {
                     e.preventDefault();
                     closeModal();
                   }}
                   aria-label="Close"
-                ></button>
+                />
               </div>
             )}
 
-            <div className="modal-body p-4 h-100 d-flex flex-column">
+            <div class="modal-body p-4 h-100 d-flex flex-column">
               {isUndefined(props.header) && (
-                <div className={`position-absolute ${styles.btnCloseWrapper}`}>
+                <div class={`position-absolute ${styles.btnCloseWrapper}`}>
                   <button
                     type="button"
                     title="Close modal"
-                    className="btn-close"
-                    onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                    class="btn-close"
+                    onClick={(e) => {
                       e.preventDefault();
                       closeModal();
                     }}
                     aria-label="Close"
-                  ></button>
+                  />
                 </div>
               )}
 
               {props.children}
             </div>
 
-            {!isUndefined(props.footer) && <div className="modal-footer p-3">{props.footer}</div>}
+            {!isUndefined(props.footer) && <div class="modal-footer p-3">{props.footer}</div>}
           </div>
         </div>
       </div>
-    </>
+    </Show>
   );
 };
 

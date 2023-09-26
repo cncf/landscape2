@@ -14,15 +14,14 @@
     border-color: var(--color1);
     color: var(--color1);
 
-    &:active,
-    &.active {
-      background-color: var(--color1);
+    &:not(.disabled):not(:disabled):not(:active):not(.active):hover {
+      background-color: var(--color1-hover);
       color: var(--bs-white);
     }
 
-    &:not(.disabled):not(:disabled):not(:active):not(.active):hover,
-    &:focus {
-      background-color: var(--color1-hover);
+    &:active,
+    &.active {
+      background-color: var(--color1);
       color: var(--bs-white);
     }
   }

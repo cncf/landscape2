@@ -1,14 +1,15 @@
 import './ExternalLink.module.css';
 
 import isUndefined from 'lodash/isUndefined';
+import { JSXElement } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import SVGIcon from './SVGIcon';
 
 interface Props {
-  children: JSX.Element | JSX.Element[] | string;
+  children: JSXElement | JSXElement[] | string;
   href: string;
-  className?: string;
+  class?: string;
   btnType?: boolean;
   target?: string;
   label?: string;
@@ -25,9 +26,9 @@ const ExternalLink = (props: Props) => {
     return (
       <>
         {!isUndefined(props.visibleExternalIcon) && props.visibleExternalIcon ? (
-          <div className="d-flex flex-row align-items-baseline">
+          <div class="d-flex flex-row align-items-baseline">
             {props.children}
-            <SVGIcon kind={SVGIconKind.Link} className={`ms-2 icon ${props.externalIconClassName}`} />
+            <SVGIcon kind={SVGIconKind.Link} class={`ms-2 icon ${props.externalIconClassName}`} />
           </div>
         ) : (
           <>{props.children}</>
@@ -42,7 +43,7 @@ const ExternalLink = (props: Props) => {
         <button
           title={props.title}
           type="button"
-          className={`btn p-0 link ${props.className}`}
+          class={`btn p-0 link ${props.class}`}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -62,7 +63,7 @@ const ExternalLink = (props: Props) => {
       ) : (
         <a
           title={props.title}
-          className={`link ${props.className}`}
+          class={`link ${props.class}`}
           href={props.href}
           target={props.target || '_blank'}
           rel="noopener noreferrer"

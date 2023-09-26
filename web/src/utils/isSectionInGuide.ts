@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 
 const isSectionInGuide = (categoryName: string, subcategoryName?: string): boolean => {

@@ -1,32 +1,31 @@
-import classNames from 'classnames';
+import { A } from '@solidjs/router';
+import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
-import { memo, useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
-import arePropsEqual from '../../../utils/areEqualProps';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
-  LayoutRow,
   MIN_COLUMN_ITEMS,
   SubcategoryDetails,
 } from '../../../utils/gridCategoryLayout';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import ItemIterator from '../../../utils/itemsIterator';
-import { SubcategoryData } from '../../../utils/prepareData';
+import { CategoryData } from '../../../utils/prepareData';
 import slugify from '../../../utils/slugify';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
-import { ActionsContext, AppActionsContext, ZoomLevelContext, ZoomLevelProps } from '../../context/AppContext';
+import { useGridWidth } from '../../stores/gridWidth';
+import { useSetVisibleZoom } from '../../stores/visibleZoomSection';
+import { useZoomLevel } from '../../stores/zoom';
 import styles from './Grid.module.css';
 import GridItem from './GridItem';
 
 interface Props {
-  categoryData: { [key: string]: SubcategoryData };
-  containerWidth: number;
+  initialCategoryData: CategoryData;
   categoryName: string;
   isOverriden: boolean;
   subcategories: SubcategoryDetails[];
@@ -36,132 +35,134 @@ interface Props {
 
 interface ItemsListProps {
   items: (BaseItem | Item)[];
-  itemsPerRow: number;
+  percentage: number;
   borderColor: string;
 }
 
 const ItemsList = (props: ItemsListProps) => {
-  const [itemsPerRow, setItemsPerRow] = useState(props.itemsPerRow <= 0 ? MIN_COLUMN_ITEMS : props.itemsPerRow);
+  const gridWidth = useGridWidth();
+  const zoom = useZoomLevel();
+  const [items, setItems] = createSignal<(BaseItem | Item)[]>([]);
 
-  useEffect(() => {
-    if (props.itemsPerRow >= MIN_COLUMN_ITEMS) {
-      setItemsPerRow(props.itemsPerRow);
+  createEffect(() => {
+    const itemsPerRow = calculateGridItemsPerRow(props.percentage, gridWidth(), ZOOM_LEVELS[zoom()][0]);
+    const tmpItems: (BaseItem | Item)[] = [];
+
+    for (const item of new ItemIterator(props.items, itemsPerRow! <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow!)) {
+      if (item) {
+        tmpItems.push(item);
+      }
     }
-  }, [props.itemsPerRow]);
+    if (!isEqual(tmpItems, items())) {
+      setItems(tmpItems);
+    }
+  });
 
   return (
-    <div className={styles.items}>
-      {(() => {
-        const items = [];
-        for (const item of new ItemIterator(props.items, itemsPerRow)) {
-          if (item) {
-            items.push(<GridItem key={`item_${item.name}`} item={item} borderColor={props.borderColor} showMoreInfo />);
-          }
-        }
-        return items;
-      })()}
-    </div>
+    <Show when={items().length > 0}>
+      <div class={styles.items}>
+        <For each={items()}>
+          {(item: BaseItem | Item) => {
+            return <GridItem item={item} borderColor={props.borderColor} showMoreInfo />;
+          }}
+        </For>
+      </div>
+    </Show>
   );
 };
 
-const Grid = memo(function Grid(props: Props) {
+const Grid = (props: Props) => {
   const gridItemsSize = window.baseDS.grid_items_size;
-  const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
-  const { updateActiveSection } = useContext(AppActionsContext) as ActionsContext;
-  const [grid, setGrid] = useState<GridCategoryLayout | undefined>();
-  const itemWidth = ZOOM_LEVELS[zoomLevel][0];
+  const zoom = useZoomLevel();
+  const updateActiveSection = useSetVisibleZoom();
+  const [grid, setGrid] = createSignal<GridCategoryLayout | undefined>();
+  const gridWidth = useGridWidth();
 
-  useEffect(() => {
-    if (props.containerWidth > 0) {
-      setGrid(
-        getGridCategoryLayout({
-          containerWidth: props.containerWidth,
-          itemWidth: itemWidth,
-          categoryName: props.categoryName,
-          isOverriden: props.isOverriden,
-          subcategories: props.subcategories,
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.containerWidth, itemWidth, props.subcategories]);
+  createEffect(() => {
+    setGrid((prev) => {
+      const newGrid = getGridCategoryLayout({
+        containerWidth: gridWidth(),
+        itemWidth: ZOOM_LEVELS[zoom()][0],
+        categoryName: props.categoryName,
+        isOverriden: props.isOverriden,
+        subcategories: props.subcategories,
+      });
 
-  if (isUndefined(grid)) return null;
+      return !isEqual(newGrid, prev) ? newGrid : prev;
+    });
+  });
 
   return (
-    <>
-      {grid.map((row: LayoutRow, rowIndex: number) => {
-        return (
-          <div
-            className={classNames('d-flex flex-nowrap w-100', { 'flex-grow-1': rowIndex === grid.length - 1 })}
-            key={`cat_${props.categoryIndex}row_${rowIndex}`}
-          >
-            {row.map((subcat: LayoutColumn) => {
-              if (props.categoryData[subcat.subcategoryName].items.length === 0) return null;
+    <Show when={!isUndefined(grid())}>
+      <For each={grid()}>
+        {(row, rowIndex) => {
+          return (
+            <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid.length - 1 }}>
+              <For each={row}>
+                {(subcat: LayoutColumn) => {
+                  const items = props.initialCategoryData[subcat.subcategoryName].items;
+                  if (items.length === 0) return null;
+                  const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(items);
+                  return (
+                    <div
+                      classList={{
+                        'border-top-0': props.categoryIndex !== 0,
+                        'border-bottom-0 col-12': subcat.percentage === 100,
+                      }}
+                      class="col d-flex flex-column border border-3 border-white border-start-0"
+                      style={{ 'max-width': `${subcat.percentage}%` }}
+                    >
+                      <div
+                        class={`d-flex align-items-center text-white w-100 fw-medium ${styles.subcatTitle}`}
+                        style={{ 'background-color': props.backgroundColor }}
+                      >
+                        <div class="text-truncate">{subcat.subcategoryName}</div>
+                        {isSectionInGuide(props.categoryName, subcat.subcategoryName) && (
+                          <div>
+                            <A
+                              href={`/guide#${slugify(`${props.categoryName} ${subcat.subcategoryName}`)}`}
+                              state={{ from: 'explore' }}
+                              class={`btn btn-link text-white ps-2 pe-1 ${styles.btnIcon}`}
+                            >
+                              <SVGIcon kind={SVGIconKind.Guide} />
+                            </A>
+                          </div>
+                        )}
 
-              const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(
-                props.categoryData[subcat.subcategoryName].items
-              );
-
-              return (
-                <div
-                  key={`subcat_${subcat.subcategoryName}`}
-                  className={classNames(
-                    'col d-flex flex-column border border-3 border-white border-start-0',
-                    { 'border-top-0': props.categoryIndex !== 0 },
-                    { 'border-bottom-0 col-12': subcat.percentage === 100 }
-                  )}
-                  style={{ maxWidth: `${subcat.percentage}%` }}
-                >
-                  <div
-                    className={`d-flex align-items-center text-white w-100 fw-medium ${styles.subcatTitle}`}
-                    style={{ backgroundColor: props.backgroundColor }}
-                  >
-                    <div className="text-truncate">{subcat.subcategoryName}</div>
-                    {isSectionInGuide(props.categoryName, subcat.subcategoryName) && (
-                      <div>
-                        <Link
-                          to={`/?tab=guide#${slugify(`${props.categoryName} ${subcat.subcategoryName}`)}`}
-                          state={{ from: 'explore' }}
-                          className={`btn btn-link text-white ps-2 pe-1 ${styles.btnIcon}`}
-                        >
-                          <SVGIcon kind={SVGIconKind.Guide} />
-                        </Link>
+                        {(isUndefined(gridItemsSize) || gridItemsSize !== 'large') && (
+                          <div>
+                            <button
+                              onClick={() => {
+                                updateActiveSection({
+                                  category: props.categoryName,
+                                  subcategory: subcat.subcategoryName,
+                                  bgColor: props.backgroundColor,
+                                });
+                              }}
+                              class={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
+                            >
+                              <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    )}
-
-                    {(isUndefined(gridItemsSize) || gridItemsSize !== 'large') && (
-                      <div>
-                        <button
-                          onClick={() =>
-                            updateActiveSection({
-                              category: props.categoryName,
-                              subcategory: subcat.subcategoryName,
-                              bgColor: props.backgroundColor,
-                            })
-                          }
-                          className={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
-                        >
-                          <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
-                        </button>
+                      <div class={`flex-grow-1 ${styles.itemsContainer}`}>
+                        <ItemsList
+                          borderColor={props.backgroundColor}
+                          items={sortedItems}
+                          percentage={subcat.percentage}
+                        />
                       </div>
-                    )}
-                  </div>
-                  <div className={`flex-grow-1 ${styles.itemsContainer}`}>
-                    <ItemsList
-                      borderColor={props.backgroundColor}
-                      items={sortedItems}
-                      itemsPerRow={calculateGridItemsPerRow(subcat.percentage, props.containerWidth, itemWidth)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </>
+                    </div>
+                  );
+                }}
+              </For>
+            </div>
+          );
+        }}
+      </For>
+    </Show>
   );
-}, arePropsEqual);
+};
 
 export default Grid;

@@ -1,21 +1,17 @@
-import classNames from 'classnames';
-
 import styles from './MaturityBadge.module.css';
 
 interface Props {
   level: string;
-  className?: string;
+  class?: string;
 }
 
 const MaturityBadge = (props: Props) => (
   <div
     title={props.level}
-    className={classNames(
-      'badge rounded-0 text-uppercase',
-      { [styles.archived]: props.level === 'archived' },
-      { 'bg-secondary': props.level !== 'archived' },
-      props.className
-    )}
+    class={`badge rounded-0 text-uppercase bg-secondary ${styles.badge} ${props.class}`}
+    classList={{
+      archived: props.level === 'archived',
+    }}
   >
     {props.level}
   </div>

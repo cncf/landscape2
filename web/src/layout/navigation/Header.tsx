@@ -1,11 +1,8 @@
-import classNames from 'classnames';
+import { A } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
-import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { Link, useSearchParams } from 'react-router-dom';
 
-import { DEFAULT_TAB, TAB_PARAM } from '../../data';
-import { BaseItem, SVGIconKind, Tab } from '../../types';
+import { BaseItem, SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
 import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
@@ -17,70 +14,55 @@ interface Props {
 }
 
 const Header = (props: Props) => {
-  const [searchParams] = useSearchParams();
-  const activeTab: Tab =
-    !isNull(searchParams.get(TAB_PARAM)) && Object.values(Tab).includes(searchParams.get(TAB_PARAM) as Tab)
-      ? (searchParams.get(TAB_PARAM) as Tab)
-      : DEFAULT_TAB;
-
   return (
-    <header className="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
-      <div className="container-fluid d-flex align-items-center p-4">
-        <div className="mx-auto mx-md-0">
-          <Link to="/" className="me-5">
+    <header class="navbar navbar-expand border-bottom p-0 shadow-sm mb-2">
+      <div class="container-fluid d-flex align-items-center p-4">
+        <div class="mx-auto mx-md-0">
+          <A href="/" class="me-5">
             <img
-              className={styles.logo}
+              class={styles.logo}
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
               alt="Landscape logo"
             />
-          </Link>
+          </A>
         </div>
 
-        <div className="d-none d-md-flex align-items-center">
-          <Link
-            className={classNames(
-              'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
-              styles.link,
-              { [styles.active]: activeTab === Tab.Explore }
-            )}
-            to="/"
+        <div class="d-none d-md-flex align-items-center">
+          <A
+            class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            activeClass="activeLink"
+            href="/"
+            end
           >
             Explore
-          </Link>
+          </A>
+
           {!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary) && (
-            <Link
-              className={classNames(
-                'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
-                styles.link,
-                { [styles.active]: activeTab === Tab.Guide }
-              )}
-              to="/?tab=guide"
+            <A
+              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+              href="/guide"
+              activeClass="activeLink"
               state={{ from: 'header' }}
             >
               Guide
-            </Link>
+            </A>
           )}
-          <Link
-            className={classNames(
-              'btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0',
-              styles.link,
-              { [styles.active]: activeTab === Tab.Stats }
-            )}
-            to="/?tab=stats"
+
+          <A
+            class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+            activeClass="activeLink"
+            href="/stats"
           >
             Stats
-          </Link>
+          </A>
         </div>
 
-        <div className={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>
-          <div className="d-none d-lg-block position-relative me-2 me-xl-4">
+        <div class={`d-none d-md-flex flex-row align-items-center ms-auto ${styles.searchWrapper}`}>
+          <div class="d-none d-lg-block position-relative me-2 me-xl-4">
             <Searchbar items={props.items} />
           </div>
-          <ExternalLink
-            className="btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0"
-            href="https://github.com/cncf/landscape2"
-          >
-            <SVGIcon kind={SVGIconKind.GitHub} className={`position-relative ${styles.githubIcon}`} />
+          <ExternalLink class="btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0" href="https://github.com/cncf/landscape2">
+            <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
           </ExternalLink>
         </div>
       </div>

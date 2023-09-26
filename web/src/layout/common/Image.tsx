@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createSignal } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import SVGIcon from './SVGIcon';
@@ -6,20 +6,20 @@ import SVGIcon from './SVGIcon';
 interface Props {
   name: string;
   logo: string;
-  className?: string;
+  class?: string;
 }
 
 const Image = (props: Props) => {
-  const [error, setError] = useState(false);
+  const [error, setError] = createSignal(false);
 
   return (
     <>
-      {error ? (
-        <SVGIcon kind={SVGIconKind.NotImage} className={`opacity-25 ${props.className}`} />
+      {error() ? (
+        <SVGIcon kind={SVGIconKind.NotImage} class={`opacity-25 ${props.class}`} />
       ) : (
         <img
           alt={`${props.name} logo`}
-          className={props.className}
+          class={props.class}
           src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
           onError={() => setError(true)}
         />

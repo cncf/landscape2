@@ -1,21 +1,15 @@
-import classNames from 'classnames';
+import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import moment from 'moment';
-import { useContext, useEffect, useState } from 'react';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import prettifyNumber from '../../../utils/prettifyNumber';
-import {
-  ActionsContext,
-  AppActionsContext,
-  FullDataContext,
-  FullDataProps,
-  ItemContext,
-  ItemProps,
-} from '../../context/AppContext';
+import { useActiveItemId, useSetActiveItemId } from '../../stores/activeItem';
+import { useFullDataReady } from '../../stores/fullData';
 import ExternalLink from '../ExternalLink';
 import FoundationBadge from '../FoundationBadge';
 import Image from '../Image';
@@ -24,520 +18,482 @@ import MaturityBadge from '../MaturityBadge';
 import Modal from '../Modal';
 import SVGIcon from '../SVGIcon';
 import styles from './ItemModal.module.css';
+import MaturitySection from './MaturitySection';
 import ParticipationStats from './ParticipationStats';
 
 const ItemModal = () => {
-  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
-  const { visibleItemId } = useContext(ItemContext) as ItemProps;
-  const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
-  const [itemInfo, setItemInfo] = useState<Item | null | undefined>(undefined);
-  const description = getItemDescription(itemInfo);
-  let stars: number | undefined;
-  let mainRepo: Repository | undefined;
-  let websiteUrl: string | undefined = itemInfo ? itemInfo.homepage_url : undefined;
-
-  if (itemInfo && itemInfo.repositories) {
-    itemInfo.repositories.forEach((repo: Repository) => {
-      if (repo.primary) {
-        mainRepo = repo;
-      }
-
-      if (repo.github_data) {
-        stars = stars || 0 + repo.github_data.stars;
-      }
-    });
-  }
-
-  // If homepage_url is undefined or is equal to main repository url
-  // and maturity field is undefined,
-  // we use the homepage_url fron crunchbase
-  if (itemInfo && (isUndefined(websiteUrl) || (mainRepo && websiteUrl === mainRepo.url))) {
-    if (itemInfo.crunchbase_data && itemInfo.crunchbase_data.homepage_url) {
-      websiteUrl = itemInfo.crunchbase_data.homepage_url;
-    }
-  }
+  const fullDataReady = useFullDataReady();
+  const visibleItemId = useActiveItemId();
+  const updateActiveItemId = useSetActiveItemId();
+  const [itemInfo, setItemInfo] = createSignal<Item | null | undefined>(undefined);
+  const [description, setDescription] = createSignal<string>();
+  const [mainRepo, setMainRepo] = createSignal<Repository>();
+  const [websiteUrl, setWebsiteUrl] = createSignal<string>();
 
   const formatDate = (date: string): string => {
     return moment(date).format("MMM 'YY");
   };
 
-  const getMaturitySection = (item: Item): JSX.Element | null => {
-    if (
-      isUndefined(item.maturity) ||
-      (isUndefined(item.accepted_at) && isUndefined(item.incubating_at) && isUndefined(item.graduated_at))
-    )
-      return null;
-
-    return (
-      <div className={`position-relative my-4 border ${styles.fieldset}`}>
-        <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
-
-        <div className="position-relative mt-2">
-          <div className="d-flex flex-row justify-content-between">
-            <div className="d-flex flex-column align-items-center">
-              <div className={`badge rounded-1 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
-                {item.accepted_at ? (
-                  <>
-                    {item.accepted_at === item.incubating_at || item.accepted_at === item.graduated_at
-                      ? '-'
-                      : item.accepted_at}
-                  </>
-                ) : (
-                  '-'
-                )}
-              </div>
-              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Sandbox</small>
-            </div>
-
-            <div className="d-flex flex-column align-items-center">
-              <div
-                className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
-                  [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(item.maturity),
-                })}
-              >
-                {item.incubating_at || '-'}
-              </div>
-              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Incubating</small>
-            </div>
-
-            <div className="d-flex flex-column align-items-center">
-              <div
-                className={classNames('badge rounded-1 p-2', styles.maturityBadge, {
-                  [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(item.maturity),
-                })}
-              >
-                {item.graduated_at || '-'}
-              </div>
-              <small className={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Graduated</small>
-            </div>
-          </div>
-          <div className={`${styles.line} ${item.maturity}Line`} />
-        </div>
-      </div>
-    );
-  };
-
-  useEffect(() => {
+  createEffect(() => {
     async function fetchItemInfo() {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        setItemInfo(await itemsDataGetter.findById(visibleItemId!));
+        const itemTmp = await itemsDataGetter.findById(visibleItemId()! as string);
+        let mainRepoTmp: Repository | undefined;
+        let websiteUrlTmp: string | undefined;
+        if (!isUndefined(itemTmp)) {
+          websiteUrlTmp = itemTmp.homepage_url;
+          setWebsiteUrl(itemTmp.homepage_url);
+          setDescription(getItemDescription(itemTmp));
+          setItemInfo(itemTmp);
+          if (itemTmp.repositories) {
+            itemTmp.repositories.forEach((repo: Repository) => {
+              if (repo.primary) {
+                mainRepoTmp = repo;
+              }
+            });
+
+            if (mainRepoTmp) {
+              setMainRepo(mainRepoTmp);
+            }
+          }
+
+          // If homepage_url is undefined or is equal to main repository url
+          // and maturity field is undefined,
+          // we use the homepage_url fron crunchbase
+          if (itemTmp && (isUndefined(websiteUrlTmp) || (mainRepoTmp && websiteUrlTmp === mainRepoTmp.url))) {
+            if (itemTmp.crunchbase_data && itemTmp.crunchbase_data.homepage_url) {
+              setWebsiteUrl(itemTmp.crunchbase_data.homepage_url);
+            }
+          }
+        } else {
+          setItemInfo(null);
+        }
       } catch {
         setItemInfo(null);
       }
     }
 
-    if (visibleItemId && fullDataReady) {
+    if (visibleItemId() && fullDataReady()) {
       fetchItemInfo();
     } else {
       setItemInfo(undefined);
     }
-  }, [visibleItemId, fullDataReady]);
-
-  if (isUndefined(visibleItemId)) return null;
+  });
 
   return (
-    <Modal size="xl" open modalDialogClassName={styles.modalDialog} onClose={() => updateActiveItemId()}>
-      {itemInfo ? (
-        <div className="d-flex flex-column p-3">
-          <div className="d-flex flex-row align-items-center">
-            <div className={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
-              <Image name={itemInfo.name} className={`m-auto ${styles.logo}`} logo={itemInfo.logo} />
+    <Show when={!isUndefined(visibleItemId())}>
+      <Modal size="xl" open modalDialogClass={styles.modalDialog} onClose={() => updateActiveItemId()}>
+        <Show
+          when={!isUndefined(itemInfo()) && !isNull(itemInfo())}
+          fallback={
+            <div class={`d-flex flex-column p-5 ${styles.loadingWrapper}`}>
+              <Loading />
             </div>
+          }
+        >
+          <div class="d-flex flex-column p-3">
+            <div class="d-flex flex-row align-items-center">
+              <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
+                <Image name={itemInfo()!.name} class={`m-auto ${styles.logo}`} logo={itemInfo()!.logo} />
+              </div>
 
-            <div className={`d-flex flex-column justify-content-between ms-3 ${styles.itemInfo}`}>
-              <div className="d-flex flex-row align-items-center me-3">
-                <div className={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo.name}</div>
-                <div className={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
-                  {!isUndefined(itemInfo.maturity) && (
-                    <>
+              <div class={`d-flex flex-column justify-content-between ms-3 ${styles.itemInfo}`}>
+                <div class="d-flex flex-row align-items-center me-3">
+                  <div class={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo()!.name}</div>
+                  <div class={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
+                    <Show when={!isUndefined(itemInfo()!.maturity)}>
                       <FoundationBadge />
-                      <MaturityBadge level={itemInfo.maturity} className="mx-2" />
+                      <MaturityBadge level={itemInfo()!.maturity!} class="mx-2" />
 
-                      {!isUndefined(itemInfo.accepted_at) && (
+                      {!isUndefined(itemInfo()!.accepted_at) && (
                         <div
-                          title={`Accepted at ${itemInfo.accepted_at}`}
-                          className="d-flex flex-row align-items-center accepted-date me-3"
+                          title={`Accepted at ${itemInfo()!.accepted_at}`}
+                          class="d-flex flex-row align-items-center accepted-date me-3"
                         >
-                          <SVGIcon kind={SVGIconKind.Calendar} className="me-1 text-muted" />
+                          <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
                           <div>
-                            <small>{itemInfo.accepted_at.split('-')[0]}</small>
+                            <small>{itemInfo()!.accepted_at!.split('-')[0]}</small>
                           </div>
                         </div>
                       )}
-                    </>
-                  )}
+                    </Show>
+                  </div>
                 </div>
-              </div>
-              {itemInfo.crunchbase_data && itemInfo.crunchbase_data.name && (
-                <div className={`text-muted text-truncate ${styles.name}`}>
-                  <small>{itemInfo.crunchbase_data.name}</small>
-                </div>
-              )}
-              <div className="d-flex flex-row align-items-center mb-1">
-                <div className={`d-none d-xl-flex badge border rounded-0 ${styles.badgeOutlineDark}`}>
-                  {itemInfo.category}
-                </div>
-                <div className={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>
-                  {itemInfo.subcategory}
-                </div>
-                <div className="ms-auto">
-                  <div className={`d-flex flex-row align-items-center ${styles.extra}`}>
-                    {websiteUrl && (
-                      <ExternalLink title="Website" className={`ms-3 ${styles.link}`} href={websiteUrl}>
-                        <SVGIcon kind={SVGIconKind.World} />
-                      </ExternalLink>
-                    )}
+                <Show when={!isUndefined(itemInfo()!.crunchbase_data) && itemInfo()!.crunchbase_data!.name}>
+                  <div class={`text-muted text-truncate ${styles.name}`}>
+                    <small>{itemInfo()!.crunchbase_data!.name}</small>
+                  </div>
+                </Show>
+                <div class="d-flex flex-row align-items-center mb-1">
+                  <div class={`d-none d-xl-flex badge border rounded-0 ${styles.badgeOutlineDark}`}>
+                    {itemInfo()!.category}
+                  </div>
+                  <div class={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>
+                    {itemInfo()!.subcategory}
+                  </div>
+                  <div class="ms-auto">
+                    <div class={`d-flex flex-row align-items-center ${styles.extra}`}>
+                      <Show when={!isUndefined(websiteUrl())}>
+                        <ExternalLink title="Website" class={`ms-3 ${styles.link}`} href={websiteUrl()!}>
+                          <SVGIcon kind={SVGIconKind.World} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(mainRepo) && (
-                      <ExternalLink title="Repository" className={`ms-3 ${styles.link}`} href={mainRepo.url}>
-                        <SVGIcon kind={SVGIconKind.GitHubCircle} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(mainRepo())}>
+                        <ExternalLink title="Repository" class={`ms-3 ${styles.link}`} href={mainRepo()!.url}>
+                          <SVGIcon kind={SVGIconKind.GitHubCircle} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.devstats_url) && (
-                      <ExternalLink title="Devstats" className={`ms-3 ${styles.link}`} href={itemInfo.devstats_url}>
-                        <SVGIcon kind={SVGIconKind.Stats} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.devstats_url)}>
+                        <ExternalLink title="Devstats" class={`ms-3 ${styles.link}`} href={itemInfo()!.devstats_url!}>
+                          <SVGIcon kind={SVGIconKind.Stats} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.twitter_url) && (
-                      <ExternalLink title="Twitter" className={`ms-3 ${styles.link}`} href={itemInfo.twitter_url}>
-                        <SVGIcon kind={SVGIconKind.Twitter} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.twitter_url)}>
+                        <ExternalLink title="Twitter" class={`ms-3 ${styles.link}`} href={itemInfo()!.twitter_url!}>
+                          <SVGIcon kind={SVGIconKind.Twitter} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.youtube_url) && (
-                      <ExternalLink title="Youtube" className={`ms-3 ${styles.link}`} href={itemInfo.youtube_url}>
-                        <SVGIcon kind={SVGIconKind.Youtube} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.youtube_url)}>
+                        <ExternalLink title="Youtube" class={`ms-3 ${styles.link}`} href={itemInfo()!.youtube_url!}>
+                          <SVGIcon kind={SVGIconKind.Youtube} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.slack_url) && (
-                      <ExternalLink title="Slack" className={`ms-3 ${styles.link}`} href={itemInfo.slack_url}>
-                        <SVGIcon kind={SVGIconKind.Slack} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.slack_url)}>
+                        <ExternalLink title="Slack" class={`ms-3 ${styles.link}`} href={itemInfo()!.slack_url!}>
+                          <SVGIcon kind={SVGIconKind.Slack} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.discord_url) && (
-                      <ExternalLink title="Discord" className={`ms-3 ${styles.link}`} href={itemInfo.discord_url}>
-                        <SVGIcon kind={SVGIconKind.Discord} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.discord_url)}>
+                        <ExternalLink title="Discord" class={`ms-3 ${styles.link}`} href={itemInfo()!.discord_url!}>
+                          <SVGIcon kind={SVGIconKind.Discord} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.docker_url) && (
-                      <ExternalLink title="Docker" className={`ms-3 ${styles.link}`} href={itemInfo.docker_url}>
-                        <SVGIcon kind={SVGIconKind.Docker} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.docker_url)}>
+                        <ExternalLink title="Docker" class={`ms-3 ${styles.link}`} href={itemInfo()!.docker_url!}>
+                          <SVGIcon kind={SVGIconKind.Docker} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.stack_overflow_url) && (
-                      <ExternalLink
-                        title="Stack overflow"
-                        className={`ms-3 ${styles.link}`}
-                        href={itemInfo.stack_overflow_url}
-                      >
-                        <SVGIcon kind={SVGIconKind.StackOverflow} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.stack_overflow_url)}>
+                        <ExternalLink
+                          title="Stack overflow"
+                          class={`ms-3 ${styles.link}`}
+                          href={itemInfo()!.stack_overflow_url!}
+                        >
+                          <SVGIcon kind={SVGIconKind.StackOverflow} />
+                        </ExternalLink>
+                      </Show>
 
-                    {isUndefined(itemInfo.maturity) && !isUndefined(itemInfo.crunchbase_url) && (
-                      <ExternalLink title="Crunchbase" className={`ms-3 ${styles.link}`} href={itemInfo.crunchbase_url}>
-                        <SVGIcon kind={SVGIconKind.Crunchbase} />
-                      </ExternalLink>
-                    )}
+                      <Show when={isUndefined(itemInfo()!.maturity) && !isUndefined(itemInfo()!.crunchbase_url)}>
+                        <ExternalLink
+                          title="Crunchbase"
+                          class={`ms-3 ${styles.link}`}
+                          href={itemInfo()!.crunchbase_url!}
+                        >
+                          <SVGIcon kind={SVGIconKind.Crunchbase} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.blog_url) && (
-                      <ExternalLink title="Blog" className={`ms-3 ${styles.link}`} href={itemInfo.blog_url}>
-                        <SVGIcon kind={SVGIconKind.Blog} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.blog_url)}>
+                        <ExternalLink title="Blog" class={`ms-3 ${styles.link}`} href={itemInfo()!.blog_url!}>
+                          <SVGIcon kind={SVGIconKind.Blog} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.mailing_list_url) && (
-                      <ExternalLink
-                        title="Mailing list"
-                        className={`ms-3 ${styles.link}`}
-                        href={itemInfo.mailing_list_url}
-                      >
-                        <SVGIcon kind={SVGIconKind.MailingList} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.mailing_list_url)}>
+                        <ExternalLink
+                          title="Mailing list"
+                          class={`ms-3 ${styles.link}`}
+                          href={itemInfo()!.mailing_list_url!}
+                        >
+                          <SVGIcon kind={SVGIconKind.MailingList} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.openssf_best_practices_url) && (
-                      <ExternalLink
-                        title="OpenSSF best practices"
-                        className={`ms-3 ${styles.link}`}
-                        href={itemInfo.openssf_best_practices_url}
-                      >
-                        <SVGIcon kind={SVGIconKind.OpenssfBestPractices} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.openssf_best_practices_url)}>
+                        <ExternalLink
+                          title="OpenSSF best practices"
+                          class={`ms-3 ${styles.link}`}
+                          href={itemInfo()!.openssf_best_practices_url!}
+                        >
+                          <SVGIcon kind={SVGIconKind.OpenssfBestPractices} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.artwork_url) && (
-                      <ExternalLink title="Artwork" className={`ms-3 ${styles.link}`} href={itemInfo.artwork_url}>
-                        <SVGIcon kind={SVGIconKind.Artwork} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.artwork_url)}>
+                        <ExternalLink title="Artwork" class={`ms-3 ${styles.link}`} href={itemInfo()!.artwork_url!}>
+                          <SVGIcon kind={SVGIconKind.Artwork} />
+                        </ExternalLink>
+                      </Show>
 
-                    {!isUndefined(itemInfo.github_discussions_url) && (
-                      <ExternalLink
-                        title="Github discussions"
-                        className={`ms-3 ${styles.link}`}
-                        href={itemInfo.github_discussions_url}
-                      >
-                        <SVGIcon kind={SVGIconKind.Discussions} />
-                      </ExternalLink>
-                    )}
+                      <Show when={!isUndefined(itemInfo()!.github_discussions_url)}>
+                        <ExternalLink
+                          title="Github discussions"
+                          class={`ms-3 ${styles.link}`}
+                          href={itemInfo()!.github_discussions_url!}
+                        >
+                          <SVGIcon kind={SVGIconKind.Discussions} />
+                        </ExternalLink>
+                      </Show>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          {/* Description */}
-          <div className={`mb-3 mt-4 text-muted ${styles.description}`}>{description}</div>
+            {/* Description */}
+            <div class={`mb-3 mt-4 text-muted ${styles.description}`}>{description()}</div>
 
-          {/* Maturity */}
-          {getMaturitySection(itemInfo)}
+            {/* Maturity */}
+            <MaturitySection item={itemInfo()!} />
 
-          {/* Repositories */}
-          {!isUndefined(itemInfo.repositories) && (
-            <div className={`position-relative my-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
-              {!isUndefined(mainRepo) && (
-                <>
+            {/* Repositories */}
+            <Show when={!isUndefined(itemInfo()!.repositories)}>
+              <div class={`position-relative my-4 border ${styles.fieldset}`}>
+                <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
+                <Show when={!isUndefined(mainRepo())}>
                   <div>
-                    <small className="text-muted">Primary repository:</small>
+                    <small class="text-muted">Primary repository:</small>
                   </div>
-                  <div className="d-flex flex-row align-items-center my-2">
-                    <ExternalLink className="text-reset p-0 align-baseline fw-semibold" href={mainRepo.url}>
-                      {mainRepo.url}
+                  <div class="d-flex flex-row align-items-center my-2">
+                    <ExternalLink class="text-reset p-0 align-baseline fw-semibold" href={mainRepo()!.url}>
+                      {mainRepo()!.url}
                     </ExternalLink>
-                    {mainRepo.github_data && (
-                      <div className={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
-                        {mainRepo.github_data.license}
+                    {!isUndefined(mainRepo()!.github_data) && (
+                      <div class={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
+                        {mainRepo()!.github_data!.license}
                       </div>
                     )}
                   </div>
-                  {mainRepo.github_data && (
-                    <>
-                      <div className="row g-4 my-0 mb-2">
-                        <div className="col">
-                          <div
-                            className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                          >
-                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                              {prettifyNumber(mainRepo.github_data.stars, 1)}
-                            </div>
-                            <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                              <small>Stars</small>
-                            </div>
+                  <Show when={!isUndefined(mainRepo()!.github_data)}>
+                    <div class="row g-4 my-0 mb-2">
+                      <div class="col">
+                        <div
+                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                            {prettifyNumber(mainRepo()!.github_data!.stars, 1)}
                           </div>
-                        </div>
-
-                        <div className="col">
-                          <div
-                            className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                          >
-                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                              {prettifyNumber(mainRepo.github_data.contributors.count)}
-                            </div>
-                            <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                              <small>Contributors</small>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="col">
-                          <div
-                            className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                          >
-                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                              {formatDate(mainRepo.github_data.first_commit.ts)}
-                            </div>
-                            <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                              <small>First commit</small>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="col">
-                          <div
-                            className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                          >
-                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                              {formatDate(mainRepo.github_data.latest_commit.ts)}
-                            </div>
-                            <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                              <small>Latest commit</small>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="col">
-                          <div
-                            className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                          >
-                            <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                              {mainRepo.github_data.latest_release
-                                ? formatDate(mainRepo.github_data.latest_release.ts)
-                                : '-'}
-                            </div>
-                            <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                              <small>Latest release</small>
-                            </div>
+                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Stars</small>
                           </div>
                         </div>
                       </div>
-                      {mainRepo.github_data.participation_stats && (
-                        <div className="mt-4">
-                          <small className="text-muted">Participation stats:</small>
-                          <ParticipationStats stats={mainRepo.github_data.participation_stats} />
+
+                      <div class="col">
+                        <div
+                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                            {prettifyNumber(mainRepo()!.github_data!.contributors.count)}
+                          </div>
+                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Contributors</small>
+                          </div>
                         </div>
-                      )}
-                    </>
+                      </div>
+
+                      <div class="col">
+                        <div
+                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                            {formatDate(mainRepo()!.github_data!.first_commit.ts)}
+                          </div>
+                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>First commit</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col">
+                        <div
+                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                            {formatDate(mainRepo()!.github_data!.latest_commit.ts)}
+                          </div>
+                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Latest commit</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col">
+                        <div
+                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                        >
+                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                            {!isUndefined(mainRepo()!.github_data!.latest_release)
+                              ? formatDate(mainRepo()!.github_data!.latest_release!.ts)
+                              : '-'}
+                          </div>
+                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                            <small>Latest release</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {!isUndefined(mainRepo()!.github_data!.participation_stats) && (
+                      <div class="mt-4">
+                        <small class="text-muted">Participation stats:</small>
+                        <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
+                      </div>
+                    )}
+                  </Show>
+                </Show>
+                <Show when={!isUndefined(itemInfo()!.repositories) && itemInfo()!.repositories!.length > 1}>
+                  <div class="mt-4">
+                    <small class="text-muted">Other repositories:</small>
+                    <table class="table table-sm table-striped table-bordered mt-3">
+                      <thead>
+                        <tr>
+                          <th class="text-center" scope="col">
+                            URL
+                          </th>
+                          <th class="text-center" scope="col">
+                            STARS
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <For each={itemInfo()!.repositories}>
+                          {(repo: Repository) => {
+                            if (repo.primary) return null;
+                            return (
+                              <tr class={styles.tableRepos}>
+                                <td class="px-3">
+                                  <ExternalLink class="text-muted" href={repo.url}>
+                                    {repo.url}
+                                  </ExternalLink>
+                                </td>
+                                <td class="px-3 text-center">
+                                  {repo.github_data && repo.github_data.stars
+                                    ? prettifyNumber(repo.github_data.stars)
+                                    : '-'}
+                                </td>
+                              </tr>
+                            );
+                          }}
+                        </For>
+                      </tbody>
+                    </table>
+                  </div>
+                </Show>
+              </div>
+            </Show>
+
+            {/* Organization */}
+            <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
+              <div class={`position-relative mt-4 border ${styles.fieldset}`}>
+                <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
+                <div class="d-flex flex-row align-items-center">
+                  <div class={`fw-semibold text-truncate fs-6`}>{itemInfo()!.crunchbase_data!.name}</div>
+
+                  {!isUndefined(itemInfo()!.crunchbase_data!.kind) && (
+                    <div
+                      class={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                    >
+                      {itemInfo()!.crunchbase_data!.kind}
+                    </div>
                   )}
-                </>
-              )}
-              {itemInfo.repositories && itemInfo.repositories.length > 1 && (
-                <div className="mt-4">
-                  <small className="text-muted">Other repositories:</small>
-                  <table className="table table-sm table-striped table-bordered mt-3">
-                    <thead>
-                      <tr>
-                        <th className="text-center" scope="col">
-                          URL
-                        </th>
-                        <th className="text-center" scope="col">
-                          STARS
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {itemInfo.repositories.map((repo: Repository) => {
-                        if (repo.primary) return null;
-                        return (
-                          <tr className={styles.tableRepos} key={`table_${repo.url}`}>
-                            <td className="px-3">
-                              <ExternalLink className="text-muted" href={repo.url}>
-                                {repo.url}
-                              </ExternalLink>
-                            </td>
-                            <td className="px-3 text-center">
-                              {repo.github_data && repo.github_data.stars
-                                ? prettifyNumber(repo.github_data.stars)
-                                : '-'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Organization */}
-          {itemInfo.crunchbase_data && (
-            <div className={`position-relative mt-4 border ${styles.fieldset}`}>
-              <div className={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
-              <div className="d-flex flex-row align-items-center">
-                <div className={`fw-semibold text-truncate fs-6`}>{itemInfo.crunchbase_data.name}</div>
-
-                {itemInfo.crunchbase_data.kind && (
-                  <div
-                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
-                  >
-                    {itemInfo.crunchbase_data.kind}
-                  </div>
-                )}
-                {itemInfo.crunchbase_data.company_type && (
-                  <div
-                    className={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
-                  >
-                    {formatProfitLabel(itemInfo.crunchbase_data.company_type)}
-                  </div>
-                )}
-              </div>
-              <div className={`text-muted pt-1 ${styles.location}`}>
-                {itemInfo.crunchbase_data.city}
-                {!isUndefined(itemInfo.crunchbase_data.country) ? `, ${itemInfo.crunchbase_data.country}` : ''}
-              </div>
-              <div className="mt-3">
-                <small className="text-muted">{itemInfo.crunchbase_data.description}</small>
-              </div>
-              <div className="row g-4 my-0 mb-2">
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.funding ? prettifyNumber(itemInfo.crunchbase_data.funding) : '-'}
+                  {!isUndefined(itemInfo()!.crunchbase_data!.company_type) && (
+                    <div
+                      class={`ms-3 badge rounded-0 text-dark text-uppercase border ${styles.badgeOutlineDark} ${styles.miniBadge}`}
+                    >
+                      {formatProfitLabel(itemInfo()!.crunchbase_data!.company_type!)}
                     </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Funding</small>
-                    </div>
-                  </div>
+                  )}
                 </div>
-
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    {itemInfo.crunchbase_data.num_employees_min && itemInfo.crunchbase_data.num_employees_max ? (
-                      <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                        {itemInfo.crunchbase_data.num_employees_min
-                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_min)
-                          : '-'}
-                        -
-                        {itemInfo.crunchbase_data.num_employees_max
-                          ? prettifyNumber(itemInfo.crunchbase_data.num_employees_max)
+                <div class={`text-muted pt-1 ${styles.location}`}>
+                  {itemInfo()!.crunchbase_data!.city}
+                  {!isUndefined(itemInfo()!.crunchbase_data!.country)
+                    ? `, ${itemInfo()!.crunchbase_data!.country}`
+                    : ''}
+                </div>
+                <div class="mt-3">
+                  <small class="text-muted">{itemInfo()!.crunchbase_data!.description}</small>
+                </div>
+                <div class="row g-4 my-0 mb-2">
+                  <div class="col">
+                    <div
+                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                    >
+                      <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                        {!isUndefined(itemInfo()!.crunchbase_data!.funding)
+                          ? prettifyNumber(itemInfo()!.crunchbase_data!.funding!)
                           : '-'}
                       </div>
-                    ) : (
-                      <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>-</div>
-                    )}
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Employees</small>
+                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                        <small>Funding</small>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold text-uppercase text-nowrap ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.stock_exchange ? itemInfo.crunchbase_data.stock_exchange : '-'}
-                    </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Stock exchange</small>
+                  <div class="col">
+                    <div
+                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                    >
+                      {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
+                      !isUndefined(itemInfo()!.crunchbase_data!.num_employees_max) ? (
+                        <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                          {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_min)
+                            ? prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_min!)
+                            : '-'}
+                          -
+                          {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
+                            ? prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_max!)
+                            : '-'}
+                        </div>
+                      ) : (
+                        <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>-</div>
+                      )}
+                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                        <small>Employees</small>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="col">
-                  <div
-                    className={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                  >
-                    <div className={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                      {itemInfo.crunchbase_data.ticker ? itemInfo.crunchbase_data.ticker : '-'}
+                  <div class="col">
+                    <div
+                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                    >
+                      <div class={`fw-bold text-uppercase text-nowrap ${styles.highlightedTitle}`}>
+                        {!isUndefined(itemInfo()!.crunchbase_data!.stock_exchange)
+                          ? itemInfo()!.crunchbase_data!.stock_exchange
+                          : '-'}
+                      </div>
+                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                        <small>Stock exchange</small>
+                      </div>
                     </div>
-                    <div className={`fw-semibold ${styles.highlightedLegend}`}>
-                      <small>Ticker</small>
+                  </div>
+
+                  <div class="col">
+                    <div
+                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
+                    >
+                      <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
+                        {!isUndefined(itemInfo()!.crunchbase_data!.ticker) ? itemInfo()!.crunchbase_data!.ticker : '-'}
+                      </div>
+                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
+                        <small>Ticker</small>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className={`d-flex flex-column p-5 ${styles.loadingWrapper}`}>
-          <Loading />
-        </div>
-      )}
-    </Modal>
+            </Show>
+          </div>
+        </Show>
+      </Modal>
+    </Show>
   );
 };
 

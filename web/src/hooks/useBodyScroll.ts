@@ -1,17 +1,17 @@
-import { useEffect } from 'react';
+import { Accessor, createEffect, onCleanup } from 'solid-js';
 
-export const useBodyScroll = (blocked: boolean, elType: string) => {
+export const useBodyScroll = (blocked: Accessor<boolean>, elType: string) => {
   const className = `noScroll-${elType}`;
 
-  useEffect(() => {
-    if (blocked) {
+  createEffect(() => {
+    if (blocked()) {
       document.body.classList.add(className);
     } else {
       document.body.classList.remove(className);
     }
+  });
 
-    return () => {
-      document.body.classList.remove(className);
-    };
-  }, [blocked, className]);
+  onCleanup(() => {
+    document.body.classList.remove(className);
+  });
 };

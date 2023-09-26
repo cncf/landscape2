@@ -1,5 +1,4 @@
-import { ActiveSection } from '../layout/context/AppContext';
-import { Item, LandscapeData } from '../types';
+import { ActiveSection, Item, LandscapeData } from '../types';
 
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;

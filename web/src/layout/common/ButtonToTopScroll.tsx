@@ -1,8 +1,7 @@
-import classNames from 'classnames';
-import isNull from 'lodash/isNull';
-import throttle from 'lodash/throttle';
-import { MouseEvent, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useWindowScrollPosition } from '@solid-primitives/scroll';
+import { useNavigate } from '@solidjs/router';
+import isUndefined from 'lodash/isUndefined';
+import { createEffect, createSignal, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import isElementInView from '../../utils/isElementInView';
@@ -17,63 +16,57 @@ const NAV_HEIGHT = 200;
 
 const ButtonToTopScroll = (props: Props) => {
   const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = createSignal<boolean>(false);
+  const scroll = useWindowScrollPosition();
+  const y = () => scroll.y;
 
-  useEffect(() => {
-    const checkScrollPosition = throttle(() => {
-      setIsVisible(window.scrollY > NAV_HEIGHT);
-    }, 500);
-    window.addEventListener('scroll', checkScrollPosition);
-
-    return () => window.removeEventListener('scroll', checkScrollPosition);
-  }, []);
-
-  if (isNull(props.firstSection)) return null;
+  createEffect(() => {
+    setIsVisible(y() > NAV_HEIGHT);
+  });
 
   return (
-    <div className={classNames('d-flex justify-content-end sticky-bottom', styles.sticky, { 'd-none': !isVisible })}>
-      <div className={`position-relative ${styles.btnTopWrapper}`}>
-        <button
-          className={`btn btn-secondary btn-sm lh-1 text-white rounded-circle ${styles.btnTop}`}
-          onClick={(e: MouseEvent) => {
-            e.preventDefault();
+    <Show when={!isUndefined(props.firstSection)}>
+      <div class={`d-flex justify-content-end sticky-bottom ${styles.sticky}`} classList={{ 'd-none': !isVisible() }}>
+        <div class={`position-relative ${styles.btnTopWrapper}`}>
+          <button
+            class={`btn btn-secondary btn-sm lh-1 text-white rounded-circle ${styles.btnTop}`}
+            onClick={(e: MouseEvent) => {
+              e.preventDefault();
 
-            if (props.firstSection) {
-              navigate(
-                { ...location, hash: props.firstSection },
-                {
+              if (props.firstSection) {
+                navigate(`${location.pathname}${location.search}#${props.firstSection}`, {
                   replace: true,
-                }
-              );
+                });
 
-              window.scrollTo({
-                top: 0,
-                left: 0,
-                behavior: 'instant',
-              });
+                window.scrollTo({
+                  top: 0,
+                  left: 0,
+                  behavior: 'instant',
+                });
 
-              if (!isElementInView(`btn_${props.firstSection}`)) {
-                const target = window.document.getElementById(`btn_${props.firstSection}`);
-                if (target) {
-                  target.scrollBy({ top: 0, behavior: 'instant' });
-                }
+                if (!isElementInView(`btn_${props.firstSection}`)) {
+                  const target = window.document.getElementById(`btn_${props.firstSection}`);
+                  if (target) {
+                    target.scrollBy({ top: 0, behavior: 'instant' });
+                  }
 
-                const menu = window.document.getElementById('menu');
-                if (menu) {
-                  menu.scroll({
-                    top: 0,
-                    left: 0,
-                    behavior: 'instant',
-                  });
+                  const menu = window.document.getElementById('menu');
+                  if (menu) {
+                    menu.scroll({
+                      top: 0,
+                      left: 0,
+                      behavior: 'instant',
+                    });
+                  }
                 }
               }
-            }
-          }}
-        >
-          <SVGIcon kind={SVGIconKind.ArrowTop} />
-        </button>
+            }}
+          >
+            <SVGIcon kind={SVGIconKind.ArrowTop} />
+          </button>
+        </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

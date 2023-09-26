@@ -18,7 +18,7 @@
   margin-left: 2rem;
 }
 
-.active {
+.link:global(.activeLink) {
   background-color: var(--bs-btn-active-bg);
   border-color: var(--bs-btn-active-border-color);
 }
@@ -27,7 +27,7 @@
   margin-top: -0.25rem;
 }
 
-.link:not(.active):hover:before {
+.link:hover:before {
   background-color: var(--color1);
   content: '';
   height: 4px;
@@ -38,7 +38,7 @@
   bottom: -10px;
 }
 
-.link.active:before {
+.link:global(.activeLink):before {
   background-color: var(--color1);
   content: '';
   height: 4px;
@@ -46,6 +46,10 @@
   position: absolute;
   right: 0;
   bottom: -10px;
+}
+
+.link:global(.activeLink):hover:before {
+  opacity: 1;
 }
 
 @media only screen and (max-width: 991.98px) {

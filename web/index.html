@@ -16,14 +16,14 @@
     </script>
     <% } else { %>
     <script>
-        window.baseDS = {{ datasets.base|json_compact|safe }};
-        window.statsDS = {{ datasets.stats|json_compact|safe }};
+      window.baseDS = {{ datasets.base|json_compact|safe }};
+      window.statsDS = {{ datasets.stats|json_compact|safe }};
     </script>
     <% } %>
   </head>
   <body>
     <div id="landscape"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
 

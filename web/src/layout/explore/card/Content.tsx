@@ -1,48 +1,87 @@
+import { createVisibilityObserver, withDirection, withOccurrence } from '@solid-primitives/intersection-observer';
+import { A, useLocation, useNavigate } from '@solidjs/router';
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
-import { memo, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { Waypoint } from 'react-waypoint';
+import { Accessor, createMemo, For } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { BaseItem, CardMenu, Item, SVGIconKind } from '../../../types';
-import arePropsEqual from '../../../utils/areEqualProps';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import isElementInView from '../../../utils/isElementInView';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoriesData } from '../../../utils/prepareData';
 import slugify from '../../../utils/slugify';
 import SVGIcon from '../../common/SVGIcon';
-import { ActionsContext, AppActionsContext } from '../../context/AppContext';
+import { useSetActiveItemId } from '../../stores/activeItem';
 import Card from './Card';
 import styles from './Content.module.css';
 
 interface Props {
-  menu: CardMenu;
+  menu: Accessor<CardMenu>;
   data: CategoriesData;
   isVisible: boolean;
 }
 
-interface WaypointProps {
-  id: string;
-  children: JSX.Element;
-  isVisible: boolean;
-}
-
-const WaypointItem = (props: WaypointProps) => {
+const Content = (props: Props) => {
+  const bgColor = COLORS[0];
+  const updateActiveItemId = useSetActiveItemId();
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = createMemo(() => location.state);
+  const data = () => props.data;
 
-  const handleEnter = () => {
-    if (`#${props.id}` !== location.hash && props.isVisible) {
-      navigate(
-        { ...location, hash: props.id },
-        {
-          replace: true,
+  const useVisibilityObserver = createVisibilityObserver(
+    {},
+    withOccurrence(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line solid/reactivity
+      withDirection((entry, { occurrence, directionY }) => {
+        const currentNode = entry.target.id;
+        const prevSibling =
+          !isNull(window.document.getElementById(entry.target.id)) &&
+          !isNull(window.document.getElementById(entry.target.id)!.previousElementSibling)
+            ? window.document.getElementById(entry.target.id)!.previousElementSibling!.id
+            : undefined;
+        const nextSibling =
+          !isNull(window.document.getElementById(entry.target.id)) &&
+          !isNull(window.document.getElementById(entry.target.id)!.nextElementSibling)
+            ? window.document.getElementById(entry.target.id)!.nextElementSibling!.id
+            : undefined;
+
+        // Do not trigger handleEnter when we are not scrolling and we go directly to section
+        const nodes = [currentNode, prevSibling, nextSibling];
+
+        if (nodes.includes(location.hash.replace('#', ''))) {
+          if (directionY === 'Top') {
+            if (occurrence === 'Leaving' && !isUndefined(nextSibling)) {
+              handleEnter(nextSibling);
+            }
+            if (occurrence === 'Entering') {
+              handleEnter(currentNode);
+            }
+          }
+          if (directionY === 'Bottom') {
+            if (!isUndefined(state()) && occurrence === 'Entering') {
+              handleEnter(currentNode);
+            }
+          }
         }
-      );
+      })
+    )
+  );
 
-      if (!isElementInView(`btn_${props.id}`)) {
-        const target = window.document.getElementById(`btn_${props.id}`);
+  const handleEnter = (id: string) => {
+    if (`#${id}` !== location.hash) {
+      navigate(`${location.pathname}${location.search}#${id}`, {
+        replace: true,
+        scroll: false,
+        state: undefined,
+      });
+
+      if (!isElementInView(`btn_${id}`)) {
+        const target = window.document.getElementById(`btn_${id}`);
         if (target) {
           target.scrollIntoView({ block: 'nearest' });
         }
@@ -51,91 +90,82 @@ const WaypointItem = (props: WaypointProps) => {
   };
 
   return (
-    <Waypoint topOffset="20px" bottomOffset="97%" onEnter={handleEnter} fireOnRapidScroll={false}>
-      {props.children}
-    </Waypoint>
-  );
-};
-
-const Content = memo(function Content(props: Props) {
-  const bgColor = COLORS[0];
-  const { updateActiveItemId } = useContext(AppActionsContext) as ActionsContext;
-
-  const sortItems = (firstCategory: string, firstSubcategory: string): BaseItem[] => {
-    return orderBy(
-      props.data[firstCategory][firstSubcategory].items,
-      [(item: BaseItem) => item.name.toLowerCase().toString()],
-      'asc'
-    );
-  };
-
-  return (
-    <>
-      {Object.keys(props.menu).map((cat: string) => {
+    <For each={Object.keys(props.menu())}>
+      {(cat: string) => {
         return (
-          <div key={`list_cat_${cat}`}>
-            {props.menu[cat].map((subcat: string) => {
-              const id = convertStringSpaces(`${cat}/${subcat}`);
+          <div>
+            <For each={props.menu()[cat]}>
+              {(subcat: string) => {
+                // Do not render empty subcategories
+                const sortedItems = () =>
+                  orderBy(data()[cat][subcat].items, [(item: BaseItem) => item.name.toLowerCase().toString()], 'asc');
 
-              return (
-                <WaypointItem key={`list_subcat_${subcat}`} id={id} isVisible={props.isVisible}>
-                  <div>
-                    <div id={id} className={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
+                if (sortedItems().length === 0) return null;
+
+                const id = convertStringSpaces(`${cat}/${subcat}`);
+                let ref: HTMLDivElement | undefined;
+                useVisibilityObserver(() => props.isVisible && ref);
+
+                return (
+                  <div ref={(el) => (ref = el)} id={id}>
+                    <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                       <div
-                        className={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
-                        style={{ backgroundColor: bgColor }}
+                        class={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
+                        style={{ 'background-color': bgColor }}
                       >
                         {isSectionInGuide(cat) && (
                           <div>
-                            <Link
-                              to={`/?tab=guide#${slugify(cat)}`}
+                            <A
+                              href={`/guide#${slugify(cat)}`}
                               state={{ from: 'explore' }}
-                              className={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
+                              class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
                             >
                               <SVGIcon kind={SVGIconKind.Guide} />
-                            </Link>
+                            </A>
                           </div>
                         )}
-                        <div className="text-white text-nowrap text-truncate">{cat}</div>
+                        <div class="text-white text-nowrap text-truncate">{cat}</div>
                       </div>
-                      <div className={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
+                      <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                         {isSectionInGuide(cat, subcat) && (
                           <div>
-                            <Link
-                              to={`/?tab=guide#${slugify(`${cat} ${subcat}`)}`}
+                            <A
+                              href={`/guide#${slugify(`${cat} ${subcat}`)}`}
                               state={{ from: 'explore' }}
-                              className={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
+                              class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
                             >
                               <SVGIcon kind={SVGIconKind.Guide} />
-                            </Link>
+                            </A>
                           </div>
                         )}
-                        <div className="flex-grow-1 text-truncate">{subcat}</div>
+                        <div class="flex-grow-1 text-truncate">{subcat}</div>
                       </div>
                     </div>
-                    <div className="row g-4 mb-4">
-                      {sortItems(cat, subcat).map((item: Item) => {
-                        return (
-                          <div key={`card_${item.id}`} className="col-12 col-lg-6 col-xxl-4 col-xxxl-3">
-                            <div
-                              className={`card rounded-0 p-3 ${styles.card}`}
-                              onClick={() => updateActiveItemId(item.id)}
-                            >
-                              <Card item={item} className="h-100" />
+                    <div class="row g-4 mb-4">
+                      <For each={sortedItems()}>
+                        {(item: Item) => {
+                          return (
+                            <div class="col-12 col-lg-6 col-xxl-4 col-xxxl-3">
+                              <div
+                                class={`card rounded-0 p-3 ${styles.card}`}
+                                onClick={() => updateActiveItemId(item.id)}
+                              >
+                                <Card item={item} class="h-100" isVisible={props.isVisible} />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        }}
+                      </For>
                     </div>
                   </div>
-                </WaypointItem>
-              );
-            })}
+                );
+              }}
+            </For>
           </div>
         );
-      })}
-    </>
+      }}
+    </For>
   );
-}, arePropsEqual);
+};
 
 export default Content;
