@@ -5,11 +5,13 @@ use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
 use deploy::s3;
+use serve::serve;
 use std::path::PathBuf;
 use validate::validate_data;
 
 mod build;
 mod deploy;
+mod serve;
 mod validate;
 
 /// CLI arguments.
@@ -28,6 +30,9 @@ enum Command {
 
     /// Deploy landscape website (experimental).
     Deploy(DeployArgs),
+
+    /// Serve landscape website.
+    Serve(ServeArgs),
 
     /// Validate landscape data sources files.
     Validate(ValidateArgs),
@@ -141,6 +146,27 @@ struct S3Args {
     landscape_dir: PathBuf,
 }
 
+/// Serve command arguments.
+#[derive(Args)]
+struct ServeArgs {
+    /// Address the web server will listen on.
+    #[arg(long, default_value = "127.0.0.1:8000")]
+    addr: String,
+
+    /// Cache control header used for the resources served.
+    #[arg(long, default_value = "no-cache, no-store, must-revalidate")]
+    cache_control: String,
+
+    /// Whether the server should stop gracefully or not.
+    #[arg(long, default_value_t = false)]
+    graceful_shutdown: bool,
+
+    /// Location of the landscape website files (build subcommand output).
+    /// The current path will be used when none is provided.
+    #[arg(long)]
+    landscape_dir: Option<PathBuf>,
+}
+
 /// Validate command arguments.
 #[derive(Args)]
 #[command(args_conflicts_with_subcommands = true)]
@@ -179,6 +205,10 @@ async fn main() -> Result<()> {
             match &args.provider {
                 Provider::S3(args) => s3::deploy(args).await?,
             };
+        }
+        Command::Serve(args) => {
+            setup_logging();
+            serve(args).await?;
         }
         Command::Validate(args) => match &args.target {
             ValidateTarget::Data(src) => validate_data(src).await?,
