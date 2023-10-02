@@ -6,11 +6,9 @@ use axum::{http::HeaderValue, routing::get_service, Router, Server};
 use reqwest::header::CACHE_CONTROL;
 use std::{env, net::SocketAddr};
 use tokio::signal;
-use tower::ServiceBuilder;
 use tower_http::{
     services::{ServeDir, ServeFile},
     set_header::SetResponseHeader,
-    trace::TraceLayer,
 };
 use tracing::{info, instrument};
 
@@ -33,12 +31,12 @@ pub(crate) async fn serve(args: &ServeArgs) -> Result<()> {
             ServeFile::new(index_path),
             CACHE_CONTROL,
             HeaderValue::try_from(&args.cache_control)?,
-        )))
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
+        )));
 
     // Setup and launch HTTP server
     let addr: SocketAddr = args.addr.parse()?;
-    info!("http server running [http://{}]", addr);
+    info!("http server running (press ctrl+c to stop)");
+    println!("\n🔗 Landscape available at: http://{addr}\n");
     if args.graceful_shutdown {
         Server::bind(&addr)
             .serve(router.into_make_service())
