@@ -5,12 +5,14 @@ use anyhow::Result;
 use build::build;
 use clap::{Args, Parser, Subcommand};
 use deploy::s3;
+use new::new;
 use serve::serve;
 use std::path::PathBuf;
 use validate::validate_data;
 
 mod build;
 mod deploy;
+mod new;
 mod serve;
 mod validate;
 
@@ -30,6 +32,9 @@ enum Command {
 
     /// Deploy landscape website (experimental).
     Deploy(DeployArgs),
+
+    /// Create a new landscape from the built-in template.
+    New(NewArgs),
 
     /// Serve landscape website.
     Serve(ServeArgs),
@@ -146,6 +151,14 @@ struct S3Args {
     landscape_dir: PathBuf,
 }
 
+/// New command arguments.
+#[derive(Args)]
+struct NewArgs {
+    /// Output directory to write files to.
+    #[arg(long)]
+    output_dir: PathBuf,
+}
+
 /// Serve command arguments.
 #[derive(Args)]
 struct ServeArgs {
@@ -185,31 +198,29 @@ enum ValidateTarget {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Helper function to setup logging
-    let setup_logging = || {
-        if std::env::var_os("RUST_LOG").is_none() {
-            std::env::set_var("RUST_LOG", "landscape2=debug");
+    let cli = Cli::parse();
+
+    // Setup logging
+    match &cli.command {
+        Command::Build(_) | Command::Deploy(_) | Command::New(_) | Command::Serve(_) => {
+            if std::env::var_os("RUST_LOG").is_none() {
+                std::env::set_var("RUST_LOG", "landscape2=info");
+            }
+            tracing_subscriber::fmt::init();
         }
-        tracing_subscriber::fmt::init();
-    };
+        Command::Validate(_) => {}
+    }
 
     // Run command
-    let cli = Cli::parse();
     match &cli.command {
-        Command::Build(args) => {
-            setup_logging();
-            build(args).await?;
-        }
+        Command::Build(args) => build(args).await?,
         Command::Deploy(args) => {
-            setup_logging();
             match &args.provider {
                 Provider::S3(args) => s3::deploy(args).await?,
             };
         }
-        Command::Serve(args) => {
-            setup_logging();
-            serve(args).await?;
-        }
+        Command::New(args) => new(args)?,
+        Command::Serve(args) => serve(args).await?,
         Command::Validate(args) => match &args.target {
             ValidateTarget::Data(src) => validate_data(src).await?,
         },

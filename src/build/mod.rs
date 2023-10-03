@@ -126,6 +126,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website built! (took: {:.3}s)", duration);
+    display_success_msg(&args.output_dir.to_string_lossy());
 
     Ok(())
 }
@@ -166,6 +167,18 @@ fn copy_web_assets(output_dir: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Display build success message.
+fn display_success_msg(output_dir: &str) {
+    println!(
+        "\n✅ Landscape built successfully!
+
+You can see it in action by running the following command:
+
+👉 landscape2 serve --landscape-dir {output_dir}
+"
+    );
 }
 
 /// Generate datasets from the landscape data and settings, as well as from the
