@@ -12,7 +12,7 @@ WORKDIR /landscape2/src
 RUN cargo build --release
 
 # Final stage
-FROM alpine:3.18.3
+FROM alpine:3.18.4
 RUN addgroup -S landscape2 && adduser -S landscape2 -G landscape2
 USER landscape2
 WORKDIR /home/landscape2
