@@ -32,11 +32,11 @@ const getFiltersPerGroup = (groupedData: GroupData) => {
 const prepareFilters = (items: Item[]): FilterSection[] => {
   const filters: FilterSection[] = [];
 
+  const maturityTypes: string[] = [];
   const organizations: string[] = [];
   const licenses: string[] = [];
   const countries: string[] = [];
   const companyTypes: string[] = [];
-  const maturityTypes: string[] = [];
   let categories: string[] = [];
 
   items.forEach((i: Item) => {
@@ -70,6 +70,17 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       });
     }
   });
+
+  if (maturityTypes.length > 0) {
+    filters.push({
+      value: FilterCategory.Maturity,
+      title: 'Project',
+      options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
+        value: cleanValue(pr),
+        name: capitalizeFirstLetter(pr),
+      })),
+    });
+  }
 
   if (organizations.length > 0) {
     filters.push({
@@ -121,17 +132,6 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
         options: [...new Set(companyTypes)].sort().map((ot: string) => ({
           value: cleanValue(ot),
           name: ot,
-        })),
-      });
-    }
-
-    if (maturityTypes.length > 0) {
-      filters.push({
-        value: FilterCategory.Maturity,
-        title: 'Project',
-        options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
-          value: cleanValue(pr),
-          name: capitalizeFirstLetter(pr),
         })),
       });
     }
