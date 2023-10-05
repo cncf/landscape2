@@ -1,7 +1,5 @@
 //! This module defines the functionality of the build CLI subcommand.
 
-#![allow(non_upper_case_globals)]
-
 use self::{
     cache::Cache,
     crunchbase::collect_crunchbase_data,
@@ -16,6 +14,7 @@ use self::{
 use crate::{BuildArgs, GuideSource, LogosSource};
 use anyhow::{format_err, Context, Result};
 use askama::Template;
+pub(crate) use data::LandscapeData;
 use futures::stream::{self, StreamExt};
 use reqwest::StatusCode;
 use rust_embed::RustEmbed;
@@ -27,11 +26,13 @@ use std::{
     sync::Arc,
     time::Instant,
 };
+use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument};
 use url::Url;
 use uuid::Uuid;
 
 mod cache;
+mod clomonitor;
 mod crunchbase;
 mod data;
 mod datasets;
@@ -42,7 +43,9 @@ mod logos;
 mod projects;
 mod settings;
 mod stats;
-pub(crate) use data::LandscapeData;
+
+/// Maximum number of CLOMonitor reports summaries to fetch concurrently.
+const CLOMONITOR_MAX_CONCURRENCY: usize = 10;
 
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
@@ -99,6 +102,9 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     // Prepare items logos and copy them to the output directory
     prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
+    // Collect CLOMonitor reports summaries and copy them to the output directory
+    collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
+
     // Collect data from external services
     let (crunchbase_data, github_data) = tokio::try_join!(
         collect_crunchbase_data(&cache, &landscape_data),
@@ -142,6 +148,76 @@ fn check_web_assets() -> Result<()> {
         ));
     }
 
+    Ok(())
+}
+
+/// Collect projects CLOMonitor reports summaries and copy them to the output
+/// directory.
+#[instrument(skip_all, err)]
+async fn collect_clomonitor_reports(
+    cache: &Cache,
+    landscape_data: &mut LandscapeData,
+    settings: &LandscapeSettings,
+    output_dir: &Path,
+) -> Result<()> {
+    debug!("collecting clomonitor reports");
+
+    // Fetch CLOMonitor reports summaries and copy them to the output directory
+    let http_client = reqwest::Client::new();
+    let foundation = &settings.foundation.to_lowercase();
+    let reports_summaries: Mutex<HashMap<Uuid, String>> = Mutex::new(HashMap::new());
+    stream::iter(landscape_data.items.iter())
+        .for_each_concurrent(CLOMONITOR_MAX_CONCURRENCY, |item| async {
+            // Item must contain the project name as used in CLOMonitor
+            let Some(project_name) = &item.clomonitor_name else {
+                return;
+            };
+
+            // Fetch report summary
+            let http_client = http_client.clone();
+            let report_summary =
+                match clomonitor::fetch_report_summary(cache, http_client, foundation, project_name).await {
+                    Ok(Some(report_summary)) => report_summary,
+                    Ok(None) => return,
+                    Err(err) => {
+                        error!(?err, ?foundation, ?project_name, "error fetching report summary");
+                        return;
+                    }
+                };
+
+            // Copy report summary to the output dir
+            let file_name = format!("clomonitor_{foundation}_{project_name}.svg");
+            let mut file = match fs::File::create(output_dir.join(IMAGES_PATH).join(&file_name)) {
+                Ok(file) => file,
+                Err(err) => {
+                    error!(?err, ?file_name, "error creating report summary file");
+                    return;
+                }
+            };
+            if let Err(err) = file.write_all(&report_summary) {
+                error!(?err, ?file_name, "error writing report summary to file");
+                return;
+            };
+
+            // Track report summary to include it later in the item
+            let mut reports_summaries = reports_summaries.lock().await;
+            reports_summaries.insert(
+                item.id,
+                Path::new(IMAGES_PATH).join(file_name).to_string_lossy().to_string(),
+            );
+        })
+        .await;
+
+    // Update clomonitor_report_summary field in landscape items with the path
+    // of the SVG image
+    let reports_summaries = reports_summaries.lock().await;
+    for item in &mut landscape_data.items {
+        if let Some(report_summary) = reports_summaries.get(&item.id) {
+            item.clomonitor_report_summary = Some(report_summary.clone());
+        }
+    }
+
+    debug!("done!");
     Ok(())
 }
 
@@ -349,9 +425,12 @@ async fn prepare_items_logos(
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);
-            let Ok(mut file) = fs::File::create(output_dir.join(LOGOS_PATH).join(&file_name)) else {
-                error!(?file_name, "error creating logo file in output dir");
-                return (item.id, None);
+            let mut file = match fs::File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
+                Ok(file) => file,
+                Err(err) => {
+                    error!(?err, ?file_name, "error creating logo file in output dir");
+                    return (item.id, None);
+                }
             };
             if let Err(err) = file.write_all(&logo.svg_data) {
                 error!(?err, ?file_name, "error writing logo to file in output dir");

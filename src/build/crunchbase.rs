@@ -40,7 +40,7 @@ pub(crate) async fn collect_crunchbase_data(
 
     // Read cached data (if available)
     let mut cached_data: Option<CrunchbaseData> = None;
-    if let Ok(Some(json_data)) = cache.read(CRUNCHBASE_CACHE_FILE) {
+    if let Ok(Some((_, json_data))) = cache.read(CRUNCHBASE_CACHE_FILE) {
         if let Ok(crunchbase_data) = serde_json::from_slice(&json_data) {
             cached_data = Some(crunchbase_data);
         }

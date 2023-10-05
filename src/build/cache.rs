@@ -1,7 +1,7 @@
 //! This module defines the cache used to cache files across builds.
 
 use anyhow::{format_err, Result};
-use std::{fs, io::Write, path::PathBuf};
+use std::{fs, io::Write, path::PathBuf, time::SystemTime};
 use tracing::instrument;
 
 /// Path where the cache files will be written to inside the cache directory.
@@ -37,12 +37,18 @@ impl Cache {
 
     /// Read data from the cache file provided if available.
     #[instrument(skip_all, err)]
-    pub(crate) fn read(&self, file_name: &str) -> Result<Option<Vec<u8>>> {
+    pub(crate) fn read(&self, file_name: &str) -> Result<Option<(Option<SystemTime>, Vec<u8>)>> {
+        // Check if the path exists
         let path = self.cache_dir.join(file_name);
         if !path.exists() {
             return Ok(None);
         }
-        Ok(Some(fs::read(&path)?))
+
+        // Get last modification time (if available)
+        let md = fs::metadata(&path)?;
+        let modified_at = md.modified().ok();
+
+        Ok(Some((modified_at, fs::read(&path)?)))
     }
 
     /// Write provided data to cache file.
