@@ -349,6 +349,9 @@ pub(crate) struct Item {
     pub clomonitor_name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub clomonitor_report_summary: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub crunchbase_data: Option<Organization>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

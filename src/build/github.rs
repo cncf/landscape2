@@ -37,7 +37,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
 
     // Read cached data (if available)
     let mut cached_data: Option<GithubData> = None;
-    if let Ok(Some(json_data)) = cache.read(GITHUB_CACHE_FILE) {
+    if let Ok(Some((_, json_data))) = cache.read(GITHUB_CACHE_FILE) {
         if let Ok(github_data) = serde_json::from_slice(&json_data) {
             cached_data = Some(github_data);
         }

@@ -49,7 +49,7 @@ pub(crate) async fn prepare_logo(
     // terms of CPU usage, so once we've done it once for a given logo we cache
     // it and try to reuse it).
     let logo_cache_file = format!("logo_{digest}.svg");
-    if let Ok(Some(cached_svg_data)) = cache.read(&logo_cache_file) {
+    if let Ok(Some((_, cached_svg_data))) = cache.read(&logo_cache_file) {
         return Ok(Logo {
             svg_data: cached_svg_data,
             digest,
