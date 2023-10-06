@@ -166,10 +166,6 @@ struct ServeArgs {
     #[arg(long, default_value = "127.0.0.1:8000")]
     addr: String,
 
-    /// Cache control header used for the resources served.
-    #[arg(long, default_value = "no-cache, no-store, must-revalidate")]
-    cache_control: String,
-
     /// Whether the server should stop gracefully or not.
     #[arg(long, default_value_t = false)]
     graceful_shutdown: bool,

@@ -2,14 +2,16 @@
 
 use crate::ServeArgs;
 use anyhow::Result;
-use axum::{http::HeaderValue, routing::get_service, Router, Server};
+use axum::{
+    http::{HeaderValue, Request},
+    middleware::{self, Next},
+    response::IntoResponse,
+    Router, Server,
+};
 use reqwest::header::CACHE_CONTROL;
 use std::{env, net::SocketAddr};
 use tokio::signal;
-use tower_http::{
-    services::{ServeDir, ServeFile},
-    set_header::SetResponseHeader,
-};
+use tower_http::services::{ServeDir, ServeFile};
 use tracing::{info, instrument};
 
 /// Serve landscape website.
@@ -21,17 +23,10 @@ pub(crate) async fn serve(args: &ServeArgs) -> Result<()> {
     let router: Router<()> = Router::new()
         .nest_service(
             "/",
-            get_service(SetResponseHeader::overriding(
-                ServeDir::new(&landscape_dir),
-                CACHE_CONTROL,
-                HeaderValue::try_from(&args.cache_control)?,
-            )),
+            ServeDir::new(&landscape_dir).not_found_service(ServeFile::new(&index_path)),
         )
-        .fallback_service(get_service(SetResponseHeader::overriding(
-            ServeFile::new(index_path),
-            CACHE_CONTROL,
-            HeaderValue::try_from(&args.cache_control)?,
-        )));
+        .fallback_service(ServeFile::new(index_path))
+        .route_layer(middleware::from_fn(set_cache_control_header));
 
     // Setup and launch HTTP server
     let addr: SocketAddr = args.addr.parse()?;
@@ -48,6 +43,24 @@ pub(crate) async fn serve(args: &ServeArgs) -> Result<()> {
     };
 
     Ok(())
+}
+
+/// Middleware that sets the cache control header in the response.
+pub(crate) async fn set_cache_control_header<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
+    // Prepare header value (based on the request uri)
+    let cache_control = match req.uri().to_string() {
+        u if u.starts_with("/assets/") => "max-age=31536000",
+        u if u.starts_with("/logos/") => "max-age=31536000",
+        _ => "no-cache, no-store, must-revalidate",
+    };
+
+    // Execute next handler
+    let mut resp = next.run(req).await;
+
+    // Set header using value prepared above
+    resp.headers_mut().insert(CACHE_CONTROL, HeaderValue::from_static(cache_control));
+
+    resp
 }
 
 /// Return a future that will complete when the program is asked to stop via a
