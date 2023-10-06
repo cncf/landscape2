@@ -61,45 +61,79 @@ Usage: landscape2 <COMMAND>
 Commands:
   build     Build landscape website
   deploy    Deploy landscape website (experimental)
+  new       Create a new landscape from the built-in template
+  serve     Serve landscape website
   validate  Validate landscape data sources files
   help      Print this message or the help of the given subcommand(s)
 ```
 
 ## Usage
 
-You can generate a landscape website by using the `build` subcommand. In the following example we'll generate the CNCF landscape:
+To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch.
 
-> [!IMPORTANT]
-> Without the credentials required to collect data from external services the resulting site won't contain all the information available on the demo site.
+### Creating a new landscape
+
+The `new` subcommand allows us to create a new landscape from a built-in template. This template includes some sample data source files that you can use as a starting point for your landscapes.
+
+The following command will create the directory `my-landscape` if it doesn't already exist and will copy into it the files in the built-in template:
 
 ```text
-$ landscape2 build \
-    --settings-url https://raw.githubusercontent.com/cncf/landscape2-sites/main/cncf/settings.yml \
-    --data-url https://raw.githubusercontent.com/cncf/landscape/master/landscape.yml \
-    --logos-url https://raw.githubusercontent.com/cncf/landscape/master/hosted_logos/ \
-    --output-dir ~/Desktop/landscape
+$ landscape2 new --output-dir my-landscape
+
+INFO new: landscape2::new: creating new landscape from the built-in template..
+INFO new: landscape2::new: landscape created! (took: 0.003s)
+
+✅ Landscape created successfully!
+
+You can build it by running the following command:
+
+👉 cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
 ```
 
-This command will build the landscape and write the resulting files to the `output-dir` provided. The result is a **static website** that you can deploy on your favorite hosting provider.
+### Building the landscape website
 
-> [!NOTE]
-> The resulting website is a [single-page application](https://en.wikipedia.org/wiki/Single-page_application) that handles routing on the client side. This means that you'll need to configure your webserver to serve the `index.html` file for the SPA route paths (like '/guide', '/stats', etc). One way of doing this would be to serve that file when a non existent path is requested.
+The build process is in charge of generating the landscape website from the information available in the datasources provided. Now we'll build the landscape we created in the previous step by using the `build` subcommand. Please note that the `new` subcommand already suggested us to do this in its output and even printed the full command to use for us.
 
-We could have also built it using a local checkout of the `cncf/landscape` repository instead of using urls, which in some cases can be considerably faster. The tool accepts providing *local paths* in addition to urls, so we'll modify the previous command to use them for the data file and the logos location:
+The following command will build the landscape and write the resulting files to the `output-dir` provided (*build* in this case):
 
 ```text
-$ landscape2 build \
-    --settings-url https://raw.githubusercontent.com/cncf/landscape2-sites/main/cncf/settings.yml \
-    --data-file ./landscape/landscape.yml \
-    --logos-path ./landscape/hosted_logos \
-    --output-dir ~/Desktop/landscape
+$ cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
 
 INFO build: landscape2::build: building landscape website..
-INFO build: landscape2::build: landscape website built! (took: 1.321s)
+WARN build:collect_crunchbase_data: landscape2::build::crunchbase: crunchbase api key not provided: no information will be collected from crunchbase
+WARN build:collect_github_data: landscape2::build::github: github tokens not provided: no information will be collected from github
+INFO build: landscape2::build: landscape website built! (took: 0.555s)
+
+✅ Landscape built successfully!
+
+You can see it in action by running the following command:
+
+👉 landscape2 serve --landscape-dir build
 ```
 
+> [!IMPORTANT]
+> Without the credentials required to collect data from external services (GitHub, Crunchbase, etc) the resulting site won't contain all the information available on the CNCF demo site. In this case, we didn't provide them intentionally, so we were warned about this in the command output (see WARN entries).
+
+### Serving a landscape
+
+The result of the build process is a **static website** that you can deploy on your favorite hosting provider. To make it easier to try your landscapes, **landscape2** includes a `serve` subcommand that will launch an HTTP server and serve the contents of your landscape. In our example, the build output displayed the command to do this, so we'll go ahead and give it a try:
+
+```text
+$ landscape2 serve --landscape-dir build
+
+INFO serve: landscape2::serve: http server running (press ctrl+c to stop)
+
+🔗 Landscape available at: http://127.0.0.1:8000
+```
+
+If you visit `http://127.0.0.1:8000` in your browser you should see the landscape you just created in action. Now you can iterate by editing the files in the `my-landscape` directory until your landscape is ready.
+
 > [!NOTE]
-> Some operations like collecting data from external sources or processing a lot of logos images can take some time, specially in landscapes with lots of items. **Landscape2** caches as much of this data as possible to make subsequent runs faster. Please keep this in mind when running the tool periodically from your workflows, and make sure the cache directory (set via `--cache-dir`) is saved and restored on each run.
+> The resulting website when building a landscape is a [single-page application](https://en.wikipedia.org/wiki/Single-page_application) that handles routing on the client side. This means that you'll need to configure your webserver to serve the `index.html` file for the SPA route paths (like '/guide', '/stats', etc). One way of doing this would be to serve that file when a non existent path is requested. The `serve` subcommand included in **landscape2** already handles this for us.
+
+### Performance considerations when building
+
+Some operations like collecting data from external sources or processing a lot of logos images can take some time, specially in landscapes with lots of items. **Landscape2** caches as much of this data as possible to make subsequent runs faster. Please keep this in mind when running the tool periodically from your workflows, and make sure the cache directory (set via `--cache-dir`) is saved and restored on each run. You can find some examples of how to achieve this in the [workflows in the landscape2-sites repository](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows).
 
 ## Contributing
 

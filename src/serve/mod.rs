@@ -71,7 +71,7 @@ async fn shutdown_signal() {
 
     // Wait for any of the signals
     tokio::select! {
-        _ = ctrl_c => {},
-        _ = terminate => {},
+        () = ctrl_c => {},
+        () = terminate => {},
     }
 }
