@@ -97,7 +97,7 @@ mod base {
                 categories: landscape_data.categories.clone(),
                 colors: settings.colors.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
-                groups: settings.groups.clone().unwrap_or(vec![]),
+                groups: settings.groups.clone().unwrap_or_default(),
                 social_networks: settings.social_networks.clone(),
                 ..Default::default()
             };
