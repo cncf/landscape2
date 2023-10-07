@@ -141,6 +141,15 @@ groups:
 # members_category: <CATEGORY_NAME>
 #
 
+# Screenshot width (optional)
+#
+# Width of the landscape screenshots automatically generated (in pixels).
+# Screenshots won't be taken if this value is not provided.
+#
+# screenshot_width: <WIDTH_IN_PIXELS>
+#
+screenshot_width: 1500
+
 # Social networks urls (optional)
 #
 # List of social networks urls that will be used to create some links in the

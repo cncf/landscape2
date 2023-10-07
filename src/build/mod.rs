@@ -11,18 +11,25 @@ use self::{
     projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{Images, LandscapeSettings},
 };
-use crate::{BuildArgs, GuideSource, LogosSource};
+use crate::{serve, BuildArgs, GuideSource, LogosSource, ServeArgs};
 use anyhow::{format_err, Context, Result};
 use askama::Template;
+use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
 pub(crate) use data::LandscapeData;
 use futures::stream::{self, StreamExt};
+use headless_chrome::{
+    protocol::cdp::Page::{self, CaptureScreenshotFormatOption},
+    types::PrintToPdfOptions,
+    Browser, LaunchOptions,
+};
 use reqwest::StatusCode;
 use rust_embed::RustEmbed;
 use std::{
     collections::HashMap,
+    ffi::OsStr,
     fs::{self, File},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
     sync::Arc,
     time::Instant,
 };
@@ -129,6 +136,11 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 
     // Generate projects.* files
     generate_projects_files(&landscape_data, &args.output_dir)?;
+
+    // Prepare landscape screenshot (in PNG and PDF formats)
+    if let Some(width) = &settings.screenshot_width {
+        prepare_screenshot(*width, &args.output_dir).await?;
+    }
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website built! (took: {:.3}s)", duration);
@@ -345,8 +357,7 @@ async fn get_settings_images(settings: &LandscapeSettings, output_dir: &Path) ->
             return Err(format_err!("invalid image url: {url}"));
         };
         let img_path = Path::new(IMAGES_PATH).join(file_name);
-        let mut file = fs::File::create(output_dir.join(&img_path))?;
-        file.write_all(&img)?;
+        File::create(output_dir.join(&img_path))?.write_all(&img)?;
 
         Ok(Some(img_path.to_string_lossy().into_owned()))
     }
@@ -455,6 +466,78 @@ async fn prepare_items_logos(
     Ok(())
 }
 
+/// Prepare landscape screenshot (in PNG and PDF formats).
+#[instrument(skip_all, err)]
+#[allow(clippy::cast_precision_loss, clippy::items_after_statements)]
+async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
+    debug!("preparing screenshot");
+
+    // Launch server to serve landscape just built
+    const SVR_ADDR: &str = "127.0.0.1:8123";
+    let landscape_dir = Some(PathBuf::from(&output_dir));
+    let server = tokio::spawn(async {
+        let args = ServeArgs {
+            addr: SVR_ADDR.to_string(),
+            graceful_shutdown: false,
+            landscape_dir,
+            silent: true,
+        };
+        serve(&args).await
+    });
+
+    // Setup headless browser and navigate to screenshot url
+    let options = LaunchOptions {
+        window_size: Some((width, 500)),
+        args: vec![
+            OsStr::new("--force-device-scale-factor=2"),
+            OsStr::new("--hide-scrollbars"),
+        ],
+        ..Default::default()
+    };
+    let browser = Browser::new(options)?;
+    let tab = browser.new_tab()?;
+    let screenshot_url = format!("http://{SVR_ADDR}");
+    tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
+
+    // Take screenshot in PNG format and save it to a file
+    let png_b64_data = tab
+        .call_method(Page::CaptureScreenshot {
+            format: Some(CaptureScreenshotFormatOption::Png),
+            quality: None,
+            clip: None,
+            from_surface: None,
+            capture_beyond_viewport: Some(true),
+        })?
+        .data;
+    let png_data = b64.decode(png_b64_data)?;
+    let png_path = output_dir.join(DOCS_PATH).join("landscape.png");
+    File::create(&png_path)?.write_all(&png_data)?;
+
+    // Take screenshot in PDF format and save it to a file
+    // We use the dimensions of the screenshot in PNG format to calculate the
+    // dimensions of the PDF paper, converting from pixels to inches.
+    let png_size = imagesize::size(&png_path)?;
+    let pdf_data = tab.print_to_pdf(Some(PrintToPdfOptions {
+        margin_bottom: Some(0.0),
+        margin_left: Some(0.0),
+        margin_right: Some(0.0),
+        margin_top: Some(0.0),
+        page_ranges: Some("1".to_string()),
+        paper_height: Some((png_size.height + 10) as f64 / 2.0 * 0.010_416_666_7),
+        paper_width: Some(png_size.width as f64 / 2.0 * 0.010_416_666_7),
+        print_background: Some(true),
+        ..Default::default()
+    }))?;
+    let pdf_path = output_dir.join(DOCS_PATH).join("landscape.pdf");
+    File::create(pdf_path)?.write_all(&pdf_data)?;
+
+    // Stop server
+    server.abort();
+
+    debug!("done!");
+    Ok(())
+}
+
 /// Template for the index document.
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
@@ -468,8 +551,7 @@ fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
 
     let index = Index { datasets }.render()?;
-    let mut file = File::create(output_dir.join("index.html"))?;
-    file.write_all(index.as_bytes())?;
+    File::create(output_dir.join("index.html"))?.write_all(index.as_bytes())?;
 
     Ok(())
 }

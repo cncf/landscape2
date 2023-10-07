@@ -14,12 +14,14 @@ async-trait = "0.1.73"
 aws-config = "0.56.1"
 aws-sdk-s3 = "0.31.2"
 axum = "0.6.20"
+base64 = "0.21.4"
 chrono = { version = "0.4.31", features = ["serde"] }
 clap = { version = "4.4.6", features = ["derive"] }
 csv = "1.2.2"
 deadpool = "0.10.0"
 dirs = "5.0.1"
 futures = "0.3.28"
+headless_chrome = "1.0.5"
 hex = "0.4.3"
 itertools = "0.11.0"
 lazy_static = "1.4.0"
@@ -51,6 +53,7 @@ url = "2.4.1"
 usvg = "0.35.0"
 uuid = { version = "1.4.1", features = ["serde", "v5"] }
 walkdir = "2.4.0"
+imagesize = "0.12.0"
 
 [dev-dependencies]
 mockall = "0.11.4"

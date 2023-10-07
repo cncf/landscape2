@@ -40,6 +40,9 @@ pub(crate) struct LandscapeSettings {
     pub members_category: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub screenshot_width: Option<u32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub social_networks: Option<SocialNetworks>,
 }
 
