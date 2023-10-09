@@ -174,6 +174,10 @@ struct ServeArgs {
     /// The current path will be used when none is provided.
     #[arg(long)]
     landscape_dir: Option<PathBuf>,
+
+    /// Enable silent mode.
+    #[arg(long, default_value_t = false)]
+    silent: bool,
 }
 
 /// Validate command arguments.

@@ -30,14 +30,15 @@ pub(crate) async fn serve(args: &ServeArgs) -> Result<()> {
 
     // Setup and launch HTTP server
     let addr: SocketAddr = args.addr.parse()?;
-    info!("http server running (press ctrl+c to stop)");
-    println!("\n🔗 Landscape available at: http://{addr}\n");
+    if !args.silent {
+        info!("http server running (press ctrl+c to stop)");
+        println!("\n🔗 Landscape available at: http://{addr}\n");
+    }
     if args.graceful_shutdown {
         Server::bind(&addr)
             .serve(router.into_make_service())
             .with_graceful_shutdown(shutdown_signal())
             .await?;
-        info!("http server stopped");
     } else {
         Server::bind(&addr).serve(router.into_make_service()).await?;
     };
