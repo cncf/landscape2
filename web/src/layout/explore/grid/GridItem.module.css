@@ -1,6 +1,9 @@
 .card {
   width: var(--card-size-width);
   height: var(--card-size-height);
+}
+
+.card:global(.whithoutRepo) {
   background-color: #f6f7f9;
 }
 
@@ -9,22 +12,18 @@
   vertical-align: top;
 }
 
-.withRepo {
-  background-color: var(--bs-white);
-}
-
-.bigCard {
+.card:global(.bigCard) {
   width: var(--card-size-width) * 2 + var(--card-gap);
   height: var(--card-size-height) * 2 + var(--card-gap);
   grid-column-end: span 2;
   grid-row-end: span 2;
 }
 
-.bigCard .cardContent {
+.card:global(.bigCard) .cardContent {
   padding: 0.5rem;
 }
 
-.bigCard.withLabel .cardContent {
+.card:global(.bigCard.withLabel) .cardContent {
   padding-bottom: 1.5rem;
 }
 
@@ -35,7 +34,7 @@
   height: auto;
 }
 
-.bigCard .logo {
+.card:global(.bigCard) .logo {
   font-size: calc(var(--card-size-height) * 1.5);
 }
 
@@ -74,20 +73,20 @@
   padding: 0.15rem;
 }
 
-:global(.zoom-0) .bigCard .cardContent,
-:global(.zoom-1) .bigCard .cardContent,
-:global(.zoom-2) .bigCard .cardContent,
-:global(.zoom-3) .bigCard .cardContent {
+:global(.zoom-0) .card:global(.bigCard) .cardContent,
+:global(.zoom-1) .card:global(.bigCard) .cardContent,
+:global(.zoom-2) .card:global(.bigCard) .cardContent,
+:global(.zoom-3) .card:global(.bigCard) .cardContent {
   padding: 0.25rem;
 }
 
-:global(.zoom-2) .bigCard.withLabel .cardContent,
-:global(.zoom-3) .bigCard.withLabel .cardContent {
+:global(.zoom-2) .card:global(.bigCard.withLabel) .cardContent,
+:global(.zoom-3) .card:global(.bigCard.withLabel) .cardContent {
   padding-bottom: 1rem;
 }
 
-:global(.zoom-0) .bigCard.withLabel .cardContent,
-:global(.zoom-1) .bigCard.withLabel .cardContent {
+:global(.zoom-0) .card:global(.bigCard.withLabel) .cardContent,
+:global(.zoom-1) .card:global(.bigCard.withLabel) .cardContent {
   padding-bottom: 0.75rem;
 }
 
@@ -100,7 +99,7 @@
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
 }
 
-.bigCard .dropdown {
+.card:global(.bigCard) .dropdown {
   margin-top: calc(var(--card-size-height) * 2 + var(--card-gap) + 0.5rem);
 }
 
@@ -116,7 +115,7 @@
   right: calc(var(--card-size-width) * -1);
 }
 
-.bigCard .rightAligned {
+.card:global(.bigCard) .rightAligned {
   right: calc(var(--card-size-width) * 2 * -1);
 }
 
@@ -138,7 +137,7 @@
   left: calc((var(--card-size-width) / 2) - 0.5rem);
 }
 
-.bigCard .leftAligned .arrow {
+.card:global(.bigCard) .leftAligned .arrow {
   left: calc(var(--card-size-width) - 0.5rem);
 }
 
@@ -146,6 +145,6 @@
   left: calc(100% - (var(--card-size-width) / 2) - 0.5rem);
 }
 
-.bigCard .rightAligned .arrow {
+.card:global(.bigCard) .rightAligned .arrow {
   left: calc(100% - var(--card-size-width) - 0.5rem);
 }

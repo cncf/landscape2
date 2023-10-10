@@ -1,17 +1,19 @@
 import './styles/default.scss';
 import './App.css';
 
-import isNull from 'lodash/isNull';
+import { Route, Router, Routes } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
-import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { createSignal, lazy, onMount } from 'solid-js';
 
 import Layout from './layout';
-import Landscape from './layout/landscape';
-import { BaseData } from './types';
+import Explore from './layout/explore';
+import Guide from './layout/guide';
+import NotFound from './layout/notFound';
 import itemsDataGetter from './utils/itemsDataGetter';
 import updateAlphaInColor from './utils/updateAlphaInColor';
+
+const Stats = lazy(() => import('./layout/stats'));
 
 // Colors
 let COLOR_1 = 'rgba(0, 107, 204, 1)';
@@ -23,9 +25,9 @@ let COLOR_5 = 'rgba(1, 107, 204, 0.7)';
 let COLOR_6 = 'rgba(0, 42, 81, 0.7)';
 
 const App = () => {
-  const [data, setData] = useState<BaseData | null>(null);
+  const [data] = createSignal(window.baseDS);
 
-  useEffect(() => {
+  onMount(() => {
     if (!isUndefined(window.baseDS.colors)) {
       if (!isUndefined(window.baseDS.colors?.color1)) {
         COLOR_1 = window.baseDS.colors?.color1;
@@ -57,18 +59,17 @@ const App = () => {
     };
 
     loadColors();
-    // Load data
-    setData(window.baseDS);
     itemsDataGetter.init();
-  }, []);
-
-  if (isNull(data)) return null;
+  });
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout data={data} />}>
-          <Route index element={<Landscape data={data} />} />
+        <Route path="/" element={<Layout data={data()} />}>
+          <Route path="/" element={<Explore initialData={data()} />} />
+          <Route path="/guide" element={<Guide />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </Router>

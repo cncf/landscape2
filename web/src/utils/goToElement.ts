@@ -1,4 +1,4 @@
-const goToElement = (id: string, offset?: number) => {
+const goToElement = (id: string, offset?: number): boolean => {
   const target = window.document.getElementById(id);
   if (target) {
     const elementPosition = target.getBoundingClientRect().top;
@@ -8,6 +8,9 @@ const goToElement = (id: string, offset?: number) => {
       top: offsetPosition,
       behavior: 'instant',
     });
+    return true;
+  } else {
+    return false;
   }
 };
 

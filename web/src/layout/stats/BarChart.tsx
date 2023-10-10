@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import { SolidApexCharts } from 'solid-apexcharts';
+import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyNumber from '../../utils/prettifyNumber';
 
@@ -17,9 +17,9 @@ interface BarData {
 }
 
 const BarChart = (props: Props) => {
-  const [series, setSeries] = useState<BarData[]>([]);
+  const [series, setSeries] = createSignal<BarData[]>([]);
 
-  useEffect(() => {
+  onMount(() => {
     const seriesTmp: BarData[] = [];
     if (!isUndefined(props.data)) {
       Object.keys(props.data).forEach((d: string) => {
@@ -27,7 +27,7 @@ const BarChart = (props: Props) => {
       });
     }
     setSeries(sortBy(seriesTmp, 'x'));
-  }, [props.data]);
+  });
 
   const getBarChartConfig = (): ApexCharts.ApexOptions => {
     return {
@@ -96,19 +96,19 @@ const BarChart = (props: Props) => {
     };
   };
 
-  if (series.length === 0) return null;
-
   return (
-    <div className="card rounded-0">
-      <div className="card-body">
-        <ReactApexChart
-          options={getBarChartConfig()}
-          series={[{ name: props.name, data: series }]}
-          type="bar"
-          height={250}
-        />
+    <Show when={series().length > 0}>
+      <div class="card rounded-0">
+        <div class="card-body">
+          <SolidApexCharts
+            options={getBarChartConfig()}
+            series={[{ name: props.name, data: series() }]}
+            type="bar"
+            height={250}
+          />
+        </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

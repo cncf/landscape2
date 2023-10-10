@@ -1,5 +1,7 @@
+import { JSXElement } from 'solid-js';
+
 interface Props {
-  children: JSX.Element | JSX.Element[] | string;
+  children: JSXElement | JSXElement[] | string;
   onHover?: () => void;
   onLeave?: () => void;
 }

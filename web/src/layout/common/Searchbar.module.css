@@ -45,8 +45,8 @@
   height: 298px;
 }
 
-.activeDropdownItem {
-  background-color: var(--bs-gray-100);
+.btnProject:global(.activeDropdownItem) {
+  background-color: var(--bs-gray-100) !important;
 }
 
 .miniImageWrapper {

@@ -1,15 +1,11 @@
-import { useContext } from 'react';
-
-import { FoundationContext, FoundationProps } from '../context/AppContext';
-
 interface Props {
-  className?: string;
+  class?: string;
 }
 const FoundationBadge = (props: Props) => {
-  const { foundation } = useContext(FoundationContext) as FoundationProps;
+  const foundation = window.baseDS.foundation;
 
   return (
-    <div title={foundation} className={`badge rounded-0 bg-primary ${props.className}`}>
+    <div title={foundation} class={`badge rounded-0 bg-primary ${props.class}`}>
       {foundation}
     </div>
   );

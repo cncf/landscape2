@@ -1,6 +1,6 @@
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
-import { useEffect, useRef, useState } from 'react';
+import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 
 import { COLORS } from '../../data';
 import { BaseItem, Item } from '../../types';
@@ -14,39 +14,43 @@ interface Props {
 }
 
 const SubcategoryGrid = (props: Props) => {
-  const container = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const [container, setContainer] = createSignal<HTMLInputElement>();
+  const [containerWidth, setContainerWidth] = createSignal<number>(0);
 
-  useEffect(() => {
-    const checkContainerWidth = throttle(() => {
-      if (container && container.current) {
-        setContainerWidth(container.current.offsetWidth);
-      }
-    }, 400);
-    window.addEventListener('resize', checkContainerWidth);
-
-    if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth);
+  const handler = () => {
+    if (!isUndefined(container())) {
+      setContainerWidth(container()!.offsetWidth);
     }
+  };
 
-    return () => window.removeEventListener('resize', checkContainerWidth);
-  }, []);
+  onMount(() => {
+    window.addEventListener(
+      'resize',
+      // eslint-disable-next-line solid/reactivity
+      throttle(() => handler(), 400)
+    );
+    handler();
+  });
 
-  if (isUndefined(props.items)) return null;
+  onCleanup(() => {
+    window.removeEventListener('resize', handler);
+  });
 
   return (
-    <div ref={container} className={`my-4 ${styles.grid}`}>
-      {(() => {
-        const items = [];
-        const itemsPerRow = calculateGridItemsPerRow(100, containerWidth, 75, true);
-        for (const item of new ItemIterator(props.items, itemsPerRow)) {
-          if (item) {
-            items.push(<GridItem key={`item_${item.name}`} item={item} borderColor={COLORS[0]} showMoreInfo />);
+    <Show when={!isUndefined(props.items)}>
+      <div ref={setContainer} class={`my-4 ${styles.grid}`}>
+        {(() => {
+          const items = [];
+          const itemsPerRow = calculateGridItemsPerRow(100, containerWidth(), 75, true);
+          for (const item of new ItemIterator(props.items!, itemsPerRow)) {
+            if (item) {
+              items.push(<GridItem item={item} borderColor={COLORS[0]} showMoreInfo />);
+            }
           }
-        }
-        return items;
-      })()}
-    </div>
+          return items;
+        })()}
+      </div>
+    </Show>
   );
 };
 

@@ -1,6 +1,6 @@
 import isUndefined from 'lodash/isUndefined';
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import { SolidApexCharts } from 'solid-apexcharts';
+import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyBytes from '../../utils/prettifyBytes';
 import sortObjectByValue from '../../utils/sortObjectByValue';
@@ -15,10 +15,10 @@ interface Props {
 }
 
 const HorizontalBarChart = (props: Props) => {
-  const [sortedKeys, setSortedKeys] = useState<string[]>([]);
-  const [series, setSeries] = useState<number[]>([]);
+  const [sortedKeys, setSortedKeys] = createSignal<string[]>([]);
+  const [series, setSeries] = createSignal<number[]>([]);
 
-  useEffect(() => {
+  onMount(() => {
     if (props.data) {
       const keys = sortObjectByValue(props.data);
       setSortedKeys(keys);
@@ -30,7 +30,7 @@ const HorizontalBarChart = (props: Props) => {
       });
       setSeries(values);
     }
-  }, [props.data]);
+  });
 
   const getBarChartConfig = (): ApexCharts.ApexOptions => {
     return {
@@ -67,7 +67,7 @@ const HorizontalBarChart = (props: Props) => {
       },
       colors: ['var(--color-stats-1)'],
       xaxis: {
-        categories: sortedKeys,
+        categories: sortedKeys(),
         labels: {
           style: {
             colors: 'var(--color-font)',
@@ -101,19 +101,19 @@ const HorizontalBarChart = (props: Props) => {
     };
   };
 
-  if (sortedKeys.length === 0 || series.length === 0) return null;
-
   return (
-    <div className="card rounded-0">
-      <div className={`card-body ${styles.chart}`}>
-        <ReactApexChart
-          options={getBarChartConfig()}
-          series={[{ name: props.name, data: series }]}
-          type="bar"
-          height={350}
-        />
+    <Show when={series().length > 0}>
+      <div class="card rounded-0">
+        <div class={`card-body ${styles.chart}`}>
+          <SolidApexCharts
+            options={getBarChartConfig()}
+            series={[{ name: props.name, data: series() }]}
+            type="bar"
+            height={350}
+          />
+        </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

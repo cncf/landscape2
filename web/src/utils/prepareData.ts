@@ -5,9 +5,11 @@ export interface GroupData {
 }
 
 export interface CategoriesData {
-  [key: string]: {
-    [key: string]: SubcategoryData;
-  };
+  [key: string]: CategoryData;
+}
+
+export interface CategoryData {
+  [key: string]: SubcategoryData;
 }
 
 export interface SubcategoryData {

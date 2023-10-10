@@ -86,10 +86,8 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   const totalItemsCount = subcategories.reduce((t, s) => (t += s.normalizedItemsCount), 0);
   const weights = new Map(subcategories.map((s) => [s.name, s.normalizedItemsCount / totalItemsCount]));
   for (const row of rows) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const rowWeights = row.reduce((t, c) => (t += weights.get(c.subcategoryName)!), 0);
     for (const col of row) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       col.percentage = (weights.get(col.subcategoryName)! / rowWeights) * 100;
     }
   }

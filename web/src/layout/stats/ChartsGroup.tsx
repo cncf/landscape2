@@ -3,8 +3,8 @@ import isNumber from 'lodash/isNumber';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import { SolidApexCharts } from 'solid-apexcharts';
+import { createSignal, onMount, Show } from 'solid-js';
 
 interface Props {
   data: { [key: string]: number };
@@ -29,9 +29,9 @@ interface DistributionData {
 }
 
 const ChartsGroup = (props: Props) => {
-  const [areaSeries, setAreaSeries] = useState<AreaData[]>([]);
+  const [areaSeries, setAreaSeries] = createSignal<AreaData[]>([]);
 
-  useEffect(() => {
+  onMount(() => {
     const seriesTmp: AreaData[] = [];
     if (!isUndefined(props.running_total)) {
       Object.keys(props.running_total).forEach((d: string) => {
@@ -39,9 +39,9 @@ const ChartsGroup = (props: Props) => {
       });
       setAreaSeries(sortBy(seriesTmp, 'x'));
     }
-  }, [props.running_total]);
+  });
 
-  const prepareHeatMapData = (): ApexAxisChartSeries => {
+  const prepareHeatMapData = () => {
     const distribution: DistributionData[] = [];
 
     Object.keys(props.data).forEach((d: string) => {
@@ -255,38 +255,38 @@ const ChartsGroup = (props: Props) => {
     };
   };
 
-  if (areaSeries.length === 0) return null;
-
   return (
-    <div className="py-4">
-      <div className="row g-4 g-xxl-5 justify-content-center">
-        <div className="col-12 col-md-6 col-xl-8">
-          <div className="card rounded-0">
-            <div className="card-body">
-              <ReactApexChart
-                options={getAreaChartConfig()}
-                series={[{ name: props.name, data: areaSeries }]}
-                type="area"
-                height={250}
-              />
+    <Show when={areaSeries().length > 0}>
+      <div class="py-4">
+        <div class="row g-4 g-xxl-5 justify-content-center">
+          <div class="col-12 col-md-6 col-xl-8">
+            <div class="card rounded-0">
+              <div class="card-body">
+                <SolidApexCharts
+                  options={getAreaChartConfig()}
+                  series={[{ name: props.name, data: areaSeries() }]}
+                  type="area"
+                  height={250}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="col-12 col-md-6 col-xl-4">
-          <div className="card rounded-0">
-            <div className="card-body">
-              <ReactApexChart
-                options={getHeatMapChartConfig()}
-                series={prepareHeatMapData()}
-                type="heatmap"
-                height={250}
-              />
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="card rounded-0">
+              <div class="card-body">
+                <SolidApexCharts
+                  options={getHeatMapChartConfig()}
+                  series={prepareHeatMapData()}
+                  type="heatmap"
+                  height={250}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

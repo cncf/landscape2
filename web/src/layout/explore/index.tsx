@@ -1,38 +1,30 @@
-import classNames from 'classnames';
+import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { isEmpty, throttle } from 'lodash';
 import isUndefined from 'lodash/isUndefined';
-import throttle from 'lodash/throttle';
-import { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
-import { GROUP_PARAM, VIEW_MODE_PARAM } from '../../data';
+import { GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import { useBodyScroll } from '../../hooks/useBodyScroll';
-import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, SVGIconKind, ViewMode } from '../../types';
+import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, ViewMode } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import { Loading } from '../common/Loading';
 import NoData from '../common/NoData';
-import SVGIcon from '../common/SVGIcon';
-import {
-  ActionsContext,
-  AppActionsContext,
-  FullDataContext,
-  FullDataProps,
-  ViewModeContext,
-  ViewModeProps,
-  ZoomLevelContext,
-  ZoomLevelProps,
-} from '../context/AppContext';
 import Footer from '../navigation/Footer';
+import { useFullDataReady } from '../stores/fullData';
+import { useSetGridWidth } from '../stores/gridWidth';
+import { useGroupActive, useSetGroupActive } from '../stores/groupActive';
+import { useSetViewMode, useViewMode } from '../stores/viewMode';
+import { useSetZoomLevel, useZoomLevel } from '../stores/zoom';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
 import ActiveFiltersList from './filters/ActiveFiltersList';
 
 interface Props {
-  data: BaseData;
-  isVisible: boolean;
+  initialData: BaseData;
 }
 
 export type LoadedContent = {
@@ -44,46 +36,38 @@ const TITLE_GAP = 40;
 const Explore = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { fullDataReady } = useContext(FullDataContext) as FullDataProps;
-  const { selectedViewMode } = useContext(ViewModeContext) as ViewModeProps;
-  const { zoomLevel } = useContext(ZoomLevelContext) as ZoomLevelProps;
-  const { updateViewMode, updateZoomLevel } = useContext(AppActionsContext) as ActionsContext;
   const [searchParams] = useSearchParams();
-  const container = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState<number>(0);
-  const [landscapeData, setLandscapeData] = useState<Item[] | undefined>();
-  const [selectedGroup, setSelectedGroup] = useState<string | undefined>(
-    props.data.groups ? searchParams.get(GROUP_PARAM) || props.data.groups[0].name : undefined
-  );
-  const [visibleItems, setVisibleItems] = useState<(BaseItem | Item)[]>(props.data.items);
-  const [visibleFiltersModal, setVisibleFiltersModal] = useState<boolean>(false);
-  const [activeFilters, setActiveFilters] = useState<ActiveFilters>({});
-  const [groupsData, setGroupsData] = useState<GroupData | undefined>(prepareData(props.data, visibleItems));
-  const [numVisibleItems, setNumVisibleItems] = useState<number | undefined>();
-  const [visibleLoading, setVisibleLoading] = useState<boolean>(true);
 
-  const getLoadedData = (): LoadedContent => {
-    const data: LoadedContent = { [ViewMode.Card]: [], [ViewMode.Grid]: [] };
+  const fullDataReady = useFullDataReady();
+  const zoom = useZoomLevel();
+  const updateZoom = useSetZoomLevel();
+  const viewMode = useViewMode();
+  const setViewMode = useSetViewMode();
+  const selectedGroup = useGroupActive();
+  const setSelectedGroup = useSetGroupActive();
+  const updateContainerGridWidth = useSetGridWidth();
 
-    if (selectedViewMode) {
-      data[selectedViewMode] = [selectedGroup || 'default'];
-    }
-
-    return data;
-  };
-
-  const [loaded, setLoaded] = useState<LoadedContent>(getLoadedData());
+  const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
+  const [landscapeData, setLandscapeData] = createSignal<Item[]>();
+  const [visibleItems, setVisibleItems] = createSignal<(BaseItem | Item)[]>(props.initialData.items);
+  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
+  const [groupsData, setGroupsData] = createSignal<GroupData>(prepareData(props.initialData, props.initialData.items));
+  const [numVisibleItems, setNumVisibleItems] = createSignal<number>();
+  const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
+  const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
+  const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
 
   useBodyScroll(visibleLoading, 'loading');
 
   const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
     if (viewMode) {
-      const group = groupName || selectedGroup || 'default';
-      if (!loaded[viewMode].includes(groupName || 'default')) {
+      const group = groupName || selectedGroup() || 'default';
+      if (!loaded()[viewMode].includes(groupName || 'default')) {
         setVisibleLoading(true);
+
         setLoaded({
-          ...loaded,
-          [viewMode]: [...loaded[viewMode], group],
+          ...loaded(),
+          [viewMode]: [...loaded()[viewMode], group],
         });
       } else {
         setVisibleLoading(false);
@@ -93,236 +77,262 @@ const Explore = (props: Props) => {
     }
   };
 
-  const finishLoading = useCallback(() => {
-    setVisibleLoading(false);
-  }, []);
+  const finishLoading = () => {
+    setTimeout(() => {
+      setVisibleLoading(false);
+    }, 200);
+  };
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
     updatedSearchParams.delete(param);
     updatedSearchParams.set(param, value);
 
-    navigate(
-      { ...location, search: updatedSearchParams.toString(), hash: undefined },
-      {
-        replace: true,
-      }
-    );
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
+      state: location.state,
+      replace: true,
+      scroll: true, // default
+    });
   };
 
-  useEffect(() => {
-    async function fetchItems() {
-      try {
-        setLandscapeData(await itemsDataGetter.getAll());
-      } catch {
-        setLandscapeData(undefined);
+  async function fetchItems() {
+    try {
+      const fullData = await itemsDataGetter.getAll();
+      setLandscapeData(fullData);
+      // Full data is only applied when card view is active to avoid re-render grid
+      // When filters are applied or view mode changes, we use fullData if available
+      if (viewMode() === ViewMode.Card) {
+        setVisibleItems(fullData);
+        setFullDataApplied(true);
       }
+    } catch {
+      setLandscapeData(undefined);
     }
+  }
 
-    if (fullDataReady) {
-      fetchItems();
-    }
-  }, [fullDataReady]);
-
-  useEffect(() => {
-    if (landscapeData) {
-      setVisibleItems(landscapeData);
-    }
-  }, [landscapeData]);
-
-  const removeFilter = useCallback(
-    (name: FilterCategory, value: string) => {
-      const tmpActiveFilters: string[] = (activeFilters[name] || []).filter((f: string) => f !== value);
-      updateActiveFilters(name, tmpActiveFilters);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeFilters]
+  createEffect(
+    on(
+      fullDataReady,
+      () => {
+        if (fullDataReady()) {
+          fetchItems();
+        }
+      },
+      { defer: true }
+    )
   );
 
+  createEffect(
+    on(visibleItems, () => {
+      const newData = prepareData(props.initialData, visibleItems());
+
+      const currentNumber = countVisibleItems(newData[selectedGroup() || 'default']);
+      if (currentNumber === 0) {
+        finishLoading();
+      }
+      setNumVisibleItems(currentNumber);
+      setGroupsData(newData);
+    })
+  );
+
+  createEffect(
+    on(selectedGroup, () => {
+      const currentNumber = countVisibleItems(groupsData()[selectedGroup() || 'default']);
+      if (currentNumber === 0) {
+        finishLoading();
+      }
+      setNumVisibleItems(currentNumber);
+    })
+  );
+
+  createEffect(
+    on(viewMode, () => {
+      if (viewMode() === ViewMode.Card && !fullDataApplied() && !isUndefined(landscapeData())) {
+        if (!isEmpty(activeFilters())) {
+          applyFilters(activeFilters());
+        } else {
+          setVisibleItems(landscapeData()!);
+        }
+      }
+    })
+  );
+
+  const removeFilter = (name: FilterCategory, value: string) => {
+    const tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
+    updateActiveFilters(name, tmpActiveFilters);
+  };
+
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
-    const tmpActiveFilters: ActiveFilters = { ...activeFilters };
+    const tmpActiveFilters: ActiveFilters = { ...activeFilters() };
     if (options.length === 0) {
       delete tmpActiveFilters[value];
     } else {
       tmpActiveFilters[value] = options;
     }
-    setActiveFilters(tmpActiveFilters);
+    applyFilters(tmpActiveFilters);
   };
 
-  const resetFilters = useCallback(() => {
-    setActiveFilters({});
-  }, []);
+  const resetFilters = () => {
+    applyFilters({});
+  };
 
-  const applyFilters = useCallback((newFilters: ActiveFilters) => {
+  const applyFilters = (newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
-  }, []);
+    setVisibleItems(filterData(landscapeData() || props.initialData.items, newFilters));
+    if (!isUndefined(landscapeData())) {
+      setFullDataApplied(true);
+    }
+  };
 
-  const onCloseFiltersModal = useCallback(() => {
-    setVisibleFiltersModal(false);
-  }, []);
-
-  useEffect(() => {
-    setVisibleItems(filterData(landscapeData || props.data.items, activeFilters));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilters]);
-
-  useEffect(() => {
-    const newData = prepareData(props.data, visibleItems);
-    setGroupsData(newData);
-    setNumVisibleItems(countVisibleItems(newData[selectedGroup || 'default']));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleItems, selectedGroup]);
-
-  useEffect(() => {
-    const checkContainerWidth = throttle(() => {
-      if (container && container.current) {
-        setContainerWidth(container.current.offsetWidth - TITLE_GAP);
+  const handler = () => {
+    if (!isUndefined(containerRef())) {
+      const width = containerRef()!.offsetWidth - TITLE_GAP;
+      if (width > 0) {
+        updateContainerGridWidth(containerRef()!.offsetWidth - TITLE_GAP);
       }
-    }, 400);
-    window.addEventListener('resize', checkContainerWidth);
+    }
+  };
 
-    if (container && container.current) {
-      setContainerWidth(container.current.offsetWidth - TITLE_GAP);
+  onMount(() => {
+    window.addEventListener(
+      'resize',
+      // eslint-disable-next-line solid/reactivity
+      throttle(() => handler(), 400)
+    );
+    handler();
+
+    if (fullDataReady()) {
+      fetchItems();
     }
 
-    return () => window.removeEventListener('resize', checkContainerWidth);
-  }, []);
+    checkIfVisibleLoading(viewMode(), selectedGroup());
+  });
 
-  useEffect(() => {
-    if (props.isVisible) {
-      checkIfVisibleLoading();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.isVisible]);
-
-  if (isUndefined(groupsData)) return null;
+  onCleanup(() => {
+    window.removeEventListener('resize', handler);
+  });
 
   return (
-    <>
-      <main className="flex-grow-1 container-fluid d-none d-lg-block px-4">
-        <div className="d-flex flex-row align-items-center justify-content-between my-3 py-1">
-          <div className="d-flex flex-row align-items-center">
-            <div>
-              <button
-                title="Filters"
-                className={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
-                onClick={() => setVisibleFiltersModal(true)}
-              >
-                <div className="d-flex flex-row align-items-center">
-                  <SVGIcon kind={SVGIconKind.Filters} />
-                  <div className="fw-semibold ps-2">Filters</div>
-                </div>
-              </button>
-            </div>
-            {props.data.groups && (
-              <>
-                <div className={styles.btnGroupLegend}>
-                  <small className="text-muted me-2">GROUPS:</small>
-                </div>
-                <div className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
-                  {props.data.groups.map((group: Group) => {
+    <Show when={!isUndefined(groupsData())}>
+      <main class="flex-grow-1 container-fluid d-none d-lg-block px-4">
+        <div class="d-flex flex-row align-items-center justify-content-between my-3 py-1">
+          <div class="d-flex flex-row align-items-center">
+            <Filters
+              data={props.initialData}
+              initialLandscapeData={landscapeData}
+              initialSelectedGroup={selectedGroup}
+              initialActiveFilters={activeFilters}
+              applyFilters={applyFilters}
+            />
+            <Show when={!isUndefined(props.initialData.groups)}>
+              <div class={styles.btnGroupLegend}>
+                <small class="text-muted me-2">GROUPS:</small>
+              </div>
+              <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                <For each={props.initialData.groups}>
+                  {(group: Group) => {
                     return (
                       <button
-                        key={`group_${group.name}`}
                         title={`Group: ${group.name}`}
-                        className={classNames('btn btn-outline-primary btn-sm rounded-0 fw-semibold', styles.navLink, {
+                        class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold ${styles.navLink}`}
+                        classList={{
                           [`active text-white ${styles.active}`]:
-                            !isUndefined(selectedGroup) && group.name === selectedGroup,
-                        })}
+                            !isUndefined(selectedGroup()) && group.name === selectedGroup(),
+                        }}
                         onClick={() => {
-                          checkIfVisibleLoading(selectedViewMode, group.name);
-                          setSelectedGroup(group.name);
-                          updateQueryString(GROUP_PARAM, group.name);
+                          checkIfVisibleLoading(viewMode(), group.name);
+                          // Allow display loading before starting to update the rest of things
+                          setTimeout(() => {
+                            updateQueryString(GROUP_PARAM, group.name);
+                            setSelectedGroup(group.name);
+                          }, 5);
                         }}
                       >
                         {group.name}
                       </button>
                     );
-                  })}
-                </div>
-              </>
-            )}
-            <div className={styles.btnGroupLegend}>
-              <small className="text-muted me-2">VIEW MODE:</small>
+                  }}
+                </For>
+              </div>
+            </Show>
+            <div class={styles.btnGroupLegend}>
+              <small class="text-muted me-2">VIEW MODE:</small>
             </div>
-            <div
-              className={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}
-              role="group"
-              aria-label="View mode options"
-            >
-              {Object.keys(ViewMode).map((mode) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const value = (ViewMode as any)[mode];
-                const isActive = value === selectedViewMode;
+            <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`} role="group" aria-label="View mode options">
+              <For each={Object.keys(ViewMode)}>
+                {(mode) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const value = (ViewMode as any)[mode];
 
-                return (
-                  <Fragment key={`view_mode_${value}`}>
+                  return (
                     <button
                       title={`View mode: ${mode}`}
                       type="button"
-                      className={classNames('btn btn-outline-primary rounded-0 fw-semibold', {
-                        'active text-white': isActive,
-                      })}
+                      class="btn btn-outline-primary rounded-0 fw-semibold"
+                      classList={{
+                        'active text-white': value === viewMode(),
+                      }}
                       onClick={() => {
-                        if (!isActive) {
-                          checkIfVisibleLoading(value, selectedGroup);
-                          updateViewMode(value);
-                          updateQueryString(VIEW_MODE_PARAM, value);
+                        if (!(value === viewMode())) {
+                          checkIfVisibleLoading(value, selectedGroup());
+                          // Allow display loading before starting to update the rest of things
+                          setTimeout(() => {
+                            updateQueryString(VIEW_MODE_PARAM, value);
+                            setViewMode(value);
+                          }, 5);
                         }
                       }}
                     >
                       {mode}
                     </button>
-                  </Fragment>
-                );
-              })}
+                  );
+                }}
+              </For>
             </div>
-            {selectedViewMode === ViewMode.Grid && (
-              <>
-                <div className={styles.btnGroupLegend}>
-                  <small className="text-muted me-2">ZOOM:</small>
+            <Show when={viewMode() === ViewMode.Grid}>
+              <div class={styles.btnGroupLegend}>
+                <small class="text-muted me-2">ZOOM:</small>
+              </div>
+              <div class="d-flex flex-row">
+                <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                  <button
+                    title="Increase zoom level"
+                    class="btn btn-outline-primary rounded-0 fw-semibold"
+                    disabled={zoom() === 0}
+                    onClick={() => {
+                      updateZoom(zoom() - 1);
+                    }}
+                  >
+                    <div class={styles.btnSymbol}>-</div>
+                  </button>
+                  <button
+                    title="Decrease zoom level"
+                    class="btn btn-outline-primary rounded-0 fw-semibold"
+                    disabled={zoom() === 10}
+                    onClick={() => {
+                      updateZoom(zoom() + 1);
+                    }}
+                  >
+                    <div class={styles.btnSymbol}>+</div>
+                  </button>
                 </div>
-                <div className="d-flex flex-row">
-                  <div className={`btn-group btn-group-sm ${styles.btnGroup}`}>
-                    <button
-                      title="Increase zoom level"
-                      className="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoomLevel === 0}
-                      onClick={() => {
-                        updateZoomLevel(zoomLevel - 1);
-                      }}
-                    >
-                      <div className={styles.btnSymbol}>-</div>
-                    </button>
-                    <button
-                      title="Decrease zoom level"
-                      className="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoomLevel === 10}
-                      onClick={() => {
-                        updateZoomLevel(zoomLevel + 1);
-                      }}
-                    >
-                      <div className={styles.btnSymbol}>+</div>
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}{' '}
+              </div>
+            </Show>
           </div>
         </div>
 
-        <ActiveFiltersList activeFilters={activeFilters} resetFilters={resetFilters} removeFilter={removeFilter} />
+        <ActiveFiltersList activeFilters={activeFilters()} resetFilters={resetFilters} removeFilter={removeFilter} />
 
-        {numVisibleItems === 0 && (
-          <div className="pt-5">
+        <Show when={numVisibleItems() === 0}>
+          <div class="pt-5">
             <NoData>
               <>
-                <div className="fs-4">We couldn't find any items that match the criteria selected.</div>
-                <p className="h6 my-4 lh-base">
+                <div class="fs-4">We couldn't find any items that match the criteria selected.</div>
+                <p class="h6 my-4 lh-base">
                   You can update them and try again or{' '}
                   <button
                     type="button"
-                    className="btn btn-link lh-1 p-0 text-reset align-baseline"
+                    class="btn btn-link lh-1 p-0 text-reset align-baseline"
                     onClick={resetFilters}
                     aria-label="Reset filters"
                   >
@@ -333,63 +343,49 @@ const Explore = (props: Props) => {
               </>
             </NoData>
           </div>
-        )}
+        </Show>
 
-        <div className="position-relative d-flex w-100 pt-1">
+        <div class="position-relative d-flex w-100 pt-1">
           <div
-            ref={container}
-            className={classNames('d-flex flex-column flex-grow-1 w-100', styles.container, `zoom-${zoomLevel}`, {
-              [styles.loadingContent]: visibleLoading,
-            })}
+            ref={setContainerRef}
+            style={{
+              '--card-size-width': `${ZOOM_LEVELS[zoom()][0]}px`,
+              '--card-size-height': `${ZOOM_LEVELS[zoom()][1]}px`,
+            }}
+            class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()}`}
+            classList={{ [styles.loadingContent]: visibleLoading() }}
           >
-            {visibleLoading && <Loading spinnerClassName="position-fixed top-50 start-50" />}
+            {visibleLoading() && <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />}
 
-            {props.data.groups ? (
-              <>
-                {props.data.groups.map((group: Group) => {
-                  const isSelected = selectedGroup === group.name;
+            <Show
+              when={!isUndefined(props.initialData.groups)}
+              fallback={
+                <Content
+                  data={{ ...groupsData() }.default}
+                  categories_overridden={props.initialData.categories_overridden}
+                  finishLoading={finishLoading}
+                />
+              }
+            >
+              <For each={props.initialData.groups}>
+                {(group: Group) => {
                   return (
-                    <div
-                      key={group.name}
-                      style={isSelected ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}
-                    >
-                      <Content
-                        isVisible={props.isVisible}
-                        isSelected={isSelected}
-                        containerWidth={containerWidth}
-                        data={groupsData[group.name]}
-                        categories_overridden={props.data.categories_overridden}
-                        finishLoading={finishLoading}
-                      />
-                    </div>
+                    <Content
+                      group={group.name}
+                      initialSelectedGroup={selectedGroup()}
+                      data={{ ...groupsData() }[group.name]}
+                      categories_overridden={props.initialData.categories_overridden}
+                      finishLoading={finishLoading}
+                    />
                   );
-                })}
-              </>
-            ) : (
-              <Content
-                isVisible={props.isVisible}
-                isSelected
-                containerWidth={containerWidth}
-                data={groupsData.default}
-                categories_overridden={props.data.categories_overridden}
-                finishLoading={finishLoading}
-              />
-            )}
+                }}
+              </For>
+            </Show>
           </div>
         </div>
-
-        <Filters
-          data={props.data}
-          landscapeData={landscapeData}
-          selectedGroup={selectedGroup}
-          visibleFilters={visibleFiltersModal}
-          onClose={onCloseFiltersModal}
-          activeFilters={activeFilters}
-          applyFilters={applyFilters}
-        />
       </main>
-      {!visibleLoading && <Footer logo={window.baseDS.images.footer_logo} />}
-    </>
+      {!visibleLoading() && <Footer logo={window.baseDS.images.footer_logo} />}
+    </Show>
   );
 };
 

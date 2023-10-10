@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import { SolidApexCharts } from 'solid-apexcharts';
+import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyNumber from '../../utils/prettifyNumber';
 
@@ -12,9 +12,9 @@ interface Props {
 }
 
 const TimestampLineChart = (props: Props) => {
-  const [series, setSeries] = useState<number[][]>([]);
+  const [series, setSeries] = createSignal<number[][]>([]);
 
-  useEffect(() => {
+  onMount(() => {
     if (!isUndefined(props.data)) {
       const values: number[][] = [];
       const data = props.data || [];
@@ -28,7 +28,7 @@ const TimestampLineChart = (props: Props) => {
 
       setSeries(values);
     }
-  }, [props.data]);
+  });
 
   const getChartConfig = (): ApexCharts.ApexOptions => {
     return {
@@ -93,19 +93,19 @@ const TimestampLineChart = (props: Props) => {
     };
   };
 
-  if (series.length === 0) return null;
-
   return (
-    <div className="card rounded-0">
-      <div className="card-body">
-        <ReactApexChart
-          options={getChartConfig()}
-          series={[{ name: props.name, data: series }]}
-          type="line"
-          height={250}
-        />
+    <Show when={series().length > 0}>
+      <div class="card rounded-0">
+        <div class="card-body">
+          <SolidApexCharts
+            options={getChartConfig()}
+            series={[{ name: props.name, data: series() }]}
+            type="line"
+            height={250}
+          />
+        </div>
       </div>
-    </div>
+    </Show>
   );
 };
 
