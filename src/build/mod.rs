@@ -18,6 +18,7 @@ use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
 pub(crate) use data::LandscapeData;
 use futures::stream::{self, StreamExt};
 use headless_chrome::{
+    browser,
     protocol::cdp::Page::{self, CaptureScreenshotFormatOption},
     types::PrintToPdfOptions,
     Browser, LaunchOptions,
@@ -34,7 +35,7 @@ use std::{
     time::Instant,
 };
 use tokio::sync::Mutex;
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, info, instrument, warn};
 use url::Url;
 use uuid::Uuid;
 
@@ -472,6 +473,12 @@ async fn prepare_items_logos(
 async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     debug!("preparing screenshot");
 
+    // Check if Chrome/Chromium is available
+    if browser::default_executable().is_err() {
+        warn!("chrome/chromium not found, no screenshot will be taken");
+        return Ok(());
+    }
+
     // Launch server to serve landscape just built
     const SVR_ADDR: &str = "127.0.0.1:8123";
     let landscape_dir = Some(PathBuf::from(&output_dir));
@@ -487,6 +494,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 
     // Setup headless browser and navigate to screenshot url
     let options = LaunchOptions {
+        sandbox: false,
         window_size: Some((width, 500)),
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),

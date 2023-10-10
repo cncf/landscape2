@@ -69,7 +69,13 @@ Commands:
 
 ## Usage
 
-To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch.
+To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH.
+
+Alternatively, you can launch a container from the [image provided](https://gallery.ecr.aws/g6m3a0y9/landscape2) where the **landscape2** CLI tool is ready to use:
+
+```text
+docker run -ti public.ecr.aws/g6m3a0y9/landscape2:latest sh
+```
 
 ### Creating a new landscape
 
@@ -93,6 +99,9 @@ You can build it by running the following command:
 ### Building the landscape website
 
 The build process is in charge of generating the landscape website from the information available in the datasources provided. Now we'll build the landscape we created in the previous step by using the `build` subcommand. Please note that the `new` subcommand already suggested us to do this in its output and even printed the full command to use for us.
+
+> [!NOTE]
+> During the build process, landscape2 will try to take a screenshot of your landscape if the required settings were provided in the settings.yml file. This screenshot will be available for download from the generated web application (in PNG and PDF format), and is taken by launching Chrome/Chromium in headless mode. If Chrome/Chromium is not available, the screenshot won't be taken and a warning will be raised.
 
 The following command will build the landscape and write the resulting files to the `output-dir` provided (*build* in this case):
 
