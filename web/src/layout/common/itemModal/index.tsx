@@ -1,3 +1,4 @@
+import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import moment from 'moment';
@@ -10,6 +11,8 @@ import itemsDataGetter from '../../../utils/itemsDataGetter';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import { useActiveItemId, useSetActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
+import Badge from '../Badge';
+import CollapsableText from '../CollapsableText';
 import ExternalLink from '../ExternalLink';
 import FoundationBadge from '../FoundationBadge';
 import Image from '../Image';
@@ -91,7 +94,7 @@ const ItemModal = () => {
             </div>
           }
         >
-          <div class="d-flex flex-column p-3">
+          <div class="d-flex flex-column px-3 py-1">
             <div class="d-flex flex-row align-items-center">
               <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
                 <Image name={itemInfo()!.name} class={`m-auto ${styles.logo}`} logo={itemInfo()!.logo} />
@@ -247,15 +250,16 @@ const ItemModal = () => {
                 </div>
               </div>
             </div>
+
             {/* Description */}
-            <div class={`mb-3 mt-4 text-muted ${styles.description}`}>{description()}</div>
+            <div class={`mt-4 text-muted ${styles.description}`}>{description()}</div>
 
             {/* Maturity */}
-            <MaturitySection item={itemInfo()!} />
+            <MaturitySection item={itemInfo()!} class={styles.fieldset} />
 
             {/* Repositories */}
             <Show when={!isUndefined(itemInfo()!.repositories)}>
-              <div class={`position-relative my-4 border ${styles.fieldset}`}>
+              <div class={`position-relative border ${styles.fieldset}`}>
                 <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
                 <Show when={!isUndefined(mainRepo())}>
                   <div>
@@ -391,7 +395,7 @@ const ItemModal = () => {
 
             {/* Organization */}
             <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
-              <div class={`position-relative mt-4 border ${styles.fieldset}`}>
+              <div class={`position-relative border ${styles.fieldset}`}>
                 <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Organization</div>
                 <div class="d-flex flex-row align-items-center">
                   <div class={`fw-semibold text-truncate fs-6`}>{itemInfo()!.crunchbase_data!.name}</div>
@@ -487,6 +491,96 @@ const ItemModal = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </Show>
+
+            {/* Summary */}
+            <Show when={!isUndefined(itemInfo()!.summary)}>
+              <div class={`position-relative border ${styles.fieldset}`}>
+                <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Summary</div>
+                <div class={`my-2 ${styles.summary}`}>
+                  <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Introduction</div>
+                      <div class={`mt-2 ${styles.summaryContent}`}>{itemInfo()!.summary!.intro_url!}</div>
+                    </div>
+                  </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.summary!.use_case) && !isEmpty(itemInfo()!.summary!.use_case)}>
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Use case</div>
+                      <div class={`mt-2 ${styles.summaryContent}`}>
+                        <CollapsableText text={itemInfo()!.summary!.use_case!} />
+                      </div>
+                    </div>
+                  </Show>
+
+                  <Show
+                    when={
+                      !isUndefined(itemInfo()!.summary!.business_use_case) &&
+                      !isEmpty(itemInfo()!.summary!.business_use_case)
+                    }
+                  >
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Business use case</div>
+                      <div class={`mt-2 ${styles.summaryContent}`}>
+                        <CollapsableText text={itemInfo()!.summary!.business_use_case!} />
+                      </div>
+                    </div>
+                  </Show>
+
+                  <Show
+                    when={
+                      (!isUndefined(itemInfo()!.summary!.integrations) ||
+                        !isUndefined(itemInfo()!.summary!.integration)) &&
+                      !isEmpty(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration)
+                    }
+                  >
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Integrations</div>
+                      <div class={`mt-2 ${styles.summaryContent}`}>
+                        <CollapsableText
+                          text={(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration)!}
+                        />
+                      </div>
+                    </div>
+                  </Show>
+
+                  <Show
+                    when={
+                      !isUndefined(itemInfo()!.summary!.release_rate) && !isEmpty(itemInfo()!.summary!.release_rate)
+                    }
+                  >
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Release rate</div>
+                      <div class={`mt-2 ${styles.summaryContent}`}>
+                        <CollapsableText text={itemInfo()!.summary!.release_rate!} />
+                      </div>
+                    </div>
+                  </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.summary!.personas) && !isEmpty(itemInfo()!.summary!.personas)}>
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Personas</div>
+                      <For each={itemInfo()!.summary!.personas!}>
+                        {(persona) => {
+                          return <Badge text={persona} class="me-2 mt-2" />;
+                        }}
+                      </For>
+                    </div>
+                  </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.summary!.tags) && !isEmpty(itemInfo()!.summary!.tags!)}>
+                    <div class={styles.summaryBlock}>
+                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Tags</div>
+                      <For each={itemInfo()!.summary!.tags!}>
+                        {(tag) => {
+                          return <Badge text={tag} class="me-2 mt-2" />;
+                        }}
+                      </For>
+                    </div>
+                  </Show>
                 </div>
               </div>
             </Show>

@@ -1,0 +1,5 @@
+.badge {
+  background-color: var(--color3);
+  font-size: 0.7rem;
+  font-weight: 500 !important;
+}
