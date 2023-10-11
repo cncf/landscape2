@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
-import { isEmpty, throttle } from 'lodash';
+import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import throttle from 'lodash/throttle';
 import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
 import { GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';

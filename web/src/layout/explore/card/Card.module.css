@@ -76,3 +76,8 @@
 .extra {
   height: 20px;
 }
+
+.auditBadge {
+  font-size: 80% !important;
+  line-height: 0.75rem;
+}

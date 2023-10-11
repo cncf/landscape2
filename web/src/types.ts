@@ -89,6 +89,14 @@ export interface Item extends BaseItem {
   twitter_url?: string;
   unnamed_organization?: boolean;
   youtube_url?: string;
+  audits?: SecurityAudit[];
+}
+
+export interface SecurityAudit {
+  date: string;
+  type: string;
+  url: string;
+  vendor: string;
 }
 
 export interface Organization {
@@ -291,6 +299,7 @@ export enum SVGIconKind {
   NotImage,
   OpenssfBestPractices,
   Search,
+  Security,
   Slack,
   StackOverflow,
   Stats,
