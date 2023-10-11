@@ -1,4 +1,6 @@
+import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import sortBy from 'lodash/sortBy';
 import { createSignal, onMount, Show } from 'solid-js';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
@@ -24,6 +26,7 @@ const Card = (props: Props) => {
   const [stars, setStars] = createSignal<number>();
   const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
+  const [lastSecurityAudit, setLastSecurityAudit] = createSignal<string>();
 
   onMount(() => {
     setDescription(getItemDescription(props.item));
@@ -49,6 +52,13 @@ const Card = (props: Props) => {
     if (isUndefined(websiteUrl) || websiteUrl() === mainRepoUrl()) {
       if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
         setWebsiteUrl(props.item.crunchbase_data.homepage_url);
+      }
+    }
+
+    if (!isUndefined(props.item.audits) && !isEmpty(props.item.audits)) {
+      const lastAudit = sortBy(props.item.audits, 'date').reverse()[0];
+      if (lastAudit) {
+        setLastSecurityAudit(lastAudit.date);
       }
     }
   });
@@ -137,17 +147,25 @@ const Card = (props: Props) => {
         class={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >
         <div class="d-flex flex-row align-items-baseline">
-          <Show when={isUndefined(props.item.maturity) || isUndefined(props.item.crunchbase_data)}>
-            <small class="me-1 text-black-50">Funding:</small>
-            <div class="fw-semibold">
-              {props.item.crunchbase_data &&
-              props.item.crunchbase_data.funding &&
-              props.item.crunchbase_data.funding > 0 ? (
-                <>${prettifyNumber(props.item.crunchbase_data.funding)}</>
-              ) : (
-                <>-</>
-              )}
-            </div>
+          <Show
+            when={!isUndefined(lastSecurityAudit())}
+            fallback={
+              <Show when={isUndefined(props.item.maturity) || isUndefined(props.item.crunchbase_data)}>
+                <small class="me-1 text-black-50">Funding:</small>
+                <div class="fw-semibold">
+                  {props.item.crunchbase_data &&
+                  props.item.crunchbase_data.funding &&
+                  props.item.crunchbase_data.funding > 0 ? (
+                    <>${prettifyNumber(props.item.crunchbase_data.funding)}</>
+                  ) : (
+                    <>-</>
+                  )}
+                </div>
+              </Show>
+            }
+          >
+            <small class="me-1 text-black-50">Last audit:</small>
+            <div class="fw-semibold">{lastSecurityAudit()}</div>
           </Show>
         </div>
 

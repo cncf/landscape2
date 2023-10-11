@@ -1,10 +1,11 @@
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
+import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 
-import { Item, Repository, SVGIconKind } from '../../../types';
+import { Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
@@ -94,7 +95,7 @@ const ItemModal = () => {
             </div>
           }
         >
-          <div class="d-flex flex-column px-3 py-1">
+          <div class="d-flex flex-column p-3">
             <div class="d-flex flex-row align-items-center">
               <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
                 <Image name={itemInfo()!.name} class={`m-auto ${styles.logo}`} logo={itemInfo()!.logo} />
@@ -356,7 +357,7 @@ const ItemModal = () => {
                   <div class="mt-4">
                     <small class="text-muted">Other repositories:</small>
                     <table class="table table-sm table-striped table-bordered mt-3">
-                      <thead>
+                      <thead class={styles.thead}>
                         <tr>
                           <th class="text-center" scope="col">
                             URL
@@ -390,6 +391,58 @@ const ItemModal = () => {
                     </table>
                   </div>
                 </Show>
+              </div>
+            </Show>
+
+            {/* Security audits */}
+            <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
+              <div class={`position-relative border ${styles.fieldset}`}>
+                <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Security audits</div>
+                <div class="w-100">
+                  <table class={`table table-sm table-striped table-bordered mt-3 ${styles.auditsTable}`}>
+                    <thead class={`text-uppercase text-muted ${styles.thead}`}>
+                      <tr>
+                        <th class={`text-center ${styles.auditsCol}`} scope="col">
+                          Date
+                        </th>
+                        <th class={`text-center ${styles.auditsCol}`} scope="col">
+                          Type
+                        </th>
+                        <th class={`text-center ${styles.auditsColMd}`} scope="col">
+                          Vendor
+                        </th>
+                        <th class="text-center" scope="col">
+                          Url
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <For each={sortBy(itemInfo()!.audits, 'date').reverse()}>
+                        {(audit: SecurityAudit) => {
+                          return (
+                            <tr class={styles.tableRepos}>
+                              <td class="px-3 text-center text-nowrap">{audit.date}</td>
+                              <td class="px-3 text-center text-uppercase">{audit.type}</td>
+                              <td class="px-3 text-center text-nowrap">
+                                <div class="w-100 text-truncate">{audit.vendor}</div>
+                              </td>
+                              <td class="px-3">
+                                <div class="w-100">
+                                  <ExternalLink
+                                    class={`text-muted text-truncate d-block ${styles.securityLink}`}
+                                    href={audit.url}
+                                  >
+                                    {audit.url}
+                                  </ExternalLink>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        }}
+                      </For>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </Show>
 

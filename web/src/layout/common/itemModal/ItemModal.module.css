@@ -1,7 +1,7 @@
 .modalDialog {
-  min-height: calc(100% - 10rem) !important;
-  max-height: calc(100% - 10rem) !important;
-  margin: 5rem auto !important;
+  min-height: calc(100% - 6rem) !important;
+  max-height: calc(100% - 6rem) !important;
+  margin: 3em auto !important;
 }
 
 .loadingWrapper {
@@ -125,6 +125,14 @@
   padding-bottom: 0.75rem;
 }
 
+.thead {
+  font-size: 0.8rem;
+}
+
+.thead th {
+  color: var(--bs-gray-600);
+}
+
 .tableRepos td {
   font-size: 0.9rem;
   line-height: 2;
@@ -140,6 +148,22 @@
 }
 
 .summaryContent {
+  font-size: 0.8rem;
+}
+
+.auditsTable {
+  table-layout: fixed;
+}
+
+.auditsCol {
+  width: 120px;
+}
+
+.auditsColMd {
+  width: 200px;
+}
+
+.securityLink {
   font-size: 0.8rem;
 }
 
