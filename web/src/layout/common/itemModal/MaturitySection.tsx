@@ -6,6 +6,7 @@ import styles from './MaturitySection.module.css';
 
 interface Props {
   item: Item;
+  class: string;
 }
 
 const MaturitySection = (props: Props) => {
@@ -18,7 +19,7 @@ const MaturitySection = (props: Props) => {
         !isUndefined(props.item.graduated_at)
       }
     >
-      <div class={`position-relative my-4 border ${styles.fieldset}`}>
+      <div class={`position-relative border ${props.class}`}>
         <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
 
         <div class="position-relative mt-2">

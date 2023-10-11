@@ -91,6 +91,11 @@
 
 .fieldset {
   padding: 1.5rem 1.75rem;
+  margin-top: 2rem;
+}
+
+.fieldset + .fieldset {
+  margin-top: 3rem;
 }
 
 .fieldsetTitle {
@@ -123,6 +128,19 @@
 .tableRepos td {
   font-size: 0.9rem;
   line-height: 2;
+}
+
+.summary .summaryBlock + .summaryBlock {
+  margin-top: 1.15rem;
+}
+
+.summaryTitle {
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.summaryContent {
+  font-size: 0.8rem;
 }
 
 @media (min-width: 1200px) {
