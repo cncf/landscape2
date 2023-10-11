@@ -62,6 +62,10 @@
   color: var(--bs-gray-700);
 }
 
+.tagBadge {
+  height: 20px;
+}
+
 .miniBadge {
   font-size: 0.65rem;
 }

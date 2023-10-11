@@ -7,6 +7,17 @@ const cleanValue = (t: string): string => {
   return t;
 };
 
+export const formatTAGName = (t: string): string => {
+  const tag = t.replace(/-/g, ' ');
+  const words = tag.split(' ');
+
+  for (let i = 0; i < words.length; i++) {
+    words[i] = capitalizeFirstLetter(words[i]);
+  }
+
+  return words.join(' ');
+};
+
 export interface FiltersPerGroup {
   [key: string]: FilterSection[];
 }
@@ -33,6 +44,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   const filters: FilterSection[] = [];
 
   const maturityTypes: string[] = [];
+  const tags: string[] = [];
   const organizations: string[] = [];
   const licenses: string[] = [];
   const countries: string[] = [];
@@ -42,6 +54,10 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   items.forEach((i: Item) => {
     if (i.maturity) {
       maturityTypes.push(i.maturity);
+    }
+
+    if (i.tag) {
+      tags.push(i.tag);
     }
 
     if (i.crunchbase_data) {
@@ -78,6 +94,17 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
         value: cleanValue(pr),
         name: capitalizeFirstLetter(pr),
+      })),
+    });
+  }
+
+  if (tags.length > 0) {
+    filters.push({
+      value: FilterCategory.TAG,
+      title: 'TAG',
+      options: [...new Set(tags)].sort().map((tag: string) => ({
+        value: tag,
+        name: formatTAGName(tag),
       })),
     });
   }

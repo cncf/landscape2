@@ -154,6 +154,7 @@ impl LandscapeData {
                 item.oss = Some(true);
             }
         }
+
         Ok(())
     }
 
@@ -178,6 +179,58 @@ impl LandscapeData {
                 if let Some(member_subcategory) = members_subcategories.get(crunchbase_url) {
                     item.member_subcategory = Some(member_subcategory.clone());
                 }
+            }
+        }
+    }
+
+    /// Add projects items TAG based on the TAGs settings.
+    #[instrument(skip_all)]
+    pub(crate) fn add_tags(&mut self, settings: &LandscapeSettings) {
+        let Some(tags) = &settings.tags else {
+            return;
+        };
+
+        // Helper closure to find the tag of an item
+        let find_tag = |item: &Item| {
+            // Iterate over the rules looking for a match
+            for (tag, rules) in tags {
+                for rule in rules {
+                    // Consider an empty list of subcategories as None
+                    let subcategories = rule.subcategories.as_ref().and_then(|s| {
+                        if s.is_empty() {
+                            return None;
+                        }
+                        Some(s)
+                    });
+
+                    if let Some(subcategories) = subcategories {
+                        if item.category == rule.category && subcategories.contains(&item.subcategory) {
+                            return Some(tag.clone());
+                        }
+                    } else if item.category == rule.category {
+                        return Some(tag.clone());
+                    }
+                }
+            }
+
+            None
+        };
+
+        // Iterate over items and set TAG when found
+        for item in &mut self.items {
+            // Only projects should be owned by a TAG
+            if item.maturity.is_none() {
+                continue;
+            }
+
+            // TAGs already set at the item level have precedence
+            if item.tag.is_some() {
+                continue;
+            }
+
+            // Try to find the appropriate TAG based on the settings
+            if let Some(tag) = find_tag(item) {
+                item.tag = Some(tag);
             }
         }
     }
@@ -264,6 +317,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
+                        item.tag = extra.tag;
                         item.youtube_url = extra.youtube_url;
 
                         // Summary information
@@ -422,6 +476,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub summary: Option<ItemSummary>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tag: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twitter_url: Option<String>,
@@ -681,6 +738,7 @@ mod legacy {
         pub summary_personas: Option<String>,
         pub summary_release_rate: Option<String>,
         pub summary_tags: Option<String>,
+        pub tag: Option<String>,
         pub youtube_url: Option<String>,
     }
 

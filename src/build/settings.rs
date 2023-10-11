@@ -7,12 +7,12 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use super::data::{Category, CategoryName};
+use super::data::{Category, CategoryName, SubCategoryName};
 use crate::SettingsSource;
 use anyhow::{format_err, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::{collections::HashMap, fs, path::Path};
 use tracing::{debug, instrument};
 
 /// Landscape settings.
@@ -44,6 +44,9 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub social_networks: Option<SocialNetworks>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<HashMap<TagName, Vec<TagRule>>>,
 }
 
 impl LandscapeSettings {
@@ -186,4 +189,16 @@ pub(crate) struct SocialNetworks {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub youtube: Option<String>,
+}
+
+/// Type alias to represent a TAG name.
+pub(crate) type TagName = String;
+
+/// TAG rule used to set the TAG that owns a project automatically.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct TagRule {
+    pub category: CategoryName,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subcategories: Option<Vec<SubCategoryName>>,
 }

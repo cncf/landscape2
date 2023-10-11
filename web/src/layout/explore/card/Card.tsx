@@ -1,11 +1,12 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import { createSignal, onMount, Show } from 'solid-js';
+import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
 import cutString from '../../../utils/cutString';
 import getItemDescription from '../../../utils/getItemDescription';
+import { formatTAGName } from '../../../utils/prepareFilters';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import ExternalLink from '../../common/ExternalLink';
 import FoundationBadge from '../../common/FoundationBadge';
@@ -146,33 +147,37 @@ const Card = (props: Props) => {
       <div
         class={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >
-        <div class="d-flex flex-row align-items-baseline">
-          <Show
-            when={!isUndefined(lastSecurityAudit())}
-            fallback={
-              <Show when={isUndefined(props.item.maturity) || isUndefined(props.item.crunchbase_data)}>
-                <small class="me-1 text-black-50">Funding:</small>
-                <div class="fw-semibold">
-                  {props.item.crunchbase_data &&
-                  props.item.crunchbase_data.funding &&
-                  props.item.crunchbase_data.funding > 0 ? (
-                    <>${prettifyNumber(props.item.crunchbase_data.funding)}</>
-                  ) : (
-                    <>-</>
-                  )}
-                </div>
-              </Show>
-            }
-          >
-            <small class="me-1 text-black-50">Last audit:</small>
-            <div class="fw-semibold">{lastSecurityAudit()}</div>
-          </Show>
+        <div class="d-flex flex-row align-items-center text-nowrap">
+          <Switch>
+            <Match when={!isUndefined(lastSecurityAudit())}>
+              <small class="me-1 text-black-50">Last audit:</small>
+              <div class="fw-semibold">{lastSecurityAudit()}</div>
+            </Match>
+            <Match
+              when={
+                isUndefined(props.item.maturity) &&
+                !isUndefined(props.item.crunchbase_data) &&
+                !isUndefined(props.item.crunchbase_data.funding) &&
+                props.item.crunchbase_data.funding > 0
+              }
+            >
+              <small class="me-1 text-black-50">Funding:</small>
+              <div class="fw-semibold">{prettifyNumber(props.item.crunchbase_data!.funding!)}</div>
+            </Match>
+            <Match when={!isUndefined(stars())}>
+              <div class="d-flex flex-row align-items-baseline">
+                <small class="me-1 text-black-50">GitHub stars:</small>
+                <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
+              </div>
+            </Match>
+          </Switch>
         </div>
 
-        <Show when={!isUndefined(stars())}>
-          <div class="d-flex flex-row align-items-baseline">
-            <small class="me-1 text-black-50">GitHub stars:</small>
-            <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
+        <Show when={!isUndefined(props.item.tag)}>
+          <div
+            class={`badge border rounded-0 tagBadge ms-4 mw-100 text-truncate text-uppercase ${styles.badgeOutlineDark}`}
+          >
+            TAG {formatTAGName(props.item.tag!)}
           </div>
         </Show>
       </div>

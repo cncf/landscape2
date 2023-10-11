@@ -1,9 +1,10 @@
+import { some } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
 
-import { FILTERS } from '../../../data';
-import { ActiveFilters, BaseData, FilterCategory, FilterSection, Item, SVGIconKind } from '../../../types';
+import { FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
+import { ActiveFilters, BaseData, FilterCategory, FilterSection, FilterTitle, Item, SVGIconKind } from '../../../types';
 import prepareData from '../../../utils/prepareData';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import { Loading } from '../../common/Loading';
@@ -27,6 +28,7 @@ const Filters = (props: Props) => {
   const [tmpActiveFilters, setTmpActiveFilters] = createSignal<ActiveFilters>(props.initialActiveFilters());
   const [filtersFromData, setFiltersFromData] = createSignal<FiltersPerGroup | undefined>();
   const [filters, setFilters] = createSignal<FilterSection[]>([]);
+  const [visibleTitles, setVisibleTitles] = createSignal<FilterTitle[]>([]);
 
   createEffect(
     on(visibleFiltersModal, () => {
@@ -60,6 +62,25 @@ const Filters = (props: Props) => {
   createEffect(
     on(props.initialActiveFilters, () => {
       setTmpActiveFilters(props.initialActiveFilters());
+    })
+  );
+
+  createEffect(
+    on(filters, () => {
+      const tmpVisibleTitles = [];
+      const visibleProjectTitle = some(filters(), (f: FilterSection) => {
+        return FILTER_CATEGORIES_PER_TITLE[FilterTitle.Project].includes(f.value);
+      });
+      if (visibleProjectTitle) {
+        tmpVisibleTitles.push(FilterTitle.Project);
+      }
+      const visibleOrganizationTitle = some(filters(), (f: FilterSection) => {
+        return FILTER_CATEGORIES_PER_TITLE[FilterTitle.Organization].includes(f.value);
+      });
+      if (visibleOrganizationTitle) {
+        tmpVisibleTitles.push(FilterTitle.Organization);
+      }
+      setVisibleTitles(tmpVisibleTitles);
     })
   );
 
@@ -167,58 +188,77 @@ const Filters = (props: Props) => {
               </div>
             }
           >
-            <div class="row g-5">
-              <Section
-                title="Project status"
-                section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
-                extraMaturity={getSection(FilterCategory.Maturity)}
-                activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
+            <Show when={visibleTitles().includes(FilterTitle.Project)}>
+              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
 
-              <SearchbarSection
-                title="License"
-                placeholder="Search license"
-                section={getSection(FilterCategory.License)}
-                initialActiveFilters={tmpActiveFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
+              <div class="row g-5 mb-5">
+                <Section
+                  title="Status"
+                  section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
+                  extraMaturity={getSection(FilterCategory.Maturity)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
 
-              <SearchbarSection
-                section={getSection(FilterCategory.Industry)}
-                placeholder="Search industry"
-                initialActiveFilters={tmpActiveFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
+                <Section
+                  title="TAG"
+                  section={getSection(FilterCategory.TAG)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.TAG]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
 
-              <SearchbarSection
-                placeholder="Search organization"
-                section={getSection(FilterCategory.Organization)}
-                initialActiveFilters={tmpActiveFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
+                <SearchbarSection
+                  title="License"
+                  placeholder="Search license"
+                  section={getSection(FilterCategory.License)}
+                  initialActiveFilters={tmpActiveFilters}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
+              </div>
+            </Show>
 
-              <Section
-                title="Organization type"
-                section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                activeFilters={{ ...tmpActiveFilters() }[FilterCategory.CompanyType]}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
+            <Show when={visibleTitles().includes(FilterTitle.Organization)}>
+              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Organization}</div>
 
-              <SearchbarSection
-                title="Location"
-                placeholder="Search country"
-                section={getSection(FilterCategory.Country)}
-                initialActiveFilters={tmpActiveFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilter={resetFilter}
-              />
-            </div>
+              <div class="row g-5">
+                <SearchbarSection
+                  title="Name"
+                  placeholder="Search organization"
+                  section={getSection(FilterCategory.Organization)}
+                  initialActiveFilters={tmpActiveFilters}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
+
+                <SearchbarSection
+                  section={getSection(FilterCategory.Industry)}
+                  placeholder="Search industry"
+                  initialActiveFilters={tmpActiveFilters}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
+
+                <Section
+                  title="Type"
+                  section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.CompanyType]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
+
+                <SearchbarSection
+                  title="Location"
+                  placeholder="Search country"
+                  section={getSection(FilterCategory.Country)}
+                  initialActiveFilters={tmpActiveFilters}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                />
+              </div>
+            </Show>
           </Show>
         </div>
       </Modal>

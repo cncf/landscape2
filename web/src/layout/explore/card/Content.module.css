@@ -18,7 +18,7 @@
   cursor: pointer;
 }
 
-.card :global(.badge) {
+.card :global(.badge:not(.tagBadge)) {
   font-size: 65%;
 }
 

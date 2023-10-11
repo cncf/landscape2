@@ -1,4 +1,14 @@
-import { Breakpoint, FilterCategory, FilterSection, GridItemsSize, Tab, ViewMode, ZoomLevelsPerSize } from './types';
+import {
+  Breakpoint,
+  FilterCategoriesPerTitle,
+  FilterCategory,
+  FilterSection,
+  FilterTitle,
+  GridItemsSize,
+  Tab,
+  ViewMode,
+  ZoomLevelsPerSize,
+} from './types';
 import getFoundationNameLabel from './utils/getFoundationNameLabel';
 
 export const TAB_PARAM = 'tab';
@@ -103,3 +113,13 @@ export const FILTERS: FilterSection[] = [
     ],
   },
 ];
+
+export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
+  [FilterTitle.Project]: [FilterCategory.Maturity, FilterCategory.TAG, FilterCategory.License],
+  [FilterTitle.Organization]: [
+    FilterCategory.Organization,
+    FilterCategory.CompanyType,
+    FilterCategory.Industry,
+    FilterCategory.Country,
+  ],
+};

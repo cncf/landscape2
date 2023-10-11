@@ -123,6 +123,7 @@ mod base {
                     maturity: item.maturity.clone(),
                     subcategory: item.subcategory.clone(),
                     oss: item.oss,
+                    tag: item.tag.clone(),
                 });
             }
 
@@ -161,6 +162,9 @@ mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub oss: Option<bool>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub tag: Option<String>,
     }
 
     /// Type alias to represent the guide summary.
