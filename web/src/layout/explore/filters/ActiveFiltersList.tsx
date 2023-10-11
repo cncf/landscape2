@@ -1,10 +1,11 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, on, Show } from 'solid-js';
+import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
 import { ActiveFilters, FilterCategory, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
+import { formatTAGName } from '../../../utils/prepareFilters';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './ActiveFiltersList.module.css';
 
@@ -68,7 +69,14 @@ const ActiveFiltersList = (props: Props) => {
                                     : ''
                                 }
                               >
-                                {f === FilterCategory.CompanyType ? formatProfitLabel(c) : c}
+                                <Switch fallback={<>{c}</>}>
+                                  <Match when={f === FilterCategory.CompanyType}>
+                                    <>{formatProfitLabel(c)}</>
+                                  </Match>
+                                  <Match when={f === FilterCategory.TAG}>
+                                    <span class="text-uppercase">{formatTAGName(c)}</span>
+                                  </Match>
+                                </Switch>
                               </span>
                             </div>
                             <button

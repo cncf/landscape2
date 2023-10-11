@@ -211,3 +211,89 @@ social_networks:
   twitter: "https://twitter.com/cloudnativefdn"
   wechat: "https://www.cncf.io/wechat/"
   youtube: "https://www.youtube.com/c/cloudnativefdn"
+
+# TAGs (optional)
+#
+# Projects items can specify which TAG owns it in the `landscape.yml` file (by
+# using the `tag` field in the `extra` item's section). However, sometimes this
+# information is not available at the item level. This configuration section
+# provides a mechanism to automatically asign a TAG to projects items based on
+# the categories and subcategories they belong to.
+#
+# For example, we can define that all projects in the category <CATEGORY1> are
+# owned by <TAG1>. When the items are processed, the corresponding TAG will be
+# set in the items that match the rule defined. The TAG defined at the item
+# level always takes precedence, so when it's present it won't be replaced.
+#
+# In addition to automatically assigning TAGs to projects, this information is
+# also used to validate the TAGs provided manually on items.
+#
+# NOTE: TAGs names should be lowercase without any spaces, not prefixed with
+# "tag". The subcategories field is optional and, when omitted, all of them
+# will be included.
+#
+# tags:
+#   <TAG1>:
+#     - category: <CATEGORY1>
+#       subcategories:
+#         - <SUBCATEGORY1>
+#         - <SUBCATEGORY2>
+#   <TAG2>:
+#     - category: <CATEGORY2>
+#
+tags:
+  app-delivery:
+    - category: "App Definition and Development"
+    - category: "Wasm"
+      subcategories:
+        - "Packaging, Registries & Application Delivery"
+  contributor-strategy: []
+  environmental-sustainability: []
+  network:
+    - category: "Orchestration & Management"
+      subcategories:
+        - "API Gateway"
+        - "Remote Procedure Call"
+        - "Service Mesh"
+        - "Service Proxy"
+    - category: "Runtime"
+      subcategories:
+        - "Cloud Native Network"
+  observability:
+    - category: "Observability and Analysis"
+    - category: "Wasm"
+      subcategories:
+        - "Debugging & Observability"
+  runtime:
+    - category: "Orchestration & Management"
+      subcategories:
+        - "Coordination & Service Discovery"
+        - "Scheduling & Orchestration"
+    - category: "Provisioning"
+      subcategories:
+        - "Automation & Configuration"
+        - "Container Registry"
+    - category: "Runtime"
+      subcategories:
+        - "Container Runtime"
+    - category: "Serverless"
+      subcategories:
+        - "Hosted Platform"
+        - "Installable Platform"
+    - category: "Wasm"
+      subcategories:
+        - "Edge/Bare metal"
+        - "Orchestration & Management"
+        - "Runtimes"
+  security:
+    - category: "Provisioning"
+      subcategories:
+        - "Key Management"
+        - "Security & Compliance"
+    - category: "Serverless"
+      subcategories:
+        - "Security"
+  storage:
+    - category: "Runtime"
+      subcategories:
+        - "Cloud Native Storage"

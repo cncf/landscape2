@@ -61,6 +61,15 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         }
       }
 
+      // Filter TAG
+      if (activeFilters[FilterCategory.TAG]) {
+        if (isUndefined(item.tag)) {
+          return false;
+        } else if (!activeFilters[FilterCategory.TAG].includes(item.tag)) {
+          return false;
+        }
+      }
+
       //  Maturity filter
       if (activeFilters[FilterCategory.Maturity]) {
         if (

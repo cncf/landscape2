@@ -134,7 +134,7 @@ const SearchbarSection = (props: Props) => {
     <Show when={!isUndefined(props.section)}>
       <div class="col-4">
         <div class="d-flex flex-column h-100">
-          <div class="d-flex flex-row align-items-center pb-3">
+          <div class="d-flex flex-row align-items-center pb-2">
             <small class={`fw-semibold me-2 ${styles.title}`}>{props.title || props.section!.title}</small>
             {activeFilters().length > 0 && (
               <button

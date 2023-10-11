@@ -52,6 +52,7 @@ export interface BaseItem {
   description?: string;
   featured?: Featured;
   maturity?: string;
+  tag?: string;
 }
 
 export interface Featured {
@@ -236,6 +237,7 @@ export enum FilterCategory {
   Region = 'region',
   Industry = 'industry',
   CompanyType = 'company-type',
+  TAG = 'tag',
 }
 
 export interface Stats {
@@ -349,3 +351,12 @@ export enum Tab {
   Guide = 'guide',
   Stats = 'stats',
 }
+
+export enum FilterTitle {
+  Project = 'Project',
+  Organization = 'Organization',
+}
+
+export type FilterCategoriesPerTitle = {
+  [key in FilterTitle]: FilterCategory[];
+};

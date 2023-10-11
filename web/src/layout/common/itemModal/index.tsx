@@ -9,6 +9,7 @@ import { Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
+import { formatTAGName } from '../../../utils/prepareFilters';
 import prettifyNumber from '../../../utils/prettifyNumber';
 import { useActiveItemId, useSetActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
@@ -109,7 +110,15 @@ const ItemModal = () => {
                       <FoundationBadge />
                       <MaturityBadge level={itemInfo()!.maturity!} class="mx-2" />
 
-                      {!isUndefined(itemInfo()!.accepted_at) && (
+                      <Show when={!isUndefined(itemInfo()!.tag)}>
+                        <div
+                          class={`badge text-uppercase border rounded-0 me-2 ${styles.badgeOutlineDark} ${styles.tagBadge}`}
+                        >
+                          TAG {formatTAGName(itemInfo()!.tag!)}
+                        </div>
+                      </Show>
+
+                      <Show when={!isUndefined(itemInfo()!.accepted_at)}>
                         <div
                           title={`Accepted at ${itemInfo()!.accepted_at}`}
                           class="d-flex flex-row align-items-center accepted-date me-3"
@@ -119,7 +128,7 @@ const ItemModal = () => {
                             <small>{itemInfo()!.accepted_at!.split('-')[0]}</small>
                           </div>
                         </div>
-                      )}
+                      </Show>
                     </Show>
                   </div>
                 </div>

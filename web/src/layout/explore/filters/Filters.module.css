@@ -1,3 +1,15 @@
+.modal {
+  min-height: calc(100% - 6rem) !important;
+  max-height: calc(100% - 6rem) !important;
+  margin: 3em auto !important;
+}
+
+.title {
+  font-size: 1.25rem;
+  color: var(--color4);
+  margin-bottom: 2rem;
+}
+
 .filterBtn {
   height: 28px;
   font-size: 0.8rem;

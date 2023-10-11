@@ -100,6 +100,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     // Add some extra information to the landscape based on the settings
     landscape_data.add_featured_items_data(&settings)?;
     landscape_data.add_member_subcategory(&settings.members_category);
+    landscape_data.add_tags(&settings);
 
     // Get settings images and update their urls to the local copy
     settings.images = get_settings_images(&settings, &args.output_dir).await?;
