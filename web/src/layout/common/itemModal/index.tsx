@@ -1,3 +1,4 @@
+import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
@@ -272,13 +273,10 @@ const ItemModal = () => {
                 </div>
               </div>
             </div>
-
             {/* Description */}
             <div class={`mt-4 text-muted ${styles.description}`}>{description()}</div>
-
             {/* Maturity */}
             <MaturitySection item={itemInfo()!} class={styles.fieldset} />
-
             {/* Repositories */}
             <Show when={!isUndefined(itemInfo()!.repositories)}>
               <div class={`position-relative border ${styles.fieldset}`}>
@@ -322,7 +320,11 @@ const ItemModal = () => {
                       </div>
                     </Show>
 
-                    <Show when={!isUndefined(mainRepo()!.github_data!.languages)}>
+                    <Show
+                      when={
+                        !isUndefined(mainRepo()!.github_data!.languages) && !isEmpty(mainRepo()!.github_data!.languages)
+                      }
+                    >
                       <div class="mt-4">
                         <div class={`fw-semibold ${styles.subtitleInSection}`}>Languages</div>
                         <LanguagesStats initialLanguages={mainRepo()!.github_data!.languages!} />
@@ -393,7 +395,6 @@ const ItemModal = () => {
                 </Show>
               </div>
             </Show>
-
             {/* Security audits */}
             <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
               <div class={`position-relative border ${styles.fieldset}`}>
@@ -445,7 +446,6 @@ const ItemModal = () => {
                 </div>
               </div>
             </Show>
-
             {/* Organization */}
             <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
               <div class={`position-relative border ${styles.fieldset}`}>
@@ -528,7 +528,6 @@ const ItemModal = () => {
                 </div>
               </div>
             </Show>
-
             {/* Summary */}
             <Show when={!isUndefined(itemInfo()!.summary)}>
               <div class={`position-relative border ${styles.fieldset}`}>
@@ -605,16 +604,36 @@ const ItemModal = () => {
                     </div>
                   </Show>
 
-                  <Show when={!isUndefined(itemInfo()!.summary!.tags) && !isEmpty(itemInfo()!.summary!.tags!)}>
+                  <Show when={!isUndefined(itemInfo()!.summary!.tags) && !isEmpty(compact(itemInfo()!.summary!.tags!))}>
                     <div class={styles.summaryBlock}>
                       <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Tags</div>
-                      <For each={itemInfo()!.summary!.tags!}>
+                      <For each={compact(itemInfo()!.summary!.tags!)}>
                         {(tag) => {
                           return <Badge text={tag} class="me-2 mt-2" />;
                         }}
                       </For>
                     </div>
                   </Show>
+                </div>
+              </div>
+            </Show>
+
+            {/* CLOMonitor */}
+            <Show when={!isUndefined(itemInfo()!.clomonitor_name)}>
+              <div class={`position-relative border ${styles.fieldset}`}>
+                <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>
+                  CLOMonitor report summary
+                </div>
+                <div class="my-2 d-flex justify-content-center w-100 align-items-center">
+                  <ExternalLink
+                    href={`https://clomonitor.io/projects/${window.baseDS.foundation.toLowerCase()}/${itemInfo()!
+                      .clomonitor_name!}`}
+                  >
+                    <Image
+                      name={`CLOMonitor report summary for ${itemInfo()!.name}`}
+                      logo={itemInfo()!.clomonitor_report_summary!}
+                    />
+                  </ExternalLink>
                 </div>
               </div>
             </Show>

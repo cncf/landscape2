@@ -1,3 +1,4 @@
+import { isInteger } from 'lodash';
 import { createEffect, createSignal, For, on } from 'solid-js';
 
 import sortObjectByValue from '../../../utils/sortObjectByValue';
@@ -31,7 +32,13 @@ const LanguagesStats = (props: Props) => {
         {(lang: string) => {
           const value = () => percentage(languages()[lang]);
 
-          return <Box value={`${value().toFixed(2)}%`} legend={lang} fillBgPercentage={value()} />;
+          return (
+            <Box
+              value={`${isInteger(value()) ? value() : value().toFixed(2)}%`}
+              legend={lang}
+              fillBgPercentage={value()}
+            />
+          );
         }}
       </For>
     </div>
