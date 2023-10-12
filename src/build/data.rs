@@ -597,6 +597,8 @@ mod legacy {
     use crate::build::crunchbase::CRUNCHBASE_URL;
     use anyhow::{format_err, Context, Result};
     use chrono::NaiveDate;
+    use lazy_static::lazy_static;
+    use regex::Regex;
     use serde::{Deserialize, Serialize};
     use url::Url;
 
@@ -655,6 +657,19 @@ mod legacy {
                         // Check logo
                         if item.logo.is_empty() {
                             return Err(format_err!("logo is required")).context(ctx);
+                        }
+
+                        // Check some values in extra
+                        if let Some(extra) = &item.extra {
+                            // Check tag name
+                            if let Some(tag) = &extra.tag {
+                                if !TAG_NAME.is_match(tag) {
+                                    return Err(format_err!(
+                                        "invalid tag (must use only lowercase letters and hyphens)"
+                                    ))
+                                    .context(ctx);
+                                }
+                            }
                         }
 
                         // Check urls
@@ -839,5 +854,10 @@ mod legacy {
         }
 
         Ok(())
+    }
+
+    lazy_static! {
+        /// TAG name regular expression.
+        pub(crate) static ref TAG_NAME: Regex = Regex::new(r"^[a-z\-]+$").expect("exprs in TAG_NAME to be valid");
     }
 }

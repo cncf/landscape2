@@ -192,12 +192,10 @@ social_networks:
 # set in the items that match the rule defined. The TAG defined at the item
 # level always takes precedence, so when it's present it won't be replaced.
 #
-# In addition to automatically assigning TAGs to projects, this information is
-# also used to validate the TAGs provided manually on items.
-#
-# NOTE: TAGs names should be lowercase without any spaces, not prefixed with
-# "tag". The subcategories field is optional and, when omitted, all of them
-# will be included.
+# NOTE: TAGs names should only use lowercase case letters and hyphens (no
+# spaces or other characters), and should not be prefixed with "tag". The
+# subcategories field is optional and, when omitted, all of them will be
+# included.
 #
 # tags:
 #   <TAG1>:
