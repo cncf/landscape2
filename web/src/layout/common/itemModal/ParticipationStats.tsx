@@ -11,10 +11,11 @@ interface Props {
 
 const ParticipationStats = (props: Props) => {
   const [months, setMonths] = createSignal<string[] | undefined>(undefined);
-  const isAllZero = props.initialStats.every((item) => item === 0);
+  const isAllZero = () => props.initialStats.every((item) => item === 0);
+  const stats = () => props.initialStats;
 
   const percentage = (partialValue: number) => {
-    return (100 * partialValue) / Math.max(...props.initialStats);
+    return (100 * partialValue) / Math.max(...stats());
   };
 
   onMount(() => {
@@ -33,7 +34,7 @@ const ParticipationStats = (props: Props) => {
         <div class={`mb-2 border-bottom border-end pt-2 ${styles.chart}`}>
           <div class="d-flex flex-row justify-content-between align-items-end h-100 w-100">
             <Show
-              when={!isAllZero}
+              when={!isAllZero()}
               fallback={
                 <div
                   class={`alert alert-primary text-muted mx-auto mb-4 px-5 py-2 text-center border ${styles.message}`}
@@ -42,7 +43,7 @@ const ParticipationStats = (props: Props) => {
                 </div>
               }
             >
-              <For each={props.initialStats}>
+              <For each={stats()}>
                 {(x: number) => {
                   return (
                     <div title={x.toString()} class={`mx-1 ${styles.bar}`} style={{ height: `${percentage(x)}%` }} />
@@ -52,7 +53,7 @@ const ParticipationStats = (props: Props) => {
             </Show>
           </div>
         </div>
-        {months && (
+        <Show when={months()}>
           <div class="d-flex flex-row-reverse justify-content-between mb-1">
             <For each={months()}>
               {(m: string) => {
@@ -60,12 +61,12 @@ const ParticipationStats = (props: Props) => {
               }}
             </For>
           </div>
-        )}
+        </Show>
       </div>
-      {!isAllZero && (
+      <Show when={!isAllZero()}>
         <div class={`d-flex flex-row align-items-center ${styles.chart}`}>
           <div class="d-flex flex-column-reverse justify-content-between h-100">
-            <For each={calculateAxisValues(0, Math.max(...props.initialStats), 4)}>
+            <For each={calculateAxisValues(0, Math.max(...stats()), 4)}>
               {(value: number) => {
                 return (
                   <div class={`text-end ps-1 ${styles.axisValue}`}>{isInteger(value) ? value : value.toFixed(1)}</div>
@@ -75,7 +76,7 @@ const ParticipationStats = (props: Props) => {
           </div>
           <div class={`fst-italic text-muted text-center ms-1 ${styles.axisLegend}`}>Commits</div>
         </div>
-      )}
+      </Show>
     </div>
   );
 };

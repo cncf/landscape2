@@ -1,0 +1,27 @@
+.highlighted {
+  background-color: var(--bs-gray-100);
+}
+
+.highlightedTitle {
+  color: var(--color3);
+  font-size: 2rem;
+  z-index: 1;
+}
+
+.highlightedLegend {
+  color: var(--bs-tertiary-color);
+  line-height: 0.7rem;
+  padding-bottom: 0.75rem;
+  z-index: 1;
+}
+
+.highlighted:global(.filledBox)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bs-black);
+  opacity: 0.03;
+  z-index: 0;
+}

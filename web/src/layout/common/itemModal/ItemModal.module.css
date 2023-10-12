@@ -33,6 +33,16 @@
   line-height: 1.75rem;
 }
 
+.titleInSection {
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
+.subtitleInSection {
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
 .name {
   padding-bottom: 5px;
 }
@@ -114,21 +124,6 @@
   font-size: 0.7rem;
 }
 
-.highlighted {
-  background-color: var(--bs-gray-100);
-}
-
-.highlightedTitle {
-  color: var(--color3);
-  font-size: 2rem;
-}
-
-.highlightedLegend {
-  color: var(--bs-tertiary-color);
-  line-height: 0.7rem;
-  padding-bottom: 0.75rem;
-}
-
 .thead {
   font-size: 0.8rem;
 }
@@ -137,7 +132,7 @@
   color: var(--bs-gray-600);
 }
 
-.tableRepos td {
+.tableContent td {
   font-size: 0.9rem;
   line-height: 2;
 }
@@ -146,17 +141,16 @@
   margin-top: 1.15rem;
 }
 
-.summaryTitle {
-  font-size: 0.7rem;
-  opacity: 0.5;
-}
-
 .summaryContent {
   font-size: 0.8rem;
 }
 
-.auditsTable {
+.tableLayout {
   table-layout: fixed;
+}
+
+.reposCol {
+  width: 150px;
 }
 
 .auditsCol {
@@ -167,7 +161,7 @@
   width: 200px;
 }
 
-.securityLink {
+.tableLink {
   font-size: 0.8rem;
 }
 
