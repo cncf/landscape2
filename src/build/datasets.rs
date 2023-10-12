@@ -51,7 +51,6 @@ mod base {
     };
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
-    use uuid::Uuid;
 
     /// Base dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -117,7 +116,7 @@ mod base {
                 base.items.push(Item {
                     category: item.category.clone(),
                     featured: item.featured.clone(),
-                    id: item.id,
+                    id: item.id.clone(),
                     name: item.name.clone(),
                     logo: item.logo.clone(),
                     maturity: item.maturity.clone(),
@@ -149,7 +148,7 @@ mod base {
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Item {
         pub category: String,
-        pub id: Uuid,
+        pub id: String,
         pub name: String,
         pub logo: String,
         pub subcategory: String,

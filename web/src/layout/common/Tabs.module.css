@@ -1,0 +1,18 @@
+.tabs {
+  border-bottom-color: var(--bs-dark) !important;
+}
+
+.btn {
+  margin-bottom: -1px;
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.active {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-color: var(--bs-dark) !important;
+  border-bottom: 1px solid var(--bs-dark) !important;
+}
