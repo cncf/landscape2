@@ -23,6 +23,7 @@ struct Item {
     funding: Option<i64>,
     member: Option<String>,
     relation: Option<String>,
+    tag: Option<String>,
     license: Option<String>,
     headquarters: Option<String>,
     description: Option<String>,
@@ -123,6 +124,11 @@ impl From<&data::Item> for Item {
             item.relation = Some(maturity.to_string());
         } else if di.member_subcategory.is_some() {
             item.relation = Some(String::from("member"));
+        }
+
+        // Tag
+        if let Some(tag) = &di.tag {
+            item.tag = Some(tag.clone());
         }
 
         // GitHub values

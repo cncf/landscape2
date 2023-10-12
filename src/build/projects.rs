@@ -21,6 +21,7 @@ pub(crate) struct Project {
     pub name: String,
     pub num_security_audits: String,
     pub sandbox_at: String,
+    pub tag: String,
 }
 
 impl From<&LandscapeData> for Vec<Project> {
@@ -41,6 +42,11 @@ impl From<&LandscapeData> for Vec<Project> {
             .filter_map(|item| {
                 // Prepare maturity
                 let Some(maturity) = item.maturity else {
+                    return None;
+                };
+
+                // Prepare tag
+                let Some(tag) = item.tag else {
                     return None;
                 };
 
@@ -67,6 +73,7 @@ impl From<&LandscapeData> for Vec<Project> {
                     num_security_audits: num_security_audits.unwrap_or_default().to_string(),
                     last_security_audit: fmt_date(&last_security_audit),
                     sandbox_at: fmt_date(&sandbox_at),
+                    tag: tag.to_string(),
                 };
                 Some(project)
             })
@@ -92,6 +99,7 @@ pub(crate) fn generate_projects_csv(mut w: csv::Writer<File>, projects: &[Projec
     w.write_record([
         "project_name",
         "maturity",
+        "tag",
         "accepted_date",
         "sandbox_date",
         "incubating_date",
@@ -106,6 +114,7 @@ pub(crate) fn generate_projects_csv(mut w: csv::Writer<File>, projects: &[Projec
         w.write_record([
             &p.name,
             &p.maturity,
+            &p.tag,
             &p.accepted_at,
             &p.sandbox_at,
             &p.incubating_at,
