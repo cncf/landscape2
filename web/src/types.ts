@@ -143,7 +143,7 @@ export interface GithubRepository {
   description: string;
   first_commit: Commit;
   generated_at: number;
-  languages?: string[];
+  languages?: { [key: string]: number };
   latest_commit: Commit;
   latest_release?: Release;
   license: string;

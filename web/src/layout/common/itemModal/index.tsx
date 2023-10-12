@@ -3,7 +3,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
-import { createEffect, createSignal, For, Show } from 'solid-js';
+import { createEffect, createSignal, For, Match, Show, Switch } from 'solid-js';
 
 import { Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
@@ -11,6 +11,7 @@ import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { formatTAGName } from '../../../utils/prepareFilters';
 import prettifyNumber from '../../../utils/prettifyNumber';
+import sortObjectByValue from '../../../utils/sortObjectByValue';
 import { useActiveItemId, useSetActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
 import Badge from '../Badge';
@@ -22,7 +23,9 @@ import { Loading } from '../Loading';
 import MaturityBadge from '../MaturityBadge';
 import Modal from '../Modal';
 import SVGIcon from '../SVGIcon';
+import Box from './Box';
 import styles from './ItemModal.module.css';
+import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
 import ParticipationStats from './ParticipationStats';
 
@@ -49,7 +52,6 @@ const ItemModal = () => {
           websiteUrlTmp = itemTmp.homepage_url;
           setWebsiteUrl(itemTmp.homepage_url);
           setDescription(getItemDescription(itemTmp));
-          setItemInfo(itemTmp);
           if (itemTmp.repositories) {
             itemTmp.repositories.forEach((repo: Repository) => {
               if (repo.primary) {
@@ -70,11 +72,18 @@ const ItemModal = () => {
               setWebsiteUrl(itemTmp.crunchbase_data.homepage_url);
             }
           }
+          setItemInfo(itemTmp);
         } else {
           setItemInfo(null);
+          setMainRepo(undefined);
+          setDescription(undefined);
+          setWebsiteUrl(undefined);
         }
       } catch {
         setItemInfo(null);
+        setMainRepo(undefined);
+        setDescription(undefined);
+        setWebsiteUrl(undefined);
       }
     }
 
@@ -82,6 +91,9 @@ const ItemModal = () => {
       fetchItemInfo();
     } else {
       setItemInfo(undefined);
+      setMainRepo(undefined);
+      setDescription(undefined);
+      setWebsiteUrl(undefined);
     }
   });
 
@@ -272,127 +284,106 @@ const ItemModal = () => {
               <div class={`position-relative border ${styles.fieldset}`}>
                 <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
                 <Show when={!isUndefined(mainRepo())}>
-                  <div>
-                    <small class="text-muted">Primary repository:</small>
-                  </div>
+                  <div class={`fw-bold text-uppercase mt-2 mb-3 ${styles.titleInSection}`}>Primary repository</div>
                   <div class="d-flex flex-row align-items-center my-2">
                     <ExternalLink class="text-reset p-0 align-baseline fw-semibold" href={mainRepo()!.url}>
                       {mainRepo()!.url}
                     </ExternalLink>
-                    {!isUndefined(mainRepo()!.github_data) && (
+                    <Show when={!isUndefined(mainRepo()!.github_data)}>
                       <div class={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
                         {mainRepo()!.github_data!.license}
                       </div>
-                    )}
+                    </Show>
                   </div>
                   <Show when={!isUndefined(mainRepo()!.github_data)}>
                     <div class="row g-4 my-0 mb-2">
-                      <div class="col">
-                        <div
-                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                        >
-                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                            {prettifyNumber(mainRepo()!.github_data!.stars, 1)}
-                          </div>
-                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                            <small>Stars</small>
-                          </div>
-                        </div>
-                      </div>
+                      <Box value={prettifyNumber(mainRepo()!.github_data!.stars, 1)} legend="Stars" />
 
-                      <div class="col">
-                        <div
-                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                        >
-                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                            {prettifyNumber(mainRepo()!.github_data!.contributors.count)}
-                          </div>
-                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                            <small>Contributors</small>
-                          </div>
-                        </div>
-                      </div>
+                      <Box value={prettifyNumber(mainRepo()!.github_data!.contributors.count)} legend="Contributors" />
 
-                      <div class="col">
-                        <div
-                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                        >
-                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                            {formatDate(mainRepo()!.github_data!.first_commit.ts)}
-                          </div>
-                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                            <small>First commit</small>
-                          </div>
-                        </div>
-                      </div>
+                      <Box value={formatDate(mainRepo()!.github_data!.first_commit.ts)} legend="First commit" />
 
-                      <div class="col">
-                        <div
-                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                        >
-                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                            {formatDate(mainRepo()!.github_data!.latest_commit.ts)}
-                          </div>
-                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                            <small>Latest commit</small>
-                          </div>
-                        </div>
-                      </div>
+                      <Box value={formatDate(mainRepo()!.github_data!.latest_commit.ts)} legend="Latest commit" />
 
-                      <div class="col">
-                        <div
-                          class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                        >
-                          <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                            {!isUndefined(mainRepo()!.github_data!.latest_release)
-                              ? formatDate(mainRepo()!.github_data!.latest_release!.ts)
-                              : '-'}
-                          </div>
-                          <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                            <small>Latest release</small>
-                          </div>
-                        </div>
-                      </div>
+                      <Box
+                        value={
+                          !isUndefined(mainRepo()!.github_data!.latest_release)
+                            ? formatDate(mainRepo()!.github_data!.latest_release!.ts)
+                            : '-'
+                        }
+                        legend="Latest release"
+                      />
                     </div>
-                    {!isUndefined(mainRepo()!.github_data!.participation_stats) && (
+
+                    <Show when={!isUndefined(mainRepo()!.github_data!.participation_stats)}>
                       <div class="mt-4">
-                        <small class="text-muted">Participation stats:</small>
+                        <div class={`fw-semibold ${styles.subtitleInSection}`}>Participation stats</div>
                         <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
                       </div>
-                    )}
+                    </Show>
+
+                    <Show when={!isUndefined(mainRepo()!.github_data!.languages)}>
+                      <div class="mt-4">
+                        <div class={`fw-semibold ${styles.subtitleInSection}`}>Languages</div>
+                        <LanguagesStats initialLanguages={mainRepo()!.github_data!.languages!} />
+                      </div>
+                    </Show>
                   </Show>
                 </Show>
                 <Show when={!isUndefined(itemInfo()!.repositories) && itemInfo()!.repositories!.length > 1}>
                   <div class="mt-4">
-                    <small class="text-muted">Other repositories:</small>
-                    <table class="table table-sm table-striped table-bordered mt-3">
-                      <thead class={styles.thead}>
+                    <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Other repositories</div>
+                    <table class={`table table-sm table-striped table-bordered mt-3 ${styles.tableLayout}`}>
+                      <thead class={`text-uppercase text-muted ${styles.thead}`}>
                         <tr>
                           <th class="text-center" scope="col">
                             URL
                           </th>
-                          <th class="text-center" scope="col">
-                            STARS
+                          <th class={`text-center ${styles.reposCol}`} scope="col">
+                            Language
+                          </th>
+                          <th class={`text-center text-nowrap ${styles.reposCol}`} scope="col">
+                            Latest commit
+                          </th>
+                          <th class={`text-center ${styles.reposCol}`} scope="col">
+                            Stars
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         <For each={itemInfo()!.repositories}>
                           {(repo: Repository) => {
-                            if (repo.primary) return null;
+                            const languages =
+                              repo.github_data && repo.github_data.languages
+                                ? sortObjectByValue(repo.github_data.languages)
+                                : undefined;
+
                             return (
-                              <tr class={styles.tableRepos}>
-                                <td class="px-3">
-                                  <ExternalLink class="text-muted" href={repo.url}>
-                                    {repo.url}
-                                  </ExternalLink>
-                                </td>
-                                <td class="px-3 text-center">
-                                  {repo.github_data && repo.github_data.stars
-                                    ? prettifyNumber(repo.github_data.stars)
-                                    : '-'}
-                                </td>
-                              </tr>
+                              <Show when={!repo.primary}>
+                                <tr class={styles.tableContent}>
+                                  <td class="px-3">
+                                    <ExternalLink
+                                      class={`text-muted text-truncate d-block ${styles.tableLink}`}
+                                      href={repo.url}
+                                    >
+                                      {repo.url}
+                                    </ExternalLink>
+                                  </td>
+                                  <td class="px-3 text-center text-nowrap">
+                                    {!isUndefined(languages) && languages.length > 0 ? languages[0] : '-'}
+                                  </td>
+                                  <td class="px-3 text-center text-nowrap">
+                                    {repo.github_data && repo.github_data.latest_commit
+                                      ? formatDate(repo.github_data!.latest_commit!.ts)
+                                      : '-'}
+                                  </td>
+                                  <td class="px-3 text-center text-nowrap">
+                                    {repo.github_data && repo.github_data.stars
+                                      ? prettifyNumber(repo.github_data.stars)
+                                      : '-'}
+                                  </td>
+                                </tr>
+                              </Show>
                             );
                           }}
                         </For>
@@ -408,7 +399,7 @@ const ItemModal = () => {
               <div class={`position-relative border ${styles.fieldset}`}>
                 <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Security audits</div>
                 <div class="w-100">
-                  <table class={`table table-sm table-striped table-bordered mt-3 ${styles.auditsTable}`}>
+                  <table class={`table table-sm table-striped table-bordered mt-3 ${styles.tableLayout}`}>
                     <thead class={`text-uppercase text-muted ${styles.thead}`}>
                       <tr>
                         <th class={`text-center ${styles.auditsCol}`} scope="col">
@@ -429,7 +420,7 @@ const ItemModal = () => {
                       <For each={sortBy(itemInfo()!.audits, 'date').reverse()}>
                         {(audit: SecurityAudit) => {
                           return (
-                            <tr class={styles.tableRepos}>
+                            <tr class={styles.tableContent}>
                               <td class="px-3 text-center text-nowrap">{audit.date}</td>
                               <td class="px-3 text-center text-uppercase">{audit.type}</td>
                               <td class="px-3 text-center text-nowrap">
@@ -438,7 +429,7 @@ const ItemModal = () => {
                               <td class="px-3">
                                 <div class="w-100">
                                   <ExternalLink
-                                    class={`text-muted text-truncate d-block ${styles.securityLink}`}
+                                    class={`text-muted text-truncate d-block ${styles.tableLink}`}
                                     href={audit.url}
                                   >
                                     {audit.url}
@@ -487,72 +478,53 @@ const ItemModal = () => {
                   <small class="text-muted">{itemInfo()!.crunchbase_data!.description}</small>
                 </div>
                 <div class="row g-4 my-0 mb-2">
-                  <div class="col">
-                    <div
-                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                        {!isUndefined(itemInfo()!.crunchbase_data!.funding)
-                          ? prettifyNumber(itemInfo()!.crunchbase_data!.funding!)
-                          : '-'}
-                      </div>
-                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Funding</small>
-                      </div>
-                    </div>
-                  </div>
+                  <Box
+                    value={
+                      !isUndefined(itemInfo()!.crunchbase_data!.funding)
+                        ? prettifyNumber(itemInfo()!.crunchbase_data!.funding!)
+                        : '-'
+                    }
+                    legend="Funding"
+                  />
 
-                  <div class="col">
-                    <div
-                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
-                      !isUndefined(itemInfo()!.crunchbase_data!.num_employees_max) ? (
-                        <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                          {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_min)
-                            ? prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_min!)
-                            : '-'}
-                          -
-                          {!isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
-                            ? prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_max!)
-                            : '-'}
-                        </div>
-                      ) : (
-                        <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>-</div>
-                      )}
-                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Employees</small>
-                      </div>
-                    </div>
-                  </div>
+                  <Box
+                    value={
+                      <Switch>
+                        <Match
+                          when={
+                            !isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
+                            !isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
+                          }
+                        >
+                          {prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_min!)} -{' '}
+                          {prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_max!)}
+                        </Match>
+                        <Match
+                          when={
+                            !isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
+                            isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
+                          }
+                        >
+                          {'> '}
+                          {prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_min!)}
+                        </Match>
+                        <Match
+                          when={
+                            isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
+                            !isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
+                          }
+                        >
+                          {'< '}
+                          {prettifyNumber(itemInfo()!.crunchbase_data!.num_employees_max!)}
+                        </Match>
+                      </Switch>
+                    }
+                    legend="Employees"
+                  />
 
-                  <div class="col">
-                    <div
-                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div class={`fw-bold text-uppercase text-nowrap ${styles.highlightedTitle}`}>
-                        {!isUndefined(itemInfo()!.crunchbase_data!.stock_exchange)
-                          ? itemInfo()!.crunchbase_data!.stock_exchange
-                          : '-'}
-                      </div>
-                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Stock exchange</small>
-                      </div>
-                    </div>
-                  </div>
+                  <Box value={itemInfo()!.crunchbase_data!.stock_exchange! || '-'} legend="Stock exchange" />
 
-                  <div class="col">
-                    <div
-                      class={`text-center p-3 h-100 d-flex flex-column justify-content-center ${styles.highlighted}`}
-                    >
-                      <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>
-                        {!isUndefined(itemInfo()!.crunchbase_data!.ticker) ? itemInfo()!.crunchbase_data!.ticker : '-'}
-                      </div>
-                      <div class={`fw-semibold ${styles.highlightedLegend}`}>
-                        <small>Ticker</small>
-                      </div>
-                    </div>
-                  </div>
+                  <Box value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
                 </div>
               </div>
             </Show>
@@ -564,14 +536,14 @@ const ItemModal = () => {
                 <div class={`my-2 ${styles.summary}`}>
                   <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Introduction</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Introduction</div>
                       <div class={`mt-2 ${styles.summaryContent}`}>{itemInfo()!.summary!.intro_url!}</div>
                     </div>
                   </Show>
 
                   <Show when={!isUndefined(itemInfo()!.summary!.use_case) && !isEmpty(itemInfo()!.summary!.use_case)}>
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Use case</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Use case</div>
                       <div class={`mt-2 ${styles.summaryContent}`}>
                         <CollapsableText text={itemInfo()!.summary!.use_case!} />
                       </div>
@@ -585,7 +557,7 @@ const ItemModal = () => {
                     }
                   >
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Business use case</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Business use case</div>
                       <div class={`mt-2 ${styles.summaryContent}`}>
                         <CollapsableText text={itemInfo()!.summary!.business_use_case!} />
                       </div>
@@ -600,7 +572,7 @@ const ItemModal = () => {
                     }
                   >
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Integrations</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Integrations</div>
                       <div class={`mt-2 ${styles.summaryContent}`}>
                         <CollapsableText
                           text={(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration)!}
@@ -615,7 +587,7 @@ const ItemModal = () => {
                     }
                   >
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Release rate</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Release rate</div>
                       <div class={`mt-2 ${styles.summaryContent}`}>
                         <CollapsableText text={itemInfo()!.summary!.release_rate!} />
                       </div>
@@ -624,7 +596,7 @@ const ItemModal = () => {
 
                   <Show when={!isUndefined(itemInfo()!.summary!.personas) && !isEmpty(itemInfo()!.summary!.personas)}>
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Personas</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Personas</div>
                       <For each={itemInfo()!.summary!.personas!}>
                         {(persona) => {
                           return <Badge text={persona} class="me-2 mt-2" />;
@@ -635,7 +607,7 @@ const ItemModal = () => {
 
                   <Show when={!isUndefined(itemInfo()!.summary!.tags) && !isEmpty(itemInfo()!.summary!.tags!)}>
                     <div class={styles.summaryBlock}>
-                      <div class={`fw-bold text-uppercase ${styles.summaryTitle}`}>Tags</div>
+                      <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Tags</div>
                       <For each={itemInfo()!.summary!.tags!}>
                         {(tag) => {
                           return <Badge text={tag} class="me-2 mt-2" />;
