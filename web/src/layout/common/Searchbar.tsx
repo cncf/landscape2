@@ -4,7 +4,7 @@ import { createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { BaseItem, SVGIconKind } from '../../types';
-import { useSetActiveItemId } from '../stores/activeItem';
+import { useUpdateActiveItemId } from '../stores/activeItem';
 import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
 import MaturityBadge from './MaturityBadge';
@@ -19,7 +19,7 @@ const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
-  const updateActiveItemId = useSetActiveItemId();
+  const updateActiveItemId = useUpdateActiveItemId();
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
   const [dropdownRef, setDropdownRef] = createSignal<HTMLInputElement>();
   const [value, setValue] = createSignal<string>('');
@@ -64,8 +64,8 @@ const Searchbar = (props: Props) => {
     }
   };
 
-  const openItemModal = (selectedItemId: string) => {
-    updateActiveItemId(selectedItemId);
+  const openItemModal = (itemId: string) => {
+    updateActiveItemId(itemId);
     setValue('');
     cleanItemsSearch();
     forceBlur();

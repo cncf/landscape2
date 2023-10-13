@@ -13,7 +13,7 @@ import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoriesData } from '../../../utils/prepareData';
 import slugify from '../../../utils/slugify';
 import SVGIcon from '../../common/SVGIcon';
-import { useSetActiveItemId } from '../../stores/activeItem';
+import { useUpdateActiveItemId } from '../../stores/activeItem';
 import Card from './Card';
 import styles from './Content.module.css';
 
@@ -25,7 +25,7 @@ interface Props {
 
 const Content = (props: Props) => {
   const bgColor = COLORS[0];
-  const updateActiveItemId = useSetActiveItemId();
+  const updateActiveItemId = useUpdateActiveItemId();
   const navigate = useNavigate();
   const location = useLocation();
   const state = createMemo(() => location.state);

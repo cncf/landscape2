@@ -1,0 +1,4 @@
+.codeBlock pre {
+  overscroll-behavior: contain;
+  margin-bottom: 0;
+}

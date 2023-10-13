@@ -37,7 +37,6 @@ use std::{
 use tokio::{sync::Mutex, time::sleep};
 use tracing::{debug, error, info, instrument, warn};
 use url::Url;
-use uuid::Uuid;
 
 mod cache;
 mod clomonitor;
@@ -179,7 +178,7 @@ async fn collect_clomonitor_reports(
     // Fetch CLOMonitor reports summaries and copy them to the output directory
     let http_client = reqwest::Client::new();
     let foundation = &settings.foundation.to_lowercase();
-    let reports_summaries: Mutex<HashMap<Uuid, String>> = Mutex::new(HashMap::new());
+    let reports_summaries: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());
     stream::iter(landscape_data.items.iter())
         .for_each_concurrent(CLOMONITOR_MAX_CONCURRENCY, |item| async {
             // Item must contain the project name as used in CLOMonitor
@@ -216,7 +215,7 @@ async fn collect_clomonitor_reports(
             // Track report summary to include it later in the item
             let mut reports_summaries = reports_summaries.lock().await;
             reports_summaries.insert(
-                item.id,
+                item.id.clone(),
                 Path::new(IMAGES_PATH).join(file_name).to_string_lossy().to_string(),
             );
         })
@@ -413,7 +412,7 @@ async fn prepare_items_logos(
     }
     let http_client = reqwest::Client::new();
     let logos_source = Arc::new(logos_source.clone());
-    let logos: HashMap<Uuid, Option<String>> = stream::iter(landscape_data.items.iter())
+    let logos: HashMap<String, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
             // Prepare logo
             let cache = cache.clone();
@@ -428,11 +427,11 @@ async fn prepare_items_logos(
                 Ok(Ok(logo)) => logo,
                 Ok(Err(err)) => {
                     error!(?err, ?item.logo, "error preparing logo");
-                    return (item.id, None);
+                    return (item.id.clone(), None);
                 }
                 Err(err) => {
                     error!(?err, ?item.logo, "error executing prepare_logo task");
-                    return (item.id, None);
+                    return (item.id.clone(), None);
                 }
             };
 
@@ -442,14 +441,14 @@ async fn prepare_items_logos(
                 Ok(file) => file,
                 Err(err) => {
                     error!(?err, ?file_name, "error creating logo file in output dir");
-                    return (item.id, None);
+                    return (item.id.clone(), None);
                 }
             };
             if let Err(err) = file.write_all(&logo.svg_data) {
                 error!(?err, ?file_name, "error writing logo to file in output dir");
             };
 
-            (item.id, Some(format!("{LOGOS_PATH}/{file_name}")))
+            (item.id.clone(), Some(format!("{LOGOS_PATH}/{file_name}")))
         })
         .buffer_unordered(concurrency)
         .collect()

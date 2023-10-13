@@ -1634,6 +1634,11 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
+highlight.js@^11.6.0:
+  version "11.9.0"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.9.0.tgz#04ab9ee43b52a41a047432c8103e2158a1b8b5b0"
+  integrity sha512-fJ7cW7fQGCYAkgv4CPfwFHrfd/cLS4Hau96JuJ+ZTOWhjnhoeN1ub1tFmALm/+lW5z4WCAuAV9bm05AP0mS6Gw==
+
 html-entities@2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-2.3.3.tgz#117d7626bece327fc8baace8868fa6f5ef856e46"
@@ -2395,6 +2400,22 @@ solid-apexcharts@^0.3.2:
   integrity sha512-4U80dk2e/YEghD903aitBrO0l5WjUv/IhRI6Pp8mfJNT6JPkYG4HTMjBrI+XHRU8uJICJl9ZwLtkvFZnKd2Shw==
   dependencies:
     defu "^6.1.2"
+
+solid-highlight@^0.1.12:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/solid-highlight/-/solid-highlight-0.1.12.tgz#c4890b9a0ae3ad7301a3a160db9da8cfdc7cadd2"
+  integrity sha512-1zTiNeuD8SDjil//wcdNGeYVrsgkhVdyHD65WBuO2SV33onTRHXZR8agH60Kpe9GcFmjDmz0UwKWj1zFXesnig==
+  dependencies:
+    highlight.js "^11.6.0"
+    solid-js "^1.4.8"
+
+solid-js@^1.4.8:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.8.1.tgz#0568041f6dfca099ae48b94b2de1711974d25694"
+  integrity sha512-HU4tB/vWY5/0P9GzbvePjK1aucNqUcF1XlAirZBjKkrkWG8XNIN9HSjscTC/nbl3A6JWjrW+OLcPEvWxsMhdng==
+  dependencies:
+    csstype "^3.1.0"
+    seroval "^0.10.4"
 
 solid-js@^1.8.0:
   version "1.8.0"

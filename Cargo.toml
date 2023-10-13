@@ -51,7 +51,6 @@ tower = "0.4.13"
 tower-http = { version = "0.4.4", features = ["fs", "set-header"] }
 url = "2.4.1"
 usvg = "0.36.0"
-uuid = { version = "1.4.1", features = ["serde", "v5"] }
 walkdir = "2.4.0"
 imagesize = "0.12.0"
 

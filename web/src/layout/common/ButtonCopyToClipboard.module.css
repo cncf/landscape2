@@ -1,0 +1,12 @@
+.tooltip {
+  bottom: -40px;
+}
+
+.tooltipArrow {
+  right: 10px;
+}
+
+.btn {
+  height: 32px;
+  width: 32px;
+}

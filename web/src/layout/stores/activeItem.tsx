@@ -1,9 +1,40 @@
+import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
 
-function useActiveItemProvider() {
-  const [activeItemId, setActiveItemId] = createSignal();
+import { ITEM_PARAM } from '../../data';
 
-  return { itemId: activeItemId, setItemId: setActiveItemId };
+function useActiveItemProvider() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [activeItemId, setActiveItemId] = createSignal<string | undefined>(searchParams[ITEM_PARAM]);
+
+  const updateActiveItem = (itemId?: string) => {
+    const updatedSearchParams = new URLSearchParams(searchParams);
+    if (isUndefined(itemId)) {
+      updatedSearchParams.delete(ITEM_PARAM);
+      const params = updatedSearchParams.toString();
+
+      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}`, {
+        replace: true,
+        scroll: false,
+      });
+      setActiveItemId();
+    } else {
+      updatedSearchParams.set(ITEM_PARAM, itemId);
+      const params = updatedSearchParams.toString();
+
+      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}`, {
+        replace: true,
+        scroll: false,
+      });
+      setActiveItemId(itemId);
+    }
+  };
+
+  return { itemId: activeItemId, updateActiveItem: updateActiveItem };
 }
 
 export type ContextActiveItemType = ReturnType<typeof useActiveItemProvider>;
@@ -27,6 +58,6 @@ export function useActiveItemId() {
   return useActiveItem().itemId;
 }
 
-export function useSetActiveItemId() {
-  return useActiveItem().setItemId;
+export function useUpdateActiveItemId() {
+  return useActiveItem().updateActiveItem;
 }

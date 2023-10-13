@@ -123,6 +123,24 @@ const ClearCircle = (props: IconProps) => (
   </svg>
 );
 
+const Copy = (props: Props) => (
+  <svg
+    class={props.class}
+    stroke="currentColor"
+    fill="none"
+    stroke-width="2"
+    viewBox="0 0 24 24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
 const Crunchbase = (props: IconProps) => (
   <svg
     class={props.class}
@@ -494,6 +512,21 @@ const Stats = (props: IconProps) => (
   </svg>
 );
 
+const ThreeBars = (props: Props) => (
+  <svg
+    class={props.class}
+    stroke="currentColor"
+    fill="currentColor"
+    stroke-width="0"
+    viewBox="0 0 16 16"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M14 5H2V3h12v2zm0 4H2V7h12v2zM2 13h12v-2H2v2z" />
+  </svg>
+);
+
 const Twitch = (props: IconProps) => (
   <svg
     class={props.class}
@@ -616,6 +649,7 @@ const icons: ValidComponent[] = [
   Calendar,
   Clear,
   ClearCircle,
+  Copy,
   Crunchbase,
   Discord,
   Discussions,
@@ -639,6 +673,7 @@ const icons: ValidComponent[] = [
   Slack,
   StackOverflow,
   Stats,
+  ThreeBars,
   Twitch,
   Twitter,
   Youtube,

@@ -283,6 +283,7 @@ export enum SVGIconKind {
   Calendar,
   Clear,
   ClearCircle,
+  Copy,
   Crunchbase,
   Discord,
   Discussions,
@@ -306,6 +307,7 @@ export enum SVGIconKind {
   Slack,
   StackOverflow,
   Stats,
+  ThreeBars,
   Twitch,
   Twitter,
   Youtube,
@@ -361,3 +363,7 @@ export enum FilterTitle {
 export type FilterCategoriesPerTitle = {
   [key in FilterTitle]: FilterCategory[];
 };
+
+export enum ModalType {
+  Item = 'item',
+}

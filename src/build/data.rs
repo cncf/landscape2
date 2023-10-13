@@ -15,11 +15,12 @@ use super::{
 use crate::DataSource;
 use anyhow::{format_err, Result};
 use chrono::NaiveDate;
+use lazy_static::lazy_static;
+use regex::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
 use tracing::{debug, instrument};
-use uuid::Uuid;
 
 /// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
@@ -376,7 +377,7 @@ pub(crate) type SubCategoryName = String;
 pub(crate) struct Item {
     pub category: String,
     pub homepage_url: String,
-    pub id: Uuid,
+    pub id: String,
     pub logo: String,
     pub name: String,
     pub subcategory: String,
@@ -521,8 +522,27 @@ impl Item {
 
     /// Generate and set the item's id.
     fn set_id(&mut self) {
-        let key = format!("{}##{}##{}", &self.category, &self.subcategory, &self.name);
-        self.id = Uuid::new_v5(&Uuid::NAMESPACE_OID, key.as_bytes());
+        lazy_static! {
+            static ref VALID_CHARS: Regex =
+                Regex::new(r"[a-z0-9\-\ ]").expect("exprs in VALID_CHARS to be valid");
+        }
+
+        // Normalize category, subcategory and item name
+        let normalize = |value: &str| {
+            value
+                .to_lowercase()
+                .replace(' ', "-")
+                .chars()
+                .filter(|c| VALID_CHARS.is_match(&c.to_string()))
+                .collect::<String>()
+                .replace("--", "-")
+        };
+        let category = normalize(&self.category);
+        let subcategory = normalize(&self.subcategory);
+        let item = normalize(&self.name);
+
+        // Build and set id
+        self.id = format!("{category}--{subcategory}--{item}");
     }
 }
 

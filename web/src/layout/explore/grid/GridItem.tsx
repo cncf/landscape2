@@ -5,7 +5,7 @@ import { BaseItem, Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Image from '../../common/Image';
 import { Loading } from '../../common/Loading';
-import { useSetActiveItemId } from '../../stores/activeItem';
+import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
 import Card from '../card/Card';
 import styles from './GridItem.module.css';
@@ -23,7 +23,7 @@ const GridItem = (props: Props) => {
   let ref;
   const fullDataReady = useFullDataReady();
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
-  const updateActiveItemId = useSetActiveItemId();
+  const updateActiveItemId = useUpdateActiveItemId();
   const [visibleDropdown, setVisibleDropdown] = createSignal(false);
   const [onLinkHover, setOnLinkHover] = createSignal(false);
   const [onDropdownHover, setOnDropdownHover] = createSignal(false);
