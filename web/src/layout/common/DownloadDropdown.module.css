@@ -1,0 +1,34 @@
+.btn {
+  background: transparent;
+  border: 0;
+  font-size: 1.5rem;
+}
+
+.dropdown {
+  right: 0;
+  font-size: 0.9rem;
+  width: 350px;
+}
+
+.dropdownHeader {
+  background-color: var(--bs-gray-200);
+  font-size: 0.8rem;
+}
+
+.contentBtn {
+  width: calc(100% - 30px);
+}
+
+.legend {
+  font-size: 0.7rem;
+  line-height: 0.9rem;
+}
+
+.icon {
+  font-size: 1.25rem;
+}
+
+.spinner {
+  top: -0.2rem;
+  left: -0.35rem;
+}
