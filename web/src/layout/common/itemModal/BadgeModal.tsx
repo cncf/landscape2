@@ -11,8 +11,6 @@ interface Props {
 }
 
 const BadgeModal = (props: Props) => {
-  console.log(window.baseDS.colors);
-
   const itemId = () => props.itemId;
   const openStatus = () => props.openStatus;
   const origin = window.location.origin;

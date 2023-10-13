@@ -46,4 +46,10 @@
     background-color: var(--color2);
     border-color: var(--color2);
   }
+
+  .dropdown-item.active,
+  .dropdown-item:active {
+    color: var(--bs-dropdown-link-hover-color);
+    background-color: var(--bs-dropdown-link-hover-bg);
+  }
 }

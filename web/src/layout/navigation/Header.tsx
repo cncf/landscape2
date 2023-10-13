@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 
 import { BaseItem, SVGIconKind } from '../../types';
+import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
 import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
@@ -61,6 +62,7 @@ const Header = (props: Props) => {
           <div class="d-none d-lg-block position-relative me-2 me-xl-4">
             <Searchbar items={props.items} />
           </div>
+          <DownloadDropdown />
           <ExternalLink class="btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0" href="https://github.com/cncf/landscape2">
             <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
           </ExternalLink>
