@@ -70,75 +70,78 @@ const DownloadDropdown = () => {
         <SVGIcon kind={SVGIconKind.Download} />
       </button>
 
-      <ul
+      <div
         role="complementary"
         class={`dropdown-menu rounded-0 p-0 ${styles.dropdown}`}
         classList={{ show: visibleDropdown() }}
       >
-        <li>
-          <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>
-        </li>
-        <li>
-          <button
-            class="dropdown-item py-3 border-top"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
+        <div class={`d-block position-absolute ${styles.arrow}`} />
+        <ul class={`m-0 p-0 ${styles.menuList}`}>
+          <li>
+            <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>
+          </li>
+          <li>
+            <button
+              class="dropdown-item py-3 border-top"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
 
-              downloadCSV(DocType.Items);
-            }}
-          >
-            <div class="d-flex flex-row align-items-start">
-              <div class="me-3 position-relative">
-                <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Items}>
-                  <div class={`position-absolute ${styles.spinner}`}>
-                    <div class="spinner-border text-secondary" role="status">
-                      <span class="visually-hidden">Loading...</span>
+                downloadCSV(DocType.Items);
+              }}
+            >
+              <div class="d-flex flex-row align-items-start">
+                <div class="me-3 position-relative">
+                  <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Items}>
+                    <div class={`position-absolute ${styles.spinner}`}>
+                      <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
                     </div>
+                  </Show>
+                  <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
+                </div>
+                <div class={styles.contentBtn}>
+                  <div class="fw-semibold mb-2">items.csv</div>
+                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
+                    CSV file that contains information about all items available in the landscape
                   </div>
-                </Show>
-                <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
-              </div>
-              <div class={styles.contentBtn}>
-                <div class="fw-semibold mb-2">items.csv</div>
-                <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
-                  CSV file that contains information about all items available in the landscape
                 </div>
               </div>
-            </div>
-          </button>
-        </li>
-        <li>
-          <button
-            class="dropdown-item py-3 border-top"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
+            </button>
+          </li>
+          <li>
+            <button
+              class="dropdown-item py-3 border-top"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
 
-              downloadCSV(DocType.Projects);
-            }}
-          >
-            <div class="d-flex flex-row align-items-start">
-              <div class="me-3 position-relative">
-                <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Projects}>
-                  <div class={`position-absolute ${styles.spinner}`}>
-                    <div class="spinner-border text-secondary" role="status">
-                      <span class="visually-hidden">Loading...</span>
+                downloadCSV(DocType.Projects);
+              }}
+            >
+              <div class="d-flex flex-row align-items-start">
+                <div class="me-3 position-relative">
+                  <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Projects}>
+                    <div class={`position-absolute ${styles.spinner}`}>
+                      <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
                     </div>
+                  </Show>
+                  <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
+                </div>
+                <div class={styles.contentBtn}>
+                  <div class="fw-semibold mb-2">projects.csv</div>
+                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
+                    CSV file that contains information about all the projects that are part of the foundation
                   </div>
-                </Show>
-                <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
-              </div>
-              <div class={styles.contentBtn}>
-                <div class="fw-semibold mb-2">projects.csv</div>
-                <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
-                  CSV file that contains information about all the projects that are part of the foundation
                 </div>
               </div>
-            </div>
-          </button>
-        </li>
-      </ul>
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

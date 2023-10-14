@@ -25,7 +25,6 @@ const ItemDropdown = (props: Props) => {
     <>
       <div ref={setRef} class={`position-absolute ${styles.wrapper}`}>
         <button
-          data-testid="dropdown-btn"
           type="button"
           class={`btn btn-md p-0 rounded-0 lh-1 ${styles.btn}`}
           onClick={(e) => {

@@ -33,6 +33,19 @@
   animation-fill-mode: forwards;
 }
 
+.btn {
+  background: transparent;
+  border: 0;
+  opacity: 0.5;
+  font-size: 1.5rem;
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    opacity: 0.75;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
