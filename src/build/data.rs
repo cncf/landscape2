@@ -8,7 +8,7 @@
 //! allows parsing the legacy format and convert it to the new one.
 
 use super::{
-    crunchbase::{CrunchbaseData, Organization},
+    crunchbase::{CrunchbaseData, Organization, CRUNCHBASE_URL},
     github::{self, GithubData},
     settings::LandscapeSettings,
 };
@@ -21,6 +21,7 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
 use tracing::{debug, instrument};
+use url::Url;
 
 /// Format used for dates across the landscape data file.
 pub const DATE_FORMAT: &str = "%Y-%m-%d";
@@ -613,14 +614,12 @@ mod legacy {
     //! This module defines some types used to parse the landscape data file in
     //! legacy format and convert it to the new one.
 
-    use super::ItemAudit;
-    use crate::build::crunchbase::CRUNCHBASE_URL;
+    use super::{validate_url, ItemAudit};
     use anyhow::{format_err, Context, Result};
     use chrono::NaiveDate;
     use lazy_static::lazy_static;
     use regex::Regex;
     use serde::{Deserialize, Serialize};
-    use url::Url;
 
     /// Landscape data (legacy format).
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -831,53 +830,53 @@ mod legacy {
         Ok(())
     }
 
-    /// Validate the url provided.
-    fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
-        if let Some(url) = url {
-            let invalid_url = |reason: &str| Err(format_err!("invalid {kind} url: {reason}"));
-
-            // Parse url
-            let url = match Url::parse(url) {
-                Ok(url) => url,
-                Err(err) => return invalid_url(&err.to_string()),
-            };
-
-            // Check scheme
-            if url.scheme() != "http" && url.scheme() != "https" {
-                return invalid_url("invalid scheme");
-            }
-
-            // Some checks specific to the url kind provided
-            match kind {
-                "crunchbase" => {
-                    if !CRUNCHBASE_URL.is_match(url.as_str()) {
-                        return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
-                    }
-                }
-                "stack_overflow" => {
-                    if url.host_str().is_some_and(|host| !host.contains("stackoverflow.com")) {
-                        return invalid_url("invalid stack overflow url");
-                    }
-                }
-                "twitter" => {
-                    if url.host_str().is_some_and(|host| !host.contains("twitter.com")) {
-                        return invalid_url("expecting https://twitter.com/...");
-                    }
-                }
-                "youtube" => {
-                    if url.host_str().is_some_and(|host| !host.contains("youtube.com")) {
-                        return invalid_url("expecting https://youtube.com/...");
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        Ok(())
-    }
-
     lazy_static! {
         /// TAG name regular expression.
         pub(crate) static ref TAG_NAME: Regex = Regex::new(r"^[a-z\-]+$").expect("exprs in TAG_NAME to be valid");
     }
+}
+
+/// Validate the url provided.
+pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
+    if let Some(url) = url {
+        let invalid_url = |reason: &str| Err(format_err!("invalid {kind} url: {reason}"));
+
+        // Parse url
+        let url = match Url::parse(url) {
+            Ok(url) => url,
+            Err(err) => return invalid_url(&err.to_string()),
+        };
+
+        // Check scheme
+        if url.scheme() != "http" && url.scheme() != "https" {
+            return invalid_url("invalid scheme");
+        }
+
+        // Some checks specific to the url kind provided
+        match kind {
+            "crunchbase" => {
+                if !CRUNCHBASE_URL.is_match(url.as_str()) {
+                    return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
+                }
+            }
+            "stack_overflow" => {
+                if url.host_str().is_some_and(|host| !host.contains("stackoverflow.com")) {
+                    return invalid_url("invalid stack overflow url");
+                }
+            }
+            "twitter" => {
+                if url.host_str().is_some_and(|host| !host.contains("twitter.com")) {
+                    return invalid_url("expecting https://twitter.com/...");
+                }
+            }
+            "youtube" => {
+                if url.host_str().is_some_and(|host| !host.contains("youtube.com")) {
+                    return invalid_url("expecting https://youtube.com/...");
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
 }
