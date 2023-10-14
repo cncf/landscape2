@@ -22,7 +22,7 @@ foundation: CNCF
 #   open_graph: <OPEN_GRAPH_IMAGE_URL>
 #
 images:
-  favicon: "https://github.com/cncf/artwork/blob/master/other/cncf-landscape/icon/color/cncf-landscape-icon-color.png"
+  favicon: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/icon/color/cncf-landscape-icon-color.png"
   footer_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
   header_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
   open_graph: "https://landscape.cncf.io/images/social.jpg"
