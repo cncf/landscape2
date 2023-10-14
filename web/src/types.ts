@@ -283,6 +283,7 @@ export enum SVGIconKind {
   Calendar,
   Clear,
   ClearCircle,
+  Close,
   Copy,
   Crunchbase,
   CSV,

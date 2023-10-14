@@ -122,7 +122,7 @@ const ItemModal = () => {
                 </div>
 
                 <div class={`d-flex flex-column justify-content-between ms-3 ${styles.itemInfo}`}>
-                  <div class="d-flex flex-row align-items-center me-3">
+                  <div class="d-flex flex-row align-items-center me-5">
                     <div class={`fw-semibold text-truncate pe-2 ${styles.title}`}>{itemInfo()!.name}</div>
                     <div class={`d-flex flex-row align-items-center ms-2 ${styles.extra}`}>
                       <Show when={!isUndefined(itemInfo()!.maturity)}>

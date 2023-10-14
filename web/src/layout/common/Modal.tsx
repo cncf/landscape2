@@ -3,7 +3,9 @@ import { createEffect, createSignal, JSXElement, Show } from 'solid-js';
 
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
+import { SVGIconKind } from '../../types';
 import styles from './Modal.module.css';
+import SVGIcon from './SVGIcon';
 
 interface Props {
   open: boolean;
@@ -73,13 +75,15 @@ const Modal = (props: Props) => {
                   <button
                     type="button"
                     title="Close modal"
-                    class="btn-close"
+                    class={`btn btn-md p-0 rounded-0 lh-1 ${styles.btn}`}
                     onClick={(e) => {
                       e.preventDefault();
                       closeModal();
                     }}
                     aria-label="Close"
-                  />
+                  >
+                    <SVGIcon kind={SVGIconKind.Close} />
+                  </button>
                 </div>
               </Show>
 

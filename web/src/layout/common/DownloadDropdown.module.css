@@ -5,14 +5,32 @@
 }
 
 .dropdown {
-  right: 0;
+  right: -0.75rem;
+  top: 2.5rem;
   font-size: 0.9rem;
   width: 350px;
+  border-color: var(--bs-gray-600);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+.arrow {
+  top: -0.5rem;
+  right: 1rem;
+  border-style: solid;
+  border-width: 0 0.5rem 0.5rem;
+  border-color: transparent;
+  border-bottom-color: var(--bs-gray-700);
+  width: 0;
+  height: 0;
 }
 
 .dropdownHeader {
   background-color: var(--bs-gray-200);
   font-size: 0.8rem;
+}
+
+.menuList {
+  list-style: none;
 }
 
 .contentBtn {
