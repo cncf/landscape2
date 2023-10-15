@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     {% if datasets.base.images.favicon.is_some() %}
-    <link rel="shortcut icon" type="image/png" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
+    <link rel="shortcut icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
     {% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% if datasets.base.images.open_graph.is_some() %}
