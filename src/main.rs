@@ -8,7 +8,7 @@ use deploy::s3;
 use new::new;
 use serve::serve;
 use std::path::PathBuf;
-use validate::validate_data;
+use validate::{validate_data, validate_settings};
 
 mod build;
 mod deploy;
@@ -194,6 +194,9 @@ struct ValidateArgs {
 enum ValidateTarget {
     /// Validate landscape data file.
     Data(DataSource),
+
+    /// Validate landscape settings file.
+    Settings(SettingsSource),
 }
 
 #[tokio::main]
@@ -223,6 +226,7 @@ async fn main() -> Result<()> {
         Command::Serve(args) => serve(args).await?,
         Command::Validate(args) => match &args.target {
             ValidateTarget::Data(src) => validate_data(src).await?,
+            ValidateTarget::Settings(src) => validate_settings(src).await?,
         },
     }
 
