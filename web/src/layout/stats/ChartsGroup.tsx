@@ -28,6 +28,21 @@ interface DistributionData {
   year: number;
 }
 
+const rgba2hex = (rgba: string): string => {
+  return (
+    '#' +
+    rgba
+      .replace(/^rgba?\(|\s+|\)$/g, '')
+      .split(',')
+      .filter((_string, index) => index !== 3)
+      .map((string) => parseFloat(string))
+      .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
+      .map((number) => number.toString(16))
+      .map((string) => (string.length === 1 ? '0' + string : string))
+      .join('')
+  );
+};
+
 const ChartsGroup = (props: Props) => {
   const [areaSeries, setAreaSeries] = createSignal<AreaData[]>([]);
 
@@ -138,7 +153,8 @@ const ChartsGroup = (props: Props) => {
       },
       fill: {
         opacity: 0.5,
-        colors: ['#0086FF'], // Using css var breaks gradient
+        colors:
+          window.baseDS.colors && window.baseDS.colors.color1 ? [rgba2hex(window.baseDS.colors.color1)] : ['#0086FF'], // Using css var breaks gradient
       },
       xaxis: {
         type: 'datetime',
@@ -236,17 +252,17 @@ const ChartsGroup = (props: Props) => {
               {
                 from: 11,
                 to: 11,
-                color: '#a7bcd8',
+                color: '#d9d9d9',
               },
               {
                 from: 12,
                 to: 14,
-                color: '#6D90BE',
+                color: '#797979',
               },
               {
                 from: 15,
                 to: 100,
-                color: '#36485f',
+                color: '#303030',
               },
             ],
           },

@@ -3,8 +3,7 @@
   --bs-secondary: var(--color2);
   --color-font: #38383f;
 
-  --color-stats-1: #0086ff;
-  --color-stats-2: #567241;
+  --color-stats-1: var(--color1);
 
   .text-secondary {
     color: var(--color2) !important;

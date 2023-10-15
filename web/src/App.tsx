@@ -4,16 +4,15 @@ import './App.css';
 import { Route, Router, Routes } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
-import { createSignal, lazy, onMount } from 'solid-js';
+import { createSignal, onMount } from 'solid-js';
 
 import Layout from './layout';
 import Explore from './layout/explore';
 import Guide from './layout/guide';
 import NotFound from './layout/notFound';
+import Stats from './layout/stats';
 import itemsDataGetter from './utils/itemsDataGetter';
 import updateAlphaInColor from './utils/updateAlphaInColor';
-
-const Stats = lazy(() => import('./layout/stats'));
 
 // Colors
 let COLOR_1 = 'rgba(0, 107, 204, 1)';
