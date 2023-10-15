@@ -854,7 +854,7 @@ pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
 
         // Some checks specific to the url kind provided
         let check_domain = |domain: &str| {
-            if url.host_str().is_some_and(|host| !host.contains(domain)) {
+            if url.host_str().is_some_and(|host| !host.ends_with(domain)) {
                 return invalid_url(&format!("expecting https://{domain}/..."));
             }
             Ok(())

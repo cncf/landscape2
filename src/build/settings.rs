@@ -295,6 +295,7 @@ impl LandscapeSettings {
                     if rule.category.is_empty() {
                         return Err(format_err!("tag [{i}] category cannot be empty"));
                     }
+
                     // Subcategories
                     if let Some(subcategories) = &rule.subcategories {
                         if subcategories.is_empty() {
