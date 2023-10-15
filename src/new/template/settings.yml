@@ -181,11 +181,11 @@ social_networks:
 
 # TAGs (optional)
 #
-# Projects items can specify which TAG owns it in the `landscape.yml` file (by
-# using the `tag` field in the `extra` item's section). However, sometimes this
-# information is not available at the item level. This configuration section
-# provides a mechanism to automatically asign a TAG to projects items based on
-# the categories and subcategories they belong to.
+# Projects items can specify which TAG owns them in the `landscape.yml` file
+# (by using the `tag` field in the `extra` item's section). However, sometimes
+# this information is not available at the item level. This configuration
+# section provides a mechanism to automatically asign a TAG to projects items
+# based on the categories and subcategories they belong to.
 #
 # For example, we can define that all projects in the category <CATEGORY1> are
 # owned by <TAG1>. When the items are processed, the corresponding TAG will be

@@ -9,7 +9,7 @@ use self::{
     guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{Images, LandscapeSettings},
+    settings::Images,
 };
 use crate::{serve, BuildArgs, GuideSource, LogosSource, ServeArgs};
 use anyhow::{format_err, Context, Result};
@@ -25,6 +25,7 @@ use headless_chrome::{
 };
 use reqwest::StatusCode;
 use rust_embed::RustEmbed;
+pub(crate) use settings::LandscapeSettings;
 use std::{
     collections::HashMap,
     ffi::OsStr,
