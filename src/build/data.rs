@@ -853,27 +853,27 @@ pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
         }
 
         // Some checks specific to the url kind provided
+        let check_domain = |domain: &str| {
+            if url.host_str().is_some_and(|host| !host.ends_with(domain)) {
+                return invalid_url(&format!("expecting https://{domain}/..."));
+            }
+            Ok(())
+        };
         match kind {
             "crunchbase" => {
                 if !CRUNCHBASE_URL.is_match(url.as_str()) {
                     return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
                 }
             }
-            "stack_overflow" => {
-                if url.host_str().is_some_and(|host| !host.contains("stackoverflow.com")) {
-                    return invalid_url("invalid stack overflow url");
-                }
-            }
-            "twitter" => {
-                if url.host_str().is_some_and(|host| !host.contains("twitter.com")) {
-                    return invalid_url("expecting https://twitter.com/...");
-                }
-            }
-            "youtube" => {
-                if url.host_str().is_some_and(|host| !host.contains("youtube.com")) {
-                    return invalid_url("expecting https://youtube.com/...");
-                }
-            }
+            "facebook" => return check_domain("facebook.com"),
+            "flickr" => return check_domain("flickr.com"),
+            "github" => return check_domain("github.com"),
+            "instagram" => return check_domain("instagram.com"),
+            "linkedin" => return check_domain("linkedin.com"),
+            "stack_overflow" => return check_domain("stackoverflow.com"),
+            "twitch" => return check_domain("twitch.tv"),
+            "twitter" => return check_domain("twitter.com"),
+            "youtube" => return check_domain("youtube.com"),
             _ => {}
         }
     }
