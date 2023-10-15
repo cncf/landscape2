@@ -63,7 +63,7 @@ const ItemsList = (props: ItemsListProps) => {
       <div class={styles.items}>
         <For each={items()}>
           {(item: BaseItem | Item) => {
-            return <GridItem item={item} borderColor={props.borderColor} showMoreInfo />;
+            return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
           }}
         </For>
       </div>

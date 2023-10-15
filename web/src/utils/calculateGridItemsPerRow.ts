@@ -10,7 +10,7 @@ const calculateGridItemsPerRow = (
   noPadding?: boolean
 ): number => {
   const padding = !isUndefined(noPadding) && noPadding ? 0 : PADDING;
-  return Math.floor((containerWidth * (percentage / 100) - padding) / (itemWidth + CARD_GAP));
+  return Math.floor((containerWidth + CARD_GAP * (percentage / 100) - padding) / (itemWidth + CARD_GAP));
 };
 
 export default calculateGridItemsPerRow;

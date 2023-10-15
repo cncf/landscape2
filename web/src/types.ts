@@ -305,6 +305,7 @@ export enum SVGIconKind {
   MailingList,
   NotImage,
   OpenssfBestPractices,
+  PDF,
   Search,
   Security,
   Slack,

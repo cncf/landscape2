@@ -5,6 +5,10 @@
 
   --color-stats-1: var(--color1);
 
+  .text-primary {
+    color: var(--color1) !important;
+  }
+
   .text-secondary {
     color: var(--color2) !important;
   }
