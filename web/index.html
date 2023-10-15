@@ -9,7 +9,7 @@
     {% if datasets.base.images.open_graph.is_some() %}
     <link rel="apple-touch-icon" href="{{ datasets.base.images.open_graph.as_ref().unwrap() }}" />
     {% endif %}
-    <title>Landscape</title>
+    <title>{{ datasets.base.foundation }} Landscape</title>
     <% if (isDev) { %>
     <script>
       fetch("./static/base.json")

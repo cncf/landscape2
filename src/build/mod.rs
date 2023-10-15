@@ -33,9 +33,9 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     sync::Arc,
-    time::{Duration, Instant},
+    time::Instant,
 };
-use tokio::{sync::Mutex, time::sleep};
+use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument, warn};
 use url::Url;
 
@@ -507,10 +507,6 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     let tab = browser.new_tab()?;
     let screenshot_url = format!("http://{SVR_ADDR}");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
-
-    // Wait a bit more for all images to be rendered
-    // TODO (temporary fix until screenshot path is implemented)
-    sleep(Duration::from_secs(5)).await;
 
     // Take screenshot in PNG format and save it to a file
     let png_b64_data = tab
