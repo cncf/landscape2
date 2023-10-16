@@ -494,19 +494,21 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     });
 
     // Setup headless browser and navigate to screenshot url
+    const TIMEOUT: Duration = Duration::from_secs(180);
     let options = LaunchOptions {
-        sandbox: false,
-        window_size: Some((width, 500)),
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),
             OsStr::new("--headless=new"),
             OsStr::new("--hide-scrollbars"),
         ],
+        idle_browser_timeout: TIMEOUT,
+        sandbox: false,
+        window_size: Some((width, 500)),
         ..Default::default()
     };
     let browser = Browser::new(options)?;
     let tab = browser.new_tab()?;
-    tab.set_default_timeout(Duration::from_secs(300));
+    tab.set_default_timeout(TIMEOUT);
     let screenshot_url = format!("http://{SVR_ADDR}/screenshot");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
 
