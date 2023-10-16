@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 
 const PADDING = 18;
-const CARD_GAP = 6;
+const CARD_GAP = 5;
 
 const calculateGridItemsPerRow = (
   percentage: number,
