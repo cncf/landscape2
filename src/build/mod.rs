@@ -33,7 +33,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     sync::Arc,
-    time::Instant,
+    time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument, warn};
@@ -506,6 +506,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     };
     let browser = Browser::new(options)?;
     let tab = browser.new_tab()?;
+    tab.set_default_timeout(Duration::from_secs(300));
     let screenshot_url = format!("http://{SVR_ADDR}/screenshot");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
 
