@@ -1,7 +1,3 @@
-import 'highlight.js/styles/stackoverflow-light.css';
-
-import Highlight from 'solid-highlight';
-
 import ButtonCopyToClipboard from './ButtonCopyToClipboard';
 import styles from './CodeBlock.module.css';
 
@@ -15,10 +11,10 @@ interface Props {
 
 const CodeBlock = (props: Props) => {
   return (
-    <div class={`d-flex flex-row align-items-center pb-2 ${styles.codeBlock}`}>
-      <Highlight class="p-3" autoDetect={false} language={props.language}>
-        {props.content}
-      </Highlight>
+    <div class="d-flex flex-row align-items-center pb-2">
+      <pre class={styles.pre}>
+        <code class={`p-3 d-block overflow-x-auto ${styles.code}`}>{props.content}</code>
+      </pre>
 
       {props.withCopyBtn && (
         <ButtonCopyToClipboard
