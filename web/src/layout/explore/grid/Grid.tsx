@@ -1,7 +1,8 @@
+import { createResizeObserver } from '@solid-primitives/resize-observer';
 import { A } from '@solidjs/router';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, Show } from 'solid-js';
+import { createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
@@ -39,35 +40,54 @@ interface ItemsListProps {
   borderColor: string;
 }
 
+interface WrapperSize {
+  width: number;
+  height: number;
+}
+
 const ItemsList = (props: ItemsListProps) => {
-  const gridWidth = useGridWidth();
   const zoom = useZoomLevel();
+  let ref!: HTMLDivElement;
   const [items, setItems] = createSignal<(BaseItem | Item)[]>([]);
+  const [size, setSize] = createSignal<WrapperSize>();
 
-  createEffect(() => {
-    const itemsPerRow = calculateGridItemsPerRow(props.percentage, gridWidth(), ZOOM_LEVELS[zoom()][0]);
-    const tmpItems: (BaseItem | Item)[] = [];
+  createEffect(
+    on(size, () => {
+      if (!isUndefined(size()) && size()!.width > 0) {
+        setItems((prev) => {
+          const itemsPerRow = calculateGridItemsPerRow(100, size()!.width, ZOOM_LEVELS[zoom()][0], true);
+          const tmpItems: (BaseItem | Item)[] = [];
 
-    for (const item of new ItemIterator(props.items, itemsPerRow! <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow!)) {
-      if (item) {
-        tmpItems.push(item);
+          for (const item of new ItemIterator(props.items, itemsPerRow! <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow!)) {
+            if (item) {
+              tmpItems.push(item);
+            }
+          }
+
+          return !isEqual(tmpItems, prev) ? tmpItems : prev;
+        });
       }
-    }
-    if (!isEqual(tmpItems, items())) {
-      setItems(tmpItems);
-    }
+    })
+  );
+
+  onMount(() => {
+    createResizeObserver(ref, ({ width, height }, el) => {
+      if (el === ref) {
+        setSize({ width: width, height: height });
+      }
+    });
   });
 
   return (
-    <Show when={items().length > 0}>
-      <div class={styles.items}>
+    <div ref={ref} class={styles.items}>
+      <Show when={items().length > 0}>
         <For each={items()}>
           {(item: BaseItem | Item) => {
             return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
           }}
         </For>
-      </div>
-    </Show>
+      </Show>
+    </div>
   );
 };
 
