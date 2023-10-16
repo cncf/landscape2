@@ -15,6 +15,7 @@ interface Props {
 
 const Screenshots = (props: Props) => {
   const [groupsData, setGroupsData] = createSignal<GroupData>();
+  const groups = () => props.initialData.groups || [{ name: 'default', categories: props.initialData.categories }];
 
   onMount(() => {
     setGroupsData(prepareData(props.initialData, props.initialData.items));
@@ -24,15 +25,17 @@ const Screenshots = (props: Props) => {
     <>
       <main class="flex-grow-1 container-fluid d-none d-lg-block px-4 position-relative">
         <Show when={!isUndefined(groupsData())}>
-          <For each={props.initialData.groups}>
+          <For each={groups()}>
             {(group) => {
               const colorsList = () => generateColorsArray(group.categories.length);
               const groupData = groupsData()![group.name];
 
               return (
                 <div class={styles.group}>
-                  <div class={`fw-bold text-uppercase ${styles.title}`}>{group.name}</div>
-                  <For each={group.categories}>
+                  <Show when={!isUndefined(props.initialData.groups)}>
+                    <div class={`fw-bold text-uppercase ${styles.title}`}>{group.name}</div>
+                  </Show>
+                  <For each={Object.keys(groupData)}>
                     {(cat, index) => {
                       const isOverriden =
                         !isUndefined(props.initialData.categories_overridden) &&
