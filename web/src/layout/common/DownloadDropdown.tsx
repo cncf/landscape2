@@ -9,50 +9,80 @@ import SVGIcon from './SVGIcon';
 
 enum DocType {
   Items = 'items',
+  Landscape = 'landscape',
   Projects = 'projects',
 }
 
-interface CSVDownloading {
+enum Format {
+  CSV = 'csv',
+  PDF = 'pdf',
+}
+
+interface DocTypeDownloading {
   doc: DocType;
 }
+
+const contentType = {
+  [Format.CSV]: 'text/csv;charset=UTF-8',
+  [Format.PDF]: 'application/pdf',
+};
+
+const contentBlob = {
+  [Format.CSV]: 'text/csv',
+  [Format.PDF]: 'application/pdf',
+};
 
 const DownloadDropdown = () => {
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
-  const [downloadingCSV, setDownloadingCSV] = createSignal<CSVDownloading | undefined>();
+  const [downloadingFile, setDownloadingFile] = createSignal<DocTypeDownloading | undefined>();
   useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
 
-  const downloadCSV = (doc: DocType) => {
-    async function getCSV() {
+  const downloadFile = (doc: DocType, format: Format) => {
+    async function getFile() {
       try {
-        setDownloadingCSV({ doc: doc });
-        fetch(import.meta.env.MODE === 'development' ? `../../static/docs/${doc}.csv` : `./docs/${doc}.csv`, {
-          method: 'get',
-          headers: {
-            'content-type': 'text/csv;charset=UTF-8',
-          },
-        })
-          .then((response) => response.text())
-          .then((csv) => {
-            const blob = new Blob([csv], {
-              type: 'text/csv',
-            });
+        setDownloadingFile({ doc: doc });
+        fetch(
+          import.meta.env.MODE === 'development' ? `../../static/docs/${doc}.${format}` : `./docs/${doc}.${format}`,
+          {
+            method: 'get',
+            headers: {
+              'content-type': contentType[format],
+            },
+          }
+        )
+          .then(async (response) => {
+            if (response.ok) {
+              if (format === Format.PDF) {
+                return response.blob();
+              } else {
+                const data = await response.text();
+                const blob = new Blob([data], {
+                  type: contentBlob[format],
+                });
+                return blob;
+              }
+            } else {
+              throw Error;
+            }
+          })
+          .then((blob) => {
             const link: HTMLAnchorElement = document.createElement('a');
-            link.download = `${doc}.csv`;
+            link.download = `${doc}.${format}`;
             link.href = window.URL.createObjectURL(blob);
             link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
-            setDownloadingCSV();
+            setDownloadingFile();
             setVisibleDropdown(false);
           });
       } catch {
         // TODO - error downloading
-        setDownloadingCSV();
+        setDownloadingFile();
         setVisibleDropdown(false);
       }
     }
-    getCSV();
+    getFile();
   };
 
   return (
@@ -78,6 +108,37 @@ const DownloadDropdown = () => {
         <div class={`d-block position-absolute ${styles.arrow}`} />
         <ul class={`m-0 p-0 ${styles.menuList}`}>
           <li>
+            <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
+          </li>
+          <li>
+            <button
+              class="dropdown-item py-3 border-top"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                downloadFile(DocType.Landscape, Format.PDF);
+              }}
+            >
+              <div class="d-flex flex-row align-items-start">
+                <div class="me-3 position-relative">
+                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Landscape}>
+                    <div class={`position-absolute ${styles.spinner}`}>
+                      <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </Show>
+                  <SVGIcon class={styles.icon} kind={SVGIconKind.PDF} />
+                </div>
+                <div class={styles.contentBtn}>
+                  <div class="fw-semibold mb-2">landscape.pdf</div>
+                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in pdf format</div>
+                </div>
+              </div>
+            </button>
+          </li>
+          <li>
             <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>
           </li>
           <li>
@@ -87,12 +148,12 @@ const DownloadDropdown = () => {
                 e.stopPropagation();
                 e.preventDefault();
 
-                downloadCSV(DocType.Items);
+                downloadFile(DocType.Items, Format.CSV);
               }}
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
-                  <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Items}>
+                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Items}>
                     <div class={`position-absolute ${styles.spinner}`}>
                       <div class="spinner-border text-secondary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -117,12 +178,12 @@ const DownloadDropdown = () => {
                 e.stopPropagation();
                 e.preventDefault();
 
-                downloadCSV(DocType.Projects);
+                downloadFile(DocType.Projects, Format.CSV);
               }}
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
-                  <Show when={!isUndefined(downloadingCSV()) && downloadingCSV()!.doc === DocType.Projects}>
+                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Projects}>
                     <div class={`position-absolute ${styles.spinner}`}>
                       <div class="spinner-border text-secondary" role="status">
                         <span class="visually-hidden">Loading...</span>

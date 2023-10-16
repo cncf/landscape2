@@ -110,7 +110,7 @@ const ZoomModal = () => {
                     <div class={styles.grid}>
                       <For each={sortItemsByOrderValue(items()!)}>
                         {(item: BaseItem | Item) => {
-                          return <GridItem item={item} borderColor={COLORS[0]} showMoreInfo={false} />;
+                          return <GridItem item={item} borderColor={COLORS[0]} showMoreInfo={false} activeDropdown />;
                         }}
                       </For>
                     </div>

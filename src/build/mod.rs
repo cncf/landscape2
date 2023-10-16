@@ -499,13 +499,14 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
         window_size: Some((width, 500)),
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),
+            OsStr::new("--headless=new"),
             OsStr::new("--hide-scrollbars"),
         ],
         ..Default::default()
     };
     let browser = Browser::new(options)?;
     let tab = browser.new_tab()?;
-    let screenshot_url = format!("http://{SVR_ADDR}");
+    let screenshot_url = format!("http://{SVR_ADDR}/screenshot");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
 
     // Take screenshot in PNG format and save it to a file

@@ -1,0 +1,41 @@
+.catTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  width: 3rem;
+  font-size: 0.7rem;
+  padding: 1rem 0rem;
+}
+
+.catTitleText {
+  max-height: 120px;
+}
+
+.subcatTitle {
+  font-size: 0.65rem;
+  height: 1.5rem;
+  padding: 0 0.75rem;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.items {
+  --card-size-width: 65px;
+  --card-size-height: 59px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--card-size-width));
+  grid-auto-rows: var(--card-size-height);
+  gap: var(--card-gap);
+}
+
+.itemsContainer {
+  background-color: #fdfdfe;
+  padding: 12px;
+}

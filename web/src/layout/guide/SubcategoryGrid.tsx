@@ -44,7 +44,7 @@ const SubcategoryGrid = (props: Props) => {
           const itemsPerRow = calculateGridItemsPerRow(100, containerWidth(), 75, true);
           for (const item of new ItemIterator(props.items!, itemsPerRow)) {
             if (item) {
-              items.push(<GridItem item={item} borderColor={COLORS[0]} showMoreInfo />);
+              items.push(<GridItem item={item} borderColor={COLORS[0]} showMoreInfo activeDropdown />);
             }
           }
           return items;

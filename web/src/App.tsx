@@ -10,6 +10,7 @@ import Layout from './layout';
 import Explore from './layout/explore';
 import Guide from './layout/guide';
 import NotFound from './layout/notFound';
+import Screenshots from './layout/screenshots';
 import Stats from './layout/stats';
 import itemsDataGetter from './utils/itemsDataGetter';
 import updateAlphaInColor from './utils/updateAlphaInColor';
@@ -68,6 +69,7 @@ const App = () => {
           <Route path="/" element={<Explore initialData={data()} />} />
           <Route path="/guide" element={<Guide />} />
           <Route path="/stats" element={<Stats />} />
+          <Route path="/screenshot" element={<Screenshots initialData={data()} />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
