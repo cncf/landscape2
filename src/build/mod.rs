@@ -33,7 +33,7 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     sync::Arc,
-    time::Instant,
+    time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument, warn};
@@ -495,11 +495,11 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 
     // Setup headless browser and navigate to screenshot url
     let options = LaunchOptions {
+        idle_browser_timeout: Duration::from_secs(120),
         sandbox: false,
         window_size: Some((width, 500)),
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),
-            OsStr::new("--headless=new"),
             OsStr::new("--hide-scrollbars"),
         ],
         ..Default::default()
