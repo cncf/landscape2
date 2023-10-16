@@ -1,4 +1,8 @@
-.codeBlock pre {
+.pre {
   overscroll-behavior: contain;
   margin-bottom: 0;
+}
+
+.code {
+  background-color: var(--bs-gray-200);
 }

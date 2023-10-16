@@ -133,7 +133,7 @@ const DownloadDropdown = () => {
                 </div>
                 <div class={styles.contentBtn}>
                   <div class="fw-semibold mb-2">landscape.pdf</div>
-                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in pdf format</div>
+                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in PDF format</div>
                 </div>
               </div>
             </button>

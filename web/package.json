@@ -22,7 +22,6 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "solid-apexcharts": "^0.3.2",
-    "solid-highlight": "^0.1.12",
     "solid-js": "^1.8.0",
     "yarn": "^1.22.19"
   },
