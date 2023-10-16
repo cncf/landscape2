@@ -16,20 +16,24 @@ enum DocType {
 enum Format {
   CSV = 'csv',
   PDF = 'pdf',
+  PNG = 'png',
 }
 
 interface DocTypeDownloading {
   doc: DocType;
+  format: Format;
 }
 
 const contentType = {
   [Format.CSV]: 'text/csv;charset=UTF-8',
   [Format.PDF]: 'application/pdf',
+  [Format.PNG]: 'image/x-png',
 };
 
 const contentBlob = {
   [Format.CSV]: 'text/csv',
   [Format.PDF]: 'application/pdf',
+  [Format.PNG]: 'image/png',
 };
 
 const DownloadDropdown = () => {
@@ -41,7 +45,7 @@ const DownloadDropdown = () => {
   const downloadFile = (doc: DocType, format: Format) => {
     async function getFile() {
       try {
-        setDownloadingFile({ doc: doc });
+        setDownloadingFile({ doc: doc, format: format });
         fetch(
           import.meta.env.MODE === 'development' ? `../../static/docs/${doc}.${format}` : `./docs/${doc}.${format}`,
           {
@@ -53,7 +57,7 @@ const DownloadDropdown = () => {
         )
           .then(async (response) => {
             if (response.ok) {
-              if (format === Format.PDF) {
+              if ([Format.PDF, Format.PNG].includes(format)) {
                 return response.blob();
               } else {
                 const data = await response.text();
@@ -122,7 +126,13 @@ const DownloadDropdown = () => {
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
-                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Landscape}>
+                  <Show
+                    when={
+                      !isUndefined(downloadingFile()) &&
+                      downloadingFile()!.doc === DocType.Items &&
+                      downloadingFile()!.format === Format.PDF
+                    }
+                  >
                     <div class={`position-absolute ${styles.spinner}`}>
                       <div class="spinner-border text-secondary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -134,6 +144,40 @@ const DownloadDropdown = () => {
                 <div class={styles.contentBtn}>
                   <div class="fw-semibold mb-2">landscape.pdf</div>
                   <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in PDF format</div>
+                </div>
+              </div>
+            </button>
+          </li>
+          <li>
+            <button
+              class="dropdown-item py-3 border-top"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+
+                downloadFile(DocType.Landscape, Format.PNG);
+              }}
+            >
+              <div class="d-flex flex-row align-items-start">
+                <div class="me-3 position-relative">
+                  <Show
+                    when={
+                      !isUndefined(downloadingFile()) &&
+                      downloadingFile()!.doc === DocType.Landscape &&
+                      downloadingFile()!.format === Format.PNG
+                    }
+                  >
+                    <div class={`position-absolute ${styles.spinner}`}>
+                      <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </Show>
+                  <SVGIcon class={styles.icon} kind={SVGIconKind.PNG} />
+                </div>
+                <div class={styles.contentBtn}>
+                  <div class="fw-semibold mb-2">landscape.png</div>
+                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in PNG format</div>
                 </div>
               </div>
             </button>
