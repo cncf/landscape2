@@ -8,7 +8,8 @@ on:
 jobs:
   build-landscape2-image:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on:
+      labels: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
