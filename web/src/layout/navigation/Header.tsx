@@ -31,7 +31,22 @@ const Header = (props: Props) => {
           </A>
         </div>
 
-        <Show when={location.pathname !== '/screenshot'}>
+        <Show
+          when={location.pathname !== '/screenshot'}
+          fallback={
+            <Show when={!isUndefined(window.baseDS.qr_code)}>
+              <img
+                class={styles.qr}
+                alt="QR code"
+                src={
+                  import.meta.env.MODE === 'development'
+                    ? `../../static/${window.baseDS.qr_code}`
+                    : window.baseDS.qr_code
+                }
+              />
+            </Show>
+          }
+        >
           <div class="d-none d-md-flex align-items-center">
             <A
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}

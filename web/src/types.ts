@@ -14,6 +14,7 @@ export interface BaseData {
   categories_overridden?: string[];
   items: BaseItem[];
   members_category?: string;
+  qr_code?: string;
   social_networks?: {
     facebook?: string;
     flickr?: string;
