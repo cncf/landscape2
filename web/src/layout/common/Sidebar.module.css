@@ -1,0 +1,49 @@
+.sidebar {
+  transition: all 0.15s linear;
+  -webkit-transition: all 0.15s linear;
+  z-index: 1050;
+  background-color: var(--bs-body-bg);
+  width: 75%;
+  min-width: 260px;
+  max-width: 310px;
+}
+
+.left {
+  left: 0;
+  -webkit-transform: translateX(-105%);
+  transform: translateX(-105%);
+  box-shadow: 5px 0px 5px 0px rgba(0, 0, 0, 0.25);
+}
+
+.right {
+  right: 0;
+  -webkit-transform: translateX(105%);
+  transform: translateX(105%);
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.25);
+}
+
+.active {
+  -webkit-transform: none;
+  transform: none;
+}
+
+.closeBtn {
+  font-size: 0.75rem;
+}
+
+.activeBackdrop {
+  animation: fadeIn50 0.15s 1 ease-in-out forwards;
+}
+
+.contentWrapper {
+  min-height: 0;
+}
+
+@keyframes fadeIn50 {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.5;
+  }
+}

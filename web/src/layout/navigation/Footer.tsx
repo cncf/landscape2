@@ -14,80 +14,84 @@ interface Props {
 const Footer = (props: Props) => {
   const renderSocialNetworkLinks = (): JSXElement => {
     return (
-      <div class={`d-flex flex-row ${styles.socialIcons}`}>
-        {!isUndefined(window.baseDS.social_networks?.twitter) && (
+      <div class={`d-flex flex-row flex-wrap ${styles.socialIcons}`}>
+        <Show when={!isUndefined(window.baseDS.social_networks?.twitter)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.twitter as string}>
             <SVGIcon kind={SVGIconKind.Twitter} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.github) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.github)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.github as string}>
             <SVGIcon kind={SVGIconKind.GitHub} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.linkedin) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.linkedin)}>
           <ExternalLink
             class={`me-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.linkedin as string}
           >
             <SVGIcon kind={SVGIconKind.LinkedIn} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.instagram) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.instagram)}>
           <ExternalLink
             class={`me-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.instagram as string}
           >
             <SVGIcon kind={SVGIconKind.Instagram} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.wechat) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.wechat)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.wechat as string}>
             <SVGIcon kind={SVGIconKind.WeChat} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.youtube) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.youtube)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.youtube as string}>
             <SVGIcon kind={SVGIconKind.Youtube} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.flickr) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.flickr)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.flickr as string}>
             <SVGIcon kind={SVGIconKind.Flickr} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.facebook) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.facebook)}>
           <ExternalLink
             class={`me-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.facebook as string}
           >
             <SVGIcon kind={SVGIconKind.Facebook} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.twitch) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.twitch)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.twitch as string}>
             <SVGIcon kind={SVGIconKind.Twitch} />
           </ExternalLink>
-        )}
-        {!isUndefined(window.baseDS.social_networks?.slack) && (
+        </Show>
+        <Show when={!isUndefined(window.baseDS.social_networks?.slack)}>
           <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.slack as string}>
             <SVGIcon kind={SVGIconKind.Slack} />
           </ExternalLink>
-        )}
+        </Show>
       </div>
     );
   };
 
   return (
     <footer role="contentinfo" class={`bg-black text-white mt-4 ${styles.footer}`}>
-      <div class="container-fluid">
+      <div class="container-fluid px-0 px-lg-auto">
         <div class="d-flex flex-column flex-sm-row justify-content-between">
           <div class="d-flex flex-column">
             <div class="d-flex flex-row align-items-top justify-content-between">
-              {(!isUndefined(props.logo) ||
-                (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))) && (
-                <div class="d-flex flex-row justify-content-start align-items-center mb-5">
-                  {!isUndefined(window.baseDS.images.footer_logo) && (
+              <Show
+                when={
+                  !isUndefined(props.logo) ||
+                  (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))
+                }
+              >
+                <div class="d-flex flex-column flex-lg-row justify-content-start align-items-lg-center mb-3 mb-lg-5">
+                  <Show when={!isUndefined(window.baseDS.images.footer_logo)}>
                     <div class={styles.logoWrapper}>
                       <img
                         class={styles.logo}
@@ -97,10 +101,10 @@ const Footer = (props: Props) => {
                         width="auto"
                       />
                     </div>
-                  )}
-                  {renderSocialNetworkLinks()}
+                  </Show>
+                  <div class="mt-3 mt-lg-0 mw-100">{renderSocialNetworkLinks()}</div>
                 </div>
-              )}
+              </Show>
               <Show when={!isUndefined(window.baseDS.qr_code)}>
                 <img
                   class={styles.qr}
@@ -115,7 +119,7 @@ const Footer = (props: Props) => {
                 />
               </Show>
             </div>
-            <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
+            <div class="d-flex flex-column flex-md-row flex-wrap align-items-stretch justify-content-start text-light">
               <div class={styles.footerCol}>
                 <div class="h6 fw-bold text-uppercase">Project</div>
                 <div class="d-flex flex-column text-start">

@@ -13,7 +13,7 @@ import GridItem from '../../explore/grid/GridItem';
 import { useFullDataReady } from '../../stores/fullData';
 import { useSetVisibleZoom, useVisibleZoom } from '../../stores/visibleZoomSection';
 import FullScreenModal from '../FullScreenModal';
-import { Loading } from '../Loading';
+import Loading from '../Loading';
 import styles from './ZoomModal.module.css';
 
 const GAP = 96 + 40; // Padding | Title

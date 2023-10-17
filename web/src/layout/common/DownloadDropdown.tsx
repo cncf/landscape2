@@ -1,5 +1,4 @@
-// import BadgeModal from './BadgeModal';
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
 import { useOutsideClick } from '../../hooks/useOutsideClick';
@@ -92,7 +91,6 @@ const DownloadDropdown = () => {
   return (
     <div ref={setRef} class="ms-2 position-relative">
       <button
-        data-testid="dropdown-btn"
         type="button"
         class={`btn btn-md p-0 rounded-0 lh-1 ${styles.btn}`}
         onClick={(e) => {

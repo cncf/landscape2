@@ -6,8 +6,8 @@ import { BaseItem, Item } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
 import { useFullDataReady } from '../stores/fullData';
+import styles from './SubcategoryExtended.module.css';
 import SubcategoryGrid from './SubcategoryGrid';
-import styles from './Table.module.css';
 
 interface Props {
   keywords?: string[];
@@ -44,7 +44,7 @@ const SubcategoryExtended = (props: Props) => {
   return (
     <>
       <Show when={!isUndefined(itemsInTable()) || !isUndefined(props.keywords)}>
-        <table class="table table-bordered my-5">
+        <table class="table table-bordered mt-3 mb-4 my-lg-5">
           <thead>
             <tr>
               <th class={`w-50 ${styles.header}`} scope="col">
@@ -58,7 +58,7 @@ const SubcategoryExtended = (props: Props) => {
           <tbody class={styles.content}>
             <tr>
               <td class="py-4">
-                {!isUndefined(items) ? (
+                <Show when={!isUndefined(itemsInTable()) && itemsInTable()!.length > 0} fallback={'-'}>
                   <ul class="mb-0 text-muted">
                     <For each={itemsInTable()}>
                       {(item: Item) => {
@@ -70,9 +70,7 @@ const SubcategoryExtended = (props: Props) => {
                       }}
                     </For>
                   </ul>
-                ) : (
-                  '-'
-                )}
+                </Show>
               </td>
 
               <td class="py-4">

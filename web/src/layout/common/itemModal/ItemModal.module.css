@@ -165,6 +165,10 @@
   font-size: 0.8rem;
 }
 
+.modalBody {
+  padding: 1.5rem;
+}
+
 @media (min-width: 1200px) {
   .highlightedTitle {
     font-size: 2.5rem;
@@ -175,5 +179,18 @@
   .modalDialog {
     width: 95%;
     max-width: 95%;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .modalDialog {
+    width: 95%;
+    min-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem) !important;
+    margin: 0.75em auto !important;
+  }
+
+  .modalBody {
+    padding: 0.75rem;
   }
 }

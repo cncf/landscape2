@@ -36,3 +36,33 @@
 .loadingContent {
   min-height: calc(100vh - 92px - 36px);
 }
+
+.mobileMenuBtn {
+  height: 28px;
+}
+
+.mobileMenuBtn svg {
+  margin-top: -2px;
+}
+
+.select {
+  max-width: 400px;
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
+  margin: 0 0.2rem;
+}
+
+.select:focus {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+}
+
+.mobileToCBtn svg {
+  margin-top: -2px;
+}
+
+@media (max-width: 991.98px) {
+  .btnGroup :global(.btn) {
+    font-size: 0.9rem;
+    min-width: 35px;
+    min-height: 35px;
+  }
+}

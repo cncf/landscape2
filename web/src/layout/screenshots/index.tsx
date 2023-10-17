@@ -1,5 +1,5 @@
-import { isUndefined } from 'lodash';
-import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
+import isUndefined from 'lodash/isUndefined';
+import { createSignal, For, onMount, Show } from 'solid-js';
 
 import { BaseData } from '../../types';
 import generateColorsArray from '../../utils/generateColorsArray';
@@ -18,18 +18,12 @@ const Screenshots = (props: Props) => {
   const groups = () => props.initialData.groups || [{ name: 'default', categories: props.initialData.categories }];
 
   onMount(() => {
-    // This class enables scroll in body to capture the full screenshot
-    document.body.classList.add('screenshot');
     setGroupsData(prepareData(props.initialData, props.initialData.items));
-  });
-
-  onCleanup(() => {
-    document.body.classList.remove('screenshot');
   });
 
   return (
     <>
-      <main class="flex-grow-1 container-fluid d-none d-lg-block px-4 position-relative">
+      <main class="flex-grow-1 container-fluid px-3 px-lg-4 position-relative">
         <Show when={!isUndefined(groupsData())}>
           <For each={groups()}>
             {(group) => {

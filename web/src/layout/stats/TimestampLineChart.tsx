@@ -90,6 +90,32 @@ const TimestampLineChart = (props: Props) => {
           },
         },
       },
+      responsive: [
+        {
+          breakpoint: 576,
+          options: {
+            chart: {
+              toolbar: {
+                show: false,
+              },
+            },
+            markers: {
+              size: [3],
+              strokeWidth: 1,
+            },
+            stroke: {
+              width: [2],
+            },
+            yaxis: {
+              labels: {
+                formatter: (val: number): string => {
+                  return prettifyNumber(val) as string;
+                },
+              },
+            },
+          },
+        },
+      ],
     };
   };
 

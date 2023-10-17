@@ -56,8 +56,47 @@
   opacity: 1;
 }
 
+/* Sticky nav */
+.stickyNav {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.stickyNav > div {
+  min-width: 28px;
+}
+
+.mobileBtn {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 1rem;
+}
+
+.mobileBtn svg {
+  margin-top: -2px;
+}
+
+@media only screen and (max-width: 1199.98px) {
+  .link {
+    margin-left: 1.5rem;
+  }
+}
+
 @media only screen and (max-width: 991.98px) {
   .link {
     font-size: 0.9rem;
+  }
+
+  .logo {
+    height: 35px;
+  }
+
+  .logoWrapper,
+  .searchWrapper {
+    width: calc(100% - 0.4rem);
+  }
+
+  .searchWrapper {
+    margin: 0 0.2rem;
+    margin-bottom: 0.3rem;
   }
 }

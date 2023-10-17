@@ -24,3 +24,21 @@
   line-height: 0.7rem;
   padding-bottom: 0.75rem;
 }
+
+@media only screen and (max-width: 767.98px) {
+  .box {
+    width: 145px;
+    max-width: 145px;
+    margin: 0 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .data {
+    font-size: 1.75rem;
+    line-height: 2rem;
+  }
+
+  .label {
+    font-size: 0.75rem;
+  }
+}

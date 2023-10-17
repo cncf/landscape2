@@ -1,0 +1,43 @@
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--card-size-width));
+  grid-auto-rows: 65px;
+  gap: var(--card-gap);
+}
+
+.card:global(.whithoutRepo) {
+  background-color: #f6f7f9;
+}
+
+.cardContent {
+  padding: 0.2rem;
+  vertical-align: top;
+}
+
+.logo {
+  font-size: calc(var(--card-size-height) / 1.5);
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+@media only screen and (max-width: 575.98px) {
+  .items {
+    grid-auto-rows: 60px;
+  }
+}
+
+@media only screen and (max-width: 300px) {
+  .items {
+    grid-auto-rows: 50px;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .items {
+    --card-size-width: 75px;
+    --card-size-height: 68px;
+
+    grid-auto-rows: var(--card-size-height);
+  }
+}

@@ -4,7 +4,7 @@ import sortBy from 'lodash/sortBy';
 import { Accessor, createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
 import { ActiveFilters, FilterCategory, FilterOption, FilterSection, SVGIconKind } from '../../../types';
-import { CheckBox } from '../../common/Checkbox';
+import CheckBox from '../../common/Checkbox';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './SearchbarSection.module.css';
 
@@ -132,25 +132,24 @@ const SearchbarSection = (props: Props) => {
 
   return (
     <Show when={!isUndefined(props.section)}>
-      <div class="col-4">
+      <div class="col-12 col-sm-6 col-lg-4">
         <div class="d-flex flex-column h-100">
           <div class="d-flex flex-row align-items-center pb-2">
             <small class={`fw-semibold me-2 ${styles.title}`}>{props.title || props.section!.title}</small>
-            {activeFilters().length > 0 && (
+            <Show when={activeFilters().length > 0}>
               <button
                 class={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
                 onClick={() => props.resetFilter(props.section?.value as FilterCategory)}
               >
                 (reset)
               </button>
-            )}
+            </Show>
           </div>
-          <div class="postion-relative w-100 border flex-grow-1">
+          <div class={`postion-relative w-100 flex-grow-1 ${styles.section}`}>
             <div
               class={`d-flex align-items-center overflow-hidden position-relative searchBar lh-base bg-white ${styles.searchBar} search`}
             >
               <input
-                data-testid="search-bar"
                 ref={setInputEl}
                 class={`flex-grow-1 border-0 shadow-none bg-transparent lh-base ps-2 ${styles.input}`}
                 placeholder={props.placeholder || 'Search'}
@@ -189,7 +188,7 @@ const SearchbarSection = (props: Props) => {
             </div>
 
             <div class={`overflow-auto ${styles.list} visibleScroll`} role="listbox">
-              <div class="py-2 px-3">
+              <div class="py-2 px-0 px-sm-3">
                 <Show
                   when={visibleOptions().length > 0}
                   fallback={
@@ -204,7 +203,7 @@ const SearchbarSection = (props: Props) => {
                         <CheckBox
                           name={props.section?.value as string}
                           value={opt.value}
-                          labelClass="mw-100 text-muted"
+                          labelClass={`mw-100 text-muted ${styles.label}`}
                           class="my-1"
                           label={opt.name}
                           checked={activeFilters().includes(opt.value)}

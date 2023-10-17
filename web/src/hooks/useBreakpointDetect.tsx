@@ -23,7 +23,7 @@ const getDeviceConfig = (width: number): Breakpoint | undefined => {
 };
 
 function useBreakpointDetect(): {
-  point: Accessor<string | undefined>;
+  point: Accessor<Breakpoint | undefined>;
 } {
   const [point, setPoint] = createSignal(getDeviceConfig(window.innerWidth));
   const size = createWindowSize();

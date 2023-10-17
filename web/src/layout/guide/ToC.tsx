@@ -7,14 +7,17 @@ import styles from './ToC.module.css';
 
 interface Props {
   toc: ToCTitle[];
+  sticky: boolean;
   activeTitle?: string;
   updateActiveTitle: (activeTitle: string) => void;
+  onClickOption?: () => void;
 }
 
 interface OptionProps {
   option: ToCTitle;
   level: number;
   updateActiveTitle: (activeTitle: string) => void;
+  onClickOption?: () => void;
 }
 
 const ToCOption = (props: OptionProps) => {
@@ -33,6 +36,9 @@ const ToCOption = (props: OptionProps) => {
         }}
         onClick={() => {
           props.updateActiveTitle(props.option.id);
+          if (!isUndefined(props.onClickOption)) {
+            props.onClickOption();
+          }
         }}
       >
         {props.option.title}
@@ -41,7 +47,14 @@ const ToCOption = (props: OptionProps) => {
         <div class="mb-3">
           <For each={props.option.options}>
             {(el: ToCTitle) => {
-              return <ToCOption option={el} level={props.level + 1} updateActiveTitle={props.updateActiveTitle} />;
+              return (
+                <ToCOption
+                  option={el}
+                  level={props.level + 1}
+                  updateActiveTitle={props.updateActiveTitle}
+                  onClickOption={props.onClickOption}
+                />
+              );
             }}
           </For>
         </div>
@@ -52,13 +65,25 @@ const ToCOption = (props: OptionProps) => {
 
 const ToC = (props: Props) => {
   return (
-    <div class={`sticky-top ${styles.toc}`}>
-      <div class={`border border-1 m-4 ms-0 rounded-0 offcanvas-body overflow-hidden ${styles.wrapper}`}>
-        <div class={`fs-6 text-uppercase fw-bold border-bottom px-4 py-3 ${styles.title}`}>Index</div>
+    <div classList={{ [`sticky-top ${styles.sticky}`]: props.sticky }}>
+      <div
+        class="overflow-hidden"
+        classList={{ [`border border-1 m-4 ms-0 rounded-0 offcanvas-body ${styles.wrapper}`]: props.sticky }}
+      >
+        <Show when={props.sticky}>
+          <div class={`fs-6 text-uppercase fw-bold border-bottom px-4 py-3 ${styles.title}`}>Index</div>
+        </Show>
         <div id="menu" class={`overflow-auto py-3 ${styles.content}`}>
           <For each={props.toc}>
             {(el: ToCTitle) => {
-              return <ToCOption option={el} level={0} updateActiveTitle={props.updateActiveTitle} />;
+              return (
+                <ToCOption
+                  option={el}
+                  level={0}
+                  updateActiveTitle={props.updateActiveTitle}
+                  onClickOption={props.onClickOption}
+                />
+              );
             }}
           </For>
         </div>

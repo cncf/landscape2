@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, createEffect, createSignal, For } from 'solid-js';
+import { Accessor, createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu, SVGIconKind } from '../../../types';
@@ -12,6 +12,8 @@ import styles from './Menu.module.css';
 interface Props {
   menu: Accessor<CardMenu>;
   isVisible: boolean;
+  sticky: boolean;
+  onClickOption?: () => void;
 }
 
 const Menu = (props: Props) => {
@@ -24,7 +26,7 @@ const Menu = (props: Props) => {
   createEffect(() => {
     if (props.isVisible) {
       if (!isUndefined(ref())) {
-        if (ref()!.clientHeight > document.getElementById('landscape')!.clientHeight) {
+        if (ref()!.clientHeight > window.innerHeight) {
           setOffsetActive(true);
         } else {
           setOffsetActive(false);
@@ -42,8 +44,8 @@ const Menu = (props: Props) => {
   };
 
   return (
-    <div class={`d-flex flex-column me-4 sticky-top ${styles.toc}`}>
-      <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() }}>
+    <div class={`d-flex flex-column ${styles.toc}`} classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}>
+      <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
         <div ref={setRef}>
           <For each={Object.keys(props.menu())}>
             {(cat, index) => {
@@ -79,13 +81,16 @@ const Menu = (props: Props) => {
                             onClick={() => {
                               goToElement(`card_${hash}`, 16);
                               updateRoute(hash);
+                              if (!isUndefined(props.onClickOption)) {
+                                props.onClickOption();
+                              }
                             }}
                           >
-                            {`#${hash}` === location.hash && (
+                            <Show when={`#${hash}` === location.hash}>
                               <div class={`position-absolute ${styles.arrow}`}>
                                 <SVGIcon kind={SVGIconKind.ArrowRight} />
                               </div>
-                            )}
+                            </Show>
                             {subcat}
                           </button>
                         );

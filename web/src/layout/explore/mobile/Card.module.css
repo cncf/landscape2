@@ -1,0 +1,90 @@
+.logoWrapper {
+  height: 55px;
+  width: 55px;
+  min-width: 55px;
+}
+
+.logo {
+  font-size: 3rem;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.title {
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.itemInfo {
+  background-color: #f8f9fa;
+  width: calc(100% - 45px - 1rem);
+  height: 80px;
+}
+
+.name {
+  padding-bottom: 2px;
+}
+
+.description {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: unset;
+  white-space: inherit;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-wrap: normal;
+  max-height: 40px;
+}
+
+.additionalInfo {
+  font-size: 0.75rem;
+}
+
+.additionalInfo small {
+  font-size: 0.7rem;
+}
+
+.starIcon {
+  font-size: 0.6rem;
+}
+
+.badge {
+  background-color: var(--bs-gray-500);
+}
+
+.badgeOutlineDark {
+  border-color: var(--bs-gray-700) !important;
+  color: var(--bs-gray-700);
+  line-height: 1;
+}
+
+.link {
+  position: relative;
+  color: inherit;
+  height: 25px;
+  line-height: 25px;
+  width: auto;
+}
+
+.link:hover {
+  color: var(--color1);
+}
+
+.link svg {
+  position: relative;
+  height: 20px;
+  width: auto;
+  opacity: 75%;
+  margin-top: -2px;
+}
+
+.extra {
+  height: 30px;
+}
+
+.auditBadge {
+  font-size: 80% !important;
+  line-height: 0.75rem;
+}

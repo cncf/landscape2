@@ -3,13 +3,19 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
-import { CategoryGuide, Guide, SubcategoryGuide, ToCTitle } from '../../types';
+import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import useBreakpointDetect from '../../hooks/useBreakpointDetect';
+import { CategoryGuide, Guide, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
+import scrollToTop from '../../utils/scrollToTop';
 import slugify from '../../utils/slugify';
 import ButtonToTopScroll from '../common/ButtonToTopScroll';
-import { Loading } from '../common/Loading';
+import Loading from '../common/Loading';
+import { Sidebar } from '../common/Sidebar';
+import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
+import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import styles from './Guide.module.css';
 import SubcategoryExtended from './SubcategoryExtended';
 import ToC from './ToC';
@@ -25,6 +31,10 @@ const GuideIndex = () => {
   const [toc, setToc] = createSignal<ToCTitle[]>([]);
   const state = createMemo(() => location.state || {});
   const [firstItem, setFirstItem] = createSignal<string>();
+  const [openToCMobileStatus, setOpenToCMobileStatus] = createSignal<boolean>(false);
+  const openMenuTOCFromHeader = useMobileTOCStatus();
+  const setMenuTOCFromHeader = useSetMobileTOCStatus();
+  const { point } = useBreakpointDetect();
 
   const prepareToC = (data: Guide) => {
     const content: ToCTitle[] = [];
@@ -98,6 +108,14 @@ const GuideIndex = () => {
     })
   );
 
+  createEffect(
+    on(openMenuTOCFromHeader, () => {
+      if (openMenuTOCFromHeader()) {
+        setOpenToCMobileStatus(true);
+      }
+    })
+  );
+
   const updateRoute = (title: string) => {
     navigate(`${location.pathname}${location.search}#${title}`, {
       replace: true,
@@ -109,11 +127,7 @@ const GuideIndex = () => {
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
     updateRoute(title);
     if (title === firstItem()) {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'instant',
-      });
+      scrollToTop();
     } else {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
@@ -135,13 +149,37 @@ const GuideIndex = () => {
     }
   };
 
+  const onCloseMenu = () => {
+    setOpenToCMobileStatus(false);
+    setMenuTOCFromHeader(false);
+  };
+
   return (
     <>
-      <main class="flex-grow-1 container-fluid d-none d-lg-block px-4 position-relative">
+      <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
+        <div class="d-block d-lg-none">
+          <Sidebar
+            label="Index"
+            header="Index"
+            visibleButton
+            buttonIcon={<SVGIcon kind={SVGIconKind.ToC} />}
+            buttonType={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 mt-3 btnIconMobile ${styles.mobileToCBtn}`}
+            open={openToCMobileStatus()}
+            onOpenStatusChange={onCloseMenu}
+          >
+            <div class="position-relative">
+              <Show when={!isUndefined(guide())} fallback={<Loading />}>
+                <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky={false} onClickOption={onCloseMenu} />
+              </Show>
+            </div>
+          </Sidebar>
+        </div>
         <div class="d-flex flex-row" classList={{ [styles.loadingContent]: isUndefined(guide()) }}>
           <Show when={!isUndefined(guide())} fallback={<Loading spinnerClass="position-fixed top-50 start-50" />}>
-            <ToC toc={toc()} updateActiveTitle={updateActiveTitle} />
-            <div class="p-4 pe-0">
+            <div class="d-none d-lg-flex">
+              <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky />
+            </div>
+            <div class="py-3 px-0 p-lg-4 pe-lg-0">
               <div class={`position-relative ${styles.guide}`}>
                 <For each={guide()!.categories}>
                   {(cat, index) => {
@@ -151,7 +189,10 @@ const GuideIndex = () => {
                     return (
                       <>
                         <div id={`section_${id}`} classList={{ [styles.catSection]: !hasSubcategories }}>
-                          <h1 class={`border-bottom mb-4 pb-2 ${styles.title}`} classList={{ 'mt-5': index() !== 0 }}>
+                          <h1
+                            class={`border-bottom mb-3 mb-lg-4 pb-2 ${styles.title}`}
+                            classList={{ 'mt-4 mt-lg-5': index() !== 0 }}
+                          >
                             {cat.category}
                           </h1>
                           <Show when={!isUndefined(cat.content)}>
@@ -159,7 +200,7 @@ const GuideIndex = () => {
                             <div innerHTML={cat.content} />
                           </Show>
                         </div>
-                        {hasSubcategories && (
+                        <Show when={hasSubcategories}>
                           <For each={cat.subcategories}>
                             {(subcat, index) => {
                               const id = slugify(`${cat.category} ${subcat.subcategory}`);
@@ -169,7 +210,7 @@ const GuideIndex = () => {
                                   id={`section_${id}`}
                                   classList={{ [styles.catSection]: index() === cat.subcategories.length - 1 }}
                                 >
-                                  <h2 class={`mt-5 mb-4 pb-2 border-bottom ${styles.subtitle}`}>
+                                  <h2 class={`mt-4 mt-lg-5 mb-3 mb-lg-4 pb-2 border-bottom ${styles.subtitle}`}>
                                     {subcat.subcategory}
                                   </h2>
                                   {/* eslint-disable-next-line solid/no-innerhtml */}
@@ -183,13 +224,17 @@ const GuideIndex = () => {
                               );
                             }}
                           </For>
-                        )}
+                        </Show>
                       </>
                     );
                   }}
                 </For>
 
-                <Show when={!isUndefined(firstItem())}>
+                <Show
+                  when={
+                    !isUndefined(firstItem()) && !isUndefined(point()) && !SMALL_DEVICES_BREAKPOINTS.includes(point()!)
+                  }
+                >
                   <ButtonToTopScroll firstSection={firstItem()!} />
                 </Show>
               </div>

@@ -98,6 +98,16 @@ const HorizontalBarChart = (props: Props) => {
           },
         },
       },
+      responsive: [
+        {
+          breakpoint: 992,
+          options: {
+            xaxis: {
+              tickAmount: 3,
+            },
+          },
+        },
+      ],
     };
   };
 

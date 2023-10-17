@@ -8,9 +8,9 @@ import { REGEX_PLUS } from '../../../data';
 import { CardMenu } from '../../../types';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import goToElement from '../../../utils/goToElement';
-import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
+import prepareMenu from '../../../utils/prepareMenu';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
@@ -39,48 +39,6 @@ const CardCategory = (props: Props) => {
 
   const updateRoute = (hash: string) => {
     props.updateHash(hash);
-  };
-
-  const prepareMenu = (d: CategoriesData): CardMenu => {
-    const menuTmp: CardMenu = {};
-
-    Object.keys(d).forEach((cat: string) => {
-      const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
-
-      const subcategories: SubcategoryDetails[] = [];
-      const subcategoriesList: string[] = [];
-      Object.keys(d[cat]).forEach((subcat: string) => {
-        if (props.data[cat][subcat].items.length > 0) {
-          subcategoriesList.push(subcat);
-          subcategories.push({
-            name: subcat,
-            itemsCount: props.data[cat][subcat].itemsCount,
-            itemsFeaturedCount: props.data[cat][subcat].itemsFeaturedCount,
-          });
-        }
-      });
-
-      if (subcategories.length !== 0) {
-        const sortedSubcategories: string[] = isOverriden ? subcategoriesList : subcategoriesList.sort();
-        menuTmp[cat] = sortedSubcategories;
-      }
-    });
-
-    if (!isEmpty(menuTmp)) {
-      const firstCategory = Object.keys(menuTmp)[0];
-      const firstSubcategory = menuTmp[firstCategory][0];
-      if (!isUndefined(firstSubcategory)) {
-        const firstItemInMenu = `${convertStringSpaces(firstCategory)}/${convertStringSpaces(firstSubcategory)}`;
-        setFirstItem(firstItemInMenu);
-      }
-    }
-
-    // Clean prev hash
-    if (Object.keys(menuTmp).length === 0 && isVisible()) {
-      updateRoute('');
-    }
-
-    return menuTmp;
   };
 
   const isAvailableSelectedSection = (): boolean => {
@@ -116,10 +74,25 @@ const CardCategory = (props: Props) => {
           }
         } else {
           updateRoute(firstItemInMenu);
-          document.getElementById('landscape')!.scrollBy({ top: 0, behavior: 'instant' });
+          window.scrollBy({ top: 0, behavior: 'instant' });
         }
         setInitialFullRender(true);
       }
+    }
+  };
+
+  const onMenuChange = (menuTmp: CardMenu) => {
+    if (!isEmpty(menuTmp)) {
+      const firstCategory = Object.keys(menuTmp)[0];
+      const firstSubcategory = menuTmp[firstCategory][0];
+      if (!isUndefined(firstSubcategory)) {
+        const firstItemInMenu = `${convertStringSpaces(firstCategory)}/${convertStringSpaces(firstSubcategory)}`;
+        setFirstItem(firstItemInMenu);
+      }
+    }
+    // Clean prev hash
+    if (isEmpty(menuTmp) && isVisible()) {
+      updateRoute('');
     }
   };
 
@@ -132,7 +105,8 @@ const CardCategory = (props: Props) => {
         }
 
         if (isUndefined(menu())) {
-          const menuTmp = prepareMenu(data());
+          const menuTmp = prepareMenu(data(), props.categories_overridden);
+          onMenuChange(menuTmp);
           setMenu(menuTmp);
         } else {
           updateActiveSection();
@@ -144,10 +118,9 @@ const CardCategory = (props: Props) => {
   createEffect(
     on(data, () => {
       if (!isUndefined(menu())) {
-        const menuTmp = prepareMenu(data());
-        if (!isEqual(menu(), menuTmp)) {
-          setMenu(menuTmp);
-        }
+        const menuTmp = prepareMenu(data(), props.categories_overridden);
+        onMenuChange(menuTmp);
+        setMenu((prev) => (!isEqual(prev, menuTmp) ? menuTmp : prev));
       }
     })
   );
@@ -164,7 +137,7 @@ const CardCategory = (props: Props) => {
     <Show when={firstLoad()}>
       <div class="d-flex flex-row mt-2">
         <Show when={!isEmpty(menu())}>
-          <Menu menu={menu} isVisible={props.initialIsVisible} />
+          <Menu menu={menu} isVisible={props.initialIsVisible} sticky />
           <div class={`d-flex flex-column ${styles.content}`}>
             <Show when={fullDataReady()}>
               <Content menu={menu} data={props.data} isVisible={props.initialIsVisible} />

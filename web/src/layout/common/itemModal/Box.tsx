@@ -29,7 +29,7 @@ const Box = (props: Props) => {
 
       <div class={props.class || 'col'}>
         <div
-          class={`position-relative text-center p-3 h-100 d-flex flex-column justify-content-center filledBox ${styles.highlighted}`}
+          class={`position-relative text-center p-2 p-md-3 h-100 d-flex flex-column justify-content-center filledBox ${styles.highlighted}`}
           classList={{ [`filledBox filledBox-${randomId}`]: fillPercentage() > 0 }}
         >
           <div class={`fw-bold text-nowrap ${styles.highlightedTitle}`}>{value()}</div>

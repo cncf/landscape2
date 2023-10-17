@@ -73,26 +73,24 @@ const Card = (props: Props) => {
 
         <div class={`p-3 ms-2 ${styles.itemInfo}`}>
           <CardTitle title={props.item.name} isVisible={props.isVisible} />
-          {props.item.crunchbase_data && props.item.crunchbase_data.name && (
+          <Show when={props.item.crunchbase_data && props.item.crunchbase_data.name}>
             <div class={`text-muted text-truncate ${styles.name}`}>
-              <small>{props.item.crunchbase_data.name}</small>
+              <small>{props.item.crunchbase_data!.name}</small>
             </div>
-          )}
+          </Show>
 
           <div class={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
             <Show
               when={!isUndefined(props.item.maturity)}
               fallback={
-                <>
-                  {!isUndefined(props.item.member_subcategory) && (
-                    <div
-                      title={`${props.item.member_subcategory} member`}
-                      class={`badge rounded-0 text-uppercase border me-2 ${styles.badgeOutlineDark}`}
-                    >
-                      {props.item.member_subcategory} member
-                    </div>
-                  )}
-                </>
+                <Show when={!isUndefined(props.item.member_subcategory)}>
+                  <div
+                    title={`${props.item.member_subcategory} member`}
+                    class={`badge rounded-0 text-uppercase border me-2 ${styles.badgeOutlineDark}`}
+                  >
+                    {props.item.member_subcategory} member
+                  </div>
+                </Show>
               }
             >
               <FoundationBadge class="me-2" />

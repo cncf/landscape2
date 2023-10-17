@@ -2,7 +2,7 @@ import { JSXElement } from 'solid-js';
 
 import styles from './Checkbox.module.css';
 
-export interface Props {
+interface Props {
   name: string;
   value: string;
   label: string | JSXElement;
@@ -15,7 +15,7 @@ export interface Props {
   onChange?: (value: string, checked: boolean) => void;
 }
 
-export const CheckBox = (props: Props) => (
+const CheckBox = (props: Props) => (
   <div class={`form-check me-sm-2 mb-0 ${props.class}`}>
     <input
       type="checkbox"
@@ -33,11 +33,7 @@ export const CheckBox = (props: Props) => (
       disabled={props.disabled}
       tabIndex={0}
     />
-    <label
-      class={`form-check-label ${styles.label} ${props.labelClass}`}
-      for={`${props.name}-${props.value}`}
-      data-testid="checkboxLabel"
-    >
+    <label class={`form-check-label ${styles.label} ${props.labelClass}`} for={`${props.name}-${props.value}`}>
       <div class="d-flex align-items-baseline mw-100">
         {props.icon && <>{props.icon}</>}
         <span class="text-truncate">{props.label}</span>
@@ -46,3 +42,5 @@ export const CheckBox = (props: Props) => (
     </label>
   </div>
 );
+
+export default CheckBox;

@@ -1,13 +1,13 @@
-import { some } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import some from 'lodash/some';
 import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
 
 import { FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
 import { ActiveFilters, BaseData, FilterCategory, FilterSection, FilterTitle, Item, SVGIconKind } from '../../../types';
 import prepareData from '../../../utils/prepareData';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
-import { Loading } from '../../common/Loading';
+import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './Filters.module.css';
@@ -116,22 +116,28 @@ const Filters = (props: Props) => {
 
   const resetFilters = () => {
     setTmpActiveFilters({});
+    props.applyFilters({});
   };
 
   return (
     <>
-      <div>
+      <div class="position-relative">
         <button
           title="Filters"
-          class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-4 ${styles.filterBtn}`}
+          class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-md-4 ${styles.filterBtn} btnIconMobile`}
           classList={{ disabled: disabledBtn() }}
           onClick={() => setVisibleFiltersModal(true)}
         >
           <div class="d-flex flex-row align-items-center">
             <SVGIcon kind={SVGIconKind.Filters} />
-            <div class="fw-semibold ps-2">Filters</div>
+            <div class="d-none d-lg-block fw-semibold ps-2">Filters</div>
           </div>
         </button>
+        <Show when={!isEmpty(props.initialActiveFilters())}>
+          <div
+            class={`d-block d-lg-none position-absolute p-1 border border-3 border-white bg-dark rounded-circle ${styles.dot}`}
+          />
+        </Show>
       </div>
       <Modal
         modalDialogClass={styles.modal}
@@ -141,7 +147,7 @@ const Filters = (props: Props) => {
             <button
               type="button"
               title="Reset filters"
-              class="btn btn-sm btn-link text-muted"
+              class="btn btn-sm btn-link text-muted py-0"
               onClick={(e) => {
                 e.preventDefault();
                 resetFilters();
@@ -179,7 +185,7 @@ const Filters = (props: Props) => {
         size="xl"
         onClose={() => setVisibleFiltersModal(false)}
       >
-        <div class="p-3">
+        <div class="p-0 p-lg-3">
           <Show
             when={!isUndefined(filtersFromData())}
             fallback={
@@ -191,7 +197,7 @@ const Filters = (props: Props) => {
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
 
-              <div class="row g-5 mb-5">
+              <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <Section
                   title="Status"
                   section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
@@ -223,7 +229,7 @@ const Filters = (props: Props) => {
             <Show when={visibleTitles().includes(FilterTitle.Organization)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Organization}</div>
 
-              <div class="row g-5">
+              <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <SearchbarSection
                   title="Name"
                   placeholder="Search organization"

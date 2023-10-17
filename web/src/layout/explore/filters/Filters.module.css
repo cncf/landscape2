@@ -27,9 +27,33 @@
   left: 1rem;
 }
 
+.dot {
+  top: -5px;
+  right: -5px;
+}
+
 @media (max-width: 1199.98px) {
   .modal {
     width: 90%;
     max-width: 800px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .title {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .modal {
+    width: 95%;
+    min-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem) !important;
+    margin: 0.75em auto !important;
+  }
+
+  .title {
+    font-size: 1rem;
   }
 }

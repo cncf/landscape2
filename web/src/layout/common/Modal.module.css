@@ -66,8 +66,15 @@
 
 @media only screen and (max-width: 575.98px) {
   .content {
-    height: calc(90% - 1rem);
-    width: 90%;
+    height: 100%;
+    width: 100%;
     margin: auto;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .btnCloseWrapper {
+    top: 1.5rem;
+    right: 1.5rem;
   }
 }

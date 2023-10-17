@@ -1,4 +1,4 @@
-import { isInteger } from 'lodash';
+import isInteger from 'lodash/isInteger';
 import { createEffect, createSignal, For, on } from 'solid-js';
 
 import sortObjectByValue from '../../../utils/sortObjectByValue';
@@ -6,6 +6,7 @@ import Box from './Box';
 
 interface Props {
   initialLanguages: { [key: string]: number };
+  boxClass?: string;
 }
 
 const LanguagesStats = (props: Props) => {
@@ -27,13 +28,14 @@ const LanguagesStats = (props: Props) => {
   );
 
   return (
-    <div class="row g-4 my-0 mb-2">
+    <div class="row g-4 my-0 mb-2 justify-content-center justify-md-content-start">
       <For each={popularLanguages()}>
         {(lang: string) => {
           const value = () => percentage(languages()[lang]);
 
           return (
             <Box
+              class={props.boxClass}
               value={`${isInteger(value()) ? value() : value().toFixed(2)}%`}
               legend={lang}
               fillBgPercentage={value()}

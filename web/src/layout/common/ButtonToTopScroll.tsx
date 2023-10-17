@@ -1,10 +1,11 @@
-import { createScrollPosition } from '@solid-primitives/scroll';
+import { useWindowScrollPosition } from '@solid-primitives/scroll';
 import { useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import isElementInView from '../../utils/isElementInView';
+import scrollToTop from '../../utils/scrollToTop';
 import styles from './ButtonToTopScroll.module.css';
 import SVGIcon from './SVGIcon';
 
@@ -17,8 +18,7 @@ const NAV_HEIGHT = 200;
 const ButtonToTopScroll = (props: Props) => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = createSignal<boolean>(false);
-  const target = document.getElementById('landscape');
-  const scroll = createScrollPosition(target as Element);
+  const scroll = useWindowScrollPosition();
   const y = () => scroll.y;
 
   createEffect(
@@ -41,11 +41,7 @@ const ButtonToTopScroll = (props: Props) => {
                   replace: true,
                 });
 
-                document.getElementById('landscape')!.scrollTo({
-                  top: 0,
-                  left: 0,
-                  behavior: 'instant',
-                });
+                scrollToTop();
 
                 if (!isElementInView(`btn_${props.firstSection}`)) {
                   const target = window.document.getElementById(`btn_${props.firstSection}`);
