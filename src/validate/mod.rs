@@ -1,8 +1,8 @@
 //! This module defines the functionality of the validate CLI subcommand.
 
 use crate::{
-    build::{LandscapeData, LandscapeSettings},
-    DataSource, SettingsSource,
+    build::{LandscapeData, LandscapeGuide, LandscapeSettings},
+    DataSource, GuideSource, SettingsSource,
 };
 use anyhow::{Context, Result};
 use tracing::instrument;
@@ -26,5 +26,16 @@ pub(crate) async fn validate_settings(settings_source: &SettingsSource) -> Resul
         .context("the landscape settings file provided is not valid")?;
 
     println!("The landscape settings file provided is valid!");
+    Ok(())
+}
+
+/// Validate landscape guide file.
+#[instrument(skip_all)]
+pub(crate) async fn validate_guide(guide_source: &GuideSource) -> Result<()> {
+    LandscapeGuide::new(guide_source)
+        .await
+        .context("the landscape guide file provided is not valid")?;
+
+    println!("The landscape guide file provided is valid!");
     Ok(())
 }

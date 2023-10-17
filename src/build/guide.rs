@@ -2,7 +2,7 @@
 //! that must be provided from a YAML file (guide.yml).
 
 use crate::GuideSource;
-use anyhow::{format_err, Result};
+use anyhow::{format_err, Context, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
@@ -61,6 +61,7 @@ impl LandscapeGuide {
     fn new_from_yaml(s: &str) -> Result<Self> {
         // Parse YAML string
         let mut guide: LandscapeGuide = serde_yaml::from_str(s)?;
+        guide.validate().context("the landscape guide file provided is not valid")?;
 
         // Convert content fields from markdown to HTML
         let options = markdown::Options::default();
@@ -82,6 +83,79 @@ impl LandscapeGuide {
         }
 
         Ok(guide)
+    }
+
+    /// Validate landscape guide.
+    fn validate(&self) -> Result<()> {
+        if let Some(categories) = &self.categories {
+            for (i, categories) in categories.iter().enumerate() {
+                let category_id = if categories.category.is_empty() {
+                    format!("{i}")
+                } else {
+                    categories.category.clone()
+                };
+                let mut ctx = format!("category [{category_id}] is not valid");
+
+                // Category
+                if categories.category.is_empty() {
+                    return Err(format_err!("category cannot be empty")).context(ctx);
+                }
+
+                // Content
+                if let Some(content) = &categories.content {
+                    if content.is_empty() {
+                        return Err(format_err!("content cannot be empty")).context(ctx);
+                    }
+                }
+
+                // Keywords
+                if let Some(keywords) = &categories.keywords {
+                    for (i, keyword) in keywords.iter().enumerate() {
+                        let keyword_id = format!("{i}");
+
+                        if keyword.is_empty() {
+                            return Err(format_err!("keyword [{keyword_id}] cannot be empty")).context(ctx);
+                        }
+                    }
+                }
+
+                // Subcategories
+                if let Some(subcategories) = &categories.subcategories {
+                    for (i, subcategory) in subcategories.iter().enumerate() {
+                        let subcategory_id = if subcategory.subcategory.is_empty() {
+                            format!("{i}")
+                        } else {
+                            subcategory.subcategory.clone()
+                        };
+                        ctx = format!("subcategory [{subcategory_id}] in {ctx}");
+
+                        // Subcategory
+                        if subcategory.subcategory.is_empty() {
+                            return Err(format_err!("subcategory cannot be empty")).context(ctx);
+                        }
+
+                        // Content
+                        if subcategory.content.is_empty() {
+                            return Err(format_err!("content cannot be empty")).context(ctx);
+                        }
+
+                        // Keywords
+                        if let Some(keywords) = &subcategory.keywords {
+                            for (i, keyword) in keywords.iter().enumerate() {
+                                let keyword_id = format!("{i}");
+
+                                if keyword.is_empty() {
+                                    return Err(format_err!("keyword [{keyword_id}] cannot be empty"))
+                                        .context(ctx);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
