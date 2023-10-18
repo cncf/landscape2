@@ -9,7 +9,7 @@ use self::{
     guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::Images,
+    settings::{Images, QrCode},
 };
 use crate::{serve, BuildArgs, GuideSource, LogosSource, ServeArgs};
 use anyhow::{format_err, Context, Result};
@@ -23,6 +23,7 @@ use headless_chrome::{
     types::PrintToPdfOptions,
     Browser, LaunchOptions,
 };
+use qrcode::render::svg;
 use reqwest::StatusCode;
 use rust_embed::RustEmbed;
 pub(crate) use settings::LandscapeSettings;
@@ -124,8 +125,14 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_crunchbase_data(crunchbase_data)?;
     landscape_data.add_github_data(github_data)?;
 
+    // Generate QR code
+    let mut qr_code = None;
+    if let Some(cfg) = &settings.qr_code {
+        qr_code = Some(generate_qr_code(cfg, &args.output_dir)?);
+    }
+
     // Generate datasets for web application
-    let datasets = generate_datasets(&landscape_data, &settings, &guide, &args.output_dir)?;
+    let datasets = generate_datasets(&landscape_data, &settings, &guide, &qr_code, &args.output_dir)?;
 
     // Render index file and write it to the output directory
     render_index(&datasets, &args.output_dir)?;
@@ -280,11 +287,12 @@ fn generate_datasets(
     landscape_data: &LandscapeData,
     settings: &LandscapeSettings,
     guide: &Option<LandscapeGuide>,
+    qr_code: &Option<String>,
     output_dir: &Path,
 ) -> Result<Datasets> {
     debug!("generating datasets");
 
-    let datasets = Datasets::new(landscape_data, settings, guide)?;
+    let datasets = Datasets::new(landscape_data, settings, guide, qr_code)?;
     let datasets_path = output_dir.join(DATASETS_PATH);
 
     // Base
@@ -300,6 +308,18 @@ fn generate_datasets(
     stats_file.write_all(&serde_json::to_vec(&datasets.stats)?)?;
 
     Ok(datasets)
+}
+
+/// Generate the items.csv file from the landscape data.
+#[instrument(skip_all, err)]
+fn generate_items_csv_file(landscape_data: &LandscapeData, output_dir: &Path) -> Result<()> {
+    debug!("generating items csv file");
+
+    let docs_path = output_dir.join(DOCS_PATH);
+    let w = csv::Writer::from_path(docs_path.join("items.csv"))?;
+    generate_items_csv(w, landscape_data)?;
+
+    Ok(())
 }
 
 /// Generate the projects.md and projects.csv files from the landscape data.
@@ -322,16 +342,25 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
     Ok(())
 }
 
-/// Generate the items.csv file from the landscape data.
+/// Generate QR code and copy it to output directory.
 #[instrument(skip_all, err)]
-fn generate_items_csv_file(landscape_data: &LandscapeData, output_dir: &Path) -> Result<()> {
-    debug!("generating items csv file");
+fn generate_qr_code(cfg: &QrCode, output_dir: &Path) -> Result<String> {
+    debug!("generating qr code");
 
-    let docs_path = output_dir.join(DOCS_PATH);
-    let w = csv::Writer::from_path(docs_path.join("items.csv"))?;
-    generate_items_csv(w, landscape_data)?;
+    // Generate QR code
+    let code = qrcode::QrCode::new(cfg.url.as_bytes())?;
+    let svg = code
+        .render()
+        .min_dimensions(200, 200)
+        .dark_color(svg::Color("#000000"))
+        .light_color(svg::Color("#ffffff"))
+        .build();
 
-    Ok(())
+    // Write QR code (SVG) to output dir
+    let svg_path = Path::new(IMAGES_PATH).join("qr_code.svg");
+    File::create(output_dir.join(&svg_path))?.write_all(svg.as_bytes())?;
+
+    Ok(svg_path.to_string_lossy().into_owned())
 }
 
 /// Get settings images and copy them to the output directory.

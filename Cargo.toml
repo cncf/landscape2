@@ -53,6 +53,7 @@ url = "2.4.1"
 usvg = "0.36.0"
 walkdir = "2.4.0"
 imagesize = "0.12.0"
+qrcode = "0.12.0"
 
 [dev-dependencies]
 mockall = "0.11.4"

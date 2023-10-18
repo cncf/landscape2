@@ -28,9 +28,10 @@ impl Datasets {
         landscape_data: &LandscapeData,
         settings: &LandscapeSettings,
         guide: &Option<LandscapeGuide>,
+        qr_code: &Option<String>,
     ) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(landscape_data, settings, guide),
+            base: Base::new(landscape_data, settings, guide, qr_code),
             full: Full::new(landscape_data.clone()),
             stats: Stats::new(landscape_data, settings),
         };
@@ -80,6 +81,9 @@ mod base {
         pub items: Vec<Item>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub qr_code: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub social_networks: Option<SocialNetworks>,
     }
 
@@ -89,6 +93,7 @@ mod base {
             landscape_data: &LandscapeData,
             settings: &LandscapeSettings,
             guide: &Option<LandscapeGuide>,
+            qr_code: &Option<String>,
         ) -> Self {
             let mut base = Base {
                 foundation: settings.foundation.clone(),
@@ -97,6 +102,7 @@ mod base {
                 colors: settings.colors.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
+                qr_code: qr_code.clone(),
                 social_networks: settings.social_networks.clone(),
                 ..Default::default()
             };
