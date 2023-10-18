@@ -74,9 +74,9 @@ const ChartsGroup = (props: Props) => {
     // We use 10 by default and add 10 to the rest of values
     // due to a bug displaying proper bg color in heatmap
     Object.keys(groupedByYear).forEach((year: string) => {
-      const currentData = new Array(12).fill(10);
+      const currentData = new Array(12).fill(0);
       groupedByYear[year].forEach((i: DistributionData) => {
-        currentData[i.month - 1] = i.total + 10;
+        currentData[i.month - 1] = i.total;
       });
       series.push({ name: year, data: currentData });
     });
@@ -201,7 +201,8 @@ const ChartsGroup = (props: Props) => {
         enabled: false,
       },
       legend: { show: false },
-      colors: ['#6D90BE'],
+      colors:
+        window.baseDS.colors && window.baseDS.colors.color1 ? [rgba2hex(window.baseDS.colors.color1)] : ['#0086FF'], // Using css var breaks heat range
       xaxis: {
         labels: {
           style: {
@@ -220,8 +221,7 @@ const ChartsGroup = (props: Props) => {
       tooltip: {
         y: {
           formatter: (val: number): string => {
-            // Subsctract 10 to display correct value
-            return isNumber(val) ? (val - 10).toString() : val;
+            return isNumber(val) ? val.toString() : val;
           },
         },
       },
@@ -230,41 +230,6 @@ const ChartsGroup = (props: Props) => {
           filter: {
             type: 'darken',
             value: 0.8,
-          },
-        },
-      },
-      plotOptions: {
-        heatmap: {
-          radius: 0,
-          shadeIntensity: 0,
-          colorScale: {
-            ranges: [
-              {
-                from: 0,
-                to: 0,
-                color: 'transparent',
-              },
-              {
-                from: 1,
-                to: 10,
-                color: '#f2f2f2',
-              },
-              {
-                from: 11,
-                to: 11,
-                color: '#d9d9d9',
-              },
-              {
-                from: 12,
-                to: 14,
-                color: '#797979',
-              },
-              {
-                from: 15,
-                to: 100,
-                color: '#303030',
-              },
-            ],
           },
         },
       },
