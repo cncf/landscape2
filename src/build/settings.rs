@@ -42,6 +42,9 @@ pub(crate) struct LandscapeSettings {
     pub members_category: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub qr_code: Option<QrCode>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub screenshot_width: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -380,6 +383,12 @@ pub(crate) struct Images {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_graph: Option<String>,
+}
+
+/// QR code configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct QrCode {
+    pub url: String,
 }
 
 /// Social networks urls.

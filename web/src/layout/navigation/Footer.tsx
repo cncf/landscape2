@@ -1,6 +1,6 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import { JSXElement } from 'solid-js';
+import { JSXElement, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
@@ -83,21 +83,34 @@ const Footer = (props: Props) => {
       <div class="container-fluid">
         <div class="d-flex flex-column flex-sm-row justify-content-between">
           <div class="d-flex flex-column">
-            {(!isUndefined(props.logo) ||
-              (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))) && (
-              <div class="d-flex flex-row justify-content-start align-items-center mb-5">
-                {!isUndefined(window.baseDS.images.footer_logo) && (
-                  <div class={styles.logoWrapper}>
-                    <img
-                      class={styles.logo}
-                      alt="Logo"
-                      src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
-                    />
-                  </div>
-                )}
-                {renderSocialNetworkLinks()}
-              </div>
-            )}
+            <div class="d-flex flex-row align-items-top justify-content-between">
+              {(!isUndefined(props.logo) ||
+                (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))) && (
+                <div class="d-flex flex-row justify-content-start align-items-center mb-5">
+                  {!isUndefined(window.baseDS.images.footer_logo) && (
+                    <div class={styles.logoWrapper}>
+                      <img
+                        class={styles.logo}
+                        alt="Logo"
+                        src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+                      />
+                    </div>
+                  )}
+                  {renderSocialNetworkLinks()}
+                </div>
+              )}
+              <Show when={!isUndefined(window.baseDS.qr_code)}>
+                <img
+                  class={styles.qr}
+                  alt="QR code"
+                  src={
+                    import.meta.env.MODE === 'development'
+                      ? `../../static/${window.baseDS.qr_code}`
+                      : window.baseDS.qr_code
+                  }
+                />
+              </Show>
+            </div>
             <div class="d-flex flex-column flex-sm-row flex-wrap align-items-stretch justify-content-start text-light">
               <div class={styles.footerCol}>
                 <div class="h6 fw-bold text-uppercase">Project</div>
