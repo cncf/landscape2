@@ -149,6 +149,17 @@ const ItemModal = () => {
                           </div>
                         </Show>
                       </Show>
+                      <Show when={!isUndefined(itemInfo()!.joined_at)}>
+                        <div
+                          title={`Joined at ${itemInfo()!.joined_at}`}
+                          class="d-flex flex-row align-items-center accepted-date me-3 mt-1"
+                        >
+                          <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
+                          <div>
+                            <small>{itemInfo()!.joined_at!.split('-')[0]}</small>
+                          </div>
+                        </div>
+                      </Show>
                     </div>
                   </div>
                   <Show when={!isUndefined(itemInfo()!.crunchbase_data) && itemInfo()!.crunchbase_data!.name}>

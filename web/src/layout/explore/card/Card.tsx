@@ -140,6 +140,15 @@ const Card = (props: Props) => {
                 </div>
               </div>
             </Show>
+
+            <Show when={!isUndefined(props.item.joined_at)}>
+              <div title={`Joined at ${props.item.joined_at}`} class="d-flex flex-row align-items-center accepted-date">
+                <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
+                <div>
+                  <small>{props.item.joined_at!.split('-')[0]}</small>
+                </div>
+              </div>
+            </Show>
           </div>
         </div>
       </div>
