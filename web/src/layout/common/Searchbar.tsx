@@ -195,10 +195,10 @@ const Searchbar = (props: Props) => {
           class={`flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base ${styles.input}`}
           type="text"
           value={value()}
-          auto-complete="off"
-          auto-correct="off"
-          auto-capitalize="none"
-          spell-check="false"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="none"
+          spellcheck={false}
           placeholder="Search projects, products and members"
           onKeyDown={onKeyDown}
           onInput={(e) => setValue(e.target.value)}

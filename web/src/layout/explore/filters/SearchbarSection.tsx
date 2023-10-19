@@ -156,10 +156,10 @@ const SearchbarSection = (props: Props) => {
                 placeholder={props.placeholder || 'Search'}
                 type="text"
                 value={value()}
-                auto-complete="off"
-                auto-correct="off"
-                auto-capitalize="none"
-                spell-check="false"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="none"
+                spellcheck={false}
                 onBlur={() => setValue('')}
                 onInput={(e) => setValue(e.currentTarget.value)}
               />
