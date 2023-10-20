@@ -123,7 +123,7 @@ const CardCategory = (props: Props) => {
           }
         } else {
           updateRoute(firstItemInMenu);
-          window.scrollBy({ top: 0, behavior: 'instant' });
+          document.getElementById('landscape')!.scrollBy({ top: 0, behavior: 'instant' });
         }
         setInitialFullRender(true);
       }
@@ -176,7 +176,7 @@ const CardCategory = (props: Props) => {
             <Show when={fullDataReady()}>
               <Content menu={menu} data={props.data} isVisible={props.initialIsVisible} />
             </Show>
-            <Show when={!isUndefined(firstItem())}>
+            <Show when={!isUndefined(firstItem()) && fullDataReady()}>
               <ButtonToTopScroll firstSection={firstItem()!} />
             </Show>
           </div>

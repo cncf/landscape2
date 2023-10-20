@@ -1,7 +1,6 @@
-import { useWindowScrollPosition } from '@solid-primitives/scroll';
 import { useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import isElementInView from '../../utils/isElementInView';
@@ -12,17 +11,9 @@ interface Props {
   firstSection: string | null;
 }
 
-const NAV_HEIGHT = 200;
-
 const ButtonToTopScroll = (props: Props) => {
   const navigate = useNavigate();
-  const [isVisible, setIsVisible] = createSignal<boolean>(false);
-  const scroll = useWindowScrollPosition();
-  const y = () => scroll.y;
-
-  createEffect(() => {
-    setIsVisible(y() > NAV_HEIGHT);
-  });
+  const [isVisible] = createSignal<boolean>(true);
 
   return (
     <Show when={!isUndefined(props.firstSection)}>

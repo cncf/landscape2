@@ -1,6 +1,3 @@
-import './styles/default.scss';
-import './App.css';
-
 import { Route, Router, Routes } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
