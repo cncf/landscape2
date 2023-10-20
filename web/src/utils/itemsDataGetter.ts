@@ -15,15 +15,15 @@ export class ItemsDataGetter {
 
   public init() {
     if (!this.ready) {
-      fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
-        .then((res) => res.json())
-        .then((data: LandscapeData) => {
-          this.landscapeData = { ...data };
-          this.ready = true;
-          if (this.updateStatus) {
-            this.updateStatus.updateStatus(true);
-          }
-        });
+      // fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
+      //   .then((res) => res.json())
+      //   .then((data: LandscapeData) => {
+      //     this.landscapeData = { ...data };
+      //     this.ready = true;
+      //     if (this.updateStatus) {
+      //       this.updateStatus.updateStatus(true);
+      //     }
+      //   });
     }
   }
 
