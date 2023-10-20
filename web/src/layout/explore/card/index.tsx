@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
-import { VIEW_MODE_PARAM } from '../../../data';
+import { REGEX_PLUS, VIEW_MODE_PARAM } from '../../../data';
 import { CardMenu, ViewMode } from '../../../types';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import goToElement from '../../../utils/goToElement';
@@ -93,8 +93,8 @@ const CardCategory = (props: Props) => {
   const isAvailableSelectedSection = (): boolean => {
     const selection = location.hash.replace('#', '');
     const [cat, subcat] = selection.split('/');
-    const category = cat.replace(/\+/g, ' ');
-    const subcategory = subcat.replace(/\+/g, ' ');
+    const category = cat.replace(REGEX_PLUS, ' ');
+    const subcategory = subcat.replace(REGEX_PLUS, ' ');
     if (!isUndefined(menu()) && Object.keys(menu()!).includes(category) && menu()![category].includes(subcategory)) {
       return true;
     } else {

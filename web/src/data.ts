@@ -19,6 +19,11 @@ export const ITEM_PARAM = 'item';
 export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 
+export const REGEX_SPACE = / /g;
+export const REGEX_PLUS = /\+/g;
+export const REGEX_DASH = /-/g;
+export const REGEX_UNDERSCORE = /_/g;
+
 export const DEFAULT_ZOOM_LEVELS = {
   [Breakpoint.XXXL]: 5,
   [Breakpoint.XXL]: 5,
