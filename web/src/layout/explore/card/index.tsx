@@ -176,7 +176,7 @@ const CardCategory = (props: Props) => {
             <Show when={fullDataReady()}>
               <Content menu={menu} data={props.data} isVisible={props.initialIsVisible} />
             </Show>
-            <Show when={!isUndefined(firstItem())}>
+            <Show when={!isUndefined(firstItem()) && fullDataReady()}>
               <ButtonToTopScroll firstSection={firstItem()!} />
             </Show>
           </div>
