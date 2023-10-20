@@ -10,6 +10,8 @@
 
 .content {
   overscroll-behavior: contain;
+  flex-grow: 1;
+  margin-bottom: 2rem;
 }
 
 .truncateWrapper {
