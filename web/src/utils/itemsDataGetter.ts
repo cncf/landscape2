@@ -15,6 +15,9 @@ export class ItemsDataGetter {
 
   public init() {
     if (!this.ready) {
+      if (this.updateStatus) {
+        console.log('update')
+      }
       // fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
       //   .then((res) => res.json())
       //   .then((data: LandscapeData) => {
