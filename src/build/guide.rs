@@ -59,7 +59,7 @@ impl LandscapeGuide {
 
     /// Create a new landscape guide instance from the YAML string provided.
     fn new_from_yaml(s: &str) -> Result<Self> {
-        // Parse YAML string
+        // Parse YAML string and validate guide
         let mut guide: LandscapeGuide = serde_yaml::from_str(s)?;
         guide.validate().context("the landscape guide file provided is not valid")?;
 
@@ -110,11 +110,9 @@ impl LandscapeGuide {
 
                 // Keywords
                 if let Some(keywords) = &categories.keywords {
-                    for (i, keyword) in keywords.iter().enumerate() {
-                        let keyword_id = format!("{i}");
-
+                    for keyword in keywords {
                         if keyword.is_empty() {
-                            return Err(format_err!("keyword [{keyword_id}] cannot be empty")).context(ctx);
+                            return Err(format_err!("keywords cannot be empty")).context(ctx);
                         }
                     }
                 }
@@ -141,12 +139,9 @@ impl LandscapeGuide {
 
                         // Keywords
                         if let Some(keywords) = &subcategory.keywords {
-                            for (i, keyword) in keywords.iter().enumerate() {
-                                let keyword_id = format!("{i}");
-
+                            for keyword in keywords {
                                 if keyword.is_empty() {
-                                    return Err(format_err!("keyword [{keyword_id}] cannot be empty"))
-                                        .context(ctx);
+                                    return Err(format_err!("keywords cannot be empty")).context(ctx);
                                 }
                             }
                         }

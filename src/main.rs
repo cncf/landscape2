@@ -195,11 +195,11 @@ enum ValidateTarget {
     /// Validate landscape data file.
     Data(DataSource),
 
-    /// Validate landscape settings file.
-    Settings(SettingsSource),
-
     /// Validate landscape guide file.
     Guide(GuideSource),
+
+    /// Validate landscape settings file.
+    Settings(SettingsSource),
 }
 
 #[tokio::main]
@@ -229,8 +229,8 @@ async fn main() -> Result<()> {
         Command::Serve(args) => serve(args).await?,
         Command::Validate(args) => match &args.target {
             ValidateTarget::Data(src) => validate_data(src).await?,
-            ValidateTarget::Settings(src) => validate_settings(src).await?,
             ValidateTarget::Guide(src) => validate_guide(src).await?,
+            ValidateTarget::Settings(src) => validate_settings(src).await?,
         },
     }
 
