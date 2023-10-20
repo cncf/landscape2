@@ -2,15 +2,18 @@
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    {% if datasets.base.images.favicon.is_some() %}
-    <link rel="shortcut icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
-    <link rel="apple-touch-icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
-    {% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% if datasets.base.images.open_graph.is_some() %}
-    <meta property="og:image" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}">
-    <meta name="twitter:image:src" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}" />
-    {% endif %}
+    <% if (!isDev) { %>
+      {% if datasets.base.images.favicon.is_some() %}
+      <link rel="shortcut icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
+      <link rel="apple-touch-icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
+      {% endif %}
+
+      {% if datasets.base.images.open_graph.is_some() %}
+      <meta property="og:image" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}">
+      <meta name="twitter:image:src" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}" />
+      {% endif %}
+    <% } %>
     <title>{{ datasets.base.foundation }} Landscape</title>
     <% if (isDev) { %>
     <script>
