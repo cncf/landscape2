@@ -515,6 +515,14 @@ const ItemModal = () => {
                         <Switch>
                           <Match
                             when={
+                              isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
+                              isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
+                            }
+                          >
+                            -
+                          </Match>
+                          <Match
+                            when={
                               !isUndefined(itemInfo()!.crunchbase_data!.num_employees_min) &&
                               !isUndefined(itemInfo()!.crunchbase_data!.num_employees_max)
                             }

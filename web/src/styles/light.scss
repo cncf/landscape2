@@ -5,6 +5,10 @@
 
   --color-stats-1: var(--color1);
 
+  .modal-dialog-scrollable .modal-body {
+    overscroll-behavior: contain;
+  }
+
   .text-primary {
     color: var(--color1) !important;
   }

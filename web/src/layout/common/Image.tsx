@@ -1,3 +1,4 @@
+import isUndefined from 'lodash/isUndefined';
 import { createSignal } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
@@ -7,6 +8,7 @@ interface Props {
   name: string;
   logo: string;
   class?: string;
+  isLoaded?: boolean;
 }
 
 const Image = (props: Props) => {
@@ -22,6 +24,7 @@ const Image = (props: Props) => {
           class={props.class}
           src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
           onError={() => setError(true)}
+          loading={!isUndefined(props.isLoaded) && !props.isLoaded ? 'lazy' : undefined}
         />
       )}
     </>

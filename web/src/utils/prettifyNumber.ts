@@ -1,4 +1,5 @@
 const DEFAULT_DIGITS = 2;
+const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
 
 const prettifyNumber = (num: number, digits?: number): string | number => {
   if (num < 1000) {
@@ -14,7 +15,6 @@ const prettifyNumber = (num: number, digits?: number): string | number => {
     { value: 1e15, symbol: 'P' },
     { value: 1e18, symbol: 'E' },
   ];
-  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
   let i;
   for (i = si.length - 1; i > 0; i--) {
     if (num >= si[i].value) {

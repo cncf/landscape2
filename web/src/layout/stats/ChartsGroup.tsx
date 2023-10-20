@@ -28,11 +28,13 @@ interface DistributionData {
   year: number;
 }
 
+const REGEX_RGBA = /^rgba?\(|\s+|\)$/g;
+
 const rgba2hex = (rgba: string): string => {
   return (
     '#' +
     rgba
-      .replace(/^rgba?\(|\s+|\)$/g, '')
+      .replace(REGEX_RGBA, '')
       .split(',')
       .filter((_string, index) => index !== 3)
       .map((string) => parseFloat(string))

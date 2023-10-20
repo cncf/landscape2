@@ -5,7 +5,6 @@ import throttle from 'lodash/throttle';
 import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
 import { GROUP_PARAM, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
-import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, ViewMode } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
@@ -57,8 +56,6 @@ const Explore = (props: Props) => {
   const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
-
-  useBodyScroll(visibleLoading, 'loading');
 
   const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
     if (viewMode) {
@@ -112,15 +109,11 @@ const Explore = (props: Props) => {
   }
 
   createEffect(
-    on(
-      fullDataReady,
-      () => {
-        if (fullDataReady()) {
-          fetchItems();
-        }
-      },
-      { defer: true }
-    )
+    on(fullDataReady, () => {
+      if (fullDataReady()) {
+        fetchItems();
+      }
+    })
   );
 
   createEffect(
@@ -379,7 +372,7 @@ const Explore = (props: Props) => {
           </div>
         </div>
       </main>
-      {!visibleLoading() && <Footer logo={window.baseDS.images.footer_logo} />}
+      <Footer logo={window.baseDS.images.footer_logo} />
     </Show>
   );
 };
