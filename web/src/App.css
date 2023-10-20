@@ -7,6 +7,14 @@ body,
   padding: 0;
 }
 
+body {
+  overflow: hidden;
+}
+
+#landscape {
+  overflow-y: auto;
+}
+
 :root {
   --card-size-width: 50px;
   --card-size-height: 45px;
@@ -27,9 +35,9 @@ select:focus {
   box-shadow: 0 0 0 0 transparent !important;
 }
 
-.noScroll-sidebar,
-.noScroll-modal,
-.noScroll-loading {
+.noScroll-sidebar #landscape,
+.noScroll-modal #landscape,
+.noScroll-loading #landscape {
   margin: 0;
   height: 100%;
   overflow: hidden;
