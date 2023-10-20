@@ -8,7 +8,7 @@ use deploy::s3;
 use new::new;
 use serve::serve;
 use std::path::PathBuf;
-use validate::{validate_data, validate_settings};
+use validate::{validate_data, validate_guide, validate_settings};
 
 mod build;
 mod deploy;
@@ -195,6 +195,9 @@ enum ValidateTarget {
     /// Validate landscape data file.
     Data(DataSource),
 
+    /// Validate landscape guide file.
+    Guide(GuideSource),
+
     /// Validate landscape settings file.
     Settings(SettingsSource),
 }
@@ -226,6 +229,7 @@ async fn main() -> Result<()> {
         Command::Serve(args) => serve(args).await?,
         Command::Validate(args) => match &args.target {
             ValidateTarget::Data(src) => validate_data(src).await?,
+            ValidateTarget::Guide(src) => validate_guide(src).await?,
             ValidateTarget::Settings(src) => validate_settings(src).await?,
         },
     }

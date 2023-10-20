@@ -6,7 +6,6 @@ use self::{
     datasets::Datasets,
     export::generate_items_csv,
     github::collect_github_data,
-    guide::LandscapeGuide,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{Images, QrCode},
@@ -17,6 +16,7 @@ use askama::Template;
 use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
 pub(crate) use data::LandscapeData;
 use futures::stream::{self, StreamExt};
+pub(crate) use guide::LandscapeGuide;
 use headless_chrome::{
     browser,
     protocol::cdp::Page::{self, CaptureScreenshotFormatOption},
