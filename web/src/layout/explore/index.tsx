@@ -235,8 +235,11 @@ const Explore = (props: Props) => {
                         }}
                         onClick={() => {
                           checkIfVisibleLoading(viewMode(), group.name);
-                          updateQueryString(GROUP_PARAM, group.name);
-                          setSelectedGroup(group.name);
+                          // Allow display loading before starting to update the rest of things
+                          setTimeout(() => {
+                            updateQueryString(GROUP_PARAM, group.name);
+                            setSelectedGroup(group.name);
+                          }, 5);
                         }}
                       >
                         {group.name}
@@ -266,8 +269,11 @@ const Explore = (props: Props) => {
                       onClick={() => {
                         if (!(value === viewMode())) {
                           checkIfVisibleLoading(value, selectedGroup());
-                          updateQueryString(VIEW_MODE_PARAM, value);
-                          setViewMode(value);
+                          // Allow display loading before starting to update the rest of things
+                          setTimeout(() => {
+                            updateQueryString(VIEW_MODE_PARAM, value);
+                            setViewMode(value);
+                          }, 5);
                         }
                       }}
                     >

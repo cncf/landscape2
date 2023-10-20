@@ -123,7 +123,7 @@ const CardCategory = (props: Props) => {
           }
         } else {
           updateRoute(firstItemInMenu);
-          window.scrollBy({ top: 0, behavior: 'instant' });
+          document.getElementById('landscape')!.scrollBy({ top: 0, behavior: 'instant' });
         }
         setInitialFullRender(true);
       }

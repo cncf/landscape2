@@ -24,7 +24,7 @@ const Menu = (props: Props) => {
   createEffect(() => {
     if (props.isVisible) {
       if (!isUndefined(ref())) {
-        if (ref()!.clientHeight > window.innerHeight) {
+        if (ref()!.clientHeight > document.getElementById('landscape')!.clientHeight) {
           setOffsetActive(true);
         } else {
           setOffsetActive(false);
@@ -43,7 +43,7 @@ const Menu = (props: Props) => {
 
   return (
     <div class={`d-flex flex-column me-4 sticky-top ${styles.toc}`}>
-      <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() }}>
+      <div id="menu" classList={{ [`overflow-y-auto ${styles.content}`]: offsetActive() }}>
         <div ref={setRef}>
           <For each={Object.keys(props.menu())}>
             {(cat, index) => {

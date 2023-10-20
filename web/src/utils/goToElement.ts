@@ -4,7 +4,7 @@ const goToElement = (id: string, offset?: number): boolean => {
     const elementPosition = target.getBoundingClientRect().top;
     const offsetPosition = elementPosition - (offset || 0);
 
-    window.scrollBy({
+    document.getElementById('landscape')!.scrollBy({
       top: offsetPosition,
       behavior: 'instant',
     });
