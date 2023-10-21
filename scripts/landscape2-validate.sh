@@ -4,8 +4,8 @@ TARGET_KIND=$1
 TARGET_PATH=$2
 
 function printUsage() {
-    echo "USAGE: landscape2-validate.sh <TARGET> <PATH>"
-    echo -e "\nTARGET options: data, guide or settings"
+    echo "USAGE: landscape2-validate.sh <TARGET_KIND> <TARGET_PATH>"
+    echo -e "\TARGET_KIND options: data, guide or settings"
     exit 1
 }
 
