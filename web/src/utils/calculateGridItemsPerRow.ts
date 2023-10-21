@@ -1,6 +1,6 @@
 import isUndefined from 'lodash/isUndefined';
 
-const PADDING = 18;
+const PADDING = 24 + 3; // padding + border
 const CARD_GAP = 5;
 
 const calculateGridItemsPerRow = (
@@ -10,7 +10,7 @@ const calculateGridItemsPerRow = (
   noPadding?: boolean
 ): number => {
   const padding = !isUndefined(noPadding) && noPadding ? 0 : PADDING;
-  return Math.floor((containerWidth + CARD_GAP * (percentage / 100) - padding) / (itemWidth + CARD_GAP));
+  return Math.floor(((containerWidth + CARD_GAP) * (percentage / 100) - padding) / (itemWidth + CARD_GAP));
 };
 
 export default calculateGridItemsPerRow;

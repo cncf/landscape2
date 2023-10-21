@@ -7,6 +7,7 @@ import { BaseItem, SVGIconKind } from '../../types';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
+import Image from './Image';
 import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
 import SVGIcon from './SVGIcon';
@@ -266,10 +267,10 @@ const Searchbar = (props: Props) => {
                           <div
                             class={`d-flex align-items-center justify-content-center me-3 ${styles.miniImageWrapper}`}
                           >
-                            <img
-                              alt={`${item.name} logo`}
+                            <Image
+                              name={item.name}
                               class={`m-auto ${styles.logo}`}
-                              src={
+                              logo={
                                 import.meta.env.MODE === 'development' ? `../../static/${item.logo}` : `${item.logo}`
                               }
                             />

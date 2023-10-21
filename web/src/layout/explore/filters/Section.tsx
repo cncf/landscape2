@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
@@ -30,6 +31,13 @@ const Section = (props: Props) => {
         tmpActiveFilters = [...tmpActiveFilters, ...subOtps];
         tmpActiveFilters.push(value);
         tmpActiveFilters = [...new Set(tmpActiveFilters)];
+      }
+    }
+
+    // Remove foundation value from maturity category when no more options
+    if (name === FilterCategory.Maturity) {
+      if (isEqual(tmpActiveFilters, [window.baseDS.foundation.toLowerCase()])) {
+        tmpActiveFilters = [];
       }
     }
     props.updateActiveFilters(name, tmpActiveFilters);

@@ -41,7 +41,7 @@ const FullScreenModal = (props: Props) => {
   };
 
   onMount(() => {
-    window.addEventListener('keydown', handleEsc);
+    window.addEventListener('keydown', handleEsc, { passive: true });
   });
 
   onCleanup(() => {

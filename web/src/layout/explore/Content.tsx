@@ -19,8 +19,8 @@ const Content = (props: Props) => {
   const isSelected = () => isUndefined(props.group) || props.group === props.initialSelectedGroup;
 
   return (
-    <div style={isSelected() ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}>
-      <div style={selectedViewMode() === ViewMode.Card ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}>
+    <div class={isSelected() ? 'd-block' : 'd-none'}>
+      <div class={selectedViewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
         <CardCategory
           initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Card}
           data={props.data}
@@ -28,7 +28,7 @@ const Content = (props: Props) => {
           finishLoading={props.finishLoading}
         />
       </div>
-      <div style={selectedViewMode() === ViewMode.Grid ? { height: 'initial' } : { height: '0px', overflow: 'hidden' }}>
+      <div class={selectedViewMode() === ViewMode.Grid ? 'd-block' : 'd-none'}>
         <GridCategory
           initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Grid}
           data={props.data}

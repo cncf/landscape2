@@ -27,6 +27,8 @@ const Header = (props: Props) => {
               class={styles.logo}
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
               alt="Landscape logo"
+              width="auto"
+              height={48}
             />
           </A>
         </div>

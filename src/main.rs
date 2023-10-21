@@ -18,7 +18,12 @@ mod validate;
 
 /// CLI arguments.
 #[derive(Parser)]
-#[command(about, version)]
+#[command(
+    version,
+    about = "Landscape2 CLI tool
+
+https://github.com/cncf/landscape2#usage"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,

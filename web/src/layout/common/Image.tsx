@@ -24,8 +24,9 @@ const Image = (props: Props) => {
           class={props.class}
           src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
           onError={() => setError(true)}
-          // Safari is not working properly when lazy loading is enabled
           loading={!isUndefined(props.isLoaded) && !props.isLoaded ? 'lazy' : undefined}
+          width="auto"
+          height="auto"
         />
       )}
     </>

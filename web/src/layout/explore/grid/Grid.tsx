@@ -1,8 +1,7 @@
-import { createResizeObserver } from '@solid-primitives/resize-observer';
 import { A } from '@solidjs/router';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
+import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
@@ -40,53 +39,41 @@ interface ItemsListProps {
   borderColor: string;
 }
 
-interface WrapperSize {
-  width: number;
-  height: number;
-}
-
 const ItemsList = (props: ItemsListProps) => {
   const zoom = useZoomLevel();
-  let ref!: HTMLDivElement;
-  const [items, setItems] = createSignal<(BaseItem | Item)[]>([]);
-  const [size, setSize] = createSignal<WrapperSize>();
+  const gridWidth = useGridWidth();
+  const percentage = () => props.percentage;
+  const initialItems = () => props.items;
+  const [items, setItems] = createSignal<(BaseItem | Item)[]>();
+  const [itemsPerRow, setItemsPerRow] = createSignal<number>(0);
+
+  createEffect(() => {
+    setItemsPerRow(calculateGridItemsPerRow(percentage(), gridWidth(), ZOOM_LEVELS[zoom()][0]));
+  });
 
   createEffect(
-    on(size, () => {
-      if (!isUndefined(size()) && size()!.width > 0) {
-        setItems((prev) => {
-          const itemsPerRow = calculateGridItemsPerRow(100, size()!.width, ZOOM_LEVELS[zoom()][0], true);
-          const tmpItems: (BaseItem | Item)[] = [];
+    on(itemsPerRow, () => {
+      setItems((prev) => {
+        const tmpItems: (BaseItem | Item)[] = [];
 
-          for (const item of new ItemIterator(props.items, itemsPerRow! <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow!)) {
-            if (item) {
-              tmpItems.push(item);
-            }
+        for (const item of new ItemIterator(initialItems(), itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow())) {
+          if (item) {
+            tmpItems.push(item);
           }
+        }
 
-          return !isEqual(tmpItems, prev) ? tmpItems : prev;
-        });
-      }
+        return !isEqual(tmpItems, items()) ? tmpItems : prev;
+      });
     })
   );
 
-  onMount(() => {
-    createResizeObserver(ref, ({ width, height }, el) => {
-      if (el === ref) {
-        setSize({ width: width, height: height });
-      }
-    });
-  });
-
   return (
-    <div ref={ref} class={styles.items}>
-      <Show when={items().length > 0}>
-        <For each={items()}>
-          {(item: BaseItem | Item) => {
-            return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
-          }}
-        </For>
-      </Show>
+    <div class={styles.items}>
+      <For each={items()}>
+        {(item: BaseItem | Item) => {
+          return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
+        }}
+      </For>
     </div>
   );
 };
@@ -122,6 +109,7 @@ const Grid = (props: Props) => {
                 {(subcat: LayoutColumn) => {
                   const items = props.initialCategoryData[subcat.subcategoryName].items;
                   if (items.length === 0) return null;
+                  const featuredItems = items.filter((item: BaseItem | Item) => !isUndefined(item.featured)).length;
                   const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(items);
                   return (
                     <div
@@ -130,7 +118,7 @@ const Grid = (props: Props) => {
                         'border-bottom-0 col-12': subcat.percentage === 100,
                       }}
                       class="col d-flex flex-column border border-3 border-white border-start-0"
-                      style={{ 'max-width': `${subcat.percentage}%` }}
+                      style={{ width: `${subcat.percentage}%`, 'min-width': `${subcat.percentage}%` }}
                     >
                       <div
                         class={`d-flex align-items-center text-white w-100 fw-medium ${styles.subcatTitle}`}
@@ -167,11 +155,32 @@ const Grid = (props: Props) => {
                         )}
                       </div>
                       <div class={`flex-grow-1 ${styles.itemsContainer}`}>
-                        <ItemsList
-                          borderColor={props.backgroundColor}
-                          items={sortedItems}
-                          percentage={subcat.percentage}
-                        />
+                        {/* Use ItemsList when subcategory has featured and no featured items */}
+                        <Show
+                          when={featuredItems > 0 && featuredItems < sortedItems.length}
+                          fallback={
+                            <div class={styles.items}>
+                              <For each={sortedItems}>
+                                {(item: BaseItem | Item) => {
+                                  return (
+                                    <GridItem
+                                      item={item}
+                                      borderColor={props.backgroundColor}
+                                      showMoreInfo
+                                      activeDropdown
+                                    />
+                                  );
+                                }}
+                              </For>
+                            </div>
+                          }
+                        >
+                          <ItemsList
+                            borderColor={props.backgroundColor}
+                            items={sortedItems}
+                            percentage={subcat.percentage}
+                          />
+                        </Show>
                       </div>
                     </div>
                   );
