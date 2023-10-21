@@ -14,7 +14,8 @@ RUN cargo build --release
 # Final stage
 FROM alpine:3.18.4
 RUN addgroup -S landscape2 && adduser -S landscape2 -G landscape2
-RUN apk --no-cache add chromium font-ubuntu
+RUN apk --no-cache add bash chromium font-ubuntu
 USER landscape2
 WORKDIR /home/landscape2
 COPY --from=builder /landscape2/target/release/landscape2 /usr/local/bin
+COPY scripts/landscape2-validate.sh /
