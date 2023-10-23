@@ -93,6 +93,8 @@ const Footer = (props: Props) => {
                         class={styles.logo}
                         alt="Logo"
                         src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+                        height={34}
+                        width="auto"
                       />
                     </div>
                   )}
@@ -108,6 +110,8 @@ const Footer = (props: Props) => {
                       ? `../../static/${window.baseDS.qr_code}`
                       : window.baseDS.qr_code
                   }
+                  height={60}
+                  width={60}
                 />
               </Show>
             </div>

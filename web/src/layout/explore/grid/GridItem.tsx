@@ -1,4 +1,4 @@
-import { createIntersectionObserver } from '@solid-primitives/intersection-observer';
+// import { createIntersectionObserver } from '@solid-primitives/intersection-observer';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 
@@ -24,7 +24,6 @@ const DEFAULT_MARGIN = 30;
 const GridItem = (props: Props) => {
   let ref;
   const fullDataReady = useFullDataReady();
-  const [btn, setBtn] = createSignal<HTMLButtonElement[]>([]);
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
   const updateActiveItemId = useUpdateActiveItemId();
   const [visibleDropdown, setVisibleDropdown] = createSignal(false);
@@ -34,7 +33,6 @@ const GridItem = (props: Props) => {
   const [dropdownTimeout, setDropdownTimeout] = createSignal<number>();
   const [elWidth, setElWidth] = createSignal<number>(0);
   const [item, setItem] = createSignal<Item | undefined>();
-  const [loaded, setLoaded] = createSignal<boolean>(false);
 
   createEffect(
     on(fullDataReady, () => {
@@ -92,14 +90,6 @@ const GridItem = (props: Props) => {
     if (!isUndefined(dropdownTimeout())) {
       clearTimeout(dropdownTimeout());
     }
-  });
-
-  createIntersectionObserver(btn, (entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting && !loaded()) {
-        setLoaded(true);
-      }
-    });
   });
 
   return (
@@ -173,7 +163,6 @@ const GridItem = (props: Props) => {
 
         <div ref={setWrapper} class="w-100 h-100">
           <button
-            ref={(el) => setBtn([el])}
             class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
             onClick={(e) => {
               e.preventDefault();
@@ -195,7 +184,7 @@ const GridItem = (props: Props) => {
             aria-hidden="true"
             tabIndex={-1}
           >
-            <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} isLoaded={loaded()} />
+            <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} isLoaded={false} />
 
             {props.item.featured && props.item.featured.label && (
               <div

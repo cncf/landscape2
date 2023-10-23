@@ -27,7 +27,8 @@ const SubcategoryGrid = (props: Props) => {
     window.addEventListener(
       'resize',
       // eslint-disable-next-line solid/reactivity
-      throttle(() => handler(), 400)
+      throttle(() => handler(), 400),
+      { passive: true }
     );
     handler();
   });

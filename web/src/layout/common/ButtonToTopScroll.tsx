@@ -1,6 +1,7 @@
+import { createScrollPosition } from '@solid-primitives/scroll';
 import { useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, on, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
 import isElementInView from '../../utils/isElementInView';
@@ -11,9 +12,20 @@ interface Props {
   firstSection: string | null;
 }
 
+const NAV_HEIGHT = 200;
+
 const ButtonToTopScroll = (props: Props) => {
   const navigate = useNavigate();
-  const [isVisible] = createSignal<boolean>(true);
+  const [isVisible, setIsVisible] = createSignal<boolean>(false);
+  const target = document.getElementById('landscape');
+  const scroll = createScrollPosition(target as Element);
+  const y = () => scroll.y;
+
+  createEffect(
+    on(y, () => {
+      setIsVisible(y() > NAV_HEIGHT);
+    })
+  );
 
   return (
     <Show when={!isUndefined(props.firstSection)}>

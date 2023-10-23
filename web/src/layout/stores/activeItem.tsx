@@ -13,11 +13,12 @@ function useActiveItemProvider() {
 
   const updateActiveItem = (itemId?: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
+
     if (isUndefined(itemId)) {
       updatedSearchParams.delete(ITEM_PARAM);
       const params = updatedSearchParams.toString();
 
-      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}`, {
+      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}${location.hash}`, {
         replace: true,
         scroll: false,
       });
@@ -26,7 +27,7 @@ function useActiveItemProvider() {
       updatedSearchParams.set(ITEM_PARAM, itemId);
       const params = updatedSearchParams.toString();
 
-      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}`, {
+      navigate(`${location.pathname}${!isEmpty(params) ? `?${params}` : ''}${location.hash}`, {
         replace: true,
         scroll: false,
       });

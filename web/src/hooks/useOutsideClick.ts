@@ -23,7 +23,7 @@ export const useOutsideClick = (
 
   createEffect(() => {
     if (enabled()) {
-      document.addEventListener('mousedown', onEvent);
+      document.addEventListener('mousedown', onEvent, { passive: true });
     } else {
       document.removeEventListener('mousedown', onEvent);
     }
