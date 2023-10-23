@@ -41,20 +41,40 @@ In addition to the information available in the landscape data file, the tool co
 
 ## Installation
 
-The landscape2 CLI tool is distributed in a [container image](https://gallery.ecr.aws/g6m3a0y9/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data file is valid, also uses this image.
+### Pre-built binaries
 
-Alternatively, it can also be easily built from the source.
+Binary downloads of the landscape2 CLI tool can be found in the [releases page](https://github.com/cncf/landscape2/releases).
+
+#### Install via shell script
+
+```text
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.2.0/landscape2-installer.sh | sh
+```
+
+#### Install via Homebrew
+
+```text
+brew install cncf/landscape2/landscape2
+```
+
+### Container image
+
+The landscape2 CLI tool is also distributed in a [container image](https://gallery.ecr.aws/g6m3a0y9/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data file is valid, also uses this image.
 
 ### Building from source
 
 You can build **landscape2** from the source by using [Cargo](https://rustup.rs), the Rust package manager. [yarn](https://classic.yarnpkg.com/lang/en/docs/install/) is required during the installation process to build the web application, which will be embedded into the `landscape2` binary as part of the build process.
 
 ```text
-$ cargo install --git https://github.com/cncf/landscape2
+cargo install --git https://github.com/cncf/landscape2
+```
 
-$ landscape2 --help
+```text
+landscape2 --help
 
 Landscape2 CLI tool
+
+https://github.com/cncf/landscape2#usage
 
 Usage: landscape2 <COMMAND>
 
@@ -84,8 +104,10 @@ The `new` subcommand allows us to create a new landscape from a built-in templat
 The following command will create the directory `my-landscape` if it doesn't already exist and will copy into it the files in the built-in template:
 
 ```text
-$ landscape2 new --output-dir my-landscape
+landscape2 new --output-dir my-landscape
+```
 
+```text
 INFO new: landscape2::new: creating new landscape from the built-in template..
 INFO new: landscape2::new: landscape created! (took: 0.003s)
 
@@ -106,8 +128,10 @@ The build process is in charge of generating the landscape website from the info
 The following command will build the landscape and write the resulting files to the `output-dir` provided (*build* in this case):
 
 ```text
-$ cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
+cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
+```
 
+```text
 INFO build: landscape2::build: building landscape website..
 WARN build:collect_crunchbase_data: landscape2::build::crunchbase: crunchbase api key not provided: no information will be collected from crunchbase
 WARN build:collect_github_data: landscape2::build::github: github tokens not provided: no information will be collected from github
@@ -128,8 +152,10 @@ You can see it in action by running the following command:
 The result of the build process is a **static website** that you can deploy on your favorite hosting provider. To make it easier to try your landscapes, **landscape2** includes a `serve` subcommand that will launch an HTTP server and serve the contents of your landscape. In our example, the build output displayed the command to do this, so we'll go ahead and give it a try:
 
 ```text
-$ landscape2 serve --landscape-dir build
+landscape2 serve --landscape-dir build
+```
 
+```text
 INFO serve: landscape2::serve: http server running (press ctrl+c to stop)
 
 🔗 Landscape available at: http://127.0.0.1:8000
