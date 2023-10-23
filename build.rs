@@ -16,8 +16,14 @@ fn main() -> Result<()> {
     }
 
     // Build web application
-    Command::new("yarn").args(["--cwd", "web", "install"]).output()?;
-    Command::new("yarn").args(["--cwd", "web", "build"]).output()?;
+    let output = Command::new("yarn").args(["--cwd", "web", "install"]).output()?;
+    if !output.status.success() {
+        return Err(format_err!("yarn install: {}", String::from_utf8(output.stderr)?));
+    }
+    let output = Command::new("yarn").args(["--cwd", "web", "build"]).output()?;
+    if !output.status.success() {
+        return Err(format_err!("yarn build: {}", String::from_utf8(output.stderr)?));
+    }
 
     Ok(())
 }
