@@ -1,10 +1,16 @@
 [package]
 name = "landscape2"
 description = "Landscape2 CLI tool"
-version = "0.1.0"
+version = "0.2.0"
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.70"
+repository = "https://github.com/cncf/landscape2"
+authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
+
+[package.metadata.wix]
+upgrade-guid = "8B8B47D4-B0F2-4755-9288-1C5FCFCA9F92"
+path-guid = "5A454C4A-3A81-4F07-91A2-D8A181CC98B7"
 
 [dependencies]
 anyhow = "1.0.75"
@@ -61,3 +67,25 @@ mockall = "0.11.4"
 [build-dependencies]
 anyhow = "1.0.75"
 which = "4.4.2"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.3.1"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell", "homebrew", "msi"]
+# A GitHub repo to push Homebrew formulas to
+tap = "cncf/landscape2-homebrew"
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+publish-jobs = ["homebrew"]
+# Publish jobs to run in CI
+pr-run-mode = "skip"
