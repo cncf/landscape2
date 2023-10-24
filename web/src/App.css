@@ -7,11 +7,12 @@ body,
   padding: 0;
 }
 
-body {
+/* Lazy loading for images are not working on body */
+body:not(.screenshot) {
   overflow: hidden;
 }
 
-#landscape {
+body:not(.screenshot) #landscape {
   overflow-y: auto;
 }
 

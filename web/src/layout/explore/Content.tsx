@@ -11,6 +11,7 @@ interface Props {
   initialSelectedGroup?: string;
   data: CategoriesData;
   categories_overridden?: string[];
+  updateHash: (hash?: string) => void;
   finishLoading: () => void;
 }
 
@@ -25,6 +26,7 @@ const Content = (props: Props) => {
           initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Card}
           data={props.data}
           categories_overridden={props.categories_overridden}
+          updateHash={props.updateHash}
           finishLoading={props.finishLoading}
         />
       </div>

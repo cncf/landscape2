@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
 import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
@@ -91,6 +92,17 @@ const Explore = (props: Props) => {
     });
   };
 
+  const updateHash = (hash?: string) => {
+    const updatedSearchParams = new URLSearchParams();
+    updatedSearchParams.set(VIEW_MODE_PARAM, ViewMode.Card);
+    updatedSearchParams.set(GROUP_PARAM, selectedGroup() || 'default');
+
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
+      replace: true,
+      scroll: false,
+    });
+  };
+
   async function fetchItems() {
     try {
       const fullData = await itemsDataGetter.getAll();
@@ -150,7 +162,12 @@ const Explore = (props: Props) => {
   );
 
   const removeFilter = (name: FilterCategory, value: string) => {
-    const tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
+    let tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
+    if (name === FilterCategory.Maturity) {
+      if (isEqual(tmpActiveFilters, [window.baseDS.foundation.toLowerCase()])) {
+        tmpActiveFilters = [];
+      }
+    }
     updateActiveFilters(name, tmpActiveFilters);
   };
 
@@ -350,6 +367,7 @@ const Explore = (props: Props) => {
                 <Content
                   data={{ ...groupsData() }.default}
                   categories_overridden={props.initialData.categories_overridden}
+                  updateHash={updateHash}
                   finishLoading={finishLoading}
                 />
               }
@@ -362,6 +380,7 @@ const Explore = (props: Props) => {
                       initialSelectedGroup={selectedGroup()}
                       data={{ ...groupsData() }[group.name]}
                       categories_overridden={props.initialData.categories_overridden}
+                      updateHash={updateHash}
                       finishLoading={finishLoading}
                     />
                   );

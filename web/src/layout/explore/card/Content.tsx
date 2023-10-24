@@ -1,14 +1,10 @@
-import { createVisibilityObserver, withDirection, withOccurrence } from '@solid-primitives/intersection-observer';
-import { A, useLocation, useNavigate } from '@solidjs/router';
-import isNull from 'lodash/isNull';
-import isUndefined from 'lodash/isUndefined';
+import { A } from '@solidjs/router';
 import orderBy from 'lodash/orderBy';
-import { Accessor, createMemo, For } from 'solid-js';
+import { Accessor, For } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { BaseItem, CardMenu, Item, SVGIconKind } from '../../../types';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
-import isElementInView from '../../../utils/isElementInView';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoriesData } from '../../../utils/prepareData';
 import slugify from '../../../utils/slugify';
@@ -26,68 +22,7 @@ interface Props {
 const Content = (props: Props) => {
   const bgColor = COLORS[0];
   const updateActiveItemId = useUpdateActiveItemId();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const state = createMemo(() => location.state);
   const data = () => props.data;
-
-  const useVisibilityObserver = createVisibilityObserver(
-    {},
-    withOccurrence(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line solid/reactivity
-      withDirection((entry, { occurrence, directionY }) => {
-        const currentNode = entry.target.id;
-        const prevSibling =
-          !isNull(window.document.getElementById(entry.target.id)) &&
-          !isNull(window.document.getElementById(entry.target.id)!.previousElementSibling)
-            ? window.document.getElementById(entry.target.id)!.previousElementSibling!.id
-            : undefined;
-        const nextSibling =
-          !isNull(window.document.getElementById(entry.target.id)) &&
-          !isNull(window.document.getElementById(entry.target.id)!.nextElementSibling)
-            ? window.document.getElementById(entry.target.id)!.nextElementSibling!.id
-            : undefined;
-
-        // Do not trigger handleEnter when we are not scrolling and we go directly to section
-        const nodes = [currentNode, prevSibling, nextSibling];
-
-        if (nodes.includes(location.hash.replace('#', ''))) {
-          if (directionY === 'Top') {
-            if (occurrence === 'Leaving' && !isUndefined(nextSibling)) {
-              handleEnter(nextSibling);
-            }
-            if (occurrence === 'Entering') {
-              handleEnter(currentNode);
-            }
-          }
-          if (directionY === 'Bottom') {
-            if (!isUndefined(state()) && occurrence === 'Entering') {
-              handleEnter(currentNode);
-            }
-          }
-        }
-      })
-    )
-  );
-
-  const handleEnter = (id: string) => {
-    if (`#${id}` !== location.hash) {
-      navigate(`${location.pathname}${location.search}#${id}`, {
-        replace: true,
-        scroll: false,
-        state: undefined,
-      });
-
-      if (!isElementInView(`btn_${id}`)) {
-        const target = window.document.getElementById(`btn_${id}`);
-        if (target) {
-          target.scrollIntoView({ block: 'nearest' });
-        }
-      }
-    }
-  };
 
   return (
     <For each={Object.keys(props.menu())}>
@@ -103,11 +38,9 @@ const Content = (props: Props) => {
                 if (sortedItems().length === 0) return null;
 
                 const id = convertStringSpaces(`${cat}/${subcat}`);
-                let ref: HTMLDivElement | undefined;
-                useVisibilityObserver(() => props.isVisible && ref);
 
                 return (
-                  <div ref={(el) => (ref = el)} id={id}>
+                  <div id={`card_${id}`}>
                     <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                       <div
                         class={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
