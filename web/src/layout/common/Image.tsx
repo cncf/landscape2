@@ -8,7 +8,7 @@ interface Props {
   name: string;
   logo: string;
   class?: string;
-  isLoaded?: boolean;
+  enableLazyLoad?: boolean;
 }
 
 const Image = (props: Props) => {
@@ -24,7 +24,7 @@ const Image = (props: Props) => {
           class={props.class}
           src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
           onError={() => setError(true)}
-          loading={!isUndefined(props.isLoaded) && !props.isLoaded ? 'lazy' : undefined}
+          loading={!isUndefined(props.enableLazyLoad) && props.enableLazyLoad ? 'lazy' : undefined}
           width="auto"
           height="auto"
         />

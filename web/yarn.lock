@@ -535,13 +535,6 @@
   dependencies:
     "@solid-primitives/utils" "^6.2.1"
 
-"@solid-primitives/intersection-observer@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@solid-primitives/intersection-observer/-/intersection-observer-2.1.3.tgz#bca6d55b635842b4f779c42de578e6ab9cde2891"
-  integrity sha512-S+wej7eBelMosmMQ90kOJ5IFLQ9VdY5jgjFsqkFqmjkHZZg9XdfaeHjEF8Z2OpIgdl85sjk1UDGMtabwTmzWzw==
-  dependencies:
-    "@solid-primitives/utils" "^6.2.1"
-
 "@solid-primitives/resize-observer@^2.0.22":
   version "2.0.22"
   resolved "https://registry.yarnpkg.com/@solid-primitives/resize-observer/-/resize-observer-2.0.22.tgz#55e8b4f87b7d6f72fabb689b91049c125cfba27d"

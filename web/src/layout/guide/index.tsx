@@ -1,7 +1,5 @@
-import { createVisibilityObserver, withDirection, withOccurrence } from '@solid-primitives/intersection-observer';
 import { useLocation, useNavigate } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
-import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
@@ -27,73 +25,6 @@ const GuideIndex = () => {
   const [toc, setToc] = createSignal<ToCTitle[]>([]);
   const state = createMemo(() => location.state || {});
   const [firstItem, setFirstItem] = createSignal<string>();
-  const [enabledObserver, setEnabledObserver] = createSignal<boolean>(false);
-
-  const cleanSectionFromId = (id: string): string => {
-    return id.replace('section_', '');
-  };
-
-  const useVisibilityObserver = createVisibilityObserver(
-    {},
-    withOccurrence(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line solid/reactivity
-      withDirection((entry, { occurrence, directionY }) => {
-        const currentNode = cleanSectionFromId(entry.target.id);
-        const prevSibling =
-          !isNull(window.document.getElementById(entry.target.id)) &&
-          !isNull(window.document.getElementById(entry.target.id)!.previousElementSibling)
-            ? cleanSectionFromId(window.document.getElementById(entry.target.id)!.previousElementSibling!.id)
-            : undefined;
-        const nextSibling =
-          !isNull(window.document.getElementById(entry.target.id)) &&
-          !isNull(window.document.getElementById(entry.target.id)!.nextElementSibling)
-            ? cleanSectionFromId(window.document.getElementById(entry.target.id)!.nextElementSibling!.id)
-            : undefined;
-
-        // Do not trigger handleEnter when we are not scrolling and we go directly to section
-        const nodes = [currentNode, prevSibling, nextSibling];
-        const cleanHash = location.hash.replace('#', '');
-
-        if (nodes.includes(cleanHash)) {
-          if (enabledObserver()) {
-            if (directionY === 'Top') {
-              if (occurrence === 'Leaving' && !isUndefined(nextSibling)) {
-                handleEnter(nextSibling);
-              }
-              if (occurrence === 'Entering') {
-                handleEnter(currentNode);
-              }
-            }
-            if (directionY === 'Bottom') {
-              if (occurrence === 'Entering') {
-                handleEnter(currentNode);
-              }
-            }
-          } else {
-            if (occurrence === 'Entering' && currentNode === cleanHash) {
-              // TODO - fireOnRapidScroll
-              setTimeout(() => {
-                setEnabledObserver(true);
-              }, 50);
-            }
-          }
-        }
-      })
-    )
-  );
-
-  const handleEnter = (id: string) => {
-    if (`#${id}` !== location.hash) {
-      navigate(`${location.pathname}${location.search}#${id}`, {
-        replace: true,
-        scroll: false,
-        state: undefined,
-      });
-      scrollInToC();
-    }
-  };
 
   const prepareToC = (data: Guide) => {
     const content: ToCTitle[] = [];
@@ -176,7 +107,6 @@ const GuideIndex = () => {
   };
 
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
-    setEnabledObserver(false);
     updateRoute(title);
     if (title === firstItem()) {
       window.scrollTo({
@@ -217,16 +147,10 @@ const GuideIndex = () => {
                   {(cat, index) => {
                     const id = slugify(cat.category);
                     const hasSubcategories = !isUndefined(cat.subcategories) && cat.subcategories.length > 0;
-                    let ref: HTMLDivElement | undefined;
-                    useVisibilityObserver(() => ref);
 
                     return (
                       <>
-                        <div
-                          ref={(el) => (ref = el)}
-                          id={`section_${id}`}
-                          classList={{ [styles.catSection]: !hasSubcategories }}
-                        >
+                        <div id={`section_${id}`} classList={{ [styles.catSection]: !hasSubcategories }}>
                           <h1 class={`border-bottom mb-4 pb-2 ${styles.title}`} classList={{ 'mt-5': index() !== 0 }}>
                             {cat.category}
                           </h1>
@@ -239,12 +163,9 @@ const GuideIndex = () => {
                           <For each={cat.subcategories}>
                             {(subcat, index) => {
                               const id = slugify(`${cat.category} ${subcat.subcategory}`);
-                              let refSub: HTMLDivElement | undefined;
-                              useVisibilityObserver(() => refSub);
 
                               return (
                                 <div
-                                  ref={(el) => (refSub = el)}
                                   id={`section_${id}`}
                                   classList={{ [styles.catSection]: index() === cat.subcategories.length - 1 }}
                                 >

@@ -1,11 +1,11 @@
-import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
-import { REGEX_PLUS, VIEW_MODE_PARAM } from '../../../data';
-import { CardMenu, ViewMode } from '../../../types';
+import { REGEX_PLUS } from '../../../data';
+import { CardMenu } from '../../../types';
 import convertStringSpaces from '../../../utils/convertStringSpaces';
 import goToElement from '../../../utils/goToElement';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
@@ -21,15 +21,14 @@ interface Props {
   initialIsVisible: boolean;
   data: CategoriesData;
   categories_overridden?: string[];
+  updateHash: (hash?: string) => void;
   finishLoading: () => void;
 }
 
 const TITLE_OFFSET = 16;
 
 const CardCategory = (props: Props) => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [firstLoad, setFirstLoad] = createSignal<boolean>(false);
   const [menu, setMenu] = createSignal<CardMenu>({});
   const [firstItem, setFirstItem] = createSignal<string>();
@@ -39,13 +38,7 @@ const CardCategory = (props: Props) => {
   const isVisible = () => props.initialIsVisible;
 
   const updateRoute = (hash: string) => {
-    // searchParams is not working properly and we are getting 'grid'
-    const updatedSearchParams = new URLSearchParams(searchParams);
-    updatedSearchParams.set(VIEW_MODE_PARAM, ViewMode.Card);
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}#${hash}`, {
-      replace: true,
-      scroll: false,
-    });
+    props.updateHash(hash);
   };
 
   const prepareMenu = (d: CategoriesData): CardMenu => {
@@ -118,7 +111,7 @@ const CardCategory = (props: Props) => {
               }
             }
             setTimeout(() => {
-              goToElement(cleanHash, TITLE_OFFSET);
+              goToElement(`card_${cleanHash}`, TITLE_OFFSET);
             }, 100);
           }
         } else {

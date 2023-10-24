@@ -64,7 +64,15 @@ const ItemsList = (props: ItemsProps) => {
       <Show when={!isUndefined(items)}>
         <For each={items()}>
           {(item: BaseItem) => {
-            return <GridItem item={item} borderColor={props.bgColor} showMoreInfo={false} activeDropdown={false} />;
+            return (
+              <GridItem
+                item={item}
+                borderColor={props.bgColor}
+                showMoreInfo={false}
+                activeDropdown={false}
+                enableLazyLoad={false}
+              />
+            );
           }}
         </For>
       </Show>

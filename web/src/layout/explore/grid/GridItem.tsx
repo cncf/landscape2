@@ -1,4 +1,3 @@
-// import { createIntersectionObserver } from '@solid-primitives/intersection-observer';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 
@@ -16,6 +15,7 @@ interface Props {
   borderColor?: string;
   showMoreInfo: boolean;
   activeDropdown: boolean;
+  enableLazyLoad?: boolean;
 }
 
 const DEFAULT_DROPDOWN_WIDTH = 450;
@@ -184,7 +184,12 @@ const GridItem = (props: Props) => {
             aria-hidden="true"
             tabIndex={-1}
           >
-            <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} isLoaded={false} />
+            <Image
+              name={props.item.name}
+              class={`m-auto ${styles.logo}`}
+              logo={props.item.logo}
+              enableLazyLoad={!isUndefined(props.enableLazyLoad) ? props.enableLazyLoad : true}
+            />
 
             {props.item.featured && props.item.featured.label && (
               <div

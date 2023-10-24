@@ -77,7 +77,7 @@ const Menu = (props: Props) => {
                             }}
                             disabled={`#${hash}` === location.hash}
                             onClick={() => {
-                              goToElement(hash, 16);
+                              goToElement(`card_${hash}`, 16);
                               updateRoute(hash);
                             }}
                           >
