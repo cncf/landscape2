@@ -125,8 +125,16 @@ impl ProjectsStats {
         let mut stats = ProjectsStats::default();
 
         // Collect stats from landscape items
+        let mut projects_seen = vec![];
         for item in &landscape_data.items {
             if let Some(maturity) = &item.maturity {
+                // Check for duplicates
+                let duplicate_key = (&item.homepage_url, &item.logo);
+                if projects_seen.contains(&duplicate_key) {
+                    continue;
+                }
+                projects_seen.push(duplicate_key);
+
                 // Total number of projects
                 stats.projects += 1;
 
