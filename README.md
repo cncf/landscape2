@@ -59,7 +59,7 @@ brew install cncf/landscape2/landscape2
 
 ### Container image
 
-The landscape2 CLI tool is also distributed in a [container image](https://gallery.ecr.aws/g6m3a0y9/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data file is valid, also uses this image.
+The landscape2 CLI tool is also distributed in a [container image](https://gallery.ecr.aws/g6m3a0y9/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data, settings and guide files are valid, also uses this image.
 
 ### Building from source
 
@@ -120,7 +120,7 @@ You can build it by running the following command:
 
 ### Building the landscape website
 
-The build process is in charge of generating the landscape website from the information available in the datasources provided. Now we'll build the landscape we created in the previous step by using the `build` subcommand. Please note that the `new` subcommand already suggested us to do this in its output and even printed the full command to use for us.
+The build process is in charge of generating the landscape website from the information available in the data sources provided. Now we'll build the landscape we created in the previous step by using the `build` subcommand. Please note that the `new` subcommand already suggested us to do this in its output and even printed the full command to use for us.
 
 > [!NOTE]
 > During the build process, landscape2 will try to take a screenshot of your landscape if the required settings were provided in the settings.yml file. This screenshot will be available for download from the generated web application (in PNG and PDF format), and is taken by launching Chrome/Chromium in headless mode. If Chrome/Chromium is not available, the screenshot won't be taken and a warning will be raised.
@@ -128,7 +128,13 @@ The build process is in charge of generating the landscape website from the info
 The following command will build the landscape and write the resulting files to the `output-dir` provided (*build* in this case):
 
 ```text
-cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
+cd my-landscape && \
+landscape2 build \
+  --data-file data.yml \
+  --settings-file settings.yml \
+  --guide-file guide.yml \
+  --logos-path logos \
+  --output-dir build
 ```
 
 ```text
@@ -145,7 +151,7 @@ You can see it in action by running the following command:
 ```
 
 > [!IMPORTANT]
-> Without the credentials required to collect data from external services (GitHub, Crunchbase, etc) the resulting site won't contain all the information available on the CNCF demo site. In this case, we didn't provide them intentionally, so we were warned about this in the command output (see WARN entries).
+> Without the credentials required to collect data from external services (GitHub and Crunchbase) the resulting site won't contain all the information available on the CNCF demo site. In this case, we didn't provide them intentionally, so we were warned about it in the command output (see WARN entries).
 
 ### Serving a landscape
 
@@ -165,6 +171,20 @@ If you visit `http://127.0.0.1:8000` in your browser you should see the landscap
 
 > [!NOTE]
 > The resulting website when building a landscape is a [single-page application](https://en.wikipedia.org/wiki/Single-page_application) that handles routing on the client side. This means that you'll need to configure your webserver to serve the `index.html` file for the SPA route paths (like '/guide', '/stats', etc). One way of doing this would be to serve that file when a non existent path is requested. The `serve` subcommand included in **landscape2** already handles this for us.
+
+### Validating data, settings and guide files
+
+The **landscape2** CLI tool includes a subcommand named `validate` that allows you to check that your landscape data, settings and guide files are valid. If you are interested in integrating this validation in your CI workflows (i.e. to enforce that those files are valid before merging a PR), please take a look at the [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action).
+
+```text
+landscape2 validate settings --settings-file cncf/settings.yml
+
+Error: the landscape settings file provided is not valid
+
+Caused by:
+    0: the landscape settings file provided is not valid
+    1: color1 is not valid (expected format: "rgba(0, 107, 204, 1)")
+```
 
 ### Performance considerations when building
 
