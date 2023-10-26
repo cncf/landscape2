@@ -174,7 +174,7 @@ impl LandscapeSettings {
             for (name, value) in colors {
                 if !RGBA.is_match(value) {
                     return Err(format_err!(
-                        r#"{name} is not valid (format: "rgba(0, 107, 204, 1)")"#
+                        r#"{name} is not valid (expected format: "rgba(0, 107, 204, 1)")"#
                     ));
                 }
             }
