@@ -52,6 +52,7 @@
 .badgeOutlineDark {
   border-color: var(--bs-gray-700) !important;
   color: var(--bs-gray-700);
+  line-height: 1;
 }
 
 .link {

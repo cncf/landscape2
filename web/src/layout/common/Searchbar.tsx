@@ -188,10 +188,10 @@ const Searchbar = (props: Props) => {
   return (
     <>
       <div
-        class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-auto ${styles.searchBar} search`}
+        class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} search`}
       >
         <input
-          data-testid="search-bar"
+          id="searchbar"
           ref={setInputEl}
           class={`flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base ${styles.input}`}
           type="text"
@@ -200,7 +200,7 @@ const Searchbar = (props: Props) => {
           autocorrect="off"
           autocapitalize="none"
           spellcheck={false}
-          placeholder="Search projects, products and members"
+          placeholder="Search items"
           onKeyDown={onKeyDown}
           onInput={(e) => setValue(e.target.value)}
         />
@@ -280,15 +280,18 @@ const Searchbar = (props: Props) => {
                           >
                             <div class="d-flex flex-row align-items-baseline">
                               <span class={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
-                              {!isUndefined(item.maturity) && (
+                              <Show when={!isUndefined(item.maturity)}>
                                 <div class={`d-flex flex-nowrap position-relative ${styles.badges}`}>
                                   <FoundationBadge class={`d-none d-xxl-flex ms-2 ${styles.badge}`} />
-                                  <MaturityBadge level={item.maturity} class={`ms-2 ${styles.badge}`} />
+                                  <MaturityBadge level={item.maturity!} class={`ms-2 ${styles.badge}`} />
                                 </div>
-                              )}
+                              </Show>
                             </div>
                             <div class={`text-muted text-truncate ${styles.legend}`}>
-                              {item.category} / {item.subcategory}
+                              <span class="d-none d-md-block">
+                                {item.category} / {item.subcategory}
+                              </span>
+                              <span class="d-block d-md-none">{item.subcategory}</span>
                             </div>
                           </div>
                         </div>

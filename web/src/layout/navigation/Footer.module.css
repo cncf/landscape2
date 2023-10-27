@@ -44,26 +44,39 @@
 
 @media only screen and (max-width: 991.98px) {
   .footer {
-    padding: 2rem 1.5rem;
+    padding: 2rem 1rem;
   }
 
   .footerCol,
   .fullMobileSection {
-    padding: 0 1rem;
+    padding: 0;
+  }
+
+  .footerCol:not(.about) {
+    padding-bottom: 1.5rem;
   }
 
   .footerCol {
-    padding-bottom: 1.5rem;
+    min-width: 250px;
+  }
+
+  .link {
+    margin-bottom: 1rem;
   }
 
   .fullMobileSection {
     width: 100%;
-    text-align: center;
+    /* text-align: center; */
+  }
+
+  .about {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
 @media only screen and (max-width: 575.98px) {
-  .about {
-    max-width: 100%;
+  .socialIcons {
+    max-width: 250px;
   }
 }

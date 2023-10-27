@@ -1,8 +1,11 @@
 .toc {
+  font-size: 0.8rem;
+}
+
+.sticky {
   width: 270px;
   max-width: 270px;
   min-width: 270px;
-  font-size: 0.8rem;
   top: 1rem;
   bottom: 1rem;
   max-height: calc(100vh - 2rem);

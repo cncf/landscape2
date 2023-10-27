@@ -121,15 +121,26 @@
 }
 
 @media only screen and (max-width: 991.98px) {
+  /* Avoid zoom - mobile version */
   .searchBar {
-    width: 250px;
+    width: 400px;
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .title {
+    font-size: 0.85rem;
+  }
+
+  .legend {
+    font-size: 0.8rem;
+    line-height: 0.85rem;
   }
 }
 
 @media only screen and (max-width: 767.98px) {
   .searchBar {
-    width: calc(100% - 0.6rem);
-    height: 30px;
+    box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
   }
 
   .vr {

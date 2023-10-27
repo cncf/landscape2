@@ -37,9 +37,10 @@ interface ItemsListProps {
   items: (BaseItem | Item)[];
   percentage: number;
   borderColor: string;
+  itemWidth?: number;
 }
 
-const ItemsList = (props: ItemsListProps) => {
+export const ItemsList = (props: ItemsListProps) => {
   const zoom = useZoomLevel();
   const gridWidth = useGridWidth();
   const percentage = () => props.percentage;
@@ -48,7 +49,14 @@ const ItemsList = (props: ItemsListProps) => {
   const [itemsPerRow, setItemsPerRow] = createSignal<number>(0);
 
   createEffect(() => {
-    setItemsPerRow(calculateGridItemsPerRow(percentage(), gridWidth(), ZOOM_LEVELS[zoom()][0]));
+    setItemsPerRow(
+      calculateGridItemsPerRow(
+        percentage(),
+        gridWidth(),
+        props.itemWidth || ZOOM_LEVELS[zoom()][0],
+        !isUndefined(props.itemWidth)
+      )
+    );
   });
 
   createEffect(
@@ -68,13 +76,11 @@ const ItemsList = (props: ItemsListProps) => {
   );
 
   return (
-    <div class={styles.items}>
-      <For each={items()}>
-        {(item: BaseItem | Item) => {
-          return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
-        }}
-      </For>
-    </div>
+    <For each={items()}>
+      {(item: BaseItem | Item) => {
+        return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
+      }}
+    </For>
   );
 };
 
@@ -125,7 +131,7 @@ const Grid = (props: Props) => {
                         style={{ 'background-color': props.backgroundColor }}
                       >
                         <div class="text-truncate">{subcat.subcategoryName}</div>
-                        {isSectionInGuide(props.categoryName, subcat.subcategoryName) && (
+                        <Show when={isSectionInGuide(props.categoryName, subcat.subcategoryName)}>
                           <div>
                             <A
                               href={`/guide#${slugify(`${props.categoryName} ${subcat.subcategoryName}`)}`}
@@ -135,9 +141,9 @@ const Grid = (props: Props) => {
                               <SVGIcon kind={SVGIconKind.Guide} />
                             </A>
                           </div>
-                        )}
+                        </Show>
 
-                        {(isUndefined(gridItemsSize) || gridItemsSize !== 'large') && (
+                        <Show when={isUndefined(gridItemsSize) || gridItemsSize !== 'large'}>
                           <div>
                             <button
                               onClick={() => {
@@ -152,7 +158,7 @@ const Grid = (props: Props) => {
                               <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
                             </button>
                           </div>
-                        )}
+                        </Show>
                       </div>
                       <div class={`flex-grow-1 ${styles.itemsContainer}`}>
                         {/* Use ItemsList when subcategory has featured and no featured items */}
@@ -175,11 +181,13 @@ const Grid = (props: Props) => {
                             </div>
                           }
                         >
-                          <ItemsList
-                            borderColor={props.backgroundColor}
-                            items={sortedItems}
-                            percentage={subcat.percentage}
-                          />
+                          <div class={styles.items}>
+                            <ItemsList
+                              borderColor={props.backgroundColor}
+                              items={sortedItems}
+                              percentage={subcat.percentage}
+                            />
+                          </div>
                         </Show>
                       </div>
                     </div>

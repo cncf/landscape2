@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'solid-js';
 
-import { Loading } from '../common/Loading';
+import Loading from '../common/Loading';
 import Footer from '../navigation/Footer';
 import styles from './Stats.module.css';
 
@@ -9,7 +9,7 @@ const Content = lazy(() => import('./Content'));
 const StatsIndex = () => {
   return (
     <>
-      <main class="flex-grow-1 container-fluid d-none d-lg-block px-4 position-relative">
+      <main class="flex-grow-1 container-fluid px-1 px-md-2 px-lg-4 position-relative">
         <Suspense
           fallback={
             <div class={`d-flex flex-row ${styles.loadingContent}`}>

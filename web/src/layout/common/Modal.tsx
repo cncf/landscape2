@@ -11,6 +11,7 @@ interface Props {
   open: boolean;
   header?: string | JSXElement;
   headerClass?: string;
+  bodyClass?: string;
   modalDialogClass?: string;
   children: JSXElement;
   footer?: JSXElement;
@@ -41,7 +42,7 @@ const Modal = (props: Props) => {
 
   return (
     <Show when={openStatus()}>
-      <div class={`modal-backdrop ${styles.activeBackdrop}`} data-testid="modalBackdrop" />
+      <div class={`modal-backdrop ${styles.activeBackdrop}`} />
 
       <div class={`modal d-block ${styles.modal} ${styles.active}`} role="dialog" aria-modal={true}>
         <div
@@ -54,7 +55,7 @@ const Modal = (props: Props) => {
           <div class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
             <Show when={props.header}>
               <div class={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
-                <div class={`modal-title h5 m-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
+                <div class={`modal-title h5 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
 
                 <button
                   type="button"
@@ -69,7 +70,7 @@ const Modal = (props: Props) => {
               </div>
             </Show>
 
-            <div class="modal-body p-4 h-100 d-flex flex-column">
+            <div class={`modal-body h-100 d-flex flex-column ${props.bodyClass || 'p-4'}`}>
               <Show when={isUndefined(props.header)}>
                 <div class={`position-absolute ${styles.btnCloseWrapper}`}>
                   <button
@@ -91,7 +92,7 @@ const Modal = (props: Props) => {
             </div>
 
             <Show when={!isUndefined(props.footer)}>
-              <div class="modal-footer p-3">{props.footer}</div>
+              <div class="modal-footer p-2 p-lg-3">{props.footer}</div>
             </Show>
           </div>
         </div>

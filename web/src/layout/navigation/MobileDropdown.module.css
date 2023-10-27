@@ -1,0 +1,56 @@
+.btn {
+  background-color: var(--bs-gray-200);
+}
+
+.inSticky {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 1rem;
+}
+.inSticky svg {
+  margin-left: -2px;
+}
+
+.dropdown {
+  right: -8px;
+  top: 40px;
+  font-size: 0.9rem;
+  width: 220px;
+  border-color: var(--bs-gray-600);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+.arrow {
+  top: -0.5rem;
+  right: 1rem;
+  border-style: solid;
+  border-width: 0 0.5rem 0.5rem;
+  border-color: transparent;
+  border-bottom-color: var(--bs-gray-700);
+  width: 0;
+  height: 0;
+}
+
+.link {
+  cursor: pointer;
+}
+
+.link:global(.activeLink) {
+  color: var(--color1);
+}
+
+.link:global(.activeLink) {
+  color: var(--color1);
+}
+
+.link:global(.activeLink)::before {
+  content: '';
+  position: absolute;
+  left: -1rem;
+  top: calc(50% - 6px);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid var(--color1);
+}

@@ -4,7 +4,7 @@ import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 import { BaseItem, Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Image from '../../common/Image';
-import { Loading } from '../../common/Loading';
+import Loading from '../../common/Loading';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
 import Card from '../card/Card';
@@ -112,14 +112,14 @@ const GridItem = (props: Props) => {
             >
               <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
 
-              {props.item.featured && props.item.featured.label && (
+              <Show when={props.item.featured && props.item.featured.label}>
                 <div
                   class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 ${styles.legend}`}
                   style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
                 >
-                  {props.item.featured.label}
+                  {props.item.featured!.label}
                 </div>
-              )}
+              </Show>
             </div>
           </div>
         </div>
@@ -191,14 +191,14 @@ const GridItem = (props: Props) => {
               enableLazyLoad={!isUndefined(props.enableLazyLoad) ? props.enableLazyLoad : true}
             />
 
-            {props.item.featured && props.item.featured.label && (
+            <Show when={props.item.featured && props.item.featured.label}>
               <div
                 class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 ${styles.legend}`}
                 style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
               >
-                {props.item.featured.label}
+                {props.item.featured!.label}
               </div>
-            )}
+            </Show>
           </button>
         </div>
       </div>

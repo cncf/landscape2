@@ -46,7 +46,11 @@ const ParticipationStats = (props: Props) => {
               <For each={stats()}>
                 {(x: number) => {
                   return (
-                    <div title={x.toString()} class={`mx-1 ${styles.bar}`} style={{ height: `${percentage(x)}%` }} />
+                    <div
+                      title={x.toString()}
+                      class={`mx-0 mx-md-1 ${styles.bar}`}
+                      style={{ height: `${percentage(x)}%` }}
+                    />
                   );
                 }}
               </For>
@@ -74,7 +78,7 @@ const ParticipationStats = (props: Props) => {
               }}
             </For>
           </div>
-          <div class={`fst-italic text-muted text-center ms-1 ${styles.axisLegend}`}>Commits</div>
+          <div class={`fst-italic text-muted text-center ${styles.axisLegend}`}>Commits</div>
         </div>
       </Show>
     </div>

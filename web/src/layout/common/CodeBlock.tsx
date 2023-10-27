@@ -1,3 +1,5 @@
+import { Show } from 'solid-js';
+
 import ButtonCopyToClipboard from './ButtonCopyToClipboard';
 import styles from './CodeBlock.module.css';
 
@@ -16,13 +18,13 @@ const CodeBlock = (props: Props) => {
         <code class={`p-3 d-block overflow-x-auto ${styles.code}`}>{props.content}</code>
       </pre>
 
-      {props.withCopyBtn && (
+      <Show when={props.withCopyBtn}>
         <ButtonCopyToClipboard
           text={props.content}
           label={props.label || 'Copy code to clipboard'}
           wrapperClass="ms-3"
         />
-      )}
+      </Show>
     </div>
   );
 };

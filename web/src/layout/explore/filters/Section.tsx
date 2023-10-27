@@ -4,7 +4,7 @@ import { For, Show } from 'solid-js';
 
 import { FilterCategory, FilterOption, FilterSection } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
-import { CheckBox } from '../../common/Checkbox';
+import CheckBox from '../../common/Checkbox';
 import styles from './Section.module.css';
 
 interface Props {
@@ -55,20 +55,20 @@ const Section = (props: Props) => {
 
   return (
     <Show when={visibleSection()}>
-      <div class="col-4">
+      <div class="col-12 col-sm-6 col-lg-4">
         <div class="d-flex flex-column h-100">
           <div class="d-flex flex-row align-items-center pb-2">
             <small class={`fw-semibold me-2 ${styles.title}`}>{props.title || props.section!.title}</small>
-            {props.activeFilters && (
+            <Show when={props.activeFilters}>
               <button
                 class={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
                 onClick={() => props.resetFilter(props.section?.value as FilterCategory)}
               >
                 (reset)
               </button>
-            )}
+            </Show>
           </div>
-          <div class="postion-relative w-100 border p-3 flex-grow-1">
+          <div class={`postion-relative w-100 border p-0 p-sm-3 flex-grow-1 ${styles.section}`}>
             <div classList={{ 'd-flex flex-row': props.inLine }}>
               <For each={props.section!.options}>
                 {(opt: FilterOption) => {
@@ -90,7 +90,7 @@ const Section = (props: Props) => {
                       <CheckBox
                         name={props.section!.value!}
                         value={opt.value}
-                        labelClass="mw-100 text-muted"
+                        labelClass={`mw-100 text-muted ${styles.label}`}
                         class={isUndefined(props.inLine) ? 'my-2' : 'mt-2'}
                         label={opt.name}
                         checked={(props.activeFilters || []).includes(opt.value)}
@@ -99,13 +99,13 @@ const Section = (props: Props) => {
                         }
                       />
                       <div class="ms-3">
-                        {suboptions && (
+                        <Show when={suboptions}>
                           <For each={suboptions}>
                             {(subOpt: FilterOption) => (
                               <CheckBox
                                 name={props.section!.value!}
                                 value={subOpt.value}
-                                labelClass="mw-100 text-muted"
+                                labelClass={`mw-100 text-muted ${styles.label}`}
                                 class={isUndefined(props.inLine) ? 'my-2' : 'mt-2'}
                                 label={subOpt.name}
                                 checked={(props.activeFilters || []).includes(subOpt.value)}
@@ -115,7 +115,7 @@ const Section = (props: Props) => {
                               />
                             )}
                           </For>
-                        )}
+                        </Show>
                       </div>
                     </div>
                   );

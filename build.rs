@@ -1,5 +1,5 @@
 use anyhow::{format_err, Result};
-use std::process::Command;
+use std::process::{Command, Output};
 use which::which;
 
 fn main() -> Result<()> {
@@ -16,13 +16,20 @@ fn main() -> Result<()> {
     }
 
     // Build web application
+    let error = |cmd: &str, output: Output| {
+        Err(format_err!(
+            "\n\n> {cmd} (stderr)\n{}\n> {cmd} (stdout)\n{}\n",
+            String::from_utf8(output.stderr)?,
+            String::from_utf8(output.stdout)?
+        ))
+    };
     let output = Command::new("yarn").args(["--cwd", "web", "install"]).output()?;
     if !output.status.success() {
-        return Err(format_err!("yarn install: {}", String::from_utf8(output.stderr)?));
+        return error("yarn install", output);
     }
     let output = Command::new("yarn").args(["--cwd", "web", "build"]).output()?;
     if !output.status.success() {
-        return Err(format_err!("yarn build: {}", String::from_utf8(output.stderr)?));
+        return error("yarn build", output);
     }
 
     Ok(())

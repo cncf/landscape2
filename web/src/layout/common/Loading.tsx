@@ -3,7 +3,7 @@ import { JSXElement, Show } from 'solid-js';
 
 import styles from './Loading.module.css';
 
-export interface Props {
+interface Props {
   class?: string;
   spinnerClass?: string;
   smallSize?: boolean;
@@ -12,7 +12,7 @@ export interface Props {
   noWrapper?: boolean;
 }
 
-export const Loading = (props: Props) => {
+const Loading = (props: Props) => {
   const getSpinner = (): JSXElement => {
     return (
       <div class="d-flex justify-content-center">
@@ -45,3 +45,5 @@ export const Loading = (props: Props) => {
     </Show>
   );
 };
+
+export default Loading;

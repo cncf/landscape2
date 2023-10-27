@@ -7,3 +7,26 @@
   grid-auto-rows: var(--card-size-height);
   gap: var(--card-gap);
 }
+
+.mobileItems {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--mobile-card-size-width));
+  grid-auto-rows: var(--mobile-card-size-height);
+  gap: var(--card-gap);
+}
+
+.card:global(.whithoutRepo) {
+  background-color: #f6f7f9;
+}
+
+.cardContent {
+  padding: 0.2rem;
+  vertical-align: top;
+}
+
+.logo {
+  font-size: calc(var(--card-size-height) / 1.5);
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}

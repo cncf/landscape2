@@ -23,12 +23,14 @@ const Content = () => {
   return (
     <Show when={!isUndefined(stats())}>
       <div class="d-flex flex-row">
-        <div class="container-lg py-5 position-relative">
+        <div class="container-lg py-3 py-lg-5 position-relative">
           {/* Projects */}
           <Show when={!isUndefined(stats()!.projects)}>
-            <div class="mb-5">
-              <div class={`text-dark fw-bold text-uppercase text-center mb-4 ${styles.title}`}>Projects</div>
-              <div class={`text-dark text-center mb-4 fw-bold ${styles.subtitle}`}>Distribution by maturity</div>
+            <div class="mb-2 mb-lg-5">
+              <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Projects</div>
+              <div class={`text-dark text-center mb-2 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                Distribution by maturity
+              </div>
               <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
                 <Box data={stats()!.projects!.projects} label="Total" />
 
@@ -49,7 +51,9 @@ const Content = () => {
               </div>
 
               <Show when={!isEmpty(stats()!.projects!.accepted_at)}>
-                <div class={`text-dark text-center mb-4 fw-bold ${styles.subtitle}`}>Accepted over time</div>
+                <div class={`text-dark text-center mt-3 mt-lg-0 mb-2 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                  Accepted over time
+                </div>
                 <ChartsGroup
                   name="Projects"
                   data={stats()!.projects!.accepted_at}
@@ -63,11 +67,11 @@ const Content = () => {
                   !isEmpty(stats()!.projects!.incubating_to_graduated)
                 }
               >
-                <div class={`text-dark text-center my-4 fw-bold ${styles.subtitle}`}>Promotions</div>
+                <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Promotions</div>
                 <div class="py-4">
-                  <div class="row gx-4 gx-xxl-5 justify-content-center">
+                  <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                     <Show when={!isEmpty(stats()!.projects!.sandbox_to_incubating)}>
-                      <div class="col-12 col-md-6">
+                      <div class="col-12 col-sm-6">
                         <BarChart
                           name="From Sandbox to Incubating"
                           tooltipTitle="Projects"
@@ -77,7 +81,7 @@ const Content = () => {
                     </Show>
 
                     <Show when={!isEmpty(stats()!.projects!.incubating_to_graduated)}>
-                      <div class="col-12 col-md-6">
+                      <div class="col-12 col-sm-6">
                         <BarChart
                           name="From Incubating to Graduated"
                           tooltipTitle="Prjects"
@@ -90,7 +94,7 @@ const Content = () => {
               </Show>
 
               <Show when={!isEmpty(stats()!.projects!.audits) && !isEmpty(stats()!.projects!.audits_rt)}>
-                <div class={`text-dark text-center my-4 fw-bold ${styles.subtitle}`}>Security audits</div>
+                <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Security audits</div>
                 <ChartsGroup
                   name="Projects"
                   data={stats()!.projects!.audits}
@@ -102,13 +106,15 @@ const Content = () => {
 
           {/* Members */}
           <Show when={!isUndefined(stats()!.members)}>
-            <div class="mb-5">
-              <div class={`text-dark fw-bold text-uppercase text-center mb-4 ${styles.title}`}>Members</div>
-              <div class={`text-dark text-center mb-4 fw-bold ${styles.subtitle}`}>Distribution by category</div>
+            <div class="mb-2 mb-lg-5">
+              <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Members</div>
+              <div class={`text-dark text-center mb-2 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                Distribution by category
+              </div>
               <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
                 <Box data={stats()!.members!.members} label="Total" />
 
-                {!isEmpty(stats()!.members!.subcategories) && (
+                <Show when={!isEmpty(stats()!.members!.subcategories)}>
                   <For each={sortObjectByValue(stats()!.members!.subcategories, 'asc')}>
                     {(subcategory: string) => {
                       const num = stats()!.members!.subcategories[subcategory];
@@ -121,11 +127,13 @@ const Content = () => {
                       );
                     }}
                   </For>
-                )}
+                </Show>
               </div>
 
               <Show when={!isEmpty(stats()!.members!.joined_at)}>
-                <div class={`text-dark text-center mb-4 fw-bold ${styles.subtitle}`}>Memberships over time</div>
+                <div class={`text-dark text-center mt-3 mt-lg-0 mb-2 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                  Memberships over time
+                </div>
                 <ChartsGroup
                   name="Members"
                   data={stats()!.members!.joined_at}
@@ -137,7 +145,7 @@ const Content = () => {
 
           {/* Repositories */}
           <Show when={!isUndefined(stats()!.repositories)}>
-            <div class={`text-dark fw-bold text-uppercase text-center mb-4 ${styles.title}`}>Repositories</div>
+            <div class={`text-dark fw-bold text-uppercase text-center mb-2 mb-lg-4 ${styles.title}`}>Repositories</div>
             <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
               <Box data={stats()!.repositories!.repositories} label="Repositories" />
               <Box data={prettifyNumber(stats()!.repositories!.contributors, 1)} label="Contributors" />
@@ -146,11 +154,13 @@ const Content = () => {
             </div>
 
             <Show when={!isEmpty(stats()!.repositories!.languages) || !isEmpty(stats()!.repositories!.languages_bytes)}>
-              <div class={`text-dark text-center mb-4 fw-bold ${styles.subtitle}`}>Most popular languages</div>
+              <div class={`text-dark text-center mt-2 mt-lg-0 mb-0 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                Most popular languages
+              </div>
               <div class="py-4">
-                <div class="row gx-4 gx-xxl-5 justify-content-center">
+                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                   <Show when={!isEmpty(stats()!.repositories!.languages)}>
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-sm-6">
                       <HorizontalBarChart
                         name="By number of repositories"
                         data={stats()!.repositories!.languages}
@@ -160,7 +170,7 @@ const Content = () => {
                   </Show>
 
                   <Show when={!isEmpty(stats()!.repositories!.languages_bytes)}>
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-sm-6">
                       <HorizontalBarChart
                         name="By amount of source code"
                         data={stats()!.repositories!.languages_bytes}
@@ -174,9 +184,9 @@ const Content = () => {
             </Show>
 
             <Show when={!isEmpty(stats()!.repositories!.participation_stats)}>
-              <div class={`text-dark text-center my-4 fw-bold ${styles.subtitle}`}>Activity</div>
+              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Activity</div>
               <div class="py-4">
-                <div class="row gx-4 gx-xxl-5 justify-content-center">
+                <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center">
                   <div class="col-12">
                     <TimestampLineChart
                       tooltipTitle="Commits number"
@@ -189,10 +199,10 @@ const Content = () => {
             </Show>
 
             <Show when={!isEmpty(stats()!.repositories!.licenses)}>
-              <div class={`text-dark text-center my-4 fw-bold ${styles.subtitle}`}>Licenses</div>
-              <div class="row gx-4 gx-xxl-5 justify-content-center pt-4">
+              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Licenses</div>
+              <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center pt-4">
                 <div class="col-12">
-                  <table class={`table table-bordered table-striped ${styles.table}`}>
+                  <table class={`table table-bordered table-striped mb-0 m-lg-2 ${styles.table}`}>
                     <thead>
                       <tr>
                         <th class="text-center" scope="col">

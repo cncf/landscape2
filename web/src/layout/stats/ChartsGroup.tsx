@@ -241,8 +241,8 @@ const ChartsGroup = (props: Props) => {
   return (
     <Show when={areaSeries().length > 0}>
       <div class="py-4">
-        <div class="row g-4 g-xxl-5 justify-content-center">
-          <div class="col-12 col-md-6 col-xl-8">
+        <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+          <div class="col-12 col-sm-6 col-xl-8">
             <div class="card rounded-0">
               <div class="card-body">
                 <SolidApexCharts
@@ -255,7 +255,7 @@ const ChartsGroup = (props: Props) => {
             </div>
           </div>
 
-          <div class="col-12 col-md-6 col-xl-4">
+          <div class="col-12 col-sm-6 col-xl-4">
             <div class="card rounded-0">
               <div class="card-body">
                 <SolidApexCharts

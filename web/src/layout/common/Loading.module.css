@@ -10,6 +10,8 @@
 .wave {
   height: 50px;
   width: 50px;
+  margin-left: -25px;
+  margin-top: -25px;
   border-radius: 50%;
   display: inline-block;
   position: relative;

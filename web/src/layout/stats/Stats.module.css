@@ -10,16 +10,23 @@
 
 .table {
   font-size: 0.9rem;
+  border-color: rgb(209, 209, 209) !important;
 }
 
 .table th {
   color: var(--bs-gray-700);
 }
 
-.table {
-  border-color: rgb(209, 209, 209) !important;
-}
-
 .loadingContent {
   min-height: calc(100vh - 36px);
+}
+
+@media only screen and (max-width: 575.98px) {
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
 }

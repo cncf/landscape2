@@ -1,0 +1,27 @@
+.title {
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.catTitle {
+  background-color: var(--bs-gray-100);
+}
+
+.card {
+  font-size: 85%;
+  cursor: pointer;
+}
+
+.selectLegend {
+  font-size: 0.75rem;
+}
+
+.btnIcon {
+  margin-top: -2px;
+}
+
+@media only screen and (min-width: 576px) {
+  .card {
+    height: 237px;
+  }
+}

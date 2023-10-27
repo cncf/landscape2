@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
 import orderBy from 'lodash/orderBy';
-import { Accessor, For } from 'solid-js';
+import { Accessor, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { BaseItem, CardMenu, Item, SVGIconKind } from '../../../types';
@@ -46,7 +46,7 @@ const Content = (props: Props) => {
                         class={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
                         style={{ 'background-color': bgColor }}
                       >
-                        {isSectionInGuide(cat) && (
+                        <Show when={isSectionInGuide(cat)}>
                           <div>
                             <A
                               href={`/guide#${slugify(cat)}`}
@@ -56,11 +56,11 @@ const Content = (props: Props) => {
                               <SVGIcon kind={SVGIconKind.Guide} />
                             </A>
                           </div>
-                        )}
+                        </Show>
                         <div class="text-white text-nowrap text-truncate">{cat}</div>
                       </div>
                       <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
-                        {isSectionInGuide(cat, subcat) && (
+                        <Show when={isSectionInGuide(cat, subcat)}>
                           <div>
                             <A
                               href={`/guide#${slugify(`${cat} ${subcat}`)}`}
@@ -70,7 +70,7 @@ const Content = (props: Props) => {
                               <SVGIcon kind={SVGIconKind.Guide} />
                             </A>
                           </div>
-                        )}
+                        </Show>
                         <div class="flex-grow-1 text-truncate">{subcat}</div>
                       </div>
                     </div>

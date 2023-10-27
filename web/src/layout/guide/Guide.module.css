@@ -45,3 +45,34 @@
 .loadingContent {
   min-height: calc(100vh - 36px);
 }
+
+.mobileToCBtn svg {
+  margin-top: -2px;
+}
+
+@media only screen and (max-width: 767.98px) {
+  .catSection {
+    margin-bottom: 1.5rem;
+  }
+
+  .guide h1 {
+    font-size: 1.5rem;
+  }
+
+  .guide h2 {
+    font-size: 1.25rem;
+  }
+
+  .guide h3 {
+    font-size: 1.15rem;
+  }
+
+  .guide h4 {
+    font-size: 1.05rem;
+  }
+
+  .guide h5,
+  .guide h6 {
+    font-size: 0.95rem;
+  }
+}
