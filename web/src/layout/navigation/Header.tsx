@@ -123,7 +123,7 @@ const Header = (props: Props) => {
         </Show>
       </div>
       <div
-        class={`d-flex flex-row align-items-center justify-content-between px-2 w-100 ${styles.stickyNav}`}
+        class={`d-flex d-lg-none flex-row align-items-center justify-content-between px-2 w-100 ${styles.stickyNav}`}
         classList={{ 'd-none': !sticky() }}
       >
         <div class="d-flex flex-row align-items-center">
@@ -138,7 +138,7 @@ const Header = (props: Props) => {
           </Show>
         </div>
         <div>
-          <button class="btn btn-link" onClick={scrollToTop}>
+          <button class="btn btn-link" onClick={() => scrollToTop(true)}>
             <img
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
               alt="Landscape logo"

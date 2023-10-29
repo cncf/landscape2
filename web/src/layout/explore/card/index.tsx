@@ -11,6 +11,7 @@ import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
 import prepareMenu from '../../../utils/prepareMenu';
+import scrollToTop from '../../../utils/scrollToTop';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
@@ -69,12 +70,12 @@ const CardCategory = (props: Props) => {
               }
             }
             setTimeout(() => {
-              goToElement(`card_${cleanHash}`, TITLE_OFFSET);
+              goToElement(false, `card_${cleanHash}`, TITLE_OFFSET);
             }, 100);
           }
         } else {
           updateRoute(firstItemInMenu);
-          window.scrollBy({ top: 0, behavior: 'instant' });
+          scrollToTop(false);
         }
         setInitialFullRender(true);
       }

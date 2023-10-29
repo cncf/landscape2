@@ -98,7 +98,11 @@ const GuideIndex = () => {
           } else {
             scrollInToC();
             setTimeout(() => {
-              goToElement(`section_${cleanHash}`, 16);
+              goToElement(
+                !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!),
+                `section_${cleanHash}`,
+                16
+              );
             }, 100);
           }
         } else {
@@ -127,14 +131,14 @@ const GuideIndex = () => {
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
     updateRoute(title);
     if (title === firstItem()) {
-      scrollToTop();
+      scrollToTop(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!));
     } else {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
-          goToElement(`section_${title}`, 16);
+          goToElement(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!), `section_${title}`, 16);
         }, 100);
       } else {
-        goToElement(`section_${title}`, 16);
+        goToElement(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!), `section_${title}`, 16);
       }
     }
   };

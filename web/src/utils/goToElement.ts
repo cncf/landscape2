@@ -1,6 +1,6 @@
 import { DEFAULT_STICKY_NAVBAR_HEIGHT } from '../data';
 
-const goToElement = (id: string, offset?: number): boolean => {
+const goToElement = (onWindow: boolean, id: string, offset?: number): boolean => {
   const target = window.document.getElementById(id);
   if (target) {
     const elementPosition = target.getBoundingClientRect().top;
@@ -13,10 +13,17 @@ const goToElement = (id: string, offset?: number): boolean => {
         : 0;
     const offsetPosition = elementPosition - (offset || 0) - extraOffset;
 
-    window.scrollBy({
-      top: offsetPosition,
-      behavior: 'instant',
-    });
+    if (onWindow) {
+      window.scrollBy({
+        top: offsetPosition,
+        behavior: 'instant',
+      });
+    } else {
+      document.getElementById('landscape')!.scrollBy({
+        top: offsetPosition,
+        behavior: 'instant',
+      });
+    }
     return true;
   } else {
     return false;
