@@ -4,7 +4,7 @@
 
 .bar {
   width: 2%;
-  background-color: var(--color3);
+  background-color: var(--color-stats-1);
 }
 
 .message {

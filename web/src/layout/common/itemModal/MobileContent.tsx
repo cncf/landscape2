@@ -104,7 +104,7 @@ const MobileContent = (props: Props) => {
                   }
                 >
                   <FoundationBadge class="me-2" />
-                  <MaturityBadge level={cutString(itemInfo()!.maturity!, 20)} class="me-2" />
+                  <MaturityBadge level={cutString(itemInfo()!.maturity!, 16)} class="me-2" />
                 </Show>
 
                 <Show when={!isUndefined(websiteUrl())}>
@@ -123,7 +123,17 @@ const MobileContent = (props: Props) => {
           </div>
         </div>
         {/* Description */}
-        <div class={`mt-4 mb-2 text-muted ${styles.description}`}>{description()}</div>
+        <div class={`mt-4 mb-3 text-muted ${styles.description}`}>{description()}</div>
+        <div class={`mb-2 ${styles.section}`}>
+          <div class="text-truncate">
+            <small class="text-uppercase fw-semibold pe-1">Category:</small>
+            {itemInfo()!.category}
+          </div>
+          <div class="text-truncate">
+            <small class="text-uppercase fw-semibold pe-1">Subcategory:</small>
+            {itemInfo()!.subcategory}
+          </div>
+        </div>
         {/* Maturity */}
         {/* <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Repositories</div>
         <MaturitySection item={itemInfo()!} class={styles.fieldset} /> */}
@@ -151,7 +161,7 @@ const MobileContent = (props: Props) => {
             </Show>
 
             <Show when={!isUndefined(mainRepo()!.github_data)}>
-              <div class="row g-4 my-0 mb-2 justify-content-center">
+              <div class="row g-4 my-0 mx-1 mb-2 justify-content-center">
                 <Box class="col-6" value={prettifyNumber(mainRepo()!.github_data!.stars, 1)} legend="Stars" />
 
                 <Box
@@ -182,7 +192,9 @@ const MobileContent = (props: Props) => {
               <Show when={!isUndefined(mainRepo()!.github_data!.participation_stats)}>
                 <div class="mt-4">
                   <div class={`fw-semibold ${styles.subtitleInSection}`}>Participation stats</div>
-                  <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
+                  <div class="mx-2">
+                    <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
+                  </div>
                 </div>
               </Show>
 
@@ -191,7 +203,11 @@ const MobileContent = (props: Props) => {
               >
                 <div class="mt-4">
                   <div class={`fw-semibold ${styles.subtitleInSection}`}>Languages</div>
-                  <LanguagesStats initialLanguages={mainRepo()!.github_data!.languages!} boxClass="col-6" />
+                  <LanguagesStats
+                    initialLanguages={mainRepo()!.github_data!.languages!}
+                    boxClass="col-6"
+                    class="mx-1"
+                  />
                 </div>
               </Show>
             </Show>
@@ -275,7 +291,7 @@ const MobileContent = (props: Props) => {
           <div class="mt-3">
             <small class="text-muted">{itemInfo()!.crunchbase_data!.description}</small>
           </div>
-          <div class="row g-4 my-0 mb-2 justify-content-center">
+          <div class="row g-4 my-0 mx-1 mb-2 justify-content-center">
             <Box
               class="col-6"
               value={
@@ -390,7 +406,7 @@ const MobileContent = (props: Props) => {
                 <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Personas</div>
                 <For each={itemInfo()!.summary!.personas!}>
                   {(persona) => {
-                    return <Badge text={persona} class="me-2 mt-2" />;
+                    return <Badge text={persona} class={`me-2 mt-2 ${styles.summaryBadge}`} />;
                   }}
                 </For>
               </div>
@@ -401,7 +417,7 @@ const MobileContent = (props: Props) => {
                 <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Tags</div>
                 <For each={compact(itemInfo()!.summary!.tags!)}>
                   {(tag) => {
-                    return <Badge text={tag} class="me-2 mt-2" />;
+                    return <Badge text={tag} class={`me-2 mt-2 ${styles.summaryBadge}`} />;
                   }}
                 </For>
               </div>

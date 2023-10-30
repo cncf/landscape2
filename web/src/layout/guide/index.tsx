@@ -128,17 +128,23 @@ const GuideIndex = () => {
     });
   };
 
+  const onCloseMenu = () => {
+    setOpenToCMobileStatus(false);
+    setMenuTOCFromHeader(false);
+  };
+
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
+    const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
     updateRoute(title);
     if (title === firstItem()) {
-      scrollToTop(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!));
+      scrollToTop(onSmallDevice);
     } else {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
-          goToElement(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!), `section_${title}`, 16);
+          goToElement(onSmallDevice, `section_${title}`, 16);
         }, 100);
       } else {
-        goToElement(!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!), `section_${title}`, 16);
+        goToElement(onSmallDevice, `section_${title}`, 16);
       }
     }
   };
@@ -151,11 +157,6 @@ const GuideIndex = () => {
         target.scrollIntoView({ block: 'nearest' });
       }
     }
-  };
-
-  const onCloseMenu = () => {
-    setOpenToCMobileStatus(false);
-    setMenuTOCFromHeader(false);
   };
 
   return (

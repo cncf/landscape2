@@ -104,11 +104,16 @@ const GridItem = (props: Props) => {
             withLabel: !isUndefined(props.item.featured) && !isUndefined(props.item.featured.label),
             whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
           }}
+          onClick={() => {
+            if (props.showMoreInfo) {
+              updateActiveItemId(props.item.id);
+            }
+          }}
         >
           <div class="w-100 h-100">
             <div
               class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
-              classList={{ noCursor: !props.activeDropdown }}
+              classList={{ noCursor: !props.activeDropdown && !props.showMoreInfo }}
             >
               <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
 

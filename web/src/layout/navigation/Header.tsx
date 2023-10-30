@@ -141,6 +141,7 @@ const Header = (props: Props) => {
           <button class="btn btn-link" onClick={() => scrollToTop(true)}>
             <img
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+              class={styles.stickyLogo}
               alt="Landscape logo"
               width="auto"
               height={35}

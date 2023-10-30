@@ -1,9 +1,10 @@
 .highlighted {
   background-color: var(--bs-gray-100);
+  border: 6px solid var(--bs-gray-300);
 }
 
 .highlightedTitle {
-  color: var(--color3);
+  color: var(--color-stats-1);
   font-size: 2rem;
   z-index: 1;
 }
