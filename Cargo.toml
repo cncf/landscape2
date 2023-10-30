@@ -8,6 +8,10 @@ rust-version = "1.70"
 repository = "https://github.com/cncf/landscape2"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 
+[package.metadata.wix]
+upgrade-guid = "CFDCA2AA-9CB2-49B1-98DD-9BE9BC4DC28F"
+path-guid = "59B0489F-30BD-45E2-B29C-C87F970B4138"
+
 [dependencies]
 anyhow = "1.0.75"
 askama = { version = "0.12.1", features = ["serde-json"] }
@@ -76,11 +80,11 @@ cargo-dist-version = "0.4.0"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
-installers = ["shell", "homebrew"]
+installers = ["shell", "powershell", "homebrew", "msi"]
 # A GitHub repo to push Homebrew formulas to
 tap = "cncf/homebrew-landscape2"
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-musl"]
+targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-musl", "x86_64-pc-windows-msvc"]
 # Publish jobs to run in CI
 publish-jobs = ["homebrew"]
 # Publish jobs to run in CI
