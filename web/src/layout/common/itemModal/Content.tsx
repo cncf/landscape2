@@ -595,7 +595,7 @@ const Content = (props: Props) => {
                   <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Personas</div>
                   <For each={itemInfo()!.summary!.personas!}>
                     {(persona) => {
-                      return <Badge text={persona} class="me-2 mt-2" />;
+                      return <Badge text={persona} class={`me-2 mt-2 ${styles.summaryBadge}`} />;
                     }}
                   </For>
                 </div>
@@ -606,7 +606,7 @@ const Content = (props: Props) => {
                   <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Tags</div>
                   <For each={compact(itemInfo()!.summary!.tags!)}>
                     {(tag) => {
-                      return <Badge text={tag} class="me-2 mt-2" />;
+                      return <Badge text={tag} class={`me-2 mt-2 ${styles.summaryBadge}`} />;
                     }}
                   </For>
                 </div>

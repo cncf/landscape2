@@ -135,6 +135,10 @@
   font-size: 0.8rem;
 }
 
+.summaryBadge {
+  background-color: var(--color-stats-1);
+}
+
 .tableLayout {
   table-layout: fixed;
 }

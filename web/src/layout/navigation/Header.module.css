@@ -88,6 +88,12 @@
 
   .logo {
     height: 35px;
+    max-width: 210px;
+  }
+
+  .stickyLogo {
+    height: 35px;
+    max-width: 210px;
   }
 
   .logoWrapper,

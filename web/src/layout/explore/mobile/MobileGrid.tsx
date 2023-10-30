@@ -35,7 +35,15 @@ const MobileGrid = (props: Props) => {
       <Show when={items().length > 0}>
         <Show
           when={isMobile()}
-          fallback={<ItemsList borderColor={props.bgColor} items={items()} percentage={100} itemWidth={75} />}
+          fallback={
+            <ItemsList
+              borderColor={props.bgColor}
+              items={items()}
+              percentage={100}
+              itemWidth={75}
+              activeDropdown={false}
+            />
+          }
         >
           <For each={items()}>
             {(item: BaseItem | Item) => {

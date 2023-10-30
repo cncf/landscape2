@@ -79,4 +79,9 @@
   .socialIcons {
     max-width: 250px;
   }
+
+  .logo {
+    height: 34px;
+    max-width: 210px;
+  }
 }

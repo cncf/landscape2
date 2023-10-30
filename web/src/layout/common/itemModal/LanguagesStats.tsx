@@ -7,6 +7,7 @@ import Box from './Box';
 interface Props {
   initialLanguages: { [key: string]: number };
   boxClass?: string;
+  class?: string;
 }
 
 const LanguagesStats = (props: Props) => {
@@ -28,7 +29,7 @@ const LanguagesStats = (props: Props) => {
   );
 
   return (
-    <div class="row g-4 my-0 mb-2 justify-content-center justify-md-content-start">
+    <div class={`row g-4 my-0 mb-2 justify-content-center justify-md-content-start ${props.class}`}>
       <For each={popularLanguages()}>
         {(lang: string) => {
           const value = () => percentage(languages()[lang]);

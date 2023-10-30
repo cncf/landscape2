@@ -38,6 +38,7 @@ interface ItemsListProps {
   percentage: number;
   borderColor: string;
   itemWidth?: number;
+  activeDropdown: boolean;
 }
 
 export const ItemsList = (props: ItemsListProps) => {
@@ -78,7 +79,9 @@ export const ItemsList = (props: ItemsListProps) => {
   return (
     <For each={items()}>
       {(item: BaseItem | Item) => {
-        return <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown />;
+        return (
+          <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown={props.activeDropdown} />
+        );
       }}
     </For>
   );
@@ -186,6 +189,7 @@ const Grid = (props: Props) => {
                               borderColor={props.backgroundColor}
                               items={sortedItems}
                               percentage={subcat.percentage}
+                              activeDropdown
                             />
                           </div>
                         </Show>

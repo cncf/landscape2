@@ -20,6 +20,7 @@
 
 .badges {
   font-size: 85%;
+  height: 20px;
 }
 
 .link {
@@ -53,17 +54,26 @@
 }
 
 .titleInSection {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   opacity: 0.5;
 }
 
 .subtitleInSection {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   opacity: 0.5;
 }
 
 .description {
   font-size: 0.9rem;
+}
+
+.section {
+  font-size: 0.8rem;
+}
+
+.section small {
+  font-size: 80%;
+  opacity: 0.5;
 }
 
 .additionalInfo {
@@ -96,7 +106,7 @@
 }
 
 .location {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 
 .link {
@@ -151,6 +161,10 @@
 
 .summaryContent {
   font-size: 0.9rem;
+}
+
+.summaryBadge {
+  background-color: var(--color-stats-1);
 }
 
 .tableLayout {
