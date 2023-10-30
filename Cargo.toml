@@ -8,10 +8,6 @@ rust-version = "1.70"
 repository = "https://github.com/cncf/landscape2"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 
-[package.metadata.wix]
-upgrade-guid = "8B8B47D4-B0F2-4755-9288-1C5FCFCA9F92"
-path-guid = "5A454C4A-3A81-4F07-91A2-D8A181CC98B7"
-
 [dependencies]
 anyhow = "1.0.75"
 askama = { version = "0.12.1", features = ["serde-json"] }
@@ -66,6 +62,7 @@ mockall = "0.11.4"
 
 [build-dependencies]
 anyhow = "1.0.75"
+which = "5.0.0"
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
@@ -79,11 +76,11 @@ cargo-dist-version = "0.4.0"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
-installers = ["shell", "powershell", "homebrew", "msi"]
+installers = ["shell", "homebrew"]
 # A GitHub repo to push Homebrew formulas to
 tap = "cncf/homebrew-landscape2"
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-musl", "x86_64-pc-windows-msvc"]
+targets = ["x86_64-unknown-linux-gnu", "aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-musl"]
 # Publish jobs to run in CI
 publish-jobs = ["homebrew"]
 # Publish jobs to run in CI
