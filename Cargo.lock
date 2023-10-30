@@ -1355,7 +1355,7 @@ dependencies = [
  "thiserror",
  "tungstenite",
  "url",
- "which 4.4.2",
+ "which",
  "winreg 0.51.0",
 ]
 
@@ -1684,7 +1684,6 @@ dependencies = [
  "url",
  "usvg",
  "walkdir",
- "which 5.0.0",
 ]
 
 [[package]]
@@ -3710,19 +3709,6 @@ dependencies = [
  "home",
  "once_cell",
  "rustix",
-]
-
-[[package]]
-name = "which"
-version = "5.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bf3ea8596f3a0dd5980b46430f2058dfe2c36a27ccfbb1845d6fbfcd9ba6e14"
-dependencies = [
- "either",
- "home",
- "once_cell",
- "rustix",
- "windows-sys",
 ]
 
 [[package]]
