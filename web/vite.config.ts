@@ -1,6 +1,19 @@
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
 import { defineConfig } from 'vite'
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid'
+
+const regex = /<link rel="stylesheet" href="(.*?)">/g;
+
+function getCSSHref(str: string) {
+  const match = regex.exec(str);
+  if (!isNull(match)) {
+    return match[1];
+  } else {
+    return undefined;
+  }
+}
 
 export default defineConfig({
   base: '', // Default '/', static path
@@ -18,7 +31,23 @@ export default defineConfig({
       },
     },
   },
-  plugins: [ViteEjsPlugin(), solid()],
+  plugins: [ViteEjsPlugin(), solid(), {
+    name: 'inject-css-preload',
+    transformIndexHtml(html) {
+      const assetHref = getCSSHref(html);
+      if (!isUndefined(assetHref)) {
+        return [
+          {
+            tag: 'link',
+            attrs: { rel: 'preload', href: assetHref, as: 'style' },
+            injectTo: 'head-prepend',
+          },
+        ]
+      } else {
+        return html;
+      }
+    },
+  }],
   preview: {
     port: 8000
   }
