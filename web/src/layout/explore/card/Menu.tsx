@@ -26,7 +26,7 @@ const Menu = (props: Props) => {
   createEffect(() => {
     if (props.isVisible) {
       if (!isUndefined(ref())) {
-        if (ref()!.clientHeight > window.innerHeight) {
+        if (props.sticky && ref()!.clientHeight > document.getElementById('landscape')!.clientHeight) {
           setOffsetActive(true);
         } else {
           setOffsetActive(false);
@@ -79,7 +79,8 @@ const Menu = (props: Props) => {
                             }}
                             disabled={`#${hash}` === location.hash}
                             onClick={() => {
-                              goToElement(`card_${hash}`, 16);
+                              // When menu sticky, we need to check #landscape
+                              goToElement(!props.sticky, `card_${hash}`, 16);
                               updateRoute(hash);
                               if (!isUndefined(props.onClickOption)) {
                                 props.onClickOption();

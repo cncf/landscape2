@@ -54,7 +54,7 @@ const MobileGrid = (props: Props) => {
                       updateActiveItemId(item.id);
                     }}
                   >
-                    <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} />
+                    <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} enableLazyLoad />
                   </button>
                 </div>
               );

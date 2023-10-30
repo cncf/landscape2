@@ -1,4 +1,4 @@
-import { useWindowScrollPosition } from '@solid-primitives/scroll';
+import { createScrollPosition } from '@solid-primitives/scroll';
 import { useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
@@ -18,7 +18,8 @@ const NAV_HEIGHT = 200;
 const ButtonToTopScroll = (props: Props) => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = createSignal<boolean>(false);
-  const scroll = useWindowScrollPosition();
+  const target = document.getElementById('landscape');
+  const scroll = createScrollPosition(target as Element);
   const y = () => scroll.y;
 
   createEffect(
@@ -41,7 +42,7 @@ const ButtonToTopScroll = (props: Props) => {
                   replace: true,
                 });
 
-                scrollToTop();
+                scrollToTop(false);
 
                 if (!isElementInView(`btn_${props.firstSection}`)) {
                   const target = window.document.getElementById(`btn_${props.firstSection}`);

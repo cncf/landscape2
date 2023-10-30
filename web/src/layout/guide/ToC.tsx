@@ -35,10 +35,10 @@ const ToCOption = (props: OptionProps) => {
           [styles.active]: location.hash === `#${props.option.id}`,
         }}
         onClick={() => {
-          props.updateActiveTitle(props.option.id);
           if (!isUndefined(props.onClickOption)) {
             props.onClickOption();
           }
+          props.updateActiveTitle(props.option.id);
         }}
       >
         {props.option.title}
