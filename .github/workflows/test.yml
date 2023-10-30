@@ -1,0 +1,13 @@
+name: Build images
+
+on: push
+
+jobs:
+  test:
+    runs-on:
+      labels: windows-2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Test
+        run: yarn help
