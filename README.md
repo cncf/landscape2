@@ -48,7 +48,7 @@ Binary downloads of the landscape2 CLI tool can be found in the [releases page](
 #### Install via shell script
 
 ```text
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.2.1/landscape2-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.3.0/landscape2-installer.sh | sh
 ```
 
 #### Install via Homebrew
