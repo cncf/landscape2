@@ -258,6 +258,12 @@ export interface Stats {
     maturity: { [key: string]: number };
     projects: number;
     sandbox_to_incubating: { [key: string]: number };
+    category: {
+      [key: string]: CategoryValueStats;
+    };
+    tag?: {
+      [key: string]: number;
+    };
   };
   repositories?: {
     bytes: number;
@@ -268,6 +274,13 @@ export interface Stats {
     participation_stats: number[];
     repositories: number;
     stars: number;
+  };
+}
+
+export interface CategoryValueStats {
+  projects: number;
+  subcategories: {
+    [key: string]: number;
   };
 }
 
@@ -282,6 +295,8 @@ export enum SVGIconKind {
   Artwork,
   Blog,
   Calendar,
+  CaretDown,
+  CaretUp,
   Clear,
   ClearCircle,
   Close,
