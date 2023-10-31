@@ -8,6 +8,7 @@ import { ActiveItemProvider } from './stores/activeItem';
 import { FullDataProvider } from './stores/fullData';
 import { GridWidthProvider } from './stores/gridWidth';
 import { GroupActiveProvider } from './stores/groupActive';
+import { GuideFileProvider } from './stores/guideFile';
 import { MobileTOCProvider } from './stores/mobileTOC';
 import { ViewModeProvider } from './stores/viewMode';
 import { VisibleZoomSectionProvider } from './stores/visibleZoomSection';
@@ -27,14 +28,16 @@ const Layout = (props: Props) => {
               <ZoomProvider>
                 <GridWidthProvider>
                   <MobileTOCProvider>
-                    <div class="h-100 d-flex flex-column">
-                      <Header logo={props.data.images.header_logo} items={props.data.items} />
-                      <div class="d-flex flex-column flex-grow-1">
-                        <Outlet />
+                    <GuideFileProvider>
+                      <div class="h-100 d-flex flex-column">
+                        <Header logo={props.data.images.header_logo} items={props.data.items} />
+                        <div class="d-flex flex-column flex-grow-1">
+                          <Outlet />
+                        </div>
                       </div>
-                    </div>
-                    <ItemModal />
-                    <ZoomModal />
+                      <ItemModal />
+                      <ZoomModal />
+                    </GuideFileProvider>
                   </MobileTOCProvider>
                 </GridWidthProvider>
               </ZoomProvider>

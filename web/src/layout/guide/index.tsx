@@ -15,6 +15,7 @@ import Loading from '../common/Loading';
 import { Sidebar } from '../common/Sidebar';
 import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
+import { useGuideFileContent, useGuideTOC, useSetGuideFileContent, useSetGuideTOC } from '../stores/guideFile';
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import styles from './Guide.module.css';
 import SubcategoryExtended from './SubcategoryExtended';
@@ -27,7 +28,11 @@ interface StateGuide {
 const GuideIndex = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const guideContent = useGuideFileContent();
+  const setGuideContent = useSetGuideFileContent();
   const [guide, setGuide] = createSignal<Guide | null>();
+  const guideToc = useGuideTOC();
+  const setGuideToc = useSetGuideTOC();
   const [toc, setToc] = createSignal<ToCTitle[]>([]);
   const state = createMemo(() => location.state || {});
   const [firstItem, setFirstItem] = createSignal<string>();
@@ -62,6 +67,7 @@ const GuideIndex = () => {
     }
 
     setToc(content);
+    setGuideToc(content);
   };
 
   onMount(() => {
@@ -69,17 +75,24 @@ const GuideIndex = () => {
       try {
         fetch(import.meta.env.MODE === 'development' ? '../../static/guide.json' : './data/guide.json')
           .then((res) => res.json())
-
           .then((data) => {
             setGuide(data);
             prepareToC(data);
+            setGuideContent(data);
           });
       } catch {
         setGuide(null);
       }
     }
 
-    fetchGuide();
+    if (isUndefined(guideContent())) {
+      fetchGuide();
+    } else {
+      setTimeout(() => {
+        setGuide(guideContent());
+        setToc(guideToc());
+      }, 5);
+    }
   });
 
   createEffect(
