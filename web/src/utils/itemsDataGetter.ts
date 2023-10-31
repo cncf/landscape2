@@ -1,7 +1,18 @@
-import { ActiveSection, Item, LandscapeData } from '../types';
+import { ActiveSection, FilterOption, Item, LandscapeData } from '../types';
+import capitalizeFirstLetter from './capitalizeFirstLetter';
 
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;
+}
+
+export interface LogosOptionsGroup {
+  id: number;
+  name: string;
+  options: FilterOption[];
+}
+
+interface CategoryOpt {
+  [key: string]: string[];
 }
 
 export class ItemsDataGetter {
@@ -46,6 +57,65 @@ export class ItemsDataGetter {
         (i: Item) => activeSection.subcategory === i.subcategory && activeSection.category === i.category
       );
     }
+  }
+
+  public filterItemsByMaturity(level: string): Item[] | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      return this.landscapeData.items.filter((i: Item) => i.maturity === level);
+    }
+  }
+
+  public prepareLogosOptions(): LogosOptionsGroup[] {
+    const options: LogosOptionsGroup[] = [];
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      const maturityTypes: string[] = [];
+      const categories: CategoryOpt = {};
+
+      for (const i of this.landscapeData!.items!) {
+        if (i.maturity) {
+          maturityTypes.push(i.maturity);
+        }
+        if (i.category) {
+          categories[i.category] = [...(categories[i.category] || []), i.subcategory];
+        }
+      }
+
+      if (maturityTypes.length > 0) {
+        options.push({
+          id: 0,
+          name: 'maturity',
+          options: [...new Set(maturityTypes)].sort().map((m: string) => ({
+            value: m,
+            name: capitalizeFirstLetter(m),
+          })),
+        });
+      }
+
+      if (Object.keys(categories).length > 0) {
+        const sortedCategories = Object.keys(categories).sort((a, b) =>
+          a.localeCompare(b, undefined, { sensitivity: 'base' })
+        );
+
+        const opts = sortedCategories.map((c: string) => {
+          const suboptions = [...new Set(categories[c])].sort().map((s: string) => ({
+            value: s,
+            name: s,
+          }));
+          return {
+            value: c,
+            name: c,
+            suboptions: suboptions,
+          };
+        });
+
+        options.push({
+          id: 1,
+          name: 'category / subcategory',
+          options: opts,
+        });
+      }
+    }
+    return options;
   }
 }
 
