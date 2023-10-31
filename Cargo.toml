@@ -6,11 +6,8 @@ license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.70"
 repository = "https://github.com/cncf/landscape2"
+readme = "README.md"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
-
-[package.metadata.wix]
-upgrade-guid = "CFDCA2AA-9CB2-49B1-98DD-9BE9BC4DC28F"
-path-guid = "59B0489F-30BD-45E2-B29C-C87F970B4138"
 
 [dependencies]
 anyhow = "1.0.75"
@@ -76,11 +73,11 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.4.0"
+cargo-dist-version = "0.4.1"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
-installers = ["shell", "powershell", "homebrew", "msi"]
+installers = ["shell", "powershell", "homebrew"]
 # A GitHub repo to push Homebrew formulas to
 tap = "cncf/homebrew-landscape2"
 # Target platforms to build apps for (Rust target-triple syntax)
