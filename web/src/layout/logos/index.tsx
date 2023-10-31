@@ -1,4 +1,5 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
+import orderBy from 'lodash/orderBy';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { FilterOption, Item, Option } from '../../types';
@@ -17,6 +18,22 @@ const Logos = () => {
   const [selectedSuboptionValue, setSelectedSuboptionValue] = createSignal<string>();
   const [suboptions, setSuboptions] = createSignal<Option[]>();
   const [items, setItems] = createSignal<Item[]>();
+
+  const cleanDuplicatedItems = (itemsList: Item[]): Item[] => {
+    const result: Item[] = [];
+    const images: string[] = [];
+    const sortedItems = orderBy(itemsList, [(item: Item) => item.name.toLowerCase().toString()], 'asc');
+
+    sortedItems.forEach((i: Item) => {
+      // Avoid duplicates checking images
+      if (!images.includes(i.logo)) {
+        result.push(i);
+        images.push(i.logo);
+      }
+    });
+
+    return result;
+  };
 
   const filterItems = () => {
     let list: Item[] = [];
@@ -41,7 +58,7 @@ const Logos = () => {
           break;
       }
     }
-    setItems(list);
+    setItems(cleanDuplicatedItems(list));
   };
 
   const getTitle = (selectPosition: number): string => {
