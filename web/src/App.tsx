@@ -6,6 +6,7 @@ import { createSignal, onMount } from 'solid-js';
 import Layout from './layout';
 import Explore from './layout/explore';
 import Guide from './layout/guide';
+import Logos from './layout/logos';
 import NotFound from './layout/notFound';
 import Screenshots from './layout/screenshots';
 import Stats from './layout/stats';
@@ -67,6 +68,7 @@ const App = () => {
           <Route path="/guide" element={<Guide />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/screenshot" element={<Screenshots initialData={data()} />} />
+          <Route path="/logos-preview" element={<Logos />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
