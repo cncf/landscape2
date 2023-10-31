@@ -45,16 +45,22 @@ In addition to the information available in the landscape data file, the tool co
 
 Binary downloads of the landscape2 CLI tool can be found in the [releases page](https://github.com/cncf/landscape2/releases).
 
+#### Install via Homebrew
+
+```text
+brew install cncf/landscape2/landscape2
+```
+
 #### Install via shell script
 
 ```text
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.3.1/landscape2-installer.sh | sh
 ```
 
-#### Install via Homebrew
+#### Install via powershell script
 
 ```text
-brew install cncf/landscape2/landscape2
+irm https://github.com/cncf/landscape2/releases/download/v0.3.1/landscape2-installer.ps1 | iex
 ```
 
 ### Container image
