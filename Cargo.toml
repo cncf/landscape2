@@ -38,7 +38,7 @@ regex = "1.10.2"
 reqwest = { version = "0.11.22", features = ["native-tls-vendored"] }
 rust-embed = "8.0.0"
 serde = { version = "1.0.190", features = ["derive"] }
-serde_json = "1.0.107"
+serde_json = "1.0.108"
 serde_yaml = "0.9.27"
 sha2 = "0.10.8"
 tokio = { version = "1.33.0", features = [
