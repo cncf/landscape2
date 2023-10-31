@@ -1,7 +1,11 @@
 //! This module defines some types used to represent the some landscape stats,
 //! as well as the functionality used to prepare them.
 
-use super::{settings::LandscapeSettings, LandscapeData};
+use super::{
+    data::{CategoryName, SubCategoryName},
+    settings::{LandscapeSettings, TagName},
+    LandscapeData,
+};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -105,6 +109,9 @@ pub(crate) struct ProjectsStats {
     /// Running total of number of security audits per year-month.
     audits_rt: HashMap<YearMonth, u64>,
 
+    /// Number of projects per category and subcategory.
+    category: HashMap<CategoryName, CategoryProjectsStats>,
+
     /// Promotions from incubating to graduated per year-month.
     incubating_to_graduated: HashMap<YearMonth, u64>,
 
@@ -116,6 +123,9 @@ pub(crate) struct ProjectsStats {
 
     /// Promotions from sandbox to incubating per year-month.
     sandbox_to_incubating: HashMap<YearMonth, u64>,
+
+    /// Number of projects per TAG.
+    tag: HashMap<TagName, u64>,
 }
 
 impl ProjectsStats {
@@ -152,6 +162,20 @@ impl ProjectsStats {
                     increment(&mut stats.accepted_at, &year_month, 1);
                 }
 
+                // Number of projects per category and subcategory
+                if let Some(category_stats) = stats.category.get_mut(&item.category) {
+                    category_stats.projects += 1;
+                    increment(&mut category_stats.subcategories, &item.subcategory, 1);
+                } else {
+                    stats.category.insert(
+                        item.category.clone(),
+                        CategoryProjectsStats {
+                            projects: 1,
+                            subcategories: HashMap::from([(item.subcategory.clone(), 1)]),
+                        },
+                    );
+                }
+
                 // Number of projects per maturity
                 increment(&mut stats.maturity, maturity, 1);
 
@@ -170,6 +194,11 @@ impl ProjectsStats {
                     let year_month = graduated_at.format(YEAR_MONTH_FORMAT).to_string();
                     increment(&mut stats.incubating_to_graduated, &year_month, 1);
                 }
+
+                // Number of projects per TAG
+                if let Some(tag) = &item.tag {
+                    increment(&mut stats.tag, tag, 1);
+                }
             }
         }
         stats.accepted_at_rt = calculate_running_total(&stats.accepted_at);
@@ -181,6 +210,16 @@ impl ProjectsStats {
         }
         None
     }
+}
+
+/// Some stats about the projects in a category and its subcategories.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct CategoryProjectsStats {
+    /// Number of projects in the category.
+    projects: u64,
+
+    /// Number of projects per subcategory.
+    subcategories: HashMap<SubCategoryName, u64>,
 }
 
 /// Some stats about the repositories listed in the landscape.

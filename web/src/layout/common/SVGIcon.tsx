@@ -92,6 +92,36 @@ const Calendar = (props: IconProps) => (
   </svg>
 );
 
+const CaretDown = (props: IconProps) => (
+  <svg
+    class={props.class}
+    stroke="currentColor"
+    fill="currentColor"
+    stroke-width="0"
+    viewBox="0 0 256 256"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z" />
+  </svg>
+);
+
+const CaretUp = (props: IconProps) => (
+  <svg
+    class={props.class}
+    stroke="currentColor"
+    fill="currentColor"
+    stroke-width="0"
+    viewBox="0 0 256 256"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z" />
+  </svg>
+);
+
 const Clear = (props: IconProps) => (
   <svg
     class={props.class}
@@ -799,6 +829,8 @@ const icons: ValidComponent[] = [
   Artwork,
   Blog,
   Calendar,
+  CaretDown,
+  CaretUp,
   Clear,
   ClearCircle,
   Close,
