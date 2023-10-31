@@ -212,21 +212,16 @@ const Searchbar = (props: Props) => {
             class={`btn btn-link text-muted lh-1 px-2 ${styles.btnIcon}`}
             onClick={cleanSearchValue}
           >
-            <SVGIcon kind={SVGIconKind.Clear} />
+            <div class={styles.btnIcon}>
+              <SVGIcon kind={SVGIconKind.Clear} />
+            </div>
           </button>
           <div class={`vr ${styles.vr}`} />
         </Show>
 
-        <button
-          title="Search text"
-          aria-label="Search text"
-          class={`btn btn-link lh-1 px-2 ${styles.btnIcon}`}
-          onClick={search}
-        >
-          <div class={`${styles.iconWrapper}`}>
-            <SVGIcon kind={SVGIconKind.Search} />
-          </div>
-        </button>
+        <div class={`px-2 py-1 ${styles.btnIcon} ${styles.iconWrapper}`}>
+          <SVGIcon kind={SVGIconKind.Search} />
+        </div>
       </div>
 
       <Show when={visibleDropdown() && !isNull(itemsList())}>

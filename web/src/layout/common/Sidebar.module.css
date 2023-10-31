@@ -27,8 +27,14 @@
   transform: none;
 }
 
+.header {
+  font-size: 0.9rem;
+}
+
 .closeBtn {
   font-size: 0.75rem;
+  padding-right: 0;
+  padding-left: 0.5em;
 }
 
 .activeBackdrop {

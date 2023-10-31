@@ -22,7 +22,9 @@
 }
 
 .projectsCol {
-  width: 100px;
+  width: 90px;
+  max-width: 90px;
+  min-width: 90px;
 }
 
 @media only screen and (max-width: 575.98px) {
