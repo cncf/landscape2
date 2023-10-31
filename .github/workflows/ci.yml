@@ -9,7 +9,7 @@ on:
 jobs:
   lint-cli-tool:
     runs-on:
-      labels: ubuntu-latest-8-cores
+      labels: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
 
   test-cli-tool:
     runs-on:
-      labels: ubuntu-latest-8-cores
+      labels: ubuntu-latest-16-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
 
   lint-and-test-webapp:
     runs-on:
-      labels: ubuntu-latest-8-cores
+      labels: ubuntu-latest-16-cores
     env:
       NODE_OPTIONS: --max_old_space_size=4096
     steps:
