@@ -9,12 +9,17 @@ import sortObjectByValue from '../../utils/sortObjectByValue';
 import BarChart from './BarChart';
 import Box from './Box';
 import ChartsGroup from './ChartsGroup';
+import CollapsableTable from './CollapsableTable';
 import HorizontalBarChart from './HorizontalBarChart';
 import styles from './Stats.module.css';
 import TimestampLineChart from './TimestampLineChart';
 
 const Content = () => {
   const [stats, setStats] = createSignal<Stats>();
+
+  const sumValues = (numbers: number[]): number => {
+    return numbers.reduce((a, b) => a + b, 0);
+  };
 
   onMount(() => {
     setStats(window.statsDS);
@@ -101,6 +106,51 @@ const Content = () => {
                   running_total={stats()!.projects!.audits_rt}
                 />
               </Show>
+              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>
+                <Show when={!isEmpty(stats()!.projects!.tag)} fallback="Distribution by category and subcategory">
+                  Distribution by category, subcategory and TAG
+                </Show>
+              </div>
+              <div class="py-4">
+                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                  <div class="col-12 col-sm-6">
+                    <CollapsableTable data={stats()!.projects!.category} />
+                  </div>
+
+                  <Show when={!isEmpty(stats()!.projects!.tag)}>
+                    <div class="col-12 col-sm-6">
+                      <table class={`table table-bordered table-striped mb-0 mb-lg-2 ${styles.table}`}>
+                        <thead>
+                          <tr>
+                            <th class="text-center" scope="col">
+                              TAG
+                            </th>
+                            <th class={`text-center ${styles.projectsCol}`} scope="col">
+                              Projects
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <For each={Object.keys(stats()!.projects!.tag!).sort()}>
+                            {(tag: string) => {
+                              return (
+                                <tr>
+                                  <td>TAG {tag}</td>
+                                  <td class="text-end">{stats()!.projects!.tag![tag]}</td>
+                                </tr>
+                              );
+                            }}
+                          </For>
+                          <tr>
+                            <td class="fw-semibold text-uppercase">Total</td>
+                            <td class="text-end fw-semibold">{sumValues(Object.values(stats()!.projects!.tag!))}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </Show>
+                </div>
+              </div>
             </div>
           </Show>
 
@@ -202,7 +252,7 @@ const Content = () => {
               <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Licenses</div>
               <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center pt-4">
                 <div class="col-12">
-                  <table class={`table table-bordered table-striped mb-0 m-lg-2 ${styles.table}`}>
+                  <table class={`table table-bordered table-striped mb-0 mb-lg-2 ${styles.table}`}>
                     <thead>
                       <tr>
                         <th class="text-center" scope="col">

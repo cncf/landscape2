@@ -45,16 +45,22 @@ In addition to the information available in the landscape data file, the tool co
 
 Binary downloads of the landscape2 CLI tool can be found in the [releases page](https://github.com/cncf/landscape2/releases).
 
+#### Install via Homebrew
+
+```text
+brew install cncf/landscape2/landscape2
+```
+
 #### Install via shell script
 
 ```text
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.3.1/landscape2-installer.sh | sh
 ```
 
-#### Install via Homebrew
+#### Install via powershell script
 
 ```text
-brew install cncf/landscape2/landscape2
+irm https://github.com/cncf/landscape2/releases/download/v0.3.1/landscape2-installer.ps1 | iex
 ```
 
 ### Container image
@@ -89,13 +95,7 @@ Commands:
 
 ## Usage
 
-To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH.
-
-Alternatively, you can launch a container from the [image provided](https://gallery.ecr.aws/g6m3a0y9/landscape2) where the **landscape2** CLI tool is ready to use:
-
-```text
-docker run -ti public.ecr.aws/g6m3a0y9/landscape2:latest sh
-```
+To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH. Alternatively, you can launch a container from the [image provided](https://gallery.ecr.aws/g6m3a0y9/landscape2) where the **landscape2** CLI tool is ready to use.
 
 ### Creating a new landscape
 
@@ -113,9 +113,9 @@ INFO new: landscape2::new: landscape created! (took: 0.003s)
 
 ✅ Landscape created successfully!
 
-You can build it by running the following command:
+You can build it by running the following command from the `my-landscape` directory:
 
-👉 cd my-landscape && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
+👉 landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
 ```
 
 ### Building the landscape website
@@ -128,7 +128,10 @@ The build process is in charge of generating the landscape website from the info
 The following command will build the landscape and write the resulting files to the `output-dir` provided (*build* in this case):
 
 ```text
-cd my-landscape && \
+cd my-landscape
+```
+
+```text
 landscape2 build \
   --data-file data.yml \
   --settings-file settings.yml \
