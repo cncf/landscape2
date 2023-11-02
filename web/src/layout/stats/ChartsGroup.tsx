@@ -1,10 +1,11 @@
-import groupBy from 'lodash/groupBy';
-import isNumber from 'lodash/isNumber';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
+
+import rgba2hex from '../../utils/rgba2hex';
+import HeatMapChart from './HeatMapChart';
 
 interface Props {
   data: { [key: string]: number };
@@ -12,38 +13,10 @@ interface Props {
   name: string;
 }
 
-interface HeatMapData {
-  name: string;
-  data: number[];
-}
-
 interface AreaData {
   x: string;
   y: number;
 }
-
-interface DistributionData {
-  month: number;
-  total: number;
-  year: number;
-}
-
-const REGEX_RGBA = /^rgba?\(|\s+|\)$/g;
-
-const rgba2hex = (rgba: string): string => {
-  return (
-    '#' +
-    rgba
-      .replace(REGEX_RGBA, '')
-      .split(',')
-      .filter((_string, index) => index !== 3)
-      .map((string) => parseFloat(string))
-      .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
-      .map((number) => number.toString(16))
-      .map((string) => (string.length === 1 ? '0' + string : string))
-      .join('')
-  );
-};
 
 const ChartsGroup = (props: Props) => {
   const [areaSeries, setAreaSeries] = createSignal<AreaData[]>([]);
@@ -57,34 +30,6 @@ const ChartsGroup = (props: Props) => {
       setAreaSeries(sortBy(seriesTmp, 'x'));
     }
   });
-
-  const prepareHeatMapData = () => {
-    const distribution: DistributionData[] = [];
-
-    Object.keys(props.data).forEach((d: string) => {
-      const date = moment(d, 'YYYY-MM');
-      distribution.push({
-        year: date.get('year'),
-        month: date.get('month'),
-        total: props.data[d],
-      });
-    });
-
-    const series: HeatMapData[] = [];
-    const groupedByYear = groupBy(distribution, 'year');
-
-    // We use 10 by default and add 10 to the rest of values
-    // due to a bug displaying proper bg color in heatmap
-    Object.keys(groupedByYear).forEach((year: string) => {
-      const currentData = new Array(12).fill(0);
-      groupedByYear[year].forEach((i: DistributionData) => {
-        currentData[i.month - 1] = i.total;
-      });
-      series.push({ name: year, data: currentData });
-    });
-
-    return series;
-  };
 
   const getAreaChartConfig = (): ApexCharts.ApexOptions => {
     return {
@@ -186,58 +131,6 @@ const ChartsGroup = (props: Props) => {
     };
   };
 
-  const getHeatMapChartConfig = (): ApexCharts.ApexOptions => {
-    return {
-      chart: {
-        height: 250,
-        type: 'heatmap',
-        redrawOnWindowResize: true,
-        redrawOnParentResize: true,
-        toolbar: {
-          show: false,
-        },
-      },
-      grid: { borderColor: 'var(--bs-gray-200)' },
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      dataLabels: {
-        enabled: false,
-      },
-      legend: { show: false },
-      colors:
-        window.baseDS.colors && window.baseDS.colors.color1 ? [rgba2hex(window.baseDS.colors.color1)] : ['#0086FF'], // Using css var breaks heat range
-      xaxis: {
-        labels: {
-          style: {
-            colors: 'var(--color-font)',
-            fontSize: '10px',
-          },
-        },
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: ['var(--color-font)'],
-          },
-        },
-      },
-      tooltip: {
-        y: {
-          formatter: (val: number): string => {
-            return isNumber(val) ? val.toString() : val;
-          },
-        },
-      },
-      states: {
-        hover: {
-          filter: {
-            type: 'darken',
-            value: 0.8,
-          },
-        },
-      },
-    };
-  };
-
   return (
     <Show when={areaSeries().length > 0}>
       <div class="py-4">
@@ -256,16 +149,7 @@ const ChartsGroup = (props: Props) => {
           </div>
 
           <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card rounded-0">
-              <div class="card-body">
-                <SolidApexCharts
-                  options={getHeatMapChartConfig()}
-                  series={prepareHeatMapData()}
-                  type="heatmap"
-                  height={250}
-                />
-              </div>
-            </div>
+            <HeatMapChart data={props.data} />
           </div>
         </div>
       </div>

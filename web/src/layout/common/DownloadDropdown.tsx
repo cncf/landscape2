@@ -127,7 +127,7 @@ const DownloadDropdown = () => {
                   <Show
                     when={
                       !isUndefined(downloadingFile()) &&
-                      downloadingFile()!.doc === DocType.Items &&
+                      downloadingFile()!.doc === DocType.Landscape &&
                       downloadingFile()!.format === Format.PDF
                     }
                   >
@@ -137,6 +137,7 @@ const DownloadDropdown = () => {
                       </div>
                     </div>
                   </Show>
+
                   <SVGIcon class={styles.icon} kind={SVGIconKind.PDF} />
                 </div>
                 <div class={styles.contentBtn}>

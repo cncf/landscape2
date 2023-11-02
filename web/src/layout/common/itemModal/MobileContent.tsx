@@ -20,8 +20,8 @@ import MaturityBadge from '../MaturityBadge';
 import SVGIcon from '../SVGIcon';
 import Box from './Box';
 import LanguagesStats from './LanguagesStats';
-// import MaturitySection from './MaturitySection';
 import styles from './MobileContent.module.css';
+import MobileMaturitySection from './MobileMaturitySection';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
@@ -122,6 +122,7 @@ const MobileContent = (props: Props) => {
             </div>
           </div>
         </div>
+
         {/* Description */}
         <div class={`mt-4 mb-3 text-muted ${styles.description}`}>{description()}</div>
         <div class={`mb-2 ${styles.section}`}>
@@ -134,9 +135,10 @@ const MobileContent = (props: Props) => {
             {itemInfo()!.subcategory}
           </div>
         </div>
+
         {/* Maturity */}
-        {/* <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Repositories</div>
-        <MaturitySection item={itemInfo()!} class={styles.fieldset} /> */}
+        <MobileMaturitySection item={itemInfo()!} titleClass={styles.sectionTitle} />
+
         {/* Repositories */}
         <Show when={!isUndefined(itemInfo()!.repositories)}>
           <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Repositories</div>
@@ -422,6 +424,26 @@ const MobileContent = (props: Props) => {
                 </For>
               </div>
             </Show>
+          </div>
+        </Show>
+
+        {/* CLOMonitor */}
+        <Show when={!isUndefined(itemInfo()!.clomonitor_name)}>
+          <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>
+            CLOMonitor report summary
+          </div>
+
+          <div class="my-2 d-flex justify-content-center w-100 align-items-center">
+            <ExternalLink
+              href={`https://clomonitor.io/projects/${window.baseDS.foundation.toLowerCase()}/${itemInfo()!
+                .clomonitor_name!}`}
+            >
+              <Image
+                name={`CLOMonitor report summary for ${itemInfo()!.name}`}
+                logo={itemInfo()!.clomonitor_report_summary!}
+                class={styles.clomonitorReport}
+              />
+            </ExternalLink>
           </div>
         </Show>
       </div>

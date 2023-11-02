@@ -81,14 +81,14 @@ export const Sidebar = (props: Props) => {
         classList={{ [styles.active]: openStatus() }}
       >
         <div class="d-flex flex-column h-100">
-          <div class="border-bottom p-4 pb-3">
+          <div class="border-bottom p-3">
             <div class="d-flex align-items-center justify-content-between">
-              <div class="text-primary fw-bold">{props.header}</div>
+              <div class={`text-primary fw-semibold text-truncate ${styles.header}`}>{props.header}</div>
 
               <div>
                 <button
                   type="button"
-                  class={`btn-close ${styles.closeBtn}`}
+                  class={`btn-close ms-3 ${styles.closeBtn}`}
                   onClick={() => openStatusChange(false)}
                   aria-label="Close sidebar"
                 />

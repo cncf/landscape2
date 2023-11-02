@@ -1,11 +1,9 @@
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
-import { createEffect, createSignal, For, on, Show } from 'solid-js';
+import { createSignal, For, onMount, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../types';
-import itemsDataGetter from '../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
-import { useFullDataReady } from '../stores/fullData';
 import styles from './SubcategoryExtended.module.css';
 import SubcategoryGrid from './SubcategoryGrid';
 
@@ -17,29 +15,23 @@ interface Props {
 
 const SubcategoryExtended = (props: Props) => {
   const foundation = window.baseDS.foundation;
-  const fullDataReady = useFullDataReady();
   const [items, setItems] = createSignal<(BaseItem | Item)[]>();
   const [itemsInTable, setItemsInTable] = createSignal<(BaseItem | Item)[]>();
 
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        const itemsInSubcategory = itemsDataGetter.filterItemsBySection({
-          category: props.category,
-          subcategory: props.subcategory,
-        });
+  onMount(() => {
+    const itemsInSubcategory = window.baseDS.items.filter(
+      (i: Item) => props.subcategory === i.subcategory && props.category === i.category
+    );
 
-        if (!isUndefined(itemsInSubcategory) && itemsInSubcategory.length > 0) {
-          const sortedItems = sortItemsByOrderValue(itemsInSubcategory);
-          setItems(sortedItems);
-          const filteredItems = sortedItems.filter((i: BaseItem | Item) => !isUndefined(i.maturity));
-          if (filteredItems.length > 0) {
-            setItemsInTable(filteredItems);
-          }
-        }
+    if (!isUndefined(itemsInSubcategory) && itemsInSubcategory.length > 0) {
+      const sortedItems = sortItemsByOrderValue(itemsInSubcategory);
+      setItems(sortedItems);
+      const filteredItems = sortedItems.filter((i: BaseItem | Item) => !isUndefined(i.maturity));
+      if (filteredItems.length > 0) {
+        setItemsInTable(filteredItems);
       }
-    })
-  );
+    }
+  });
 
   return (
     <>

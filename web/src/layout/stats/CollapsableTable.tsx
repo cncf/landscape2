@@ -27,11 +27,11 @@ const CollapsableTable = (props: Props) => {
       <table class={`table table-bordered mb-0 mb-lg-2 ${styles.table}`}>
         <thead>
           <tr>
-            <th class="border-end-0" />
+            <th class={`border-end-0 ${styles.caretCol}`} />
             <th class="text-center border-start-0" scope="col">
               Category / Subcategory
             </th>
-            <th class="text-center" scope="col">
+            <th class={`text-center ${styles.projectsCol}`} scope="col">
               Projects
             </th>
           </tr>
@@ -60,7 +60,7 @@ const CollapsableTable = (props: Props) => {
                       </Show>
                     </td>
                     <td class="border-start-0">{cat}</td>
-                    <td class={`text-end ${styles.projectsCol}`}>{props.data[cat].projects}</td>
+                    <td class="text-end">{props.data[cat].projects}</td>
                   </tr>
                   <Show when={isExpanded()}>
                     <For each={Object.keys(subcategories).sort()}>

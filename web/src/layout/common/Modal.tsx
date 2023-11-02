@@ -55,7 +55,7 @@ const Modal = (props: Props) => {
           <div class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
             <Show when={props.header}>
               <div class={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
-                <div class={`modal-title h5 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
+                <div class={`modal-title h5 m-0 m-lg-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>
 
                 <button
                   type="button"

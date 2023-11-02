@@ -1,0 +1,45 @@
+.maturityBadge {
+  width: 80px;
+  font-size: 0.65rem;
+  line-height: 1rem;
+  background-color: var(--bs-gray-500);
+}
+
+.activeMaturityBadge {
+  position: relative;
+  background-color: var(--color-stats-1);
+}
+
+.statusLegend {
+  font-size: 0.6rem;
+}
+
+.line::after {
+  position: absolute;
+  content: '';
+  top: 0.7rem;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--color-stats-1);
+  z-index: -1;
+}
+
+.line::before {
+  position: absolute;
+  content: '';
+  top: 0.7rem;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--bs-gray-200);
+  z-index: -1;
+}
+
+:global(.incubatingLine)::after {
+  right: 50%;
+}
+
+:global(.sandboxLine)::after {
+  display: none;
+}

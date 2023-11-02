@@ -6,10 +6,10 @@ import { Stats } from '../../types';
 import prettifyBytes from '../../utils/prettifyBytes';
 import prettifyNumber from '../../utils/prettifyNumber';
 import sortObjectByValue from '../../utils/sortObjectByValue';
-import BarChart from './BarChart';
 import Box from './Box';
 import ChartsGroup from './ChartsGroup';
 import CollapsableTable from './CollapsableTable';
+import HeatMapChart from './HeatMapChart';
 import HorizontalBarChart from './HorizontalBarChart';
 import styles from './Stats.module.css';
 import TimestampLineChart from './TimestampLineChart';
@@ -77,7 +77,7 @@ const Content = () => {
                   <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                     <Show when={!isEmpty(stats()!.projects!.sandbox_to_incubating)}>
                       <div class="col-12 col-sm-6">
-                        <BarChart
+                        <HeatMapChart
                           name="From Sandbox to Incubating"
                           tooltipTitle="Projects"
                           data={stats()!.projects!.sandbox_to_incubating}
@@ -87,9 +87,9 @@ const Content = () => {
 
                     <Show when={!isEmpty(stats()!.projects!.incubating_to_graduated)}>
                       <div class="col-12 col-sm-6">
-                        <BarChart
+                        <HeatMapChart
                           name="From Incubating to Graduated"
-                          tooltipTitle="Prjects"
+                          tooltipTitle="Projects"
                           data={stats()!.projects!.incubating_to_graduated}
                         />
                       </div>

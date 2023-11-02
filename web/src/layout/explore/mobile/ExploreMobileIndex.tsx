@@ -11,6 +11,7 @@ import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import Loading from '../../common/Loading';
 import { Sidebar } from '../../common/Sidebar';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
+import { useGroupActive } from '../../stores/groupActive';
 import { useViewMode } from '../../stores/viewMode';
 import Menu from '../card/Menu';
 import Card from './Card';
@@ -29,6 +30,7 @@ const ExploreMobileIndex = (props: Props) => {
   const data = () => props.data;
   const selectedViewMode = useViewMode();
   const updateActiveItemId = useUpdateActiveItemId();
+  const selectedGroup = useGroupActive();
   const [menu, setMenu] = createSignal<CardMenu>({});
 
   const sortItems = (items: Item[]): Item[] =>
@@ -47,7 +49,7 @@ const ExploreMobileIndex = (props: Props) => {
     <div>
       <Sidebar
         label="Index"
-        header="Index"
+        header={selectedGroup() || 'Index'}
         visibleButton={false}
         open={props.openMenuStatus}
         onOpenStatusChange={props.closeMenuStatus}

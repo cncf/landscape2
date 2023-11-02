@@ -23,6 +23,13 @@
   height: 22px;
 }
 
+.badges :global(.badge) {
+  height: 18px;
+  line-height: 18px;
+  font-size: 10.25px !important;
+  padding: 0 0.65rem;
+}
+
 .link {
   position: relative;
   color: inherit;
@@ -189,4 +196,8 @@
 
 .text {
   font-size: 0.9rem;
+}
+
+.clomonitorReport {
+  max-width: 100%;
 }
