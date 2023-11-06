@@ -21,7 +21,8 @@ interface Props {
   items: BaseItem[];
 }
 
-const NAV_HEIGHT = 130;
+const NAV_HEIGHT = 122;
+const NAV_HEIGHT_STICKY = 50;
 
 const Header = (props: Props) => {
   const location = useLocation();
@@ -34,7 +35,8 @@ const Header = (props: Props) => {
   createEffect(
     on(y, () => {
       if (!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
-        setSticky(y() > NAV_HEIGHT);
+        const height = sticky() ? NAV_HEIGHT_STICKY : NAV_HEIGHT;
+        setSticky(y() > height);
       }
     })
   );
