@@ -58,7 +58,7 @@ const Category = (props: CatProps) => {
           }}
           style={{ 'background-color': props.bgColor }}
         >
-          <div class={`text-center ${styles.catTitleText}`}>{cutString(props.categoryName, 33)}</div>
+          <div class={`text-center ${styles.catTitleText}`}>{cutString(props.categoryName, 30)}</div>
         </div>
 
         <div class="d-flex flex-column w-100 align-items-stretch">
