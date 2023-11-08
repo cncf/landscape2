@@ -630,8 +630,6 @@ mod legacy {
     impl LandscapeData {
         /// Validate landscape data.
         pub(crate) fn validate(&self) -> Result<()> {
-            let mut items_seen = Vec::new();
-
             for (category_index, category) in self.landscape.iter().enumerate() {
                 // Check category name
                 if category.name.is_empty() {
@@ -639,6 +637,9 @@ mod legacy {
                 }
 
                 for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
+                    // Used to check for duplicate items within this subcategory
+                    let mut items_seen = Vec::new();
+
                     // Check subcategory name
                     if subcategory.name.is_empty() {
                         return Err(format_err!(
