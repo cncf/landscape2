@@ -103,6 +103,7 @@ const GridItem = (props: Props) => {
             bigCard: !isUndefined(props.item.featured),
             withLabel: !isUndefined(props.item.featured) && !isUndefined(props.item.featured.label),
             whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
+            archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
           }}
           onClick={() => {
             if (props.showMoreInfo) {
@@ -137,9 +138,10 @@ const GridItem = (props: Props) => {
           bigCard: !isUndefined(props.item.featured),
           withLabel: !isUndefined(props.item.featured) && !isUndefined(props.item.featured.label),
           whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
+          archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
         }}
       >
-        <div class="position-absolute">
+        <div class="position-absolute opacity-100">
           <Show when={visibleDropdown()}>
             <div
               ref={ref}

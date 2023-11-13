@@ -8,9 +8,10 @@ interface Props {
 const MaturityBadge = (props: Props) => (
   <div
     title={props.level}
-    class={`badge rounded-0 text-uppercase bg-secondary ${styles.badge} ${props.class}`}
+    class={`badge rounded-0 text-uppercase ${styles.badge} ${props.class}`}
     classList={{
-      archived: props.level === 'archived',
+      [styles.archived]: props.level === 'archived',
+      'bg-secondary': props.level !== 'archived',
     }}
   >
     {props.level}

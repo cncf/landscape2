@@ -19,6 +19,7 @@ import CardTitle from './CardTitle';
 interface Props {
   item: Item;
   class?: string;
+  logoClass?: string;
   isVisible?: boolean;
 }
 
@@ -68,7 +69,12 @@ const Card = (props: Props) => {
     <div class={`d-flex flex-column ${props.class}`}>
       <div class="d-flex flex-row align-items-center">
         <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
-          <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} enableLazyLoad />
+          <Image
+            name={props.item.name}
+            class={`m-auto ${styles.logo} ${props.logoClass}`}
+            logo={props.item.logo}
+            enableLazyLoad
+          />
         </div>
 
         <div class={`p-3 ms-2 ${styles.itemInfo}`}>

@@ -1,4 +1,5 @@
 import { A } from '@solidjs/router';
+import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
 import { Accessor, For, Show } from 'solid-js';
 
@@ -82,8 +83,16 @@ const Content = (props: Props) => {
                               <div
                                 class={`card rounded-0 p-3 ${styles.card}`}
                                 onClick={() => updateActiveItemId(item.id)}
+                                classList={{
+                                  [styles.archived]: !isUndefined(item.maturity) && item.maturity === 'archived',
+                                }}
                               >
-                                <Card item={item} class="h-100" isVisible={props.isVisible} />
+                                <Card
+                                  item={item}
+                                  logoClass={styles.logo}
+                                  class={`h-100 ${styles.cardContent}`}
+                                  isVisible={props.isVisible}
+                                />
                               </div>
                             </div>
                           );

@@ -53,6 +53,7 @@ const MobileGrid = (props: Props) => {
                   class={`card rounded-0 position-relative p-0 ${styles.card}`}
                   classList={{
                     whithoutRepo: isUndefined(item.oss) || !item.oss,
+                    archived: !isUndefined(item.maturity) && item.maturity === 'archived',
                   }}
                 >
                   <button
