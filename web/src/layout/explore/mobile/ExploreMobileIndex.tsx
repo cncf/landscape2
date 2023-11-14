@@ -1,4 +1,5 @@
 import isEmpty from 'lodash/isEmpty';
+import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
 import { createEffect, createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
 
@@ -100,9 +101,18 @@ const ExploreMobileIndex = (props: Props) => {
                                     <div class="col-12 col-sm-6">
                                       <div
                                         class={`card rounded-0 p-3 ${styles.card}`}
+                                        classList={{
+                                          [styles.archived]:
+                                            !isUndefined(item.maturity) && item.maturity === 'archived',
+                                        }}
                                         onClick={() => updateActiveItemId(item.id)}
                                       >
-                                        <Card item={item} class="h-100" isVisible />
+                                        <Card
+                                          item={item}
+                                          logoClass={styles.logo}
+                                          class={`h-100 ${styles.cardContent}`}
+                                          isVisible
+                                        />
                                       </div>
                                     </div>
                                   );

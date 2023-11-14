@@ -42,6 +42,18 @@
   font-size: calc(var(--card-size-height) * 1.5);
 }
 
+.card:global(.archived) {
+  border-color: rgba(0, 0, 0, 0.075);
+}
+
+.card:global(.archived) .cardContent {
+  opacity: 0.35;
+}
+
+.card:global(.archived) .logo {
+  filter: grayscale(1);
+}
+
 .legend {
   background-color: var(--bs-gray-100);
   font-size: 0.5rem;

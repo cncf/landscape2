@@ -18,6 +18,18 @@
   cursor: pointer;
 }
 
+.archived {
+  border-color: rgba(0, 0, 0, 0.075);
+}
+
+.archived .cardContent {
+  opacity: 0.6;
+}
+
+.archived .logo {
+  filter: grayscale(1);
+}
+
 .card :global(.badge:not(.tagBadge)) {
   font-size: 65%;
 }

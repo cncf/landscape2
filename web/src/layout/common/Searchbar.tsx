@@ -249,7 +249,9 @@ const Searchbar = (props: Props) => {
                       <button
                         type="button"
                         class={`btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3 ${styles.btnProject}`}
-                        classList={{ activeDropdownItem: index() === highlightedItem() }}
+                        classList={{
+                          activeDropdownItem: index() === highlightedItem(),
+                        }}
                         onClick={() => {
                           openItemModal(item.id);
                         }}
