@@ -1,10 +1,12 @@
+import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 
-import { Stats } from '../../types';
+import { StateContent, Stats } from '../../types';
 import prettifyBytes from '../../utils/prettifyBytes';
 import prettifyNumber from '../../utils/prettifyNumber';
+import scrollToTop from '../../utils/scrollToTop';
 import sortObjectByValue from '../../utils/sortObjectByValue';
 import Box from './Box';
 import ChartsGroup from './ChartsGroup';
@@ -15,7 +17,10 @@ import styles from './Stats.module.css';
 import TimestampLineChart from './TimestampLineChart';
 
 const Content = () => {
+  const location = useLocation();
+  const state = createMemo(() => location.state || {});
   const [stats, setStats] = createSignal<Stats>();
+  const from = () => (state() as StateContent).from || undefined;
 
   const sumValues = (numbers: number[]): number => {
     return numbers.reduce((a, b) => a + b, 0);
@@ -23,6 +28,9 @@ const Content = () => {
 
   onMount(() => {
     setStats(window.statsDS);
+    if (from() === 'header') {
+      scrollToTop(false);
+    }
   });
 
   return (

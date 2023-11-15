@@ -35,7 +35,8 @@ export const DEFAULT_ZOOM_LEVELS = {
 };
 
 export const SMALL_DEVICES_BREAKPOINTS: Breakpoint[] = [Breakpoint.XS, Breakpoint.SM, Breakpoint.MD];
-export const DEFAULT_STICKY_NAVBAR_HEIGHT = 50;
+export const DEFAULT_STICKY_MOBILE_NAVBAR_HEIGHT = 50;
+export const DEFAULT_STICKY_NAVBAR_HEIGHT = 72;
 export const DEFAULT_TAB = Tab.Explore;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;

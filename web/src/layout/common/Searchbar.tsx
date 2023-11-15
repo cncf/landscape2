@@ -14,6 +14,7 @@ import SVGIcon from './SVGIcon';
 
 interface Props {
   items: BaseItem[];
+  searchBarClass?: string;
 }
 
 const SEARCH_DELAY = 3 * 100; // 300ms
@@ -188,7 +189,7 @@ const Searchbar = (props: Props) => {
   return (
     <>
       <div
-        class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} search`}
+        class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass} search`}
       >
         <input
           id="searchbar"

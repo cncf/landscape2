@@ -2,9 +2,9 @@
   height: 33px;
   width: 500px;
   font-size: 0.8rem;
-  box-shadow: 0 0 0 0.3rem var(--bs-gray-200);
-  margin-right: 0.3rem;
-  margin: 0 0.3rem;
+  box-shadow: 0 0 0 0.15rem var(--bs-gray-200);
+  margin-right: 0.15rem;
+  margin: 0 0.15rem;
 }
 
 .btnIcon {
@@ -139,10 +139,6 @@
 }
 
 @media only screen and (max-width: 767.98px) {
-  .searchBar {
-    box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
-  }
-
   .vr {
     margin: 0.65rem 0;
   }

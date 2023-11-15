@@ -2,9 +2,9 @@
   width: 350px;
   max-width: 350px;
   min-width: 350px;
-  top: 1rem;
+  top: 4rem;
   bottom: 1rem;
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100vh - 4.5rem);
 }
 
 .wrapper {

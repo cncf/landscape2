@@ -3,15 +3,26 @@ import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
-import { createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { createEffect, createMemo, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { ActiveFilters, BaseData, BaseItem, FilterCategory, Group, Item, SVGIconKind, ViewMode } from '../../types';
+import {
+  ActiveFilters,
+  BaseData,
+  BaseItem,
+  FilterCategory,
+  Group,
+  Item,
+  StateContent,
+  SVGIconKind,
+  ViewMode,
+} from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
+import scrollToTop from '../../utils/scrollToTop';
 import Loading from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
@@ -43,6 +54,8 @@ const Explore = (props: Props) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { point } = useBreakpointDetect();
+  const state = createMemo(() => location.state || {});
+  const from = () => (state() as StateContent).from || undefined;
 
   const fullDataReady = useFullDataReady();
   const zoom = useZoomLevel();
@@ -65,10 +78,11 @@ const Explore = (props: Props) => {
   const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
+  const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
 
   const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
     // Not for small devices
-    if (!isUndefined(point()) && !SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
+    if (!onSmallDevice) {
       if (viewMode) {
         const group = groupName || selectedGroup() || 'default';
         if (!loaded()[viewMode].includes(groupName || 'default')) {
@@ -228,6 +242,10 @@ const Explore = (props: Props) => {
   };
 
   onMount(() => {
+    if (from() === 'header') {
+      scrollToTop(false);
+    }
+
     window.addEventListener(
       'resize',
       // eslint-disable-next-line solid/reactivity

@@ -1,16 +1,14 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { CategoryGuide, Guide, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
+import { CategoryGuide, Guide, StateContent, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
 import scrollToTop from '../../utils/scrollToTop';
 import slugify from '../../utils/slugify';
-import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import Loading from '../common/Loading';
 import { Sidebar } from '../common/Sidebar';
 import SVGIcon from '../common/SVGIcon';
@@ -20,10 +18,6 @@ import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import styles from './Guide.module.css';
 import SubcategoryExtended from './SubcategoryExtended';
 import ToC from './ToC';
-
-interface StateGuide {
-  from?: string;
-}
 
 const GuideIndex = () => {
   const navigate = useNavigate();
@@ -40,6 +34,8 @@ const GuideIndex = () => {
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
   const { point } = useBreakpointDetect();
+  const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
+  const from = () => (state() as StateContent).from || undefined;
 
   const prepareToC = (data: Guide) => {
     const content: ToCTitle[] = [];
@@ -91,6 +87,11 @@ const GuideIndex = () => {
       setTimeout(() => {
         setGuide(guideContent());
         setToc(guideToc());
+        setFirstItem(guideToc()![0].id);
+        if (from() === 'header' && location.hash === '') {
+          scrollToTop(false);
+          updateRoute(guideToc()![0].id);
+        }
       }, 5);
     }
   });
@@ -100,23 +101,22 @@ const GuideIndex = () => {
       if (toc().length > 0 && firstItem()) {
         const cleanHash = location.hash.replace('#', '');
         if (cleanHash !== '' && cleanHash !== firstItem()) {
-          if (!isEmpty(state())) {
-            const fromPage = (state() as StateGuide).from || undefined;
-            if (fromPage === 'header') {
+          if (!isUndefined(from())) {
+            if (['header', 'mobileHeader'].includes(from()!)) {
               updateRoute(firstItem()!);
             } else {
               updateActiveTitle(cleanHash, true);
               scrollInToC();
             }
           } else {
-            scrollInToC();
             setTimeout(() => {
               goToElement(
                 !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!),
                 `section_${cleanHash}`,
                 16
               );
-            }, 100);
+              scrollInToC();
+            }, 50);
           }
         } else {
           updateRoute(firstItem()!);
@@ -147,7 +147,6 @@ const GuideIndex = () => {
   };
 
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
-    const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
     updateRoute(title);
     if (title === firstItem()) {
       scrollToTop(onSmallDevice);
@@ -155,7 +154,7 @@ const GuideIndex = () => {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
           goToElement(onSmallDevice, `section_${title}`, 16);
-        }, 100);
+        }, 50);
       } else {
         goToElement(onSmallDevice, `section_${title}`, 16);
       }
@@ -247,14 +246,6 @@ const GuideIndex = () => {
                     );
                   }}
                 </For>
-
-                <Show
-                  when={
-                    !isUndefined(firstItem()) && !isUndefined(point()) && !SMALL_DEVICES_BREAKPOINTS.includes(point()!)
-                  }
-                >
-                  <ButtonToTopScroll firstSection={firstItem()!} />
-                </Show>
               </div>
             </div>
           </Show>

@@ -54,7 +54,7 @@ const MobileDropdown = (props: Props) => {
               class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
               href="/guide"
               activeClass="activeLink"
-              state={{ from: 'header' }}
+              state={{ from: 'mobileHeader' }}
               onClick={closeDropdown}
             >
               Guide

@@ -4,6 +4,7 @@ import { BaseData } from '../types';
 import ItemModal from './common/itemModal';
 import ZoomModal from './common/zoomModal';
 import Header from './navigation/Header';
+import MobileHeader from './navigation/MobileHeader';
 import { ActiveItemProvider } from './stores/activeItem';
 import { FullDataProvider } from './stores/fullData';
 import { GridWidthProvider } from './stores/gridWidth';
@@ -29,7 +30,8 @@ const Layout = (props: Props) => {
                 <GridWidthProvider>
                   <MobileTOCProvider>
                     <GuideFileProvider>
-                      <div class="h-100 d-flex flex-column">
+                      <div class="d-flex flex-column">
+                        <MobileHeader logo={props.data.images.header_logo} items={props.data.items} />
                         <Header logo={props.data.images.header_logo} items={props.data.items} />
                         <div class="d-flex flex-column flex-grow-1">
                           <Outlet />

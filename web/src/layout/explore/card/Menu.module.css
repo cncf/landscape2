@@ -6,9 +6,9 @@
   width: 270px;
   max-width: 270px;
   min-width: 270px;
-  top: 1rem;
+  top: 5.5rem;
   bottom: 1rem;
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100vh - 6.5rem);
 }
 
 .content {
