@@ -75,7 +75,15 @@
 }
 
 .extra {
-  height: 20px;
+  height: 21px;
+}
+
+.extra > div {
+  margin-top: 3px;
+}
+
+.extra > a {
+  margin-top: 1px;
 }
 
 .auditBadge {

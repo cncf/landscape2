@@ -20,7 +20,7 @@
 
 .badges {
   font-size: 85%;
-  height: 22px;
+  height: 20px;
 }
 
 .badges :global(.badge) {

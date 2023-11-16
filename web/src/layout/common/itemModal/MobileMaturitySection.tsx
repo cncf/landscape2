@@ -13,10 +13,11 @@ const MobileMaturitySection = (props: Props) => {
   return (
     <Show
       when={
-        !isUndefined(props.item.maturity) ||
-        !isUndefined(props.item.accepted_at) ||
-        !isUndefined(props.item.incubating_at) ||
-        !isUndefined(props.item.graduated_at)
+        !isUndefined(props.item.maturity) &&
+        ['sandbox', 'incubating', 'graduated'].includes(props.item.maturity) &&
+        (!isUndefined(props.item.accepted_at) ||
+          !isUndefined(props.item.incubating_at) ||
+          !isUndefined(props.item.graduated_at))
       }
     >
       <div class={`text-uppercase mt-3 fw-semibold border-bottom ${props.titleClass}`}>Maturity</div>

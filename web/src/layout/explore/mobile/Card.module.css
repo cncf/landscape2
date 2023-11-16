@@ -74,14 +74,18 @@
 
 .link svg {
   position: relative;
-  height: 20px;
+  height: 17px;
   width: auto;
   opacity: 75%;
   margin-top: -2px;
 }
 
 .extra {
-  height: 30px;
+  height: 23px;
+}
+
+.extra > div {
+  margin-top: 3px;
 }
 
 .auditBadge {
