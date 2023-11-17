@@ -85,7 +85,7 @@ const Card = (props: Props) => {
             </div>
           </Show>
 
-          <div class={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-2 ${styles.extra}`}>
+          <div class={`d-flex flex-row flex-wrap overflow-hidden align-items-center mt-1 ${styles.extra}`}>
             <Show
               when={!isUndefined(props.item.maturity)}
               fallback={
