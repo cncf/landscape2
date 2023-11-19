@@ -93,6 +93,9 @@ const Grid = (props: Props) => {
   const updateActiveSection = useSetVisibleZoom();
   const [grid, setGrid] = createSignal<GridCategoryLayout | undefined>();
   const gridWidth = useGridWidth();
+  const [prevSubcategories, setPrevSubcategories] = createSignal<SubcategoryDetails[]>();
+  const subcategories = () => props.subcategories;
+  const data = () => props.initialCategoryData;
 
   createEffect(() => {
     setGrid((prev) => {
@@ -101,25 +104,32 @@ const Grid = (props: Props) => {
         itemWidth: ZOOM_LEVELS[zoom()][0],
         categoryName: props.categoryName,
         isOverriden: props.isOverriden,
-        subcategories: props.subcategories,
+        subcategories: subcategories(),
       });
 
-      return !isEqual(newGrid, prev) ? newGrid : prev;
+      return !isEqual(newGrid, prev) || !isEqual(subcategories(), prevSubcategories()) ? newGrid : prev;
     });
   });
+
+  createEffect(
+    on(grid, () => {
+      setPrevSubcategories(subcategories());
+    })
+  );
 
   return (
     <Show when={!isUndefined(grid())}>
       <For each={grid()}>
         {(row, rowIndex) => {
           return (
-            <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid.length - 1 }}>
+            <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid()!.length - 1 }}>
               <For each={row}>
                 {(subcat: LayoutColumn) => {
-                  const items = props.initialCategoryData[subcat.subcategoryName].items;
-                  if (items.length === 0) return null;
-                  const featuredItems = items.filter((item: BaseItem | Item) => !isUndefined(item.featured)).length;
-                  const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(items);
+                  const items = () => data()[subcat.subcategoryName].items;
+                  if (items().length === 0) return null;
+                  const featuredItems = items().filter((item: BaseItem | Item) => !isUndefined(item.featured)).length;
+                  const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(items());
+
                   return (
                     <div
                       classList={{

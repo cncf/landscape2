@@ -3,7 +3,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, For, Show, untrack } from 'solid-js';
 
-import { COLORS, ZOOM_LEVELS } from '../../../data';
+import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import calculateGridWidthInPx from '../../../utils/calculateGridWidthInPx';
@@ -110,7 +110,14 @@ const ZoomModal = () => {
                     <div class={styles.grid}>
                       <For each={sortItemsByOrderValue(items()!)}>
                         {(item: BaseItem | Item) => {
-                          return <GridItem item={item} borderColor={COLORS[0]} showMoreInfo={false} activeDropdown />;
+                          return (
+                            <GridItem
+                              item={item}
+                              borderColor={visibleZoomSection()!.bgColor}
+                              showMoreInfo={false}
+                              activeDropdown
+                            />
+                          );
                         }}
                       </For>
                     </div>
