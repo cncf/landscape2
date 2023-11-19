@@ -525,7 +525,7 @@ impl Item {
     fn set_id(&mut self) {
         lazy_static! {
             static ref VALID_CHARS: Regex =
-                Regex::new(r"[a-z0-9\-\ ]").expect("exprs in VALID_CHARS to be valid");
+                Regex::new(r"[a-z0-9\-\ \u4E00-\u9FFF]").expect("exprs in VALID_CHARS to be valid");
         }
 
         // Normalize category, subcategory and item name
