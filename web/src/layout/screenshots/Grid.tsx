@@ -5,6 +5,7 @@ import { DEFAULT_ZOOM_LEVELS, ZOOM_LEVELS } from '../../data';
 import { BaseItem, Breakpoint } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
 import cutString from '../../utils/cutString';
+import isAllChinese from '../../utils/isAllChinese';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -118,7 +119,7 @@ const Grid = (props: Props) => {
         }}
         style={{ 'background-color': props.bgColor }}
       >
-        <div class={`text-center ${styles.catTitleText}`}>{cutString(props.categoryName, 33)}</div>
+        <div class={`text-center ${isAllChinese(props.categoryName) ? styles.catTitleTextCn : styles.catTitleText}`}>{cutString(props.categoryName, 33)}</div>
       </div>
 
       <div class="d-flex flex-column w-100 align-items-stretch">

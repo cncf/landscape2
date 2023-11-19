@@ -11,6 +11,11 @@
   max-height: 120px;
 }
 
+.catTitleTextCn {
+  max-height: 120px;
+  transform: rotate(180deg);
+}
+
 .btnIcon {
   font-size: 0.9rem;
   line-height: 0.8rem;

@@ -2,6 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, onMount, Show } from 'solid-js';
 
 import cutString from '../../../utils/cutString';
+import isAllChinese from '../../../utils/isAllChinese';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData, CategoryData } from '../../../utils/prepareData';
@@ -58,7 +59,7 @@ const Category = (props: CatProps) => {
           }}
           style={{ 'background-color': props.bgColor }}
         >
-          <div class={`text-center ${styles.catTitleText}`}>{cutString(props.categoryName, 30)}</div>
+          <div class={`text-center ${isAllChinese(props.categoryName) ? styles.catTitleTextCn : styles.catTitleText}`}>{cutString(props.categoryName, 30)}</div>
         </div>
 
         <div class="d-flex flex-column w-100 align-items-stretch">

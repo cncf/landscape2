@@ -11,6 +11,11 @@
   max-height: 120px;
 }
 
+.catTitleTextCn {
+  max-height: 120px;
+  transform: rotate(180deg);
+}
+
 .subcatTitle {
   font-size: 0.65rem;
   height: 1.5rem;
