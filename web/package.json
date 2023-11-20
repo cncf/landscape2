@@ -22,7 +22,7 @@
     "moment": "^2.29.4",
     "solid-apexcharts": "^0.3.2",
     "solid-js": "^1.8.5",
-    "yarn": "^1.22.19"
+    "yarn": "^1.22.21"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.201",
