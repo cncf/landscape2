@@ -1,5 +1,5 @@
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, onMount, Show } from 'solid-js';
+import { createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
@@ -80,6 +80,8 @@ const GridCategory = (props: Props) => {
   const [colorsList, setColorsList] = createSignal<string[]>([]);
   const [firstLoad, setFirstLoad] = createSignal<boolean>(false);
   const [isVisible, setIsVisible] = createSignal<boolean>(false);
+  const [catWithItems, setCatWithItems] = createSignal<string[]>([]);
+  const data = () => props.data;
 
   createEffect(() => {
     if (props.initialIsVisible !== isVisible()) {
@@ -91,13 +93,29 @@ const GridCategory = (props: Props) => {
     }
   });
 
+  createEffect(
+    on(data, () => {
+      const dataTmp: string[] = [];
+      Object.keys(data()).forEach((cat: string) => {
+        let itemsNumber = 0;
+        Object.keys(data()[cat]).forEach((subcat: string) => {
+          itemsNumber += data()[cat][subcat].items.length;
+        });
+        if (itemsNumber > 0) {
+          dataTmp.push(cat);
+        }
+      });
+      setCatWithItems(dataTmp);
+    })
+  );
+
   onMount(() => {
-    setColorsList(generateColorsArray(Object.keys(props.data).length));
+    setColorsList(generateColorsArray(Object.keys(data()).length));
   });
 
   return (
     <Show when={firstLoad()}>
-      <For each={Object.keys(props.data)}>
+      <For each={catWithItems()}>
         {(cat, index) => {
           const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
 
@@ -107,8 +125,8 @@ const GridCategory = (props: Props) => {
               isOverriden={isOverriden}
               categoryName={cat}
               bgColor={[...colorsList()][index()]}
-              catSectionNumber={Object.keys(props.data).length - 1}
-              content={props.data[cat]}
+              catSectionNumber={Object.keys(data()).length - 1}
+              content={data()[cat]}
             />
           );
         }}
