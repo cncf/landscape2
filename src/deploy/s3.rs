@@ -37,7 +37,7 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
     check_env_vars()?;
 
     // Setup AWS S3 client
-    let config = aws_config::load_from_env().await;
+    let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let s3_client = aws_sdk_s3::Client::new(&config);
 
     // Get objects already deployed
@@ -97,7 +97,7 @@ async fn get_deployed_objects(
                 deployed_objects.insert(key, created_at);
             }
         }
-        if !output.is_truncated {
+        if !output.is_truncated.unwrap_or(false) {
             break;
         }
         continuation_token = output.next_continuation_token;
