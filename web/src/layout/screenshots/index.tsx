@@ -3,6 +3,7 @@ import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 
 import { BaseData } from '../../types';
 import generateColorsArray from '../../utils/generateColorsArray';
+import getCategoriesWithItems from '../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../utils/gridCategoryLayout';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import MiniFooter from '../navigation/MiniFooter';
@@ -35,13 +36,14 @@ const Screenshots = (props: Props) => {
             {(group) => {
               const colorsList = () => generateColorsArray(group.categories.length);
               const groupData = groupsData()![group.name];
+              const categories = getCategoriesWithItems(groupData);
 
               return (
                 <div class={styles.group}>
                   <Show when={!isUndefined(props.initialData.groups)}>
                     <div class={`fw-bold text-uppercase ${styles.title}`}>{group.name}</div>
                   </Show>
-                  <For each={Object.keys(groupData)}>
+                  <For each={categories}>
                     {(cat, index) => {
                       const isOverriden =
                         !isUndefined(props.initialData.categories_overridden) &&
