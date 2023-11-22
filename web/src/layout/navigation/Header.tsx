@@ -1,15 +1,15 @@
-import { createScrollPosition } from '@solid-primitives/scroll';
-import { A, useLocation, useNavigate } from '@solidjs/router';
-import isEmpty from 'lodash/isEmpty';
+import { useLocation, useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
-import { BaseItem, SVGIconKind } from '../../types';
+import { BaseItem, SVGIconKind, ViewMode } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
 import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
+import { useSetGroupActive } from '../stores/groupActive';
+import { useSetViewMode } from '../stores/viewMode';
 import styles from './Header.module.css';
 
 interface Props {
@@ -20,25 +20,24 @@ interface Props {
 const Header = (props: Props) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const target = document.getElementById('landscape');
-  const scroll = createScrollPosition(target as Element);
-  const y = () => scroll.y;
+  const setViewMode = useSetViewMode();
+  const setSelectedGroup = useSetGroupActive();
+
+  const isActive = (path: string) => {
+    return path === location.pathname;
+  };
 
   return (
     <header class={`d-none d-lg-flex navbar navbar-expand mb-2 border-bottom shadow-sm top-0 ${styles.navbar}`}>
       <div class="container-fluid d-flex flex-row align-items-center px-3 px-lg-4 mainPadding">
         <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
           <button
-            class="btn btn-link p-0 me-4 me-xl-5"
+            class="btn btn-link me-4 me-xl-5"
             onClick={() => {
-              if (y() > 0) {
-                scrollToTop(false);
-              } else {
-                navigate('/', {
-                  replace: false,
-                  scroll: false,
-                });
-              }
+              const groups = window.baseDS.groups;
+              setViewMode(ViewMode.Grid);
+              setSelectedGroup(!isUndefined(groups) ? groups[0].name : 'default');
+              navigate('/');
             }}
           >
             <img
@@ -68,42 +67,61 @@ const Header = (props: Props) => {
           }
         >
           <div class="d-flex align-items-center">
-            <A
+            <button
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              activeClass="activeLink"
-              href="/"
-              state={{ from: 'header' }}
-              end
+              classList={{ activeLink: isActive('/') }}
+              onClick={() => {
+                if (isActive('/')) {
+                  scrollToTop(false);
+                } else {
+                  navigate('/', {
+                    state: { from: 'header' },
+                  });
+                }
+              }}
             >
               Explore
-            </A>
+            </button>
 
-            <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
-              <A
-                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                href="/guide"
-                activeClass="activeLink"
-                state={{ from: 'header' }}
-              >
-                Guide
-              </A>
-            </Show>
-
-            <A
+            <button
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              activeClass="activeLink"
-              href="/stats"
-              state={{ from: 'header' }}
+              classList={{ activeLink: isActive('/guide') }}
+              onClick={() => {
+                if (isActive('/guide')) {
+                  scrollToTop(false);
+                } else {
+                  navigate('/guide', {
+                    state: { from: 'header' },
+                  });
+                }
+              }}
+            >
+              Guide
+            </button>
+
+            <button
+              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+              classList={{ activeLink: isActive('/stats') }}
+              onClick={() => {
+                if (isActive('/stats')) {
+                  scrollToTop(false);
+                } else {
+                  navigate('/stats', {
+                    state: { from: 'header' },
+                  });
+                }
+              }}
             >
               Stats
-            </A>
+            </button>
           </div>
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
             <div class="position-relative me-4 w-100">
               <Searchbar items={props.items} searchBarClass={`${styles.searchBar}`} />
             </div>
-            <div class="d-flex align-items-center">
+
+            <div class={`d-flex align-items-center ${styles.icons}`}>
               <DownloadDropdown />
               <ExternalLink
                 class={`btn btn-md text-dark ms-2 ms-xl-3 px-0 ${styles.btnLink}`}

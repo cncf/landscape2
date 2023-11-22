@@ -4,6 +4,10 @@
   font-size: 1.25rem;
 }
 
+.btn:hover {
+  color: var(--color2);
+}
+
 .dropdown {
   right: -0.75rem;
   top: 2.5rem;

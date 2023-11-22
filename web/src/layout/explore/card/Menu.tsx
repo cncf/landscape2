@@ -52,7 +52,7 @@ const Menu = (props: Props) => {
               return (
                 <div>
                   <div
-                    class="text-white border border-3 border-bottom-0 border-white fw-semibold p-2"
+                    class="text-white border border-3 border-bottom-0 border-white fw-semibold p-2 text-truncate"
                     classList={{ 'border-top-0': index() === 0 }}
                     style={{ 'background-color': bgColor }}
                   >
