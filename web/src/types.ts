@@ -230,6 +230,10 @@ export interface ToCTitle {
   options?: ToCTitle[];
 }
 
+export interface StateContent {
+  from?: string;
+}
+
 export enum FilterCategory {
   Maturity = 'project',
   Organization = 'organization',

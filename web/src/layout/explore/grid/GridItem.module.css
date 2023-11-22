@@ -113,6 +113,7 @@
   min-height: 10rem;
   border-color: var(--bs-gray-600);
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+  z-index: 1020;
 }
 
 .card:global(.bigCard) .dropdown {

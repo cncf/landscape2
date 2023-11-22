@@ -1,5 +1,12 @@
+.navbar {
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1040;
+  height: 72px;
+  position: sticky;
+}
+
 .logo {
-  height: 48px;
+  height: 34px;
   max-width: 250px;
 }
 
@@ -16,6 +23,10 @@
   padding-left: 2.5rem;
 }
 
+.searchBar {
+  height: 30px;
+}
+
 .link {
   color: var(--color1) !important;
   letter-spacing: 2px;
@@ -29,85 +40,40 @@
 }
 
 .githubIcon {
-  margin-top: -0.25rem;
+  margin-top: -0.05rem;
 }
 
 .link:hover:before {
   background-color: var(--color1);
   content: '';
-  height: 4px;
+  height: 3px;
   left: 0;
   opacity: 0.5;
   position: absolute;
   right: 0;
-  bottom: -10px;
+  bottom: -4px;
 }
 
 .link:global(.activeLink):before {
   background-color: var(--color1);
   content: '';
-  height: 4px;
+  height: 3px;
   left: 0;
   position: absolute;
   right: 0;
-  bottom: -10px;
+  bottom: -4px;
 }
 
 .link:global(.activeLink):hover:before {
   opacity: 1;
 }
 
-/* Sticky nav */
-.stickyNav {
-  position: sticky;
-  background-color: rgba(255, 255, 255, 0.9);
-  min-height: 49px;
-  z-index: 1050;
-  margin-top: -55px;
-}
-
-.stickyNav > div {
-  min-width: 28px;
-}
-
-.stickyLogo {
-  height: 35px;
-  max-width: 210px;
-}
-
-.mobileBtn {
-  width: 28px !important;
-  height: 28px !important;
-  font-size: 1rem;
-}
-
-.mobileBtn svg {
-  margin-top: -2px;
+.btnLink {
+  font-size: 1.25rem;
 }
 
 @media only screen and (max-width: 1199.98px) {
   .link {
     margin-left: 1.5rem;
-  }
-}
-
-@media only screen and (max-width: 991.98px) {
-  .link {
-    font-size: 0.9rem;
-  }
-
-  .logo {
-    height: 35px;
-    max-width: 210px;
-  }
-
-  .logoWrapper,
-  .searchWrapper {
-    width: calc(100% - 0.4rem);
-  }
-
-  .searchWrapper {
-    margin: 0 0.2rem;
-    margin-bottom: 0.3rem;
   }
 }

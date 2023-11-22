@@ -12,7 +12,6 @@ import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
 import prepareMenu from '../../../utils/prepareMenu';
 import scrollToTop from '../../../utils/scrollToTop';
-import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
 import Content from './Content';
@@ -142,9 +141,6 @@ const CardCategory = (props: Props) => {
           <div class={`d-flex flex-column ${styles.content}`}>
             <Show when={fullDataReady()}>
               <Content menu={menu} data={props.data} isVisible={props.initialIsVisible} />
-            </Show>
-            <Show when={!isUndefined(firstItem()) && fullDataReady()}>
-              <ButtonToTopScroll firstSection={firstItem()!} />
             </Show>
           </div>
         </Show>

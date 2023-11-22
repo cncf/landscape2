@@ -1,165 +1,121 @@
-import { useWindowScrollPosition } from '@solid-primitives/scroll';
-import { A, useLocation } from '@solidjs/router';
+import { createScrollPosition } from '@solid-primitives/scroll';
+import { A, useLocation, useNavigate } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, Show } from 'solid-js';
+import { Show } from 'solid-js';
 
-import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { BaseItem, SVGIconKind } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
 import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
-import { useSetMobileTOCStatus } from '../stores/mobileTOC';
 import styles from './Header.module.css';
-import MobileDropdown from './MobileDropdown';
 
 interface Props {
   logo: string;
   items: BaseItem[];
 }
 
-const NAV_HEIGHT = 121;
-const MARGIN_TOP = -55;
-
 const Header = (props: Props) => {
   const location = useLocation();
-  const openMenu = useSetMobileTOCStatus();
-  const { point } = useBreakpointDetect();
-  const [topPosition, setTopPosition] = createSignal<number>(MARGIN_TOP);
-  const scroll = useWindowScrollPosition();
+  const navigate = useNavigate();
+  const target = document.getElementById('landscape');
+  const scroll = createScrollPosition(target as Element);
   const y = () => scroll.y;
 
-  createEffect(
-    on(y, () => {
-      if (!isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
-        const status = y() > NAV_HEIGHT;
-        if (status) {
-          const value = y() - NAV_HEIGHT + MARGIN_TOP;
-          setTopPosition(value < 0 ? value : 0);
-        } else {
-          setTopPosition(MARGIN_TOP);
-        }
-      }
-    })
-  );
-
   return (
-    <>
-      <div
-        class={`d-flex d-lg-none flex-row align-items-center justify-content-between border-bottom shadow-sm px-2 w-100 ${styles.stickyNav}`}
-        classList={{ 'd-none': topPosition() === MARGIN_TOP }}
-        style={{ top: `${topPosition()}px` }}
-      >
-        <div class="d-flex flex-row align-items-center">
-          <Show when={location.pathname !== '/stats'}>
-            <button
-              title="Index"
-              class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 p-0 ${styles.mobileBtn}`}
-              onClick={() => openMenu(true)}
-            >
-              <SVGIcon kind={SVGIconKind.ToC} />
-            </button>
-          </Show>
-        </div>
-        <div>
-          <button class="btn btn-link" onClick={() => scrollToTop(true)}>
+    <header class={`d-none d-lg-flex navbar navbar-expand mb-2 border-bottom shadow-sm top-0 ${styles.navbar}`}>
+      <div class="container-fluid d-flex flex-row align-items-center px-3 px-lg-4 mainPadding">
+        <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
+          <button
+            class="btn btn-link p-0 me-4 me-xl-5"
+            onClick={() => {
+              if (y() > 0) {
+                scrollToTop(false);
+              } else {
+                navigate('/', {
+                  replace: false,
+                  scroll: false,
+                });
+              }
+            }}
+          >
             <img
+              class={`${styles.logo}`}
               src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
-              class={styles.stickyLogo}
               alt="Landscape logo"
               width="auto"
-              height={35}
+              height={48}
             />
           </button>
         </div>
-        <div>
-          <MobileDropdown inSticky />
-        </div>
-      </div>
-      <header class="navbar navbar-expand p-0 mb-2 border-bottom shadow-sm">
-        <div class="container-fluid d-flex flex-column flex-lg-row align-items-center p-3 p-lg-4 mainPadding">
-          <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
-            <A href="/" class="me-4 me-xl-5">
+
+        <Show
+          when={location.pathname !== '/screenshot'}
+          fallback={
+            <Show when={!isUndefined(window.baseDS.qr_code)}>
               <img
-                class={styles.logo}
-                src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
-                alt="Landscape logo"
-                width="auto"
-                height={48}
+                class={styles.qr}
+                alt="QR code"
+                src={
+                  import.meta.env.MODE === 'development'
+                    ? `../../static/${window.baseDS.qr_code}`
+                    : window.baseDS.qr_code
+                }
               />
+            </Show>
+          }
+        >
+          <div class="d-flex align-items-center">
+            <A
+              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+              activeClass="activeLink"
+              href="/"
+              state={{ from: 'header' }}
+              end
+            >
+              Explore
             </A>
-            <div class="d-flex d-lg-none">
-              <MobileDropdown />
-            </div>
+
+            <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
+              <A
+                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+                href="/guide"
+                activeClass="activeLink"
+                state={{ from: 'header' }}
+              >
+                Guide
+              </A>
+            </Show>
+
+            <A
+              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+              activeClass="activeLink"
+              href="/stats"
+              state={{ from: 'header' }}
+            >
+              Stats
+            </A>
           </div>
 
-          <Show
-            when={location.pathname !== '/screenshot'}
-            fallback={
-              <Show when={!isUndefined(window.baseDS.qr_code)}>
-                <img
-                  class={styles.qr}
-                  alt="QR code"
-                  src={
-                    import.meta.env.MODE === 'development'
-                      ? `../../static/${window.baseDS.qr_code}`
-                      : window.baseDS.qr_code
-                  }
-                />
-              </Show>
-            }
-          >
-            <div class="d-none d-lg-flex align-items-center">
-              <A
-                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                activeClass="activeLink"
-                href="/"
-                end
-              >
-                Explore
-              </A>
-
-              <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
-                <A
-                  class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                  href="/guide"
-                  activeClass="activeLink"
-                  state={{ from: 'header' }}
-                >
-                  Guide
-                </A>
-              </Show>
-
-              <A
-                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                activeClass="activeLink"
-                href="/stats"
-              >
-                Stats
-              </A>
+          <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
+            <div class="position-relative me-4 w-100">
+              <Searchbar items={props.items} searchBarClass={`${styles.searchBar}`} />
             </div>
-
-            <div class={`d-flex flex-row align-items-center ms-lg-auto mt-3 mt-md-4 mt-lg-0 ${styles.searchWrapper}`}>
-              <div class="position-relative me-0 me-lg-4 w-100">
-                <Searchbar items={props.items} />
-              </div>
-              <div class="d-none d-lg-flex align-items-center">
-                <DownloadDropdown />
-                <ExternalLink
-                  class="btn btn-md text-dark fs-5 ms-2 ms-xl-4 px-0"
-                  href="https://github.com/cncf/landscape2"
-                >
-                  <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
-                </ExternalLink>
-              </div>
+            <div class="d-flex align-items-center">
+              <DownloadDropdown />
+              <ExternalLink
+                class={`btn btn-md text-dark ms-2 ms-xl-3 px-0 ${styles.btnLink}`}
+                href="https://github.com/cncf/landscape2"
+              >
+                <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
+              </ExternalLink>
             </div>
-          </Show>
-        </div>
-      </header>
-    </>
+          </div>
+        </Show>
+      </div>
+    </header>
   );
 };
 
