@@ -3,6 +3,7 @@ import { createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
+import getCategoriesWithItems from '../../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData, CategoryData } from '../../../utils/prepareData';
 import Grid from './Grid';
@@ -95,17 +96,7 @@ const GridCategory = (props: Props) => {
 
   createEffect(
     on(data, () => {
-      const dataTmp: string[] = [];
-      Object.keys(data()).forEach((cat: string) => {
-        let itemsNumber = 0;
-        Object.keys(data()[cat]).forEach((subcat: string) => {
-          itemsNumber += data()[cat][subcat].items.length;
-        });
-        if (itemsNumber > 0) {
-          dataTmp.push(cat);
-        }
-      });
-      setCatWithItems(dataTmp);
+      setCatWithItems(getCategoriesWithItems(data()));
     })
   );
 
