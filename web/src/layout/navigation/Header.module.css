@@ -39,8 +39,12 @@
   border-color: var(--bs-btn-active-border-color);
 }
 
+.icons {
+  margin-top: -4px;
+}
+
 .githubIcon {
-  margin-top: -0.05rem;
+  margin-top: 2px;
 }
 
 .link:hover:before {
@@ -70,6 +74,10 @@
 
 .btnLink {
   font-size: 1.25rem;
+}
+
+.btnLink:hover .githubIcon {
+  color: var(--color2);
 }
 
 @media only screen and (max-width: 1199.98px) {

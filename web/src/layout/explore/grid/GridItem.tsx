@@ -120,7 +120,7 @@ const GridItem = (props: Props) => {
 
               <Show when={props.item.featured && props.item.featured.label}>
                 <div
-                  class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 ${styles.legend}`}
+                  class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                   style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
                 >
                   {props.item.featured!.label}
@@ -200,7 +200,7 @@ const GridItem = (props: Props) => {
 
             <Show when={props.item.featured && props.item.featured.label}>
               <div
-                class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 ${styles.legend}`}
+                class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                 style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
               >
                 {props.item.featured!.label}

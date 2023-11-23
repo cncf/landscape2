@@ -20,12 +20,12 @@
 
 .badges {
   font-size: 85%;
-  height: 20px;
+  height: 21px;
 }
 
 .badges :global(.badge) {
   height: 18px;
-  line-height: 18px;
+  line-height: 16px;
   font-size: 10.25px !important;
   padding: 0 0.65rem;
 }
