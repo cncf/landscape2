@@ -237,7 +237,7 @@ const MobileContent = (props: Props) => {
                     return (
                       <tr class={styles.tableContent}>
                         <td class="px-3 text-center text-nowrap">
-                          <ExternalLink class="text-muted d-block" href={audit.url}>
+                          <ExternalLink class="text-muted d-block text-decoration-underline" href={audit.url}>
                             {audit.date}
                           </ExternalLink>
                         </td>

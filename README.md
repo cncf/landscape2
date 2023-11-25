@@ -17,6 +17,10 @@ You can check out how the generated landscapes look like by visiting this [demo 
         <td width="50%"><img src="docs/screenshots/landscape3.png?raw=true"></td>
         <td width="50%"><img src="docs/screenshots/landscape4.png?raw=true"></td>
     </tr>
+    <tr>
+        <td width="50%"><img src="docs/screenshots/landscape5.png?raw=true"></td>
+        <td width="50%"><img src="docs/screenshots/landscape6.png?raw=true"></td>
+    </tr>
 </table>
 
 ## How it works

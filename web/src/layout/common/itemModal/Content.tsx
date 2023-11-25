@@ -409,7 +409,7 @@ const Content = (props: Props) => {
                           <td class="px-3">
                             <div class="w-100">
                               <ExternalLink
-                                class={`text-muted text-truncate d-block ${styles.tableLink}`}
+                                class={`text-muted text-truncate d-block text-decoration-underline ${styles.tableLink}`}
                                 href={audit.url}
                               >
                                 {audit.url}
