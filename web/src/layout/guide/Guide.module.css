@@ -34,7 +34,7 @@
   margin-bottom: 1rem;
 }
 
-.guide a {
+.guide a:not(:global(.link)) {
   color: var(--color1);
 }
 

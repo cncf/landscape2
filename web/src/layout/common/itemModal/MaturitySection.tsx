@@ -26,7 +26,7 @@ const MaturitySection = (props: Props) => {
         <div class="position-relative mt-2">
           <div class="d-flex flex-row justify-content-between">
             <div class="d-flex flex-column align-items-center">
-              <div class={`badge rounded-1 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
+              <div class={`badge rounded-0 p-2 ${styles.maturityBadge} ${styles.activeMaturityBadge}`}>
                 <Show when={props.item.accepted_at} fallback={'-'}>
                   <>
                     {props.item.accepted_at === props.item.incubating_at ||
@@ -41,7 +41,7 @@ const MaturitySection = (props: Props) => {
 
             <div class="d-flex flex-column align-items-center">
               <div
-                class={`badge rounded-1 p-2 ${styles.maturityBadge}`}
+                class={`badge rounded-0 p-2 ${styles.maturityBadge}`}
                 classList={{
                   [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(props.item.maturity!),
                 }}
@@ -53,7 +53,7 @@ const MaturitySection = (props: Props) => {
 
             <div class="d-flex flex-column align-items-center">
               <div
-                class={`badge rounded-1 p-2 ${styles.maturityBadge}`}
+                class={`badge rounded-0 p-2 ${styles.maturityBadge}`}
                 classList={{
                   [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(props.item.maturity!),
                 }}

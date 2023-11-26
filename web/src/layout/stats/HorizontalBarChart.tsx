@@ -17,10 +17,12 @@ interface Props {
 const HorizontalBarChart = (props: Props) => {
   const [sortedKeys, setSortedKeys] = createSignal<string[]>([]);
   const [series, setSeries] = createSignal<number[]>([]);
+  const [maxValue, setMaxValue] = createSignal<number>();
 
   onMount(() => {
     if (props.data) {
       const keys = sortObjectByValue(props.data);
+      setMaxValue(props.data[keys[0]]);
       setSortedKeys(keys);
       const values: number[] = [];
       keys.forEach((k: string) => {
@@ -104,6 +106,7 @@ const HorizontalBarChart = (props: Props) => {
           options: {
             xaxis: {
               tickAmount: 3,
+              max: maxValue(),
             },
           },
         },

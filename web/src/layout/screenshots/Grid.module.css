@@ -4,16 +4,17 @@
   transform: rotate(180deg);
   width: 3rem;
   font-size: 0.7rem;
+  line-height: 0.95rem;
   padding: 1rem 0rem;
 }
 
 .catTitleText {
-  max-height: 120px;
+  max-height: 130px;
 }
 
 .subcatTitle {
-  font-size: 0.65rem;
-  height: 1.5rem;
+  font-size: 0.7rem;
+  height: 1.75rem;
   padding: 0 0.75rem;
 }
 
