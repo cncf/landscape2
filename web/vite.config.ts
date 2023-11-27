@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid'
 
-const regex = /<link rel="stylesheet" href="(.*?)">/g;
+const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
 
 function getCSSHref(str: string) {
   const match = regex.exec(str);
