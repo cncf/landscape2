@@ -85,9 +85,9 @@ const GuideIndex = () => {
       fetchGuide();
     } else {
       setTimeout(() => {
+        setFirstItem(guideToc()![0].id);
         setGuide(guideContent());
         setToc(guideToc());
-        setFirstItem(guideToc()![0].id);
         if (from() === 'header' && location.hash === '') {
           scrollToTop(false);
           updateRoute(guideToc()![0].id);
