@@ -5,7 +5,7 @@
 use super::{cache::Cache, LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
 use leaky_bucket::RateLimiter;
@@ -40,11 +40,14 @@ pub(crate) async fn collect_crunchbase_data(
 
     // Read cached data (if available)
     let mut cached_data: Option<CrunchbaseData> = None;
-    if let Ok(Some((_, json_data))) = cache.read(CRUNCHBASE_CACHE_FILE) {
-        if let Ok(crunchbase_data) = serde_json::from_slice(&json_data) {
-            cached_data = Some(crunchbase_data);
-        }
-    };
+    match cache.read(CRUNCHBASE_CACHE_FILE) {
+        Ok(Some((_, json_data))) => match serde_json::from_slice(&json_data) {
+            Ok(crunchbase_data) => cached_data = Some(crunchbase_data),
+            Err(err) => warn!("error parsing crunchbase cache file: {err:?}"),
+        },
+        Ok(None) => {}
+        Err(err) => warn!("error reading crunchbase cache file: {err:?}"),
+    }
 
     // Setup Crunchbase API client if an api key was provided
     let api_key = match env::var(CRUNCHBASE_API_KEY) {
@@ -175,6 +178,9 @@ pub(crate) struct Organization {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twitter_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acquisitions: Option<Vec<Acquisition>>,
 }
 
 impl Organization {
@@ -185,7 +191,7 @@ impl Organization {
         let permalink = get_permalink(cb_url)?;
         let cb_org = cb.get_organization(&permalink).await?;
 
-        // Prepare organization instance using the information collected
+        // Prepare number of employees
         let (num_employees_min, num_employees_max) = match cb_org.properties.num_employees_enum {
             Some(value) => match value.as_str() {
                 "c_00001_00010" => (Some(1), Some(10)),
@@ -201,6 +207,27 @@ impl Organization {
             },
             None => (None, None),
         };
+
+        // Prepare acquisitions
+        let acquisitions = cb_org.cards.acquiree_acquisitions.map(|cb_acquisitions| {
+            cb_acquisitions
+                .into_iter()
+                .map(Into::into)
+                .filter(|a: &Acquisition| {
+                    if let Some(announced_on) = a.announced_on {
+                        let now = Utc::now().naive_utc().date();
+                        if let Some(years_since_announced) = now.years_since(announced_on) {
+                            if years_since_announced < 5 {
+                                return true;
+                            }
+                        }
+                    }
+                    false
+                })
+                .collect()
+        });
+
+        // Prepare organization instance using the information collected
         Ok(Organization {
             generated_at: Utc::now(),
             city: get_location_value(&cb_org.cards.headquarters_address, "city"),
@@ -219,7 +246,35 @@ impl Organization {
             stock_exchange: cb_org.properties.stock_exchange_symbol,
             ticker: cb_org.properties.stock_symbol.and_then(|v| v.value),
             twitter_url: cb_org.properties.twitter.and_then(|v| v.value),
+            acquisitions,
         })
+    }
+}
+
+/// Acquisition details collected from Crunchbase.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Acquisition {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub announced_on: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acquiree_name: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acquiree_cb_permalink: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub price: Option<i64>,
+}
+
+impl From<CBAcquisition> for Acquisition {
+    fn from(cba: CBAcquisition) -> Self {
+        Acquisition {
+            announced_on: cba.announced_on.and_then(|a| a.value),
+            acquiree_name: cba.acquiree_identifier.as_ref().and_then(|i| i.value.clone()),
+            acquiree_cb_permalink: cba.acquiree_identifier.and_then(|i| i.permalink),
+            price: cba.price.and_then(|p| p.value_usd),
+        }
     }
 }
 
@@ -261,7 +316,7 @@ impl CB for CBApi {
     /// [CB::get_organization]
     #[instrument(fields(?permalink), skip_all, err)]
     async fn get_organization(&self, permalink: &str) -> Result<CBOrganizationEntity> {
-        let cards = &["headquarters_address"].join(",");
+        let cards = &["headquarters_address", "acquiree_acquisitions"].join(",");
         let fields = &[
             "num_employees_enum",
             "linkedin",
@@ -327,6 +382,7 @@ struct CBValue {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 struct CBCards {
     headquarters_address: Option<Vec<CBAddress>>,
+    acquiree_acquisitions: Option<Vec<CBAcquisition>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -338,6 +394,31 @@ struct CBAddress {
 struct CBLocationIdentifier {
     location_type: Option<String>,
     value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBAcquisition {
+    acquiree_identifier: Option<CBAcquireeIdentifier>,
+    announced_on: Option<CBAcquisitionAnnouncedOn>,
+    price: Option<CBAcquisitionPrice>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBAcquireeIdentifier {
+    permalink: Option<String>,
+    value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBAcquisitionAnnouncedOn {
+    value: Option<NaiveDate>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBAcquisitionPrice {
+    currency: String,
+    value: i64,
+    value_usd: Option<i64>,
 }
 
 /// Return the location value for the location type provided if available.
