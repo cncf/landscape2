@@ -37,11 +37,14 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
 
     // Read cached data (if available)
     let mut cached_data: Option<GithubData> = None;
-    if let Ok(Some((_, json_data))) = cache.read(GITHUB_CACHE_FILE) {
-        if let Ok(github_data) = serde_json::from_slice(&json_data) {
-            cached_data = Some(github_data);
-        }
-    };
+    match cache.read(GITHUB_CACHE_FILE) {
+        Ok(Some((_, json_data))) => match serde_json::from_slice(&json_data) {
+            Ok(github_data) => cached_data = Some(github_data),
+            Err(err) => warn!("error parsing github cache file: {err:?}"),
+        },
+        Ok(None) => {}
+        Err(err) => warn!("error reading github cache file: {err:?}"),
+    }
 
     // Setup GitHub API clients pool if any tokens have been provided
     let tokens: Option<Vec<String>> = match env::var(GITHUB_TOKENS) {
