@@ -13,12 +13,19 @@ use std::collections::HashMap;
 /// Format used to represent a date as year-month.
 pub const YEAR_MONTH_FORMAT: &str = "%Y-%m";
 
+/// Type alias to represent a year.
+type Year = String;
+
 /// Type alias to represent a month in a given year.
 type YearMonth = String;
 
 /// Landscape stats.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Stats {
+    /// Acquisitions stats.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    acquisitions: Option<AcquisitionsStats>,
+
     /// Foundation members stats.
     #[serde(skip_serializing_if = "Option::is_none")]
     members: Option<MembersStats>,
@@ -37,10 +44,48 @@ impl Stats {
     /// landscape.
     pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
         Self {
+            acquisitions: AcquisitionsStats::new(landscape_data),
             members: MembersStats::new(landscape_data, settings),
             projects: ProjectsStats::new(landscape_data),
             repositories: RepositoriesStats::new(landscape_data),
         }
+    }
+}
+
+/// Some stats about acquisitions made by organizations.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct AcquisitionsStats {
+    /// Number of acquisitions per year.
+    count: HashMap<Year, u64>,
+
+    /// Total acquisitions amount sum per year.
+    amount: HashMap<Year, u64>,
+}
+
+impl AcquisitionsStats {
+    /// Create a new AcquisitionsStats instance from the information available
+    /// in the landscape.
+    fn new(landscape_data: &LandscapeData) -> Option<Self> {
+        let mut stats = AcquisitionsStats::default();
+
+        // Collect stats from landscape items
+        for item in &landscape_data.items {
+            if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
+                for acq in acquisitions {
+                    if let Some(announced_on) = acq.announced_on {
+                        let year = announced_on.format("%Y").to_string();
+                        increment(&mut stats.count, &year, 1);
+                        increment(&mut stats.amount, &year, acq.price.unwrap_or_default());
+                    }
+                }
+            }
+        }
+
+        // Return stats collected
+        if stats != AcquisitionsStats::default() {
+            return Some(stats);
+        }
+        None
     }
 }
 

@@ -5,7 +5,7 @@
 use super::{cache::Cache, LandscapeData};
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
 use lazy_static::lazy_static;
 use leaky_bucket::RateLimiter;
@@ -215,11 +215,8 @@ impl Organization {
                 .map(Into::into)
                 .filter(|a: &Acquisition| {
                     if let Some(announced_on) = a.announced_on {
-                        let now = Utc::now().naive_utc().date();
-                        if let Some(years_since_announced) = now.years_since(announced_on) {
-                            if years_since_announced < 5 {
-                                return true;
-                            }
+                        if Utc::now().year() - announced_on.year() <= 5 {
+                            return true;
                         }
                     }
                     false
@@ -264,7 +261,7 @@ pub(crate) struct Acquisition {
     pub acquiree_cb_permalink: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub price: Option<i64>,
+    pub price: Option<u64>,
 }
 
 impl From<CBAcquisition> for Acquisition {
@@ -417,8 +414,8 @@ struct CBAcquisitionAnnouncedOn {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 struct CBAcquisitionPrice {
     currency: String,
-    value: i64,
-    value_usd: Option<i64>,
+    value: u64,
+    value_usd: Option<u64>,
 }
 
 /// Return the location value for the location type provided if available.
