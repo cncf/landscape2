@@ -132,6 +132,9 @@ pub(crate) struct Organization {
     pub generated_at: DateTime<Utc>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub acquisitions: Option<Vec<Acquisition>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -145,6 +148,9 @@ pub(crate) struct Organization {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub funding: Option<i64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub funding_rounds: Option<Vec<FundingRound>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage_url: Option<String>,
@@ -178,9 +184,6 @@ pub(crate) struct Organization {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twitter_url: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub acquisitions: Option<Vec<Acquisition>>,
 }
 
 impl Organization {
@@ -190,6 +193,33 @@ impl Organization {
         // Collect some information from Crunchbase
         let permalink = get_permalink(cb_url)?;
         let cb_org = cb.get_organization(&permalink).await?;
+
+        // Prepare acquisitions
+        let acquisitions = cb_org
+            .cards
+            .acquiree_acquisitions
+            .map(|cb_acquisitions| {
+                cb_acquisitions
+                    .into_iter()
+                    .map(Into::into)
+                    .filter(|a: &Acquisition| {
+                        if let Some(announced_on) = a.announced_on {
+                            if Utc::now().year() - announced_on.year() <= 4 {
+                                return true;
+                            }
+                        }
+                        false
+                    })
+                    .collect()
+            })
+            .filter(|vec: &Vec<Acquisition>| !vec.is_empty());
+
+        // Prepare funding rounds
+        let funding_rounds = cb_org
+            .cards
+            .raised_funding_rounds
+            .map(|cb_funding_rounds| cb_funding_rounds.into_iter().map(Into::into).collect())
+            .filter(|vec: &Vec<FundingRound>| !vec.is_empty());
 
         // Prepare number of employees
         let (num_employees_min, num_employees_max) = match cb_org.properties.num_employees_enum {
@@ -208,30 +238,16 @@ impl Organization {
             None => (None, None),
         };
 
-        // Prepare acquisitions
-        let acquisitions = cb_org.cards.acquiree_acquisitions.map(|cb_acquisitions| {
-            cb_acquisitions
-                .into_iter()
-                .map(Into::into)
-                .filter(|a: &Acquisition| {
-                    if let Some(announced_on) = a.announced_on {
-                        if Utc::now().year() - announced_on.year() <= 5 {
-                            return true;
-                        }
-                    }
-                    false
-                })
-                .collect()
-        });
-
         // Prepare organization instance using the information collected
         Ok(Organization {
             generated_at: Utc::now(),
+            acquisitions,
             city: get_location_value(&cb_org.cards.headquarters_address, "city"),
             company_type: cb_org.properties.company_type,
             country: get_location_value(&cb_org.cards.headquarters_address, "country"),
             description: cb_org.properties.short_description,
             funding: cb_org.properties.funding_total.as_ref().and_then(|f| f.value_usd),
+            funding_rounds,
             homepage_url: cb_org.properties.website.and_then(|v| v.value),
             categories: cb_org.properties.categories.and_then(|c| c.into_iter().map(|c| c.value).collect()),
             kind: cb_org.properties.funding_total.map(|_| "funding".to_string()),
@@ -243,7 +259,6 @@ impl Organization {
             stock_exchange: cb_org.properties.stock_exchange_symbol,
             ticker: cb_org.properties.stock_symbol.and_then(|v| v.value),
             twitter_url: cb_org.properties.twitter.and_then(|v| v.value),
-            acquisitions,
         })
     }
 }
@@ -252,13 +267,13 @@ impl Organization {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Acquisition {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub announced_on: Option<NaiveDate>,
+    pub acquiree_cb_permalink: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub acquiree_name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub acquiree_cb_permalink: Option<String>,
+    pub announced_on: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub price: Option<u64>,
@@ -267,10 +282,33 @@ pub(crate) struct Acquisition {
 impl From<CBAcquisition> for Acquisition {
     fn from(cba: CBAcquisition) -> Self {
         Acquisition {
+            acquiree_cb_permalink: cba.acquiree_identifier.as_ref().and_then(|i| i.permalink.clone()),
+            acquiree_name: cba.acquiree_identifier.and_then(|i| i.value.clone()),
             announced_on: cba.announced_on.and_then(|a| a.value),
-            acquiree_name: cba.acquiree_identifier.as_ref().and_then(|i| i.value.clone()),
-            acquiree_cb_permalink: cba.acquiree_identifier.and_then(|i| i.permalink),
             price: cba.price.and_then(|p| p.value_usd),
+        }
+    }
+}
+
+/// FundingRound details collected from Crunchbase.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct FundingRound {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amount: Option<u64>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub announced_on: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
+}
+
+impl From<CBFundingRound> for FundingRound {
+    fn from(cbfr: CBFundingRound) -> Self {
+        FundingRound {
+            amount: cbfr.money_raised.and_then(|p| p.value_usd),
+            announced_on: cbfr.announced_on,
+            kind: cbfr.investment_type,
         }
     }
 }
@@ -313,7 +351,12 @@ impl CB for CBApi {
     /// [CB::get_organization]
     #[instrument(fields(?permalink), skip_all, err)]
     async fn get_organization(&self, permalink: &str) -> Result<CBOrganizationEntity> {
-        let cards = &["headquarters_address", "acquiree_acquisitions"].join(",");
+        let cards = &[
+            "acquiree_acquisitions",
+            "headquarters_address",
+            "raised_funding_rounds",
+        ]
+        .join(",");
         let fields = &[
             "num_employees_enum",
             "linkedin",
@@ -378,19 +421,9 @@ struct CBValue {
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 struct CBCards {
-    headquarters_address: Option<Vec<CBAddress>>,
     acquiree_acquisitions: Option<Vec<CBAcquisition>>,
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-struct CBAddress {
-    location_identifiers: Option<Vec<CBLocationIdentifier>>,
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-struct CBLocationIdentifier {
-    location_type: Option<String>,
-    value: Option<String>,
+    headquarters_address: Option<Vec<CBAddress>>,
+    raised_funding_rounds: Option<Vec<CBFundingRound>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -413,8 +446,29 @@ struct CBAcquisitionAnnouncedOn {
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 struct CBAcquisitionPrice {
-    currency: String,
-    value: u64,
+    value_usd: Option<u64>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBAddress {
+    location_identifiers: Option<Vec<CBLocationIdentifier>>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBLocationIdentifier {
+    location_type: Option<String>,
+    value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBFundingRound {
+    announced_on: Option<NaiveDate>,
+    investment_type: Option<String>,
+    money_raised: Option<CBMoneyRaised>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+struct CBMoneyRaised {
     value_usd: Option<u64>,
 }
 
