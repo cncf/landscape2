@@ -21,6 +21,7 @@ import Image from '../Image';
 import MaturityBadge from '../MaturityBadge';
 import SVGIcon from '../SVGIcon';
 import Box from './Box';
+import CollapsableAcquisitionsTable from './CollapsableAcquisitionsTable';
 import styles from './Content.module.css';
 import ItemDropdown from './ItemDropdown';
 import LanguagesStats from './LanguagesStats';
@@ -528,6 +529,17 @@ const Content = (props: Props) => {
 
               <Box value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
             </div>
+            <Show
+              when={
+                !isUndefined(itemInfo()!.crunchbase_data!.acquisitions) &&
+                !isEmpty(itemInfo()!.crunchbase_data!.acquisitions!)
+              }
+            >
+              <CollapsableAcquisitionsTable
+                acquisitions={itemInfo()!.crunchbase_data!.acquisitions!}
+                titleClassName={styles.titleInSection}
+              />
+            </Show>
           </div>
         </Show>
         {/* Summary */}

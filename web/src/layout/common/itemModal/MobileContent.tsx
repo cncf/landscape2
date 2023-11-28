@@ -19,6 +19,7 @@ import Image from '../Image';
 import MaturityBadge from '../MaturityBadge';
 import SVGIcon from '../SVGIcon';
 import Box from './Box';
+import CollapsableAcquisitionsTable from './CollapsableAcquisitionsTable';
 import LanguagesStats from './LanguagesStats';
 import styles from './MobileContent.module.css';
 import MobileMaturitySection from './MobileMaturitySection';
@@ -215,6 +216,7 @@ const MobileContent = (props: Props) => {
             </Show>
           </Show>
         </Show>
+
         {/* Security audits */}
         <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
           <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Security audits</div>
@@ -252,6 +254,7 @@ const MobileContent = (props: Props) => {
             </table>
           </div>
         </Show>
+
         {/* Organization */}
         <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
           <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Organization</div>
@@ -352,7 +355,19 @@ const MobileContent = (props: Props) => {
 
             <Box class="col-6" value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
           </div>
+          <Show
+            when={
+              !isUndefined(itemInfo()!.crunchbase_data!.acquisitions) &&
+              !isEmpty(itemInfo()!.crunchbase_data!.acquisitions!)
+            }
+          >
+            <CollapsableAcquisitionsTable
+              acquisitions={itemInfo()!.crunchbase_data!.acquisitions!}
+              titleClassName={styles.titleInSection}
+            />
+          </Show>
         </Show>
+
         {/* Summary */}
         <Show when={!isUndefined(itemInfo()!.summary)}>
           <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Summary</div>
