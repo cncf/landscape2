@@ -6,6 +6,7 @@ use super::{
     settings::{LandscapeSettings, TagName},
     LandscapeData,
 };
+use chrono::{Datelike, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -26,6 +27,10 @@ pub(crate) struct Stats {
     #[serde(skip_serializing_if = "Option::is_none")]
     acquisitions: Option<AcquisitionsStats>,
 
+    /// Funding rounds stats.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    funding_rounds: Option<FundingRoundsStats>,
+
     /// Foundation members stats.
     #[serde(skip_serializing_if = "Option::is_none")]
     members: Option<MembersStats>,
@@ -45,6 +50,7 @@ impl Stats {
     pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
         Self {
             acquisitions: AcquisitionsStats::new(landscape_data),
+            funding_rounds: FundingRoundsStats::new(landscape_data),
             members: MembersStats::new(landscape_data, settings),
             projects: ProjectsStats::new(landscape_data),
             repositories: RepositoriesStats::new(landscape_data),
@@ -55,10 +61,10 @@ impl Stats {
 /// Some stats about acquisitions made by organizations.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct AcquisitionsStats {
-    /// Number of acquisitions per year.
+    /// Total number of acquisitions per year across all organizations.
     count: HashMap<Year, u64>,
 
-    /// Total acquisitions amount sum per year.
+    /// Total acquisitions amount per year across all organizations.
     amount: HashMap<Year, u64>,
 }
 
@@ -83,6 +89,50 @@ impl AcquisitionsStats {
 
         // Return stats collected
         if stats != AcquisitionsStats::default() {
+            return Some(stats);
+        }
+        None
+    }
+}
+
+/// Some stats about organizations funding rounds.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct FundingRoundsStats {
+    /// Total number of funding rounds per year across all organizations.
+    count: HashMap<Year, u64>,
+
+    /// Total money raised on funding rounds per year across all organizations.
+    amount: HashMap<Year, u64>,
+}
+
+impl FundingRoundsStats {
+    /// Create a new FundingRoundsStats instance from the information available
+    /// in the landscape.
+    fn new(landscape_data: &LandscapeData) -> Option<Self> {
+        let mut stats = FundingRoundsStats::default();
+
+        // Collect stats from landscape items
+        for item in &landscape_data.items {
+            if let Some(funding_rounds) =
+                item.crunchbase_data.as_ref().and_then(|d| d.funding_rounds.as_ref())
+            {
+                for fr in funding_rounds {
+                    if let Some(announced_on) = fr.announced_on {
+                        // Only funding rounds in the last 5 years
+                        if Utc::now().year() - announced_on.year() >= 5 {
+                            continue;
+                        }
+
+                        let year = announced_on.format("%Y").to_string();
+                        increment(&mut stats.count, &year, 1);
+                        increment(&mut stats.amount, &year, fr.amount.unwrap_or_default());
+                    }
+                }
+            }
+        }
+
+        // Return stats collected
+        if stats != FundingRoundsStats::default() {
             return Some(stats);
         }
         None
