@@ -44,7 +44,7 @@ const AcquisitionsTable = (props: Props) => {
                 Name
               </th>
               <th class={`text-center ${styles.minCol}`} scope="col">
-                Price
+                Price (USD)
               </th>
               <th class={`text-center text-nowrap ${styles.minCol}`} scope="col">
                 Announced <span class="d-none d-md-inline-block">on</span>
@@ -59,7 +59,7 @@ const AcquisitionsTable = (props: Props) => {
                     <td class="px-2 px-lg-3 text-truncate text-muted">{acquisition.acquiree_name}</td>
                     <td class="px-2 px-lg-3 text-center text-nowrap">
                       <Show when={!isUndefined(acquisition.price)} fallback="-">
-                        <small class="text-muted">US$</small> {prettifyNumber(acquisition.price!)}
+                        ${prettifyNumber(acquisition.price!)}
                       </Show>
                     </td>
                     <td class="px-2 px-lg-3 text-center text-nowrap text-muted">{acquisition.announced_on}</td>

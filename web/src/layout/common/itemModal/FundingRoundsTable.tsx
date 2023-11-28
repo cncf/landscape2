@@ -45,7 +45,7 @@ const FundingRoundsTable = (props: Props) => {
                 Investment type
               </th>
               <th class={`text-center ${styles.minCol}`} scope="col">
-                Price
+                Price (USD)
               </th>
               <th class={`text-center text-nowrap ${styles.minCol}`} scope="col">
                 Announced <span class="d-none d-md-inline-block">on</span>
@@ -62,7 +62,7 @@ const FundingRoundsTable = (props: Props) => {
                     </td>
                     <td class="px-2 px-lg-3 text-center text-nowrap">
                       <Show when={!isUndefined(round.amount)} fallback="-">
-                        <small class="text-muted">US$</small> {prettifyNumber(round.amount!)}
+                        ${prettifyNumber(round.amount!)}
                       </Show>
                     </td>
                     <td class="px-2 px-lg-3 text-center text-nowrap text-muted">{round.announced_on}</td>

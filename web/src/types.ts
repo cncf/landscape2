@@ -294,6 +294,14 @@ export interface Stats {
     repositories: number;
     stars: number;
   };
+  acquisitions?: {
+    count?: { [key: string]: number };
+    amount?: { [key: string]: number };
+  };
+  funding_rounds?: {
+    count?: { [key: string]: number };
+    amount?: { [key: string]: number };
+  };
 }
 
 export interface CategoryValueStats {

@@ -15,6 +15,7 @@ import HeatMapChart from './HeatMapChart';
 import HorizontalBarChart from './HorizontalBarChart';
 import styles from './Stats.module.css';
 import TimestampLineChart from './TimestampLineChart';
+import VerticalBarChart from './VerticalBarChart';
 
 const Content = () => {
   const location = useLocation();
@@ -203,101 +204,176 @@ const Content = () => {
 
           {/* Repositories */}
           <Show when={!isUndefined(stats()!.repositories)}>
-            <div class={`text-dark fw-bold text-uppercase text-center mb-2 mb-lg-4 ${styles.title}`}>Repositories</div>
-            <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
-              <Box data={stats()!.repositories!.repositories} label="Repositories" />
-              <Box data={prettifyNumber(stats()!.repositories!.contributors, 1)} label="Contributors" />
-              <Box data={prettifyNumber(stats()!.repositories!.stars, 1)} label="Stars" />
-              <Box data={prettifyBytes(stats()!.repositories!.bytes, 1)} label="Source code" />
-            </div>
-
-            <Show when={!isEmpty(stats()!.repositories!.languages) || !isEmpty(stats()!.repositories!.languages_bytes)}>
-              <div class={`text-dark text-center mt-2 mt-lg-0 mb-0 mb-lg-4 fw-bold ${styles.subtitle}`}>
-                Most popular languages
+            <div class="mb-2 mb-lg-5">
+              <div class={`text-dark fw-bold text-uppercase text-center mb-2 mb-lg-4 ${styles.title}`}>
+                Repositories
               </div>
-              <div class="py-4">
-                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
-                  <Show when={!isEmpty(stats()!.repositories!.languages)}>
-                    <div class="col-12 col-sm-6">
-                      <HorizontalBarChart
-                        name="By number of repositories"
-                        data={stats()!.repositories!.languages}
-                        total={stats()!.repositories!.repositories}
-                      />
-                    </div>
-                  </Show>
+              <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
+                <Box data={stats()!.repositories!.repositories} label="Repositories" />
+                <Box data={prettifyNumber(stats()!.repositories!.contributors, 1)} label="Contributors" />
+                <Box data={prettifyNumber(stats()!.repositories!.stars, 1)} label="Stars" />
+                <Box data={prettifyBytes(stats()!.repositories!.bytes, 1)} label="Source code" />
+              </div>
 
-                  <Show when={!isEmpty(stats()!.repositories!.languages_bytes)}>
-                    <div class="col-12 col-sm-6">
-                      <HorizontalBarChart
-                        name="By amount of source code"
-                        data={stats()!.repositories!.languages_bytes}
-                        total={stats()!.repositories!.bytes}
-                        dataType="bytes"
-                      />
-                    </div>
-                  </Show>
+              <Show
+                when={!isEmpty(stats()!.repositories!.languages) || !isEmpty(stats()!.repositories!.languages_bytes)}
+              >
+                <div class={`text-dark text-center mt-2 mt-lg-0 mb-0 mb-lg-4 fw-bold ${styles.subtitle}`}>
+                  Most popular languages
                 </div>
-              </div>
-            </Show>
+                <div class="py-4">
+                  <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                    <Show when={!isEmpty(stats()!.repositories!.languages)}>
+                      <div class="col-12 col-sm-6">
+                        <HorizontalBarChart
+                          name="By number of repositories"
+                          data={stats()!.repositories!.languages}
+                          total={stats()!.repositories!.repositories}
+                        />
+                      </div>
+                    </Show>
 
-            <Show when={!isEmpty(stats()!.repositories!.participation_stats)}>
-              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Activity</div>
-              <div class="py-4">
-                <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center">
-                  <div class="col-12">
-                    <TimestampLineChart
-                      tooltipTitle="Commits number"
-                      name="Number of weekly commits during the last year"
-                      data={stats()!.repositories!.participation_stats}
-                    />
+                    <Show when={!isEmpty(stats()!.repositories!.languages_bytes)}>
+                      <div class="col-12 col-sm-6">
+                        <HorizontalBarChart
+                          name="By amount of source code"
+                          data={stats()!.repositories!.languages_bytes}
+                          total={stats()!.repositories!.bytes}
+                          dataType="bytes"
+                        />
+                      </div>
+                    </Show>
                   </div>
                 </div>
+              </Show>
+
+              <Show when={!isEmpty(stats()!.repositories!.participation_stats)}>
+                <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Activity</div>
+                <div class="py-4">
+                  <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center">
+                    <div class="col-12">
+                      <TimestampLineChart
+                        tooltipTitle="Commits number"
+                        name="Number of weekly commits during the last year"
+                        data={stats()!.repositories!.participation_stats}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Show>
+
+              <Show when={!isEmpty(stats()!.repositories!.licenses)}>
+                <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Licenses</div>
+                <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center py-4">
+                  <div class="col-12">
+                    <table class={`table table-bordered table-striped mb-0 mb-lg-2 ${styles.table}`}>
+                      <thead>
+                        <tr>
+                          <th class="text-center" scope="col">
+                            License
+                          </th>
+                          <th class="text-center" scope="col">
+                            Repositories
+                          </th>
+                          <th class="text-center" scope="col">
+                            Percentage
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <For each={sortObjectByValue(stats()!.repositories!.licenses)}>
+                          {(license: string) => {
+                            const num = stats()!.repositories!.licenses[license];
+                            const total = stats()!.repositories!.repositories;
+
+                            return (
+                              <Show when={!isUndefined(num) && !isUndefined(total)}>
+                                <tr>
+                                  <td>{license}</td>
+                                  <td class="text-end">{stats()!.repositories!.licenses[license]}</td>
+                                  <td class="fw-semibold text-end">
+                                    <small>{((num * 100) / total).toFixed(2)}%</small>
+                                  </td>
+                                </tr>
+                              </Show>
+                            );
+                          }}
+                        </For>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </Show>
+            </div>
+          </Show>
+
+          {/* FUNDING ROUNDS */}
+          <Show
+            when={
+              (!isUndefined(stats()!.funding_rounds) && !isEmpty(stats()!.funding_rounds!.amount)) ||
+              !isEmpty(stats()!.funding_rounds!.count)
+            }
+          >
+            <div class="mb-2 mb-lg-5">
+              <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>
+                Funding rounds
               </div>
-            </Show>
 
-            <Show when={!isEmpty(stats()!.repositories!.licenses)}>
-              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Licenses</div>
-              <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center pt-4">
-                <div class="col-12">
-                  <table class={`table table-bordered table-striped mb-0 mb-lg-2 ${styles.table}`}>
-                    <thead>
-                      <tr>
-                        <th class="text-center" scope="col">
-                          License
-                        </th>
-                        <th class="text-center" scope="col">
-                          Repositories
-                        </th>
-                        <th class="text-center" scope="col">
-                          Percentage
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <For each={sortObjectByValue(stats()!.repositories!.licenses)}>
-                        {(license: string) => {
-                          const num = stats()!.repositories!.licenses[license];
-                          const total = stats()!.repositories!.repositories;
+              <div class="py-4">
+                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                  <Show when={!isEmpty(stats()!.funding_rounds!.count)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Number of funding rounds per year"
+                        data={stats()!.funding_rounds!.count}
+                      />
+                    </div>
+                  </Show>
 
-                          return (
-                            <Show when={!isUndefined(num) && !isUndefined(total)}>
-                              <tr>
-                                <td>{license}</td>
-                                <td class="text-end">{stats()!.repositories!.licenses[license]}</td>
-                                <td class="fw-semibold text-end">
-                                  <small>{((num * 100) / total).toFixed(2)}%</small>
-                                </td>
-                              </tr>
-                            </Show>
-                          );
-                        }}
-                      </For>
-                    </tbody>
-                  </table>
+                  <Show when={!isEmpty(stats()!.funding_rounds!.amount)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Amount raised in funding rounds per year (excluding undisclosed)"
+                        shortName="Amount raised in funding rounds per year"
+                        data={stats()!.funding_rounds!.amount}
+                        dataType="money"
+                      />
+                    </div>
+                  </Show>
                 </div>
               </div>
-            </Show>
+            </div>
+          </Show>
+
+          {/* ACQUISITIONS */}
+          <Show
+            when={
+              (!isUndefined(stats()!.acquisitions) && !isEmpty(stats()!.acquisitions!.amount)) ||
+              !isEmpty(stats()!.acquisitions!.count)
+            }
+          >
+            <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Acquisitions</div>
+
+            <div class="pt-4">
+              <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                <Show when={!isEmpty(stats()!.acquisitions!.count)}>
+                  <div class="col-12 col-sm-6">
+                    <VerticalBarChart name="Number of acquisitions per year" data={stats()!.acquisitions!.count} />
+                  </div>
+                </Show>
+
+                <Show when={!isEmpty(stats()!.acquisitions!.amount)}>
+                  <div class="col-12 col-sm-6">
+                    <VerticalBarChart
+                      name="Acquisitions cost per year (excluding undisclosed)"
+                      shortName="Acquisitions cost per year"
+                      data={stats()!.acquisitions!.amount}
+                      dataType="money"
+                    />
+                  </div>
+                </Show>
+              </div>
+            </div>
           </Show>
         </div>
       </div>
