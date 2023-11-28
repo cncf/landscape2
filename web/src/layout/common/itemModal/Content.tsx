@@ -20,9 +20,10 @@ import FoundationBadge from '../FoundationBadge';
 import Image from '../Image';
 import MaturityBadge from '../MaturityBadge';
 import SVGIcon from '../SVGIcon';
+import AcquisitionsTable from './AcquisitionsTable';
 import Box from './Box';
-import CollapsableAcquisitionsTable from './CollapsableAcquisitionsTable';
 import styles from './Content.module.css';
+import FundingRoundsTable from './FundingRoundsTable';
 import ItemDropdown from './ItemDropdown';
 import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
@@ -529,13 +530,28 @@ const Content = (props: Props) => {
 
               <Box value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
             </div>
+
+            {/* Funding rounds */}
+            <Show
+              when={
+                !isUndefined(itemInfo()!.crunchbase_data!.funding_rounds) &&
+                !isEmpty(itemInfo()!.crunchbase_data!.funding_rounds!)
+              }
+            >
+              <FundingRoundsTable
+                rounds={itemInfo()!.crunchbase_data!.funding_rounds!}
+                titleClassName={styles.titleInSection}
+              />
+            </Show>
+
+            {/* Acquisitions */}
             <Show
               when={
                 !isUndefined(itemInfo()!.crunchbase_data!.acquisitions) &&
                 !isEmpty(itemInfo()!.crunchbase_data!.acquisitions!)
               }
             >
-              <CollapsableAcquisitionsTable
+              <AcquisitionsTable
                 acquisitions={itemInfo()!.crunchbase_data!.acquisitions!}
                 titleClassName={styles.titleInSection}
               />
