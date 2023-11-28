@@ -120,6 +120,14 @@ export interface Organization {
   stock_exchange?: string;
   ticker?: string;
   twitter_url?: string;
+  acquisitions?: Acquisition[];
+}
+
+export interface Acquisition {
+  announced_on?: string;
+  acquiree_name?: string;
+  acquiree_cb_permalink?: string;
+  price?: number;
 }
 
 export interface ItemSummary {
