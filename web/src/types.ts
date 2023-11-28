@@ -121,6 +121,7 @@ export interface Organization {
   ticker?: string;
   twitter_url?: string;
   acquisitions?: Acquisition[];
+  funding_rounds?: FundingRound[];
 }
 
 export interface Acquisition {
@@ -128,6 +129,12 @@ export interface Acquisition {
   acquiree_name?: string;
   acquiree_cb_permalink?: string;
   price?: number;
+}
+
+export interface FundingRound {
+  amount?: number;
+  announced_on?: string;
+  kind?: string;
 }
 
 export interface ItemSummary {

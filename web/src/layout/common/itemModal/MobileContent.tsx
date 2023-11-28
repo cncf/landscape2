@@ -18,8 +18,9 @@ import FoundationBadge from '../FoundationBadge';
 import Image from '../Image';
 import MaturityBadge from '../MaturityBadge';
 import SVGIcon from '../SVGIcon';
+import AcquisitionsTable from './AcquisitionsTable';
 import Box from './Box';
-import CollapsableAcquisitionsTable from './CollapsableAcquisitionsTable';
+import FundingRoundsTable from './FundingRoundsTable';
 import LanguagesStats from './LanguagesStats';
 import styles from './MobileContent.module.css';
 import MobileMaturitySection from './MobileMaturitySection';
@@ -355,13 +356,28 @@ const MobileContent = (props: Props) => {
 
             <Box class="col-6" value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
           </div>
+
+          {/* Funding rounds */}
+          <Show
+            when={
+              !isUndefined(itemInfo()!.crunchbase_data!.funding_rounds) &&
+              !isEmpty(itemInfo()!.crunchbase_data!.funding_rounds!)
+            }
+          >
+            <FundingRoundsTable
+              rounds={itemInfo()!.crunchbase_data!.funding_rounds!}
+              titleClassName={styles.titleInSection}
+            />
+          </Show>
+
+          {/* Acquisitions */}
           <Show
             when={
               !isUndefined(itemInfo()!.crunchbase_data!.acquisitions) &&
               !isEmpty(itemInfo()!.crunchbase_data!.acquisitions!)
             }
           >
-            <CollapsableAcquisitionsTable
+            <AcquisitionsTable
               acquisitions={itemInfo()!.crunchbase_data!.acquisitions!}
               titleClassName={styles.titleInSection}
             />

@@ -2,44 +2,47 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, For, onMount, Show } from 'solid-js';
 
-import { Acquisition } from '../../../types';
+import { REGEX_UNDERSCORE } from '../../../data';
+import { Acquisition, FundingRound } from '../../../types';
 import prettifyNumber from '../../../utils/prettifyNumber';
-import styles from './CollapsableAcquisitionsTable.module.css';
+import styles from './FundingRoundsTable.module.css';
 
 interface Props {
   titleClassName?: string;
-  acquisitions: Acquisition[];
+  rounds: FundingRound[];
 }
 
-const CollapsableAcquisitionsTable = (props: Props) => {
-  const [acquisitionsList, setAcquisitionsList] = createSignal<Acquisition[]>();
+const MAX_ITEMS = 10;
+
+const FundingRoundsTable = (props: Props) => {
+  const [roundsList, setRoundsList] = createSignal<FundingRound[]>();
   const [visibleCollapsableOption, setVisibleCollapsableOption] = createSignal<boolean>(false);
   const [collapsed, setCollapsed] = createSignal<boolean>(true);
 
   onMount(() => {
-    const tmpAcquisitions: Acquisition[] = [];
+    const tmpRounds: Acquisition[] = [];
 
-    props.acquisitions.forEach((ac: Acquisition) => {
+    props.rounds.forEach((ac: Acquisition) => {
       if (!Object.values(ac).every((el) => el === undefined)) {
-        tmpAcquisitions.push(ac);
+        tmpRounds.push(ac);
       }
     });
 
-    if (!isEmpty(tmpAcquisitions)) {
-      setAcquisitionsList(tmpAcquisitions);
-      setVisibleCollapsableOption(tmpAcquisitions.length > 10);
+    if (!isEmpty(tmpRounds)) {
+      setRoundsList(tmpRounds);
+      setVisibleCollapsableOption(tmpRounds.length > MAX_ITEMS);
     }
   });
 
   return (
-    <Show when={!isUndefined(acquisitionsList())}>
-      <div class={`fw-bold text-uppercase mt-3 mt-lg-4 mb-2 mb-lg-3 ${props.titleClassName}`}>Acquisitions</div>
-      <div class="w-100">
-        <table class={`table table-sm table-striped table-bordered mt-3 mb-0 ${styles.tableLayout}`}>
+    <Show when={!isUndefined(roundsList())}>
+      <div class={`fw-bold text-uppercase mt-3 mt-lg-4 mb-2 mb-lg-3 ${props.titleClassName}`}>Funding rounds</div>
+      <div class="w-100 my-3">
+        <table class={`table table-sm table-striped table-bordered mb-0 ${styles.tableLayout}`}>
           <thead class={`text-uppercase text-muted ${styles.thead}`}>
             <tr>
               <th class="text-center" scope="col">
-                Name
+                Investment type
               </th>
               <th class={`text-center ${styles.minCol}`} scope="col">
                 Price
@@ -50,15 +53,19 @@ const CollapsableAcquisitionsTable = (props: Props) => {
             </tr>
           </thead>
           <tbody>
-            <For each={collapsed() ? acquisitionsList()!.slice(0, 9) : acquisitionsList()}>
-              {(acquisition: Acquisition) => {
+            <For each={collapsed() ? roundsList()!.slice(0, MAX_ITEMS - 1) : roundsList()}>
+              {(round: FundingRound) => {
                 return (
                   <tr class={styles.tableContent}>
-                    <td class="px-2 px-lg-3 text-truncate text-muted">{acquisition.acquiree_name}</td>
-                    <td class="px-2 px-lg-3 text-center text-nowrap text-muted">
-                      {!isUndefined(acquisition.price) ? prettifyNumber(acquisition.price!) : '-'}
+                    <td class="px-2 px-lg-3 text-truncate text-muted text-capitalize">
+                      {!isUndefined(round.kind) ? round.kind?.replace(REGEX_UNDERSCORE, ' ') : '-'}
                     </td>
-                    <td class="px-2 px-lg-3 text-center text-nowrap text-muted">{acquisition.announced_on}</td>
+                    <td class="px-2 px-lg-3 text-center text-nowrap">
+                      <Show when={!isUndefined(round.amount)} fallback="-">
+                        <small class="text-muted">US$</small> {prettifyNumber(round.amount!)}
+                      </Show>
+                    </td>
+                    <td class="px-2 px-lg-3 text-center text-nowrap text-muted">{round.announced_on}</td>
                   </tr>
                 );
               }}
@@ -80,4 +87,4 @@ const CollapsableAcquisitionsTable = (props: Props) => {
   );
 };
 
-export default CollapsableAcquisitionsTable;
+export default FundingRoundsTable;
