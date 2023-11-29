@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
@@ -83,21 +84,23 @@ const Header = (props: Props) => {
               Explore
             </button>
 
-            <button
-              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              classList={{ activeLink: isActive('/guide') }}
-              onClick={() => {
-                if (isActive('/guide')) {
-                  scrollToTop(false);
-                } else {
-                  navigate('/guide', {
-                    state: { from: 'header' },
-                  });
-                }
-              }}
-            >
-              Guide
-            </button>
+            <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
+              <button
+                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+                classList={{ activeLink: isActive('/guide') }}
+                onClick={() => {
+                  if (isActive('/guide')) {
+                    scrollToTop(false);
+                  } else {
+                    navigate('/guide', {
+                      state: { from: 'header' },
+                    });
+                  }
+                }}
+              >
+                Guide
+              </button>
+            </Show>
 
             <button
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
