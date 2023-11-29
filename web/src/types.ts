@@ -294,13 +294,11 @@ export interface Stats {
     repositories: number;
     stars: number;
   };
-  acquisitions?: {
-    count?: { [key: string]: number };
-    amount?: { [key: string]: number };
-  };
-  funding_rounds?: {
-    count?: { [key: string]: number };
-    amount?: { [key: string]: number };
+  organizations?: {
+    acquisitions: { [key: string]: number };
+    acquisitions_price: { [key: string]: number };
+    funding_rounds: { [key: string]: number };
+    funding_rounds_money_raised: { [key: string]: number };
   };
 }
 
