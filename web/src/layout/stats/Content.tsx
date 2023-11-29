@@ -204,7 +204,11 @@ const Content = () => {
 
           {/* Repositories */}
           <Show when={!isUndefined(stats()!.repositories)}>
-            <div class="mb-2 mb-lg-5">
+            <div
+              classList={{
+                'mb-2 mb-lg-5': !isUndefined(stats()!.funding_rounds) || !isUndefined(stats()!.acquisitions),
+              }}
+            >
               <div class={`text-dark fw-bold text-uppercase text-center mb-2 mb-lg-4 ${styles.title}`}>
                 Repositories
               </div>
@@ -310,8 +314,8 @@ const Content = () => {
           {/* FUNDING ROUNDS */}
           <Show
             when={
-              (!isUndefined(stats()!.funding_rounds) && !isEmpty(stats()!.funding_rounds!.amount)) ||
-              !isEmpty(stats()!.funding_rounds!.count)
+              !isUndefined(stats()!.funding_rounds) &&
+              (!isEmpty(stats()!.funding_rounds!.amount) || !isEmpty(stats()!.funding_rounds!.count))
             }
           >
             <div class="mb-2 mb-lg-5">
@@ -348,8 +352,8 @@ const Content = () => {
           {/* ACQUISITIONS */}
           <Show
             when={
-              (!isUndefined(stats()!.acquisitions) && !isEmpty(stats()!.acquisitions!.amount)) ||
-              !isEmpty(stats()!.acquisitions!.count)
+              !isUndefined(stats()!.acquisitions) &&
+              (!isEmpty(stats()!.acquisitions!.amount) || !isEmpty(stats()!.acquisitions!.count))
             }
           >
             <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Acquisitions</div>
