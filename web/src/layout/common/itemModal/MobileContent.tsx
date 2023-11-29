@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
-import { Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
+import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
 import cutString from '../../../utils/cutString';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
@@ -137,6 +137,22 @@ const MobileContent = (props: Props) => {
             {itemInfo()!.subcategory}
           </div>
         </div>
+
+        {/* Additional categories */}
+        <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
+          <div class={`fw-bold text-uppercase my-3 ${styles.titleInSection}`}>Additional categories</div>
+          <div class="d-flex flex-column align-items-start mb-1">
+            <For each={itemInfo()!.additional_categories}>
+              {(additional: AdditionalCategory) => {
+                return (
+                  <div class={`badge border rounded-0 text-truncate mb-2 ${styles.badgeOutlineDark}`}>
+                    {additional.category} / {additional.subcategory}
+                  </div>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
 
         {/* Maturity */}
         <MobileMaturitySection item={itemInfo()!} titleClass={styles.sectionTitle} />

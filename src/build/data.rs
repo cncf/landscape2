@@ -20,7 +20,7 @@ use regex::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
-use tracing::{debug, instrument};
+use tracing::{debug, instrument, warn};
 use url::Url;
 
 /// Format used for dates across the landscape data file.
@@ -275,6 +275,35 @@ impl From<legacy::LandscapeData> for LandscapeData {
                     };
                     item.set_id();
 
+                    // Additional categories
+                    if let Some(second_path) = legacy_item.second_path {
+                        let mut additional_categories = vec![];
+                        for entry in second_path {
+                            // Extract category/subcategory from second path entry
+                            let parts: Vec<&str> = entry.split('/').collect();
+                            if parts.len() != 2 {
+                                warn!("invalid second path entry ({entry}), ignoring it");
+                                continue;
+                            }
+                            let category = parts[0].trim().to_string();
+                            let subcategory = parts[1].trim().to_string();
+                            if category.is_empty() || subcategory.is_empty() {
+                                warn!("invalid second path entry ({entry}), ignoring it");
+                                continue;
+                            }
+
+                            // Prepare additional category and track it
+                            let additional_category = AdditionalCategory {
+                                category,
+                                subcategory,
+                            };
+                            additional_categories.push(additional_category);
+                        }
+                        if !additional_categories.is_empty() {
+                            item.additional_categories = Some(additional_categories);
+                        }
+                    }
+
                     // Repositories
                     let mut repositories = vec![];
                     if let Some(url) = legacy_item.repo_url {
@@ -370,7 +399,7 @@ pub(crate) struct Category {
 /// Type alias to represent a category name.
 pub(crate) type CategoryName = String;
 
-/// Type alias to represent a sub category name.
+/// Type alias to represent a subcategory name.
 pub(crate) type SubCategoryName = String;
 
 /// Landscape item (project, product, member, etc).
@@ -385,6 +414,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub accepted_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub additional_categories: Option<Vec<AdditionalCategory>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archived_at: Option<NaiveDate>,
@@ -545,6 +577,13 @@ impl Item {
         // Build and set id
         self.id = format!("{category}--{subcategory}--{item}");
     }
+}
+
+/// Additional category/subcategory an item can belong to.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct AdditionalCategory {
+    pub category: CategoryName,
+    pub subcategory: SubCategoryName,
 }
 
 /// Landscape item audit information.
@@ -731,6 +770,7 @@ mod legacy {
         pub joined: Option<NaiveDate>,
         pub project: Option<String>,
         pub repo_url: Option<String>,
+        pub second_path: Option<Vec<String>>,
         pub twitter: Option<String>,
         pub url_for_bestpractices: Option<String>,
         pub unnamed_organization: Option<bool>,

@@ -1,4 +1,6 @@
-import { BaseData, BaseItem, Category, Group, Item } from '../types';
+import { isUndefined } from 'lodash';
+
+import { AdditionalCategory, BaseData, BaseItem, Category, Group, Item } from '../types';
 
 export interface GroupData {
   [key: string]: CategoriesData;
@@ -32,13 +34,24 @@ const getCategoriesData = (categoriesList: Category[], items: (BaseItem | Item)[
     });
   });
 
+  const addItem = (item: BaseItem | Item, category: string, subcategory: string) => {
+    categories[category][subcategory].items.push(item);
+    categories[category][subcategory].itemsCount++;
+    if (item.featured) {
+      categories[category][subcategory].itemsFeaturedCount++;
+    }
+  };
+
   items.forEach((item: BaseItem) => {
     if (categories[item.category] && categories[item.category][item.subcategory]) {
-      categories[item.category][item.subcategory].items.push(item);
-      categories[item.category][item.subcategory].itemsCount++;
-      if (item.featured) {
-        categories[item.category][item.subcategory].itemsFeaturedCount++;
-      }
+      addItem(item, item.category, item.subcategory);
+    }
+    if (!isUndefined(item.additional_categories)) {
+      item.additional_categories.forEach((additional: AdditionalCategory) => {
+        if (categories[additional.category] && categories[additional.category][additional.subcategory]) {
+          addItem(item, additional.category, additional.subcategory);
+        }
+      });
     }
   });
 
