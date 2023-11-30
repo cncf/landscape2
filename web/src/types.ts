@@ -54,6 +54,7 @@ export interface BaseItem {
   featured?: Featured;
   maturity?: string;
   tag?: string;
+  additional_categories?: AdditionalCategory[];
 }
 
 export interface Featured {
@@ -100,6 +101,11 @@ export interface SecurityAudit {
   type: string;
   url: string;
   vendor: string;
+}
+
+export interface AdditionalCategory {
+  category: string;
+  subcategory: string;
 }
 
 export interface Organization {

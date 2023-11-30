@@ -46,7 +46,7 @@ impl Datasets {
 /// the initial page and power the features available on it.
 mod base {
     use crate::build::{
-        data::{Category, CategoryName, ItemFeatured, LandscapeData},
+        data::{AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
         guide::LandscapeGuide,
         settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
@@ -120,6 +120,7 @@ mod base {
             // Prepare items from landscape data
             for item in &landscape_data.items {
                 base.items.push(Item {
+                    additional_categories: item.additional_categories.clone(),
                     category: item.category.clone(),
                     featured: item.featured.clone(),
                     id: item.id.clone(),
@@ -158,6 +159,9 @@ mod base {
         pub name: String,
         pub logo: String,
         pub subcategory: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub additional_categories: Option<Vec<AdditionalCategory>>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub featured: Option<ItemFeatured>,
