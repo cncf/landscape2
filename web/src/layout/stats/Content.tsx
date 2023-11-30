@@ -206,7 +206,7 @@ const Content = () => {
           <Show when={!isUndefined(stats()!.repositories)}>
             <div
               classList={{
-                'mb-2 mb-lg-5': !isUndefined(stats()!.funding_rounds) || !isUndefined(stats()!.acquisitions),
+                'mb-2 mb-lg-5': !isUndefined(stats()!.organizations),
               }}
             >
               <div class={`text-dark fw-bold text-uppercase text-center mb-2 mb-lg-4 ${styles.title}`}>
@@ -311,67 +311,63 @@ const Content = () => {
             </div>
           </Show>
 
-          {/* FUNDING ROUNDS */}
+          {/* ORGANIZATIONS */}
           <Show
             when={
-              !isUndefined(stats()!.funding_rounds) &&
-              (!isEmpty(stats()!.funding_rounds!.amount) || !isEmpty(stats()!.funding_rounds!.count))
+              !isUndefined(stats()!.organizations) &&
+              (!isEmpty(stats()!.organizations!.acquisitions) ||
+                !isEmpty(stats()!.organizations!.acquisitions_price) ||
+                !isEmpty(stats()!.organizations!.funding_rounds) ||
+                !isEmpty(stats()!.organizations!.funding_rounds_money_raised))
             }
           >
-            <div class="mb-2 mb-lg-5">
-              <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>
-                Funding rounds
-              </div>
+            <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Organizations</div>
 
-              <div class="py-4">
-                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
-                  <Show when={!isEmpty(stats()!.funding_rounds!.count)}>
-                    <div class="col-12 col-sm-6">
-                      <VerticalBarChart
-                        name="Number of funding rounds per year"
-                        data={stats()!.funding_rounds!.count}
-                      />
-                    </div>
-                  </Show>
+            <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Funding rounds</div>
 
-                  <Show when={!isEmpty(stats()!.funding_rounds!.amount)}>
-                    <div class="col-12 col-sm-6">
-                      <VerticalBarChart
-                        name="Amount raised in funding rounds per year (excluding undisclosed)"
-                        shortName="Amount raised in funding rounds per year"
-                        data={stats()!.funding_rounds!.amount}
-                        dataType="money"
-                      />
-                    </div>
-                  </Show>
-                </div>
-              </div>
-            </div>
-          </Show>
-
-          {/* ACQUISITIONS */}
-          <Show
-            when={
-              !isUndefined(stats()!.acquisitions) &&
-              (!isEmpty(stats()!.acquisitions!.amount) || !isEmpty(stats()!.acquisitions!.count))
-            }
-          >
-            <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Acquisitions</div>
-
-            <div class="pt-4">
+            <div class="py-4">
               <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
-                <Show when={!isEmpty(stats()!.acquisitions!.count)}>
+                <Show when={!isEmpty(stats()!.organizations!.funding_rounds)}>
                   <div class="col-12 col-sm-6">
-                    <VerticalBarChart name="Number of acquisitions per year" data={stats()!.acquisitions!.count} />
+                    <VerticalBarChart
+                      name="Number of funding rounds per year"
+                      data={stats()!.organizations!.funding_rounds}
+                    />
                   </div>
                 </Show>
 
-                <Show when={!isEmpty(stats()!.acquisitions!.amount)}>
+                <Show when={!isEmpty(stats()!.organizations!.funding_rounds_money_raised)}>
+                  <div class="col-12 col-sm-6">
+                    <VerticalBarChart
+                      name="Amount raised in funding rounds per year (excluding undisclosed)"
+                      shortName="Amount raised in funding rounds per year"
+                      data={stats()!.organizations!.funding_rounds_money_raised}
+                      dataType="money"
+                    />
+                  </div>
+                </Show>
+              </div>
+            </div>
+
+            <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Acquisitions</div>
+
+            <div class="pt-4">
+              <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                <Show when={!isEmpty(stats()!.organizations!.acquisitions)}>
+                  <div class="col-12 col-sm-6">
+                    <VerticalBarChart
+                      name="Number of acquisitions per year"
+                      data={stats()!.organizations!.acquisitions}
+                    />
+                  </div>
+                </Show>
+
+                <Show when={!isEmpty(stats()!.organizations!.acquisitions_price)}>
                   <div class="col-12 col-sm-6">
                     <VerticalBarChart
                       name="Acquisitions cost per year (excluding undisclosed)"
                       shortName="Acquisitions cost per year"
-                      data={stats()!.acquisitions!.amount}
+                      data={stats()!.organizations!.acquisitions_price}
                       dataType="money"
                     />
                   </div>
