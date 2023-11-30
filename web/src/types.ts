@@ -54,6 +54,7 @@ export interface BaseItem {
   featured?: Featured;
   maturity?: string;
   tag?: string;
+  additional_categories?: AdditionalCategory[];
 }
 
 export interface Featured {
@@ -100,6 +101,11 @@ export interface SecurityAudit {
   type: string;
   url: string;
   vendor: string;
+}
+
+export interface AdditionalCategory {
+  category: string;
+  subcategory: string;
 }
 
 export interface Organization {
@@ -294,13 +300,11 @@ export interface Stats {
     repositories: number;
     stars: number;
   };
-  acquisitions?: {
-    count?: { [key: string]: number };
-    amount?: { [key: string]: number };
-  };
-  funding_rounds?: {
-    count?: { [key: string]: number };
-    amount?: { [key: string]: number };
+  organizations?: {
+    acquisitions: { [key: string]: number };
+    acquisitions_price: { [key: string]: number };
+    funding_rounds: { [key: string]: number };
+    funding_rounds_money_raised: { [key: string]: number };
   };
 }
 

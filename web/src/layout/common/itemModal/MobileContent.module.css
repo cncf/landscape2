@@ -20,12 +20,12 @@
 
 .badges {
   font-size: 85%;
-  height: 21px;
+  height: 22px;
 }
 
-.badges :global(.badge) {
+.badges :global(.badge):not(.badgeOutlineDark) {
   height: 18px;
-  line-height: 16px;
+  line-height: 19px;
   font-size: 10.25px !important;
   padding: 0 0.65rem;
 }

@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
-import { Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
+import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import { formatTAGName } from '../../../utils/prepareFilters';
@@ -256,6 +256,21 @@ const Content = (props: Props) => {
         </div>
         {/* Description */}
         <div class={`mt-4 text-muted ${styles.description}`}>{description()}</div>
+        {/* Additional categories */}
+        <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
+          <div class={`fw-bold text-uppercase mt-4 mb-3 ${styles.titleInSection}`}>Additional categories</div>
+          <div class="d-flex flex-row align-items-center mb-3">
+            <For each={itemInfo()!.additional_categories}>
+              {(additional: AdditionalCategory) => {
+                return (
+                  <div class={`badge border rounded-0 me-2 ${styles.badgeOutlineDark}`}>
+                    {additional.category} / {additional.subcategory}
+                  </div>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
         {/* Maturity */}
         <MaturitySection item={itemInfo()!} class={styles.fieldset} />
         {/* Repositories */}

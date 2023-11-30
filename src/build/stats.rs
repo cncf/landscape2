@@ -23,17 +23,13 @@ type YearMonth = String;
 /// Landscape stats.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Stats {
-    /// Acquisitions stats.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    acquisitions: Option<AcquisitionsStats>,
-
-    /// Funding rounds stats.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    funding_rounds: Option<FundingRoundsStats>,
-
     /// Foundation members stats.
     #[serde(skip_serializing_if = "Option::is_none")]
     members: Option<MembersStats>,
+
+    /// Foundation organizations stats.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    organizations: Option<OrganizationsStats>,
 
     /// Foundation projects stats.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -49,93 +45,11 @@ impl Stats {
     /// landscape.
     pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
         Self {
-            acquisitions: AcquisitionsStats::new(landscape_data),
-            funding_rounds: FundingRoundsStats::new(landscape_data),
             members: MembersStats::new(landscape_data, settings),
+            organizations: OrganizationsStats::new(landscape_data),
             projects: ProjectsStats::new(landscape_data),
             repositories: RepositoriesStats::new(landscape_data),
         }
-    }
-}
-
-/// Some stats about acquisitions made by organizations.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct AcquisitionsStats {
-    /// Total number of acquisitions per year across all organizations.
-    count: HashMap<Year, u64>,
-
-    /// Total acquisitions amount per year across all organizations.
-    amount: HashMap<Year, u64>,
-}
-
-impl AcquisitionsStats {
-    /// Create a new AcquisitionsStats instance from the information available
-    /// in the landscape.
-    fn new(landscape_data: &LandscapeData) -> Option<Self> {
-        let mut stats = AcquisitionsStats::default();
-
-        // Collect stats from landscape items
-        for item in &landscape_data.items {
-            if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
-                for acq in acquisitions {
-                    if let Some(announced_on) = acq.announced_on {
-                        let year = announced_on.format("%Y").to_string();
-                        increment(&mut stats.count, &year, 1);
-                        increment(&mut stats.amount, &year, acq.price.unwrap_or_default());
-                    }
-                }
-            }
-        }
-
-        // Return stats collected
-        if stats != AcquisitionsStats::default() {
-            return Some(stats);
-        }
-        None
-    }
-}
-
-/// Some stats about organizations funding rounds.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct FundingRoundsStats {
-    /// Total number of funding rounds per year across all organizations.
-    count: HashMap<Year, u64>,
-
-    /// Total money raised on funding rounds per year across all organizations.
-    amount: HashMap<Year, u64>,
-}
-
-impl FundingRoundsStats {
-    /// Create a new FundingRoundsStats instance from the information available
-    /// in the landscape.
-    fn new(landscape_data: &LandscapeData) -> Option<Self> {
-        let mut stats = FundingRoundsStats::default();
-
-        // Collect stats from landscape items
-        for item in &landscape_data.items {
-            if let Some(funding_rounds) =
-                item.crunchbase_data.as_ref().and_then(|d| d.funding_rounds.as_ref())
-            {
-                for fr in funding_rounds {
-                    if let Some(announced_on) = fr.announced_on {
-                        // Only funding rounds in the last 5 years
-                        if Utc::now().year() - announced_on.year() >= 5 {
-                            continue;
-                        }
-
-                        let year = announced_on.format("%Y").to_string();
-                        increment(&mut stats.count, &year, 1);
-                        increment(&mut stats.amount, &year, fr.amount.unwrap_or_default());
-                    }
-                }
-            }
-        }
-
-        // Return stats collected
-        if stats != FundingRoundsStats::default() {
-            return Some(stats);
-        }
-        None
     }
 }
 
@@ -183,6 +97,76 @@ impl MembersStats {
 
         // Return stats collected
         if stats != MembersStats::default() {
+            return Some(stats);
+        }
+        None
+    }
+}
+
+/// Some stats about the organizations in the landscape.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct OrganizationsStats {
+    /// Total number of acquisitions per year across all organizations.
+    acquisitions: HashMap<Year, u64>,
+
+    /// Total acquisitions price per year across all organizations.
+    acquisitions_price: HashMap<Year, u64>,
+
+    /// Total number of funding rounds per year across all organizations.
+    funding_rounds: HashMap<Year, u64>,
+
+    /// Total money raised on funding rounds per year across all organizations.
+    funding_rounds_money_raised: HashMap<Year, u64>,
+}
+
+impl OrganizationsStats {
+    /// Create a new OrganizationsStats instance from the information available
+    /// in the landscape.
+    fn new(landscape_data: &LandscapeData) -> Option<Self> {
+        let mut stats = OrganizationsStats::default();
+
+        // Collect stats from landscape items
+        for item in &landscape_data.items {
+            // Acquisitions
+            if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
+                for acq in acquisitions {
+                    if let Some(announced_on) = acq.announced_on {
+                        let year = announced_on.format("%Y").to_string();
+                        increment(&mut stats.acquisitions, &year, 1);
+                        increment(
+                            &mut stats.acquisitions_price,
+                            &year,
+                            acq.price.unwrap_or_default(),
+                        );
+                    }
+                }
+            }
+
+            // Funding rounds
+            if let Some(funding_rounds) =
+                item.crunchbase_data.as_ref().and_then(|d| d.funding_rounds.as_ref())
+            {
+                for fr in funding_rounds {
+                    if let Some(announced_on) = fr.announced_on {
+                        // Only funding rounds in the last 5 years
+                        if Utc::now().year() - announced_on.year() >= 5 {
+                            continue;
+                        }
+
+                        let year = announced_on.format("%Y").to_string();
+                        increment(&mut stats.funding_rounds, &year, 1);
+                        increment(
+                            &mut stats.funding_rounds_money_raised,
+                            &year,
+                            fr.amount.unwrap_or_default(),
+                        );
+                    }
+                }
+            }
+        }
+
+        // Return stats collected
+        if stats != OrganizationsStats::default() {
             return Some(stats);
         }
         None
