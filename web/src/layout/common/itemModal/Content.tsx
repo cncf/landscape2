@@ -1,6 +1,6 @@
-import { isNull } from 'lodash';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
+import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
@@ -633,10 +633,12 @@ const Content = (props: Props) => {
                 </div>
               </Show>
 
-              <Show when={!isUndefined(itemInfo()!.summary!.personas) && !isEmpty(itemInfo()!.summary!.personas)}>
+              <Show
+                when={!isUndefined(itemInfo()!.summary!.personas) && !isEmpty(compact(itemInfo()!.summary!.personas!))}
+              >
                 <div class={styles.summaryBlock}>
                   <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Personas</div>
-                  <For each={itemInfo()!.summary!.personas!}>
+                  <For each={compact(itemInfo()!.summary!.personas!)}>
                     {(persona) => {
                       return <Badge text={persona} class={`me-2 mt-2 ${styles.summaryBadge}`} />;
                     }}
