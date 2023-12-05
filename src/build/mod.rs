@@ -3,7 +3,7 @@
 use self::{
     cache::Cache,
     crunchbase::collect_crunchbase_data,
-    datasets::Datasets,
+    datasets::{Datasets, NewDatasetsInput},
     export::generate_items_csv,
     github::collect_github_data,
     logos::prepare_logo,
@@ -122,8 +122,8 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     )?;
 
     // Add data collected from external services to the landscape data
-    landscape_data.add_crunchbase_data(crunchbase_data)?;
-    landscape_data.add_github_data(github_data)?;
+    landscape_data.add_crunchbase_data(&crunchbase_data)?;
+    landscape_data.add_github_data(&github_data)?;
 
     // Generate QR code
     let mut qr_code = None;
@@ -132,7 +132,17 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     }
 
     // Generate datasets for web application
-    let datasets = generate_datasets(&landscape_data, &settings, &guide, &qr_code, &args.output_dir)?;
+    let datasets = generate_datasets(
+        &NewDatasetsInput {
+            crunchbase_data: &crunchbase_data,
+            github_data: &github_data,
+            guide: &guide,
+            landscape_data: &landscape_data,
+            qr_code: &qr_code,
+            settings: &settings,
+        },
+        &args.output_dir,
+    )?;
 
     // Render index file and write it to the output directory
     render_index(&datasets, &args.output_dir)?;
@@ -283,16 +293,10 @@ You can see it in action by running the following command:
 /// the datasets will be embedded in the index document, and the rest will be
 /// written to the DATASETS_PATH in the output directory.
 #[instrument(skip_all, err)]
-fn generate_datasets(
-    landscape_data: &LandscapeData,
-    settings: &LandscapeSettings,
-    guide: &Option<LandscapeGuide>,
-    qr_code: &Option<String>,
-    output_dir: &Path,
-) -> Result<Datasets> {
+fn generate_datasets(input: &NewDatasetsInput, output_dir: &Path) -> Result<Datasets> {
     debug!("generating datasets");
 
-    let datasets = Datasets::new(landscape_data, settings, guide, qr_code)?;
+    let datasets = Datasets::new(input)?;
     let datasets_path = output_dir.join(DATASETS_PATH);
 
     // Base
