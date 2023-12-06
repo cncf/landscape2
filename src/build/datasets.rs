@@ -21,7 +21,7 @@ pub(crate) struct Datasets {
     /// #[full]
     pub full: Full,
 
-    /// Stats dataset.
+    /// #[crate::build::stats]
     pub stats: Stats,
 }
 
@@ -65,6 +65,7 @@ mod base {
     /// Base dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Base {
+        pub finances_available: bool,
         pub foundation: String,
         pub images: Images,
 
@@ -154,6 +155,25 @@ mod base {
                         base.guide_summary.insert(category.category.clone(), subcategories);
                     }
                 }
+            }
+
+            // Check if finances data is available (funding rounds or acquisitions)
+            if landscape_data.items.iter().any(|item| {
+                if let Some(org) = &item.crunchbase_data {
+                    if let Some(acquisitions) = &org.acquisitions {
+                        if !acquisitions.is_empty() {
+                            return true;
+                        }
+                    }
+                    if let Some(funding_rounds) = &org.funding_rounds {
+                        if !funding_rounds.is_empty() {
+                            return true;
+                        }
+                    }
+                }
+                false
+            }) {
+                base.finances_available = true;
             }
 
             base
