@@ -17,11 +17,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <% if (isDev) { %>
     <script>
-      fetch("./static/base.json")
+      fetch("./static/data/base.json")
       .then(res => res.json())
       .then(data => window.baseDS = data);
 
-      fetch("./static/stats.json")
+      fetch("./static/data/stats.json")
       .then(res => res.json())
       .then(data => window.statsDS = data);
     </script>

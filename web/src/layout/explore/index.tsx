@@ -23,6 +23,7 @@ import filterData from '../../utils/filterData';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import scrollToTop from '../../utils/scrollToTop';
+import ActiveFiltersList from '../common/ActiveFiltersList';
 import Loading from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
@@ -36,7 +37,6 @@ import { useSetZoomLevel, useZoomLevel } from '../stores/zoom';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
-import ActiveFiltersList from './filters/ActiveFiltersList';
 import ExploreMobileIndex from './mobile/ExploreMobileIndex';
 
 interface Props {

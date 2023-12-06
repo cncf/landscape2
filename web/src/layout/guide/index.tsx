@@ -69,7 +69,7 @@ const GuideIndex = () => {
   onMount(() => {
     async function fetchGuide() {
       try {
-        fetch(import.meta.env.MODE === 'development' ? '../../static/guide.json' : './data/guide.json')
+        fetch(import.meta.env.MODE === 'development' ? '../../static/data/guide.json' : './data/guide.json')
           .then((res) => res.json())
           .then((data) => {
             setGuide(data);

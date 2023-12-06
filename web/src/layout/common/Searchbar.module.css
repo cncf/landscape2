@@ -120,6 +120,12 @@
   }
 }
 
+@media only screen and (max-width: 1199.98px) {
+  .searchBar {
+    width: 240px;
+  }
+}
+
 @media only screen and (max-width: 991.98px) {
   /* Avoid zoom - mobile version */
   .searchBar {

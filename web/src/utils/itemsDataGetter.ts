@@ -28,7 +28,7 @@ export class ItemsDataGetter {
 
   public init() {
     if (!this.ready) {
-      fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
+      fetch(import.meta.env.MODE === 'development' ? '../../static/data/full.json' : './data/full.json')
         .then((res) => res.json())
         .then((data: LandscapeData) => {
           const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
@@ -49,6 +49,20 @@ export class ItemsDataGetter {
       return this.landscapeData.items;
     }
     return [];
+  }
+
+  public getCrunchbaseData(): CrunchbaseData | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.crunchbase_data) {
+      return this.landscapeData.crunchbase_data;
+    }
+    return undefined;
+  }
+
+  public getGithubData(): GithubData | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.github_data) {
+      return this.landscapeData.github_data;
+    }
+    return undefined;
   }
 
   private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {

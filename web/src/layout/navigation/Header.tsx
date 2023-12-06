@@ -33,7 +33,7 @@ const Header = (props: Props) => {
       <div class="container-fluid d-flex flex-row align-items-center px-3 px-lg-4 mainPadding">
         <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
           <button
-            class="btn btn-link p-0 me-4 me-xl-5"
+            class="btn btn-link p-0 me-3 me-xl-5"
             onClick={() => {
               const groups = window.baseDS.groups;
               setViewMode(ViewMode.Grid);
@@ -117,6 +117,24 @@ const Header = (props: Props) => {
             >
               Stats
             </button>
+
+            <Show when={window.baseDS.finances_available}>
+              <button
+                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+                classList={{ activeLink: isActive('/finances') }}
+                onClick={() => {
+                  if (isActive('/finances')) {
+                    scrollToTop(false);
+                  } else {
+                    navigate('/finances', {
+                      state: { from: 'header' },
+                    });
+                  }
+                }}
+              >
+                Finances
+              </button>
+            </Show>
           </div>
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>

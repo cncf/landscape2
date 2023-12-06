@@ -2,6 +2,7 @@
   background-color: rgba(255, 255, 255, 0.9);
   z-index: 1040;
   height: 72px;
+  min-height: 72px;
   position: sticky;
 }
 

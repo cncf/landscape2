@@ -57,3 +57,9 @@
     font-size: 1rem;
   }
 }
+
+@media only screen and (max-width: 575.98px) {
+  .section {
+    border: none !important;
+  }
+}

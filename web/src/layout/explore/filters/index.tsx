@@ -9,10 +9,10 @@ import prepareData from '../../../utils/prepareData';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
+import Section from '../../common/Section';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './Filters.module.css';
 import SearchbarSection from './SearchbarSection';
-import Section from './Section';
 
 interface Props {
   data: BaseData;
@@ -124,7 +124,7 @@ const Filters = (props: Props) => {
       <div class="position-relative">
         <button
           title="Filters"
-          class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-md-4 ${styles.filterBtn} btnIconMobile`}
+          class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-lg-4 ${styles.filterBtn} btnIconMobile`}
           classList={{ disabled: disabledBtn() }}
           onClick={() => setVisibleFiltersModal(true)}
         >
@@ -205,6 +205,7 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
+                  sectionClass={styles.section}
                 />
 
                 <Section
@@ -213,6 +214,7 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.TAG]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
+                  sectionClass={styles.section}
                 />
 
                 <SearchbarSection
@@ -253,6 +255,7 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.CompanyType]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
+                  sectionClass={styles.section}
                 />
 
                 <SearchbarSection

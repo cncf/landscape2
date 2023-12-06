@@ -1,3 +1,4 @@
+import { isUndefined } from 'lodash';
 import { JSXElement } from 'solid-js';
 
 import styles from './Checkbox.module.css';
@@ -11,6 +12,7 @@ interface Props {
   disabled?: boolean;
   class?: string;
   labelClass?: string;
+  device?: string;
   icon?: JSXElement;
   onChange?: (value: string, checked: boolean) => void;
 }
@@ -22,7 +24,7 @@ const CheckBox = (props: Props) => (
       class={`form-check-input rounded-0 ${styles.checkbox}`}
       name={props.name}
       value={props.value}
-      id={`${props.name}-${props.value}`}
+      id={`${!isUndefined(props.device) ? `${props.device}-` : ''}${props.name}-${props.value}`}
       onInput={(e) => {
         if (props.onChange) {
           props.onChange(e.currentTarget.value, e.currentTarget.checked);
@@ -33,7 +35,10 @@ const CheckBox = (props: Props) => (
       disabled={props.disabled}
       tabIndex={0}
     />
-    <label class={`form-check-label ${styles.label} ${props.labelClass}`} for={`${props.name}-${props.value}`}>
+    <label
+      class={`form-check-label ${styles.label} ${props.labelClass}`}
+      for={`${!isUndefined(props.device) ? `${props.device}-` : ''}${props.name}-${props.value}`}
+    >
       <div class="d-flex align-items-baseline mw-100">
         {props.icon && <>{props.icon}</>}
         <span class="text-truncate">{props.label}</span>
