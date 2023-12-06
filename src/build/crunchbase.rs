@@ -204,8 +204,8 @@ impl Organization {
                     .map(Into::into)
                     .filter(|a: &Acquisition| {
                         if let Some(announced_on) = a.announced_on {
-                            // Only acquisitions done in the last 5 years
-                            if Utc::now().year() - announced_on.year() < 5 {
+                            // Only acquisitions done in the last 6 years
+                            if Utc::now().year() - announced_on.year() < 6 {
                                 return true;
                             }
                         }

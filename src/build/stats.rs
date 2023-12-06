@@ -57,15 +57,18 @@ impl Stats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct MembersStats {
     /// Number of members joined per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     joined_at: HashMap<YearMonth, u64>,
 
     /// Running total of number of members joined per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     joined_at_rt: HashMap<YearMonth, u64>,
 
     /// Total number of members.
     members: u64,
 
     /// Number of members per subcategory.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     subcategories: HashMap<String, u64>,
 }
 
@@ -107,15 +110,19 @@ impl MembersStats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct OrganizationsStats {
     /// Total number of acquisitions per year across all organizations.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     acquisitions: HashMap<Year, u64>,
 
     /// Total acquisitions price per year across all organizations.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     acquisitions_price: HashMap<Year, u64>,
 
     /// Total number of funding rounds per year across all organizations.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     funding_rounds: HashMap<Year, u64>,
 
     /// Total money raised on funding rounds per year across all organizations.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     funding_rounds_money_raised: HashMap<Year, u64>,
 }
 
@@ -177,33 +184,42 @@ impl OrganizationsStats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct ProjectsStats {
     /// Number of projects accepted per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     accepted_at: HashMap<YearMonth, u64>,
 
     /// Running total of number of projects accepted per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     accepted_at_rt: HashMap<YearMonth, u64>,
 
     /// Number of security audits per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     audits: HashMap<YearMonth, u64>,
 
     /// Running total of number of security audits per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     audits_rt: HashMap<YearMonth, u64>,
 
     /// Number of projects per category and subcategory.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     category: HashMap<CategoryName, CategoryProjectsStats>,
 
     /// Promotions from incubating to graduated per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     incubating_to_graduated: HashMap<YearMonth, u64>,
 
     /// Number of projects per maturity.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     maturity: HashMap<String, u64>,
 
     /// Total number of projects.
     projects: u64,
 
     /// Promotions from sandbox to incubating per year-month.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     sandbox_to_incubating: HashMap<YearMonth, u64>,
 
     /// Number of projects per TAG.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     tag: HashMap<TagName, u64>,
 }
 
@@ -298,6 +314,7 @@ pub(crate) struct CategoryProjectsStats {
     projects: u64,
 
     /// Number of projects per subcategory.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     subcategories: HashMap<SubCategoryName, u64>,
 }
 
@@ -311,15 +328,19 @@ pub(crate) struct RepositoriesStats {
     contributors: u64,
 
     /// Number of repositories where each language is used.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     languages: HashMap<String, u64>,
 
     /// Source code bytes written on each language.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     languages_bytes: HashMap<String, u64>,
 
     /// Number of repositories where each license is used.
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     licenses: HashMap<String, u64>,
 
     /// Number of commits per week over the last year.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     participation_stats: Vec<i64>,
 
     /// Number of repositories.

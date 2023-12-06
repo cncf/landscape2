@@ -1,4 +1,6 @@
-import { ActiveSection, FilterOption, Item, LandscapeData } from '../types';
+import { isUndefined } from 'lodash';
+
+import { ActiveSection, CrunchbaseData, FilterOption, GithubData, Item, LandscapeData, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
 
 export interface ItemsDataStatus {
@@ -29,7 +31,11 @@ export class ItemsDataGetter {
       fetch(import.meta.env.MODE === 'development' ? '../../static/full.json' : './data/full.json')
         .then((res) => res.json())
         .then((data: LandscapeData) => {
-          this.landscapeData = { ...data };
+          const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
+          this.landscapeData = {
+            ...data,
+            items: extendedItems,
+          };
           this.ready = true;
           if (this.updateStatus) {
             this.updateStatus.updateStatus(true);
@@ -43,6 +49,39 @@ export class ItemsDataGetter {
       return this.landscapeData.items;
     }
     return [];
+  }
+
+  private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
+    const itemsList: Item[] = [];
+
+    if (!isUndefined(items)) {
+      items.forEach((item: Item) => {
+        const extendedItem = { ...item };
+        // Extend Item with crunchbase_data
+        if (
+          !isUndefined(item.crunchbase_url) &&
+          !isUndefined(crunchbaseData) &&
+          !isUndefined(crunchbaseData[item.crunchbase_url!])
+        ) {
+          extendedItem.crunchbase_data = crunchbaseData[item.crunchbase_url!];
+        }
+
+        // Extend repositories Item with github_data
+        if (!isUndefined(item.repositories) && !isUndefined(githubData)) {
+          const tmpRepositories: Repository[] = [];
+          item.repositories.forEach((repo: Repository) => {
+            const tmpRepo = { ...repo };
+            if (!isUndefined(githubData[repo.url])) {
+              tmpRepo.github_data = githubData[repo.url];
+            }
+            tmpRepositories.push(tmpRepo);
+          });
+          extendedItem.repositories = tmpRepositories;
+        }
+        itemsList.push(extendedItem);
+      });
+    }
+    return itemsList;
   }
 
   public findById(id: string): Item | undefined {

@@ -6,7 +6,10 @@
 //! that they can be fetched when needed.
 
 use self::{base::Base, full::Full};
-use super::{guide::LandscapeGuide, settings::LandscapeSettings, stats::Stats, LandscapeData};
+use super::{
+    crunchbase::CrunchbaseData, github::GithubData, guide::LandscapeGuide, settings::LandscapeSettings,
+    stats::Stats, LandscapeData,
+};
 use anyhow::{Ok, Result};
 
 /// Datasets collection.
@@ -24,20 +27,26 @@ pub(crate) struct Datasets {
 
 impl Datasets {
     /// Create a new datasets instance.
-    pub(crate) fn new(
-        landscape_data: &LandscapeData,
-        settings: &LandscapeSettings,
-        guide: &Option<LandscapeGuide>,
-        qr_code: &Option<String>,
-    ) -> Result<Self> {
+    pub(crate) fn new(i: &NewDatasetsInput) -> Result<Self> {
         let datasets = Datasets {
-            base: Base::new(landscape_data, settings, guide, qr_code),
-            full: Full::new(landscape_data.clone()),
-            stats: Stats::new(landscape_data, settings),
+            base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
+            full: Full::new(i.crunchbase_data, i.github_data, i.landscape_data),
+            stats: Stats::new(i.landscape_data, i.settings),
         };
 
         Ok(datasets)
     }
+}
+
+/// Input used to create a new Datasets instance.
+#[derive(Debug, Clone)]
+pub(crate) struct NewDatasetsInput<'a> {
+    pub crunchbase_data: &'a CrunchbaseData,
+    pub github_data: &'a GithubData,
+    pub guide: &'a Option<LandscapeGuide>,
+    pub landscape_data: &'a LandscapeData,
+    pub qr_code: &'a Option<String>,
+    pub settings: &'a LandscapeSettings,
 }
 
 /// Base dataset.
@@ -186,20 +195,39 @@ mod base {
 /// information is used by the web application to power features that require
 /// some extra data not available in the base dataset.
 mod full {
-    use crate::build::data::{Item, LandscapeData};
+    use crate::build::{
+        crunchbase::CrunchbaseData,
+        data::{Item, LandscapeData},
+        github::GithubData,
+    };
     use serde::{Deserialize, Serialize};
+    use std::collections::HashMap;
 
     /// Full dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Full {
+        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        pub crunchbase_data: CrunchbaseData,
+
+        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        pub github_data: GithubData,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
 
     impl Full {
         /// Create a new Full instance from the landscape data provided.
-        pub(crate) fn new(data: LandscapeData) -> Self {
-            Full { items: data.items }
+        pub(crate) fn new(
+            crunchbase_data: &CrunchbaseData,
+            github_data: &GithubData,
+            landscape_data: &LandscapeData,
+        ) -> Self {
+            Full {
+                crunchbase_data: crunchbase_data.clone(),
+                github_data: github_data.clone(),
+                items: landscape_data.items.clone(),
+            }
         }
     }
 }

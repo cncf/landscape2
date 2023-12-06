@@ -79,7 +79,7 @@ impl LandscapeData {
 
     /// Add items Crunchbase data.
     #[instrument(skip_all, err)]
-    pub(crate) fn add_crunchbase_data(&mut self, crunchbase_data: CrunchbaseData) -> Result<()> {
+    pub(crate) fn add_crunchbase_data(&mut self, crunchbase_data: &CrunchbaseData) -> Result<()> {
         for item in &mut self.items {
             if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
                 if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
@@ -132,7 +132,7 @@ impl LandscapeData {
 
     /// Add items repositories GitHub data.
     #[instrument(skip_all, err)]
-    pub(crate) fn add_github_data(&mut self, github_data: GithubData) -> Result<()> {
+    pub(crate) fn add_github_data(&mut self, github_data: &GithubData) -> Result<()> {
         for item in &mut self.items {
             // Add GH data to each of the items repositories
             if item.repositories.is_some() {
@@ -439,7 +439,7 @@ pub(crate) struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clomonitor_report_summary: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub crunchbase_data: Option<Organization>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -642,7 +642,7 @@ pub(crate) struct Repository {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub branch: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub github_data: Option<github::Repository>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

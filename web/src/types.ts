@@ -193,6 +193,16 @@ export interface Release {
 export interface LandscapeData {
   categories: Category[];
   items?: Item[];
+  crunchbase_data?: CrunchbaseData;
+  github_data?: GithubData;
+}
+
+export interface CrunchbaseData {
+  [key: string]: Organization;
+}
+
+export interface GithubData {
+  [key: string]: GithubRepository;
 }
 
 export interface FilterSection {
