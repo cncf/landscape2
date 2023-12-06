@@ -259,11 +259,11 @@ const Content = (props: Props) => {
         {/* Additional categories */}
         <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
           <div class={`fw-bold text-uppercase mt-4 mb-3 ${styles.titleInSection}`}>Additional categories</div>
-          <div class="d-flex flex-row align-items-center mb-3">
+          <div class="d-flex flex-row flex-wrap align-items-center mb-2">
             <For each={itemInfo()!.additional_categories}>
               {(additional: AdditionalCategory) => {
                 return (
-                  <div class={`badge border rounded-0 me-2 ${styles.badgeOutlineDark}`}>
+                  <div class={`badge border rounded-0 me-2 mb-2 ${styles.badgeOutlineDark}`}>
                     {additional.category} / {additional.subcategory}
                   </div>
                 );

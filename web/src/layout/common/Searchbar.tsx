@@ -285,11 +285,11 @@ const Searchbar = (props: Props) => {
                                 </div>
                               </Show>
                             </div>
-                            <div class={`text-muted text-truncate ${styles.legend}`}>
-                              <span class="d-none d-md-block">
+                            <div class={`text-muted ${styles.legend}`}>
+                              <span class="d-none d-md-block text-truncate">
                                 {item.category} / {item.subcategory}
                               </span>
-                              <span class="d-block d-md-none">{item.subcategory}</span>
+                              <span class="d-block d-md-none text-truncate">{item.subcategory}</span>
                             </div>
                           </div>
                         </div>

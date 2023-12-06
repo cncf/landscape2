@@ -145,7 +145,7 @@ const MobileContent = (props: Props) => {
             <For each={itemInfo()!.additional_categories}>
               {(additional: AdditionalCategory) => {
                 return (
-                  <div class={`badge border rounded-0 text-truncate mb-2 ${styles.badgeOutlineDark}`}>
+                  <div class={`badge border rounded-0 text-truncate mb-2 mw-100 ${styles.badgeOutlineDark}`}>
                     {additional.category} / {additional.subcategory}
                   </div>
                 );
