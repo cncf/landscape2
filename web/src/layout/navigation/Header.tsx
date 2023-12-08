@@ -117,24 +117,6 @@ const Header = (props: Props) => {
             >
               Stats
             </button>
-
-            <Show when={window.baseDS.finances_available}>
-              <button
-                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                classList={{ activeLink: isActive('/finances') }}
-                onClick={() => {
-                  if (isActive('/finances')) {
-                    scrollToTop(false);
-                  } else {
-                    navigate('/finances', {
-                      state: { from: 'header' },
-                    });
-                  }
-                }}
-              >
-                Finances
-              </button>
-            </Show>
           </div>
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
