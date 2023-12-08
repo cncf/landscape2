@@ -71,18 +71,6 @@ const MobileDropdown = (props: Props) => {
             Stats
           </A>
         </div>
-        <Show when={window.baseDS.finances_available}>
-          <div class="dropdown-item mb-2">
-            <A
-              class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
-              activeClass="activeLink"
-              href="/finances"
-              onClick={closeDropdown}
-            >
-              Finances
-            </A>
-          </div>
-        </Show>
         <hr />
         <div class="dropdown-item mb-2">
           <ExternalLink
