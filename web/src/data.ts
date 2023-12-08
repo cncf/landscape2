@@ -4,6 +4,7 @@ import {
   FilterCategory,
   FilterSection,
   FilterTitle,
+  FinancesKind,
   GridItemsSize,
   Tab,
   ViewMode,
@@ -40,6 +41,7 @@ export const DEFAULT_STICKY_NAVBAR_HEIGHT = 72;
 export const DEFAULT_TAB = Tab.Explore;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
+export const DEFAULT_FINANCES_KIND = FinancesKind.Funding;
 
 const FOUNDATION = window.baseDS.foundation;
 const GRID_SIZE = window.baseDS.grid_items_size || DEFAULT_GRID_ITEMS_SIZE;

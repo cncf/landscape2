@@ -1,0 +1,18 @@
+.active a {
+  cursor: default;
+}
+
+.pagination :global(.page-link) {
+  font-size: 0.8rem;
+}
+
+@media only screen and (max-width: 575.98px) {
+  .pagination :global(.page-link) {
+    font-size: 0.7rem;
+    line-height: 1rem;
+  }
+
+  .btnIcon {
+    line-height: 1rem;
+  }
+}

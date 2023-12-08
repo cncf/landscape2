@@ -1,4 +1,5 @@
 export interface BaseData {
+  finances_available: boolean;
   foundation: string;
   guide_summary?: GuideSummary;
   images: {
@@ -261,6 +262,33 @@ export interface ToCTitle {
   options?: ToCTitle[];
 }
 
+export interface FinancesData {
+  [FinancesKind.Funding]: FundingData[];
+  [FinancesKind.Acquisitions]: AcquisitionData[];
+  filters: FinancesFilters;
+  firstDate: {
+    [FinancesKind.Funding]: string;
+    [FinancesKind.Acquisitions]: string;
+  };
+}
+
+export interface FinancesFilters {
+  [FinancesKind.Funding]: FilterSection[];
+  [FinancesKind.Acquisitions]: FilterSection[];
+}
+
+export interface FundingData extends FundingRound {
+  organization_name: string;
+  crunchbase_url?: string;
+  membership?: string;
+}
+
+export interface AcquisitionData extends Acquisition {
+  organization_name: string;
+  crunchbase_url?: string;
+  membership?: string;
+}
+
 export interface StateContent {
   from?: string;
 }
@@ -275,6 +303,8 @@ export enum FilterCategory {
   Industry = 'industry',
   CompanyType = 'company-type',
   TAG = 'tag',
+  Membership = 'membership',
+  InvestmentType = 'investment-type',
 }
 
 export interface Stats {
@@ -330,6 +360,11 @@ export enum ViewMode {
   Card = 'card',
 }
 
+export enum FinancesKind {
+  Funding = 'funding',
+  Acquisitions = 'acquisitions',
+}
+
 export enum SVGIconKind {
   ArrowRight,
   ArrowTop,
@@ -337,6 +372,8 @@ export enum SVGIconKind {
   Blog,
   Calendar,
   CaretDown,
+  CaretLeft,
+  CaretRight,
   CaretUp,
   Clear,
   ClearCircle,

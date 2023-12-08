@@ -1,0 +1,71 @@
+.btnGroup :global(.btn) {
+  font-size: 0.75rem;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.btnGroupLegend {
+  font-size: 0.75rem;
+}
+
+.tableLayout {
+  table-layout: fixed;
+}
+
+.thead {
+  font-size: 0.8rem;
+}
+
+.thead th {
+  color: var(--bs-gray-600);
+}
+
+.tableContent td {
+  font-size: 0.8rem;
+  line-height: 2;
+}
+
+.title {
+  font-size: 0.9rem;
+}
+
+.select {
+  border-color: #ced4da !important;
+  font-size: 0.75rem;
+  min-width: 175px;
+}
+
+@media (max-width: 1199.98px) {
+  .select {
+    width: 150px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .btnGroup :global(.btn) {
+    font-size: 0.9rem;
+    min-width: 35px;
+    min-height: 35px;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .thead {
+    font-size: 0.6rem;
+  }
+
+  .tableContent td {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .col {
+    width: 80px;
+  }
+
+  .acqCol {
+    width: 65px;
+  }
+}

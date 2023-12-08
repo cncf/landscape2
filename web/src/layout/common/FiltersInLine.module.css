@@ -1,0 +1,96 @@
+.title {
+  font-size: 0.9rem;
+}
+
+.dropdownWrapper {
+  width: 175px;
+}
+
+.dropdown {
+  left: 0;
+  top: 30px;
+  min-width: 175px !important;
+  width: 260px;
+  max-height: 300px;
+}
+
+.btn {
+  background-color: var(--body-bg);
+  line-height: 1.5 !important;
+  background-repeat: no-repeat;
+  background-position: right 0.3rem center;
+  background-size: 12px 8px;
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3e%3cpath fill=%27none%27 stroke=%27%23343a40%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27m2 5 6 6 6-6%27/%3e%3c/svg%3e');
+  padding: 0.25rem 0.5rem;
+  padding-right: 2.25rem;
+  color: #212529 !important;
+  border-color: #ced4da !important;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.btnRemove {
+  font-size: 0.7rem;
+}
+
+.activeFilter {
+  font-size: 0.75rem;
+  padding-left: 0.35rem;
+}
+
+.closeBtn {
+  padding: 0 0.35rem 0 0;
+  margin-top: -1px;
+}
+
+.closeIcon {
+  min-width: 15px;
+}
+
+[data-theme='dark'] .btn {
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3e%3cpath fill=%27none%27 stroke=%27%23ccc%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%272%27 d=%27M2 5l6 6 6-6%27/%3e%3c/svg%3e');
+  border-color: var(--solid-border) !important;
+  color: var(--color-font) !important;
+}
+
+[data-theme='dark'] .dropdown {
+  background-color: var(--bg-color);
+}
+
+[data-theme='dark'] .dropdown label {
+  color: var(--color-light-font) !important;
+}
+
+.options {
+  max-height: 300px;
+}
+
+.dropdown label {
+  font-size: 0.8rem;
+}
+
+.dropdown input[type='text'] {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1199.98px) {
+  .dropdownWrapper {
+    width: 150px;
+  }
+
+  .dropdown {
+    min-width: 150px !important;
+  }
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    filter: none;
+    background-color: var(--body-bg);
+    border-color: var(--clo-secondary) !important;
+  }
+
+  [data-theme='dark'] .btn:hover {
+    border-color: var(--solid-border) !important;
+  }
+}
