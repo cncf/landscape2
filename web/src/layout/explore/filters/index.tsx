@@ -32,12 +32,14 @@ const Filters = (props: Props) => {
 
   createEffect(
     on(visibleFiltersModal, () => {
-      if (visibleFiltersModal() && filters().length === 0) {
+      if (visibleFiltersModal()) {
         setTmpActiveFilters(props.initialActiveFilters);
-        const f = getFiltersPerGroup(prepareData(props.data, props.initialLandscapeData()!));
-        if (!isEmpty(f)) {
-          setFiltersFromData(f);
-          setFilters(f[props.initialSelectedGroup() || 'default']);
+        if (filters().length === 0) {
+          const f = getFiltersPerGroup(prepareData(props.data, props.initialLandscapeData()!));
+          if (!isEmpty(f)) {
+            setFiltersFromData(f);
+            setFilters(f[props.initialSelectedGroup() || 'default']);
+          }
         }
       }
     })
