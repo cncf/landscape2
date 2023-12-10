@@ -65,7 +65,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Layout data={data()} />}>
-          <Route path="/" element={<Explore initialData={data()} />} />
+          <Route path={['/', '/embed-setup']} element={<Explore initialData={data()} />} />
           <Route path="/guide" element={<Guide />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/finances" element={<Finances />} />

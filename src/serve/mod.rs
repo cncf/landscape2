@@ -51,6 +51,7 @@ pub(crate) async fn set_cache_control_header<B>(req: Request<B>, next: Next<B>) 
     // Prepare header value (based on the request uri)
     let cache_control = match req.uri().to_string() {
         u if u.starts_with("/assets/") => "max-age=31536000",
+        u if u.starts_with("/embed/assets/") => "max-age=31536000",
         u if u.starts_with("/logos/") => "max-age=31536000",
         _ => "no-cache, no-store, must-revalidate",
     };

@@ -41,7 +41,13 @@ export interface GuideSummary {
 
 export interface Category {
   name: string;
-  subcategories: string[];
+  normalized_name: string;
+  subcategories: Subcategory[];
+}
+
+export interface Subcategory {
+  name: string;
+  normalized_name: string;
 }
 
 export interface BaseItem {
@@ -386,6 +392,7 @@ export enum SVGIconKind {
   Docker,
   Documentation,
   Download,
+  Embed,
   Facebook,
   Filters,
   Flickr,

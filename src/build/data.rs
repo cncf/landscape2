@@ -10,7 +10,7 @@
 use super::{
     crunchbase::{CrunchbaseData, Organization, CRUNCHBASE_URL},
     github::{self, GithubData},
-    settings::LandscapeSettings,
+    settings::{self, LandscapeSettings},
 };
 use crate::DataSource;
 use anyhow::{format_err, Result};
@@ -247,12 +247,16 @@ impl From<legacy::LandscapeData> for LandscapeData {
         for legacy_category in legacy_data.landscape {
             let mut category = Category {
                 name: legacy_category.name.clone(),
+                normalized_name: normalize_name(&legacy_category.name),
                 subcategories: vec![],
             };
 
             // Subcategories
             for legacy_subcategory in legacy_category.subcategories {
-                category.subcategories.push(legacy_subcategory.name.clone());
+                category.subcategories.push(SubCategory {
+                    name: legacy_subcategory.name.clone(),
+                    normalized_name: normalize_name(&legacy_subcategory.name),
+                });
 
                 // Items
                 for legacy_item in legacy_subcategory.items {
@@ -393,11 +397,36 @@ impl From<legacy::LandscapeData> for LandscapeData {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
     pub name: CategoryName,
-    pub subcategories: Vec<SubCategoryName>,
+    pub normalized_name: CategoryName,
+    pub subcategories: Vec<SubCategory>,
+}
+
+impl From<&settings::Category> for Category {
+    fn from(settings_category: &settings::Category) -> Self {
+        Self {
+            name: settings_category.name.clone(),
+            normalized_name: normalize_name(&settings_category.name),
+            subcategories: settings_category
+                .subcategories
+                .iter()
+                .map(|sc| SubCategory {
+                    name: sc.clone(),
+                    normalized_name: normalize_name(sc),
+                })
+                .collect(),
+        }
+    }
 }
 
 /// Type alias to represent a category name.
 pub(crate) type CategoryName = String;
+
+/// Landscape subcategory.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct SubCategory {
+    pub name: SubCategoryName,
+    pub normalized_name: SubCategoryName,
+}
 
 /// Type alias to represent a subcategory name.
 pub(crate) type SubCategoryName = String;
@@ -555,27 +584,12 @@ impl Item {
 
     /// Generate and set the item's id.
     fn set_id(&mut self) {
-        lazy_static! {
-            static ref VALID_CHARS: Regex =
-                Regex::new(r"[a-z0-9\-\ ]").expect("exprs in VALID_CHARS to be valid");
-        }
-
-        // Normalize category, subcategory and item name
-        let normalize = |value: &str| {
-            value
-                .to_lowercase()
-                .replace(' ', "-")
-                .chars()
-                .filter(|c| VALID_CHARS.is_match(&c.to_string()))
-                .collect::<String>()
-                .replace("--", "-")
-        };
-        let category = normalize(&self.category);
-        let subcategory = normalize(&self.subcategory);
-        let item = normalize(&self.name);
-
-        // Build and set id
-        self.id = format!("{category}--{subcategory}--{item}");
+        self.id = format!(
+            "{}--{}--{}",
+            normalize_name(&self.category),
+            normalize_name(&self.subcategory),
+            normalize_name(&self.name)
+        );
     }
 }
 
@@ -647,6 +661,29 @@ pub(crate) struct Repository {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub primary: Option<bool>,
+}
+
+lazy_static! {
+    static ref VALID_CHARS: Regex = Regex::new(r"[a-z0-9\-\ ]").expect("exprs in VALID_CHARS to be valid");
+    static ref MULTIPLE_HYPHENS: Regex = Regex::new(r"-{2,}").expect("exprs in MULTIPLE_HYPHENS to be valid");
+}
+
+// Normalize category, subcategory and item name
+pub(crate) fn normalize_name(value: &str) -> String {
+    let mut normalized_name = value
+        .to_lowercase()
+        .replace(' ', "-")
+        .chars()
+        .map(|c| {
+            if VALID_CHARS.is_match(&c.to_string()) {
+                c
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>();
+    normalized_name = MULTIPLE_HYPHENS.replace(&normalized_name, "-").to_string();
+    normalized_name
 }
 
 mod legacy {

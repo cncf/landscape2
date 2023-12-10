@@ -7,3 +7,6 @@ target
 web/node_modules
 web/dist
 web/static/*
+embed/node_modules
+embed/dist
+embed/static/*

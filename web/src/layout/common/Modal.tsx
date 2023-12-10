@@ -12,6 +12,7 @@ interface Props {
   header?: string | JSXElement;
   headerClass?: string;
   bodyClass?: string;
+  closeBtnClass?: string;
   modalDialogClass?: string;
   children: JSXElement;
   footer?: JSXElement;
@@ -72,7 +73,7 @@ const Modal = (props: Props) => {
 
             <div class={`modal-body h-100 d-flex flex-column ${props.bodyClass || 'p-4'}`}>
               <Show when={isUndefined(props.header)}>
-                <div class={`position-absolute ${styles.btnCloseWrapper}`}>
+                <div class={`position-absolute ${styles.btnCloseWrapper} ${props.closeBtnClass}`}>
                   <button
                     type="button"
                     title="Close modal"

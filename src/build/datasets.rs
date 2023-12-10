@@ -5,7 +5,7 @@
 //! rendering it), whereas others will be written to the output directory so
 //! that they can be fetched when needed.
 
-use self::{base::Base, full::Full};
+use self::{base::Base, embed::Embed, full::Full};
 use super::{
     crunchbase::CrunchbaseData, github::GithubData, guide::LandscapeGuide, settings::LandscapeSettings,
     stats::Stats, LandscapeData,
@@ -17,6 +17,9 @@ use anyhow::{Ok, Result};
 pub(crate) struct Datasets {
     /// #[base]
     pub base: Base,
+
+    /// #[embed]
+    pub embed: Embed,
 
     /// #[full]
     pub full: Full,
@@ -30,6 +33,7 @@ impl Datasets {
     pub(crate) fn new(i: &NewDatasetsInput) -> Result<Self> {
         let datasets = Datasets {
             base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
+            embed: Embed::new(i.landscape_data),
             full: Full::new(i.crunchbase_data, i.github_data, i.landscape_data),
             stats: Stats::new(i.landscape_data, i.settings),
         };
@@ -55,7 +59,7 @@ pub(crate) struct NewDatasetsInput<'a> {
 /// the initial page and power the features available on it.
 mod base {
     use crate::build::{
-        data::{AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
+        data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
         guide::LandscapeGuide,
         settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
     };
@@ -121,7 +125,7 @@ mod base {
             if let Some(categories) = &settings.categories {
                 for category in categories {
                     if let Some(index) = base.categories.iter().position(|c| c.name == category.name) {
-                        base.categories[index] = category.clone();
+                        base.categories[index] = category.into();
                     }
                     base.categories_overridden.push(category.name.clone());
                 }
@@ -129,18 +133,7 @@ mod base {
 
             // Prepare items from landscape data
             for item in &landscape_data.items {
-                base.items.push(Item {
-                    additional_categories: item.additional_categories.clone(),
-                    category: item.category.clone(),
-                    featured: item.featured.clone(),
-                    id: item.id.clone(),
-                    name: item.name.clone(),
-                    logo: item.logo.clone(),
-                    maturity: item.maturity.clone(),
-                    subcategory: item.subcategory.clone(),
-                    oss: item.oss,
-                    tag: item.tag.clone(),
-                });
+                base.items.push(item.into());
             }
 
             // Prepare guide summary
@@ -205,8 +198,98 @@ mod base {
         pub tag: Option<String>,
     }
 
+    impl From<&data::Item> for Item {
+        fn from(data_item: &data::Item) -> Self {
+            Item {
+                additional_categories: data_item.additional_categories.clone(),
+                category: data_item.category.clone(),
+                featured: data_item.featured.clone(),
+                id: data_item.id.clone(),
+                name: data_item.name.clone(),
+                logo: data_item.logo.clone(),
+                maturity: data_item.maturity.clone(),
+                subcategory: data_item.subcategory.clone(),
+                oss: data_item.oss,
+                tag: data_item.tag.clone(),
+            }
+        }
+    }
+
     /// Type alias to represent the guide summary.
     type GuideSummary = HashMap<String, Vec<String>>;
+}
+
+/// Embed dataset.
+///
+/// This dataset contains some information about all the embeddable views that
+/// can be generated from the information available in the landscape data.
+mod embed {
+    use super::base::Item;
+    use crate::build::{data::Category, LandscapeData};
+    use serde::{Deserialize, Serialize};
+    use std::collections::HashMap;
+
+    /// Embed dataset information.
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Embed {
+        #[serde(flatten, skip_serializing_if = "HashMap::is_empty")]
+        pub views: HashMap<EmbedKey, EmbedView>,
+    }
+
+    impl Embed {
+        /// Create a new Embed instance from the data provided.
+        pub(crate) fn new(landscape_data: &LandscapeData) -> Self {
+            let mut views = HashMap::new();
+
+            for category in &landscape_data.categories {
+                // Full category view
+                let key = category.normalized_name.clone();
+                let view = EmbedView {
+                    category: category.clone(),
+                    items: landscape_data
+                        .items
+                        .iter()
+                        .filter(|i| i.category == category.name)
+                        .map(Item::from)
+                        .collect(),
+                };
+                views.insert(key, view);
+
+                // Subcategories views
+                for subcategory in &category.subcategories {
+                    let key = format!("{}--{}", category.normalized_name, subcategory.normalized_name,);
+                    let view = EmbedView {
+                        category: Category {
+                            name: category.name.clone(),
+                            normalized_name: category.normalized_name.clone(),
+                            subcategories: vec![subcategory.clone()],
+                        },
+                        items: landscape_data
+                            .items
+                            .iter()
+                            .filter(|i| i.category == category.name && i.subcategory == *subcategory.name)
+                            .map(Item::from)
+                            .collect(),
+                    };
+                    views.insert(key, view);
+                }
+            }
+
+            Self { views }
+        }
+    }
+
+    /// Type alias to represent a embed key.
+    pub(crate) type EmbedKey = String;
+
+    /// Embed view information.
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct EmbedView {
+        pub category: Category,
+
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        pub items: Vec<Item>,
+    }
 }
 
 /// Full dataset.

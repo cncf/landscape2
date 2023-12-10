@@ -11,6 +11,7 @@ import Searchbar from '../common/Searchbar';
 import SVGIcon from '../common/SVGIcon';
 import { useSetGroupActive } from '../stores/groupActive';
 import { useSetViewMode } from '../stores/viewMode';
+import EmbedModal from './EmbedModal';
 import styles from './Header.module.css';
 
 interface Props {
@@ -125,6 +126,7 @@ const Header = (props: Props) => {
             </div>
 
             <div class={`d-flex align-items-center ${styles.icons}`}>
+              <EmbedModal />
               <DownloadDropdown />
               <ExternalLink
                 class={`btn btn-md text-dark ms-2 ms-xl-3 px-0 ${styles.btnLink}`}

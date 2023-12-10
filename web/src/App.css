@@ -22,7 +22,7 @@ body {
 
 button:focus,
 a:focus,
-input:focus,
+input:not([type='color']):focus,
 select:focus {
   outline: none !important;
   box-shadow: 0 0 0 0 transparent !important;
@@ -63,6 +63,16 @@ a,
   }
 }
 
+.modal-xxl {
+  max-width: 80%;
+}
+
+@media (min-width: 1920px) {
+  .modal-xxl {
+    max-width: 1700px;
+  }
+}
+
 @media only screen and (max-width: 991.98px) {
   .btnIconMobile {
     width: 35px !important;
@@ -86,6 +96,7 @@ a,
   .noScroll-loading {
     height: 100%;
     overflow: hidden;
+    overflow-y: hidden !important;
   }
 }
 
@@ -109,6 +120,7 @@ a,
   .noScroll-loading #landscape {
     height: 100%;
     overflow: hidden;
+    overflow-y: hidden !important;
   }
 }
 

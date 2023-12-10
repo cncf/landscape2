@@ -1,0 +1,91 @@
+.btn {
+  background: transparent;
+  border: 0;
+  font-size: 1.25rem;
+}
+
+.btn:hover {
+  color: var(--color2);
+}
+
+.modalDialog {
+  min-height: calc(100% - 6rem) !important;
+  max-height: calc(100% - 6rem) !important;
+  margin: 3em auto !important;
+}
+
+.modalCloseBtn {
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+.modalBody {
+  padding: 0;
+}
+
+.title {
+  padding: 1.7rem;
+}
+
+.configWrapper {
+  background-color: var(--bs-gray-100);
+}
+
+.label {
+  font-size: 0.8rem;
+}
+
+.labelSelect {
+  font-size: 0.8rem;
+}
+
+.previewTitle {
+  padding: 0 1.9rem;
+  padding-top: 1.5rem;
+}
+
+.select {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
+  margin: 0.5rem 0.2rem;
+  width: 250px;
+  max-width: calc(100% - 0.4rem);
+  font-size: 0.8rem;
+}
+
+.select:focus {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+}
+
+.inputColor,
+.inputColor:focus {
+  appearance: none;
+  outline: 1px solid rgb(222, 226, 230) !important;
+  border: 3px solid rgb(248, 249, 250) !important;
+  inline-size: 35px;
+  block-size: 20px;
+}
+
+.inputColor::-moz-color-swatch,
+.inputColor::-webkit-color-swatch {
+  border-radius: 0;
+  border-style: none;
+}
+
+.codeWrapper {
+  background-color: var(--bs-gray-100);
+}
+
+.code {
+  height: 32px;
+  padding: 0.4rem 1rem !important;
+  font-size: 0.8rem;
+}
+
+@media only screen and (max-width: 767.98px) {
+  .modalDialog {
+    width: 95%;
+    min-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem) !important;
+    margin: 0.75em auto !important;
+  }
+}

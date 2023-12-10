@@ -7,7 +7,7 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use super::data::{validate_url, Category, CategoryName, SubCategoryName};
+use super::data::{validate_url, CategoryName, SubCategoryName};
 use crate::SettingsSource;
 use anyhow::{format_err, Context, Result};
 use lazy_static::lazy_static;
@@ -311,6 +311,13 @@ impl LandscapeSettings {
 
         Ok(())
     }
+}
+
+/// Landscape category.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Category {
+    pub name: CategoryName,
+    pub subcategories: Vec<SubCategoryName>,
 }
 
 lazy_static! {
