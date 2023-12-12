@@ -79,7 +79,7 @@ const HorizontalBarChart = (props: Props) => {
             if (!isUndefined(props.dataType) && props.dataType === 'bytes') {
               return prettifyBytes(parseInt(value));
             } else {
-              return value.toString();
+              return parseInt(value).toString();
             }
           },
         },
