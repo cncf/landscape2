@@ -2,6 +2,7 @@
 FROM rust:1-alpine3.18 as builder
 RUN apk --no-cache add musl-dev perl make libconfig-dev openssl-dev yarn
 WORKDIR /landscape2
+COPY embed embed
 COPY src src
 COPY templates templates
 COPY web web
