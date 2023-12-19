@@ -1,12 +1,13 @@
 import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
+import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
-import { REGEX_PLUS } from '../../../data';
 import { CardMenu } from '../../../types';
-import convertStringSpaces from '../../../utils/convertStringSpaces';
+import getName from '../../../utils/getName';
+import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
 import { CategoriesData } from '../../../utils/prepareData';
@@ -43,10 +44,14 @@ const CardCategory = (props: Props) => {
 
   const isAvailableSelectedSection = (): boolean => {
     const selection = location.hash.replace('#', '');
-    const [cat, subcat] = selection.split('/');
-    const category = cat.replace(REGEX_PLUS, ' ');
-    const subcategory = subcat.replace(REGEX_PLUS, ' ');
-    if (!isUndefined(menu()) && Object.keys(menu()!).includes(category) && menu()![category].includes(subcategory)) {
+    const names = getName(selection);
+    if (
+      !isUndefined(menu()) &&
+      !isNull(names) &&
+      Object.keys(menu()!).includes(names.category) &&
+      !isUndefined(names.subcategory) &&
+      menu()![names.category].includes(names.subcategory)
+    ) {
       return true;
     } else {
       return false;
@@ -86,7 +91,7 @@ const CardCategory = (props: Props) => {
       const firstCategory = Object.keys(menuTmp)[0];
       const firstSubcategory = menuTmp[firstCategory][0];
       if (!isUndefined(firstSubcategory)) {
-        const firstItemInMenu = `${convertStringSpaces(firstCategory)}/${convertStringSpaces(firstSubcategory)}`;
+        const firstItemInMenu = getNormalizedName({ cat: firstCategory, subcat: firstSubcategory, grouped: true });
         setFirstItem(firstItemInMenu);
       }
     }

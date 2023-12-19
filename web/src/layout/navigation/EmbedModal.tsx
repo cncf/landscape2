@@ -18,7 +18,7 @@ import {
   Style,
   STYLE_PARAM,
 } from '../../../../embed/src/types';
-import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Category, Subcategory, SVGIconKind } from '../../types';
 import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
@@ -26,6 +26,8 @@ import CheckBox from '../common/Checkbox';
 import CodeBlock from '../common/CodeBlock';
 import Modal from '../common/Modal';
 import SVGIcon from '../common/SVGIcon';
+import { useGroupActive } from '../stores/groupActive';
+import { useViewMode } from '../stores/viewMode';
 import styles from './EmbedModal.module.css';
 
 enum InputType {
@@ -47,6 +49,8 @@ const SIZES_LEGENDS = {
 const EmbedModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const selectedGroup = useGroupActive();
+  const viewMode = useViewMode();
   const { point } = useBreakpointDetect();
   // Icon is only visible when Explore section is loaded
   const isVisible = () => ['/', '/embed-setup'].includes(location.pathname);
@@ -69,6 +73,7 @@ const EmbedModal = () => {
   const [bgColor, setBgColor] = createSignal<string>(DEFAULT_BG_COLOR);
   const [fgColor, setFgColor] = createSignal<string>(DEFAULT_FG_COLOR);
   const [url, setUrl] = createSignal<string>();
+  const [prevHash, setPrevHash] = createSignal<string>('');
 
   const getUrl = () => {
     return `${
@@ -118,7 +123,11 @@ const EmbedModal = () => {
   };
 
   const onClose = () => {
-    navigate('/', {
+    const updatedSearchParams = new URLSearchParams();
+    updatedSearchParams.set(GROUP_PARAM, selectedGroup() || 'default');
+    updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
+
+    navigate(`/?${updatedSearchParams.toString()}${prevHash()}`, {
       replace: true,
     });
     setVisibleModal(false);
@@ -157,6 +166,7 @@ const EmbedModal = () => {
   createEffect(
     on(visibleModal, () => {
       if (visibleModal()) {
+        setPrevHash(location.hash);
         setUrl(getUrl());
       }
     })
@@ -260,9 +270,43 @@ const EmbedModal = () => {
                         }
                       />
                     </div>
+                    <div class="form-check ps-0">
+                      <div class="d-flex flex-row align-items-center mt-3">
+                        <input
+                          class={styles.inputColor}
+                          type="color"
+                          id={InputType.BgColor}
+                          name={InputType.BgColor}
+                          value={bgColor()}
+                          onInput={(e) => {
+                            onChange(InputType.BgColor, e.currentTarget.value);
+                          }}
+                        />
+                        <label class={`mw-100 text-muted ms-2 ${styles.label}`} for={InputType.BgColor}>
+                          Background color
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-check ps-0">
+                      <div class="d-flex flex-row align-items-center mt-3">
+                        <input
+                          class={styles.inputColor}
+                          type="color"
+                          id={InputType.FgColor}
+                          name={InputType.FgColor}
+                          value={fgColor()}
+                          onInput={(e) => {
+                            onChange(InputType.FgColor, e.currentTarget.value);
+                          }}
+                        />
+                        <label class={`mw-100 text-muted ms-2 ${styles.label}`} for={InputType.FgColor}>
+                          Foreground color
+                        </label>
+                      </div>
+                    </div>
                   </div>
                   <div class="mt-4">
-                    <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Styles</div>
+                    <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item Style</div>
                     <select
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedStyle()}
@@ -279,7 +323,7 @@ const EmbedModal = () => {
                     </select>
                   </div>
                   <div class="mt-4">
-                    <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Size</div>
+                    <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item size</div>
                     <select
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedSize()}
@@ -294,40 +338,6 @@ const EmbedModal = () => {
                         }}
                       </For>
                     </select>
-                  </div>
-                  <div class="mt-4">
-                    <div class={`text-uppercase text-muted fw-semibold mb-2 ${styles.labelSelect}`}>Colors</div>
-
-                    <div class="d-flex flex-row align-items-center">
-                      <input
-                        class={styles.inputColor}
-                        type="color"
-                        id={InputType.BgColor}
-                        name={InputType.BgColor}
-                        value={bgColor()}
-                        onInput={(e) => {
-                          onChange(InputType.BgColor, e.currentTarget.value);
-                        }}
-                      />
-                      <label class={`mw-100 text-muted ms-2 ${styles.label}`} for={InputType.BgColor}>
-                        Background
-                      </label>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-row align-items-center mt-3">
-                    <input
-                      class={styles.inputColor}
-                      type="color"
-                      id={InputType.FgColor}
-                      name={InputType.FgColor}
-                      value={fgColor()}
-                      onInput={(e) => {
-                        onChange(InputType.FgColor, e.currentTarget.value);
-                      }}
-                    />
-                    <label class={`mw-100 text-muted ms-2 ${styles.label}`} for={InputType.FgColor}>
-                      Foreground
-                    </label>
                   </div>
                 </div>
               </div>

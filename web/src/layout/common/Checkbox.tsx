@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 import { JSXElement } from 'solid-js';
 
 import styles from './Checkbox.module.css';

@@ -38,7 +38,7 @@ const Header = (props: Props) => {
             onClick={() => {
               const groups = window.baseDS.groups;
               setViewMode(ViewMode.Grid);
-              setSelectedGroup(!isUndefined(groups) ? groups[0].name : 'default');
+              setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
               navigate('/');
             }}
           >

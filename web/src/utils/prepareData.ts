@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 
 import { AdditionalCategory, BaseData, BaseItem, Category, Group, Item, Subcategory } from '../types';
 
@@ -72,7 +72,7 @@ const prepareData = (data: BaseData, items: (BaseItem | Item)[]): GroupData => {
         }
       });
 
-      groups[g.name] = getCategoriesData(categoriesList, items);
+      groups[g.normalized_name] = getCategoriesData(categoriesList, items);
     });
   } else {
     groups.default = getCategoriesData(data.categories, items);
