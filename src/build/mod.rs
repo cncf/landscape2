@@ -62,6 +62,9 @@ const DATASETS_PATH: &str = "data";
 /// Path where some documents will be written to in the output directory.
 const DOCS_PATH: &str = "docs";
 
+/// Path where the embeddable views assets will be copied to in the output dir.
+const EMBED_PATH: &str = "embed";
+
 /// Path where some images will be written to in the output directory.
 const IMAGES_PATH: &str = "images";
 
@@ -70,6 +73,12 @@ const LOGOS_PATH: &str = "logos";
 
 /// Maximum number of logos to prepare concurrently.
 const PREPARE_LOGOS_MAX_CONCURRENCY: usize = 20;
+
+/// Embed landscape embeddable views assets into binary.
+/// (these assets will be built automatically from the build script)
+#[derive(RustEmbed)]
+#[folder = "embed/dist"]
+struct EmbedAssets;
 
 /// Embed web application assets into binary.
 /// (these assets will be built automatically from the build script)
@@ -147,7 +156,8 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     // Render index file and write it to the output directory
     render_index(&datasets, &args.output_dir)?;
 
-    // Copy web assets files to the output directory
+    // Copy embed and web assets files to the output directory
+    copy_embed_assets(&args.output_dir)?;
     copy_web_assets(&args.output_dir)?;
 
     // Generate items.csv file
@@ -252,6 +262,25 @@ async fn collect_clomonitor_reports(
     Ok(())
 }
 
+/// Copy embed assets files to the output directory.
+#[instrument(skip_all, err)]
+fn copy_embed_assets(output_dir: &Path) -> Result<()> {
+    debug!("copying embed assets to output directory");
+
+    for asset_path in EmbedAssets::iter() {
+        if let Some(embedded_file) = EmbedAssets::get(&asset_path) {
+            let path = Path::new(EMBED_PATH).join(asset_path.as_ref());
+            if let Some(parent_path) = path.parent() {
+                fs::create_dir_all(output_dir.join(parent_path))?;
+            }
+            let mut file = File::create(output_dir.join(path))?;
+            file.write_all(&embedded_file.data)?;
+        }
+    }
+
+    Ok(())
+}
+
 /// Copy web assets files to the output directory.
 #[instrument(skip_all, err)]
 fn copy_web_assets(output_dir: &Path) -> Result<()> {
@@ -302,6 +331,12 @@ fn generate_datasets(input: &NewDatasetsInput, output_dir: &Path) -> Result<Data
     // Base
     let mut base_file = File::create(datasets_path.join("base.json"))?;
     base_file.write_all(&serde_json::to_vec(&datasets.base)?)?;
+
+    // Embed
+    for (key, view) in &datasets.embed.views {
+        let mut embed_file = File::create(datasets_path.join(format!("embed_{key}.json")))?;
+        embed_file.write_all(&serde_json::to_vec(&view)?)?;
+    }
 
     // Full
     let mut full_file = File::create(datasets_path.join("full.json"))?;

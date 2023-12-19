@@ -1,6 +1,6 @@
 import { isUndefined } from 'lodash';
 
-import { AdditionalCategory, BaseData, BaseItem, Category, Group, Item } from '../types';
+import { AdditionalCategory, BaseData, BaseItem, Category, Group, Item, Subcategory } from '../types';
 
 export interface GroupData {
   [key: string]: CategoriesData;
@@ -25,8 +25,8 @@ const getCategoriesData = (categoriesList: Category[], items: (BaseItem | Item)[
 
   categoriesList.forEach((cat: Category) => {
     categories[cat.name] = {};
-    cat.subcategories.forEach((subcat: string) => {
-      categories[cat.name][subcat] = {
+    cat.subcategories.forEach((subcat: Subcategory) => {
+      categories[cat.name][subcat.name] = {
         items: [],
         itemsCount: 0,
         itemsFeaturedCount: 0,

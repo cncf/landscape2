@@ -3,7 +3,9 @@ use std::process::Command;
 use which::which;
 
 fn main() -> Result<()> {
-    // Tell Cargo to rerun this build script if the web app changes
+    // Tell Cargo to rerun this build script if the source changes
+    println!("cargo:rerun-if-changed=embed/src");
+    println!("cargo:rerun-if-changed=embed/embed.html");
     println!("cargo:rerun-if-changed=web/src");
     println!("cargo:rerun-if-changed=web/static");
     println!("cargo:rerun-if-changed=web/index.html");
@@ -14,6 +16,10 @@ fn main() -> Result<()> {
             "yarn not found in PATH (it is required to build the web application)"
         ));
     }
+
+    // Build embeddable views
+    yarn(&["--cwd", "embed", "install"])?;
+    yarn(&["--cwd", "embed", "build"])?;
 
     // Build web application
     yarn(&["--cwd", "web", "install"])?;

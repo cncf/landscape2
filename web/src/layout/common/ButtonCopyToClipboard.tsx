@@ -102,7 +102,7 @@ const ButtonCopyToClipboard = (props: Props) => {
             {props.icon}
           </Show>
           <Show when={!isUndefined(props.visibleBtnText) && props.visibleBtnText && isUndefined(props.contentBtn)}>
-            <div class="ms-2">Copy to clipboard</div>
+            <div class="ms-2 text-nowrap">Copy to clipboard</div>
           </Show>
         </div>
       </button>
