@@ -15,7 +15,7 @@ askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.74"
 aws-config = "1.0.0"
-aws-sdk-s3 = "0.39.0"
+aws-sdk-s3 = "0.39.1"
 axum = "0.6.20"
 base64 = "0.21.5"
 chrono = { version = "0.4.31", features = ["serde"] }
