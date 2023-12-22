@@ -32,6 +32,7 @@ use std::{
     ffi::OsStr,
     fs::{self, File},
     io::Write,
+    net::TcpListener,
     path::{Path, PathBuf},
     sync::Arc,
     time::{Duration, Instant},
@@ -549,11 +550,15 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     }
 
     // Launch server to serve landscape just built
-    const SVR_ADDR: &str = "127.0.0.1:8123";
+    let Some(port) = find_available_port() else {
+        return Err(format_err!("could not find an available port to listen on"));
+    };
+    let svr_addr = format!("127.0.0.1:{port}");
+    let svr_addr_copy = svr_addr.clone();
     let landscape_dir = Some(PathBuf::from(&output_dir));
     let server = tokio::spawn(async {
         let args = ServeArgs {
-            addr: SVR_ADDR.to_string(),
+            addr: svr_addr_copy,
             graceful_shutdown: false,
             landscape_dir,
             silent: true,
@@ -577,7 +582,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     let browser = Browser::new(options)?;
     let tab = browser.new_tab()?;
     tab.set_default_timeout(TIMEOUT);
-    let screenshot_url = format!("http://{SVR_ADDR}/screenshot");
+    let screenshot_url = format!("http://{svr_addr}/screenshot");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
 
     // Take screenshot in PNG format and save it to a file
@@ -669,6 +674,11 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Find an available port to listen on.
+fn find_available_port() -> Option<u16> {
+    (9000..10000).find(|port| TcpListener::bind(("127.0.0.1", *port)).is_ok())
 }
 
 mod filters {
