@@ -7,7 +7,7 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use super::data::{validate_url, CategoryName, SubCategoryName};
+use super::data::{normalize_name, validate_url, CategoryName, SubCategoryName};
 use crate::SettingsSource;
 use anyhow::{format_err, Context, Result};
 use lazy_static::lazy_static;
@@ -76,8 +76,7 @@ impl LandscapeSettings {
     /// Create a new landscape settings instance from the file provided.
     fn new_from_file(file: &Path) -> Result<Self> {
         let raw_data = fs::read_to_string(file)?;
-        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
-        settings.validate().context("the landscape settings file provided is not valid")?;
+        let settings = LandscapeSettings::new_from_raw_data(&raw_data)?;
 
         Ok(settings)
     }
@@ -92,10 +91,27 @@ impl LandscapeSettings {
             ));
         }
         let raw_data = resp.text().await?;
-        let settings: LandscapeSettings = serde_yaml::from_str(&raw_data)?;
-        settings.validate().context("the landscape settings file provided is not valid")?;
+        let settings = LandscapeSettings::new_from_raw_data(&raw_data)?;
 
         Ok(settings)
+    }
+
+    /// Create a new landscape settings instance from the raw data provided.
+    fn new_from_raw_data(raw_data: &str) -> Result<Self> {
+        let mut settings: LandscapeSettings = serde_yaml::from_str(raw_data)?;
+        settings.validate().context("the landscape settings file provided is not valid")?;
+        settings.set_groups_normalized_name();
+
+        Ok(settings)
+    }
+
+    /// Set the normalized name field of the provided groups.
+    fn set_groups_normalized_name(&mut self) {
+        if let Some(groups) = self.groups.as_mut() {
+            for group in groups {
+                group.normalized_name = Some(normalize_name(&group.name));
+            }
+        }
     }
 
     /// Validate landscape settings.
@@ -373,6 +389,7 @@ pub(crate) enum GridItemsSize {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Group {
     pub name: String,
+    pub normalized_name: Option<String>,
     pub categories: Vec<CategoryName>,
 }
 

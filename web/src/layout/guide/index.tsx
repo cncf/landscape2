@@ -5,10 +5,10 @@ import { createEffect, createMemo, createSignal, For, on, onMount, Show } from '
 import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { CategoryGuide, Guide, StateContent, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
+import getNormalizedName from '../../utils/getNormalizedName';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
 import scrollToTop from '../../utils/scrollToTop';
-import slugify from '../../utils/slugify';
 import Loading from '../common/Loading';
 import { Sidebar } from '../common/Sidebar';
 import SVGIcon from '../common/SVGIcon';
@@ -45,14 +45,14 @@ const GuideIndex = () => {
         cat.subcategories.forEach((subcat: SubcategoryGuide) => {
           subcategories.push({
             title: subcat.subcategory,
-            id: slugify(`${cat.category} ${subcat.subcategory}`),
+            id: getNormalizedName({ cat: cat.category, subcat: subcat.subcategory, grouped: true }),
           });
         });
       }
 
       content.push({
         title: cat.category,
-        id: slugify(cat.category),
+        id: getNormalizedName({ cat: cat.category }),
         options: subcategories,
       });
     });
@@ -200,7 +200,7 @@ const GuideIndex = () => {
               <div class={`position-relative ${styles.guide}`}>
                 <For each={guide()!.categories}>
                   {(cat, index) => {
-                    const id = slugify(cat.category);
+                    const id = getNormalizedName({ cat: cat.category });
                     const hasSubcategories = !isUndefined(cat.subcategories) && cat.subcategories.length > 0;
 
                     return (
@@ -220,7 +220,11 @@ const GuideIndex = () => {
                         <Show when={hasSubcategories}>
                           <For each={cat.subcategories}>
                             {(subcat, index) => {
-                              const id = slugify(`${cat.category} ${subcat.subcategory}`);
+                              const id = getNormalizedName({
+                                cat: cat.category,
+                                subcat: subcat.subcategory,
+                                grouped: true,
+                              });
 
                               return (
                                 <div

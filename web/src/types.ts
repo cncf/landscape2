@@ -32,6 +32,7 @@ export interface BaseData {
 
 export interface Group {
   name: string;
+  normalized_name: string;
   categories: string[];
 }
 

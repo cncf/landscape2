@@ -1,4 +1,4 @@
-import { isUndefined } from 'lodash';
+import isUndefined from 'lodash/isUndefined';
 
 import { ActiveSection, CrunchbaseData, FilterOption, GithubData, Item, LandscapeData, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';

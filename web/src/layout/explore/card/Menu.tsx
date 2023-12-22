@@ -4,7 +4,7 @@ import { Accessor, createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu, SVGIconKind } from '../../../types';
-import convertStringSpaces from '../../../utils/convertStringSpaces';
+import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
 import SVGIcon from '../../common/SVGIcon';
 import styles from './Menu.module.css';
@@ -67,7 +67,7 @@ const Menu = (props: Props) => {
                   >
                     <For each={props.menu()[cat]}>
                       {(subcat: string) => {
-                        const hash = `${convertStringSpaces(cat)}/${convertStringSpaces(subcat)}`;
+                        const hash = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
 
                         return (
                           <button

@@ -6,6 +6,7 @@ import { createEffect, createSignal, For, on, Show } from 'solid-js';
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
+import getNormalizedName from '../../../utils/getNormalizedName';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -15,7 +16,6 @@ import getGridCategoryLayout, {
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import ItemIterator from '../../../utils/itemsIterator';
 import { CategoryData } from '../../../utils/prepareData';
-import slugify from '../../../utils/slugify';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
 import { useGridWidth } from '../../stores/gridWidth';
@@ -147,7 +147,11 @@ const Grid = (props: Props) => {
                         <Show when={isSectionInGuide(props.categoryName, subcat.subcategoryName)}>
                           <div>
                             <A
-                              href={`/guide#${slugify(`${props.categoryName} ${subcat.subcategoryName}`)}`}
+                              href={`/guide#${getNormalizedName({
+                                cat: props.categoryName,
+                                subcat: subcat.subcategoryName,
+                                grouped: true,
+                              })}`}
                               state={{ from: 'explore' }}
                               class={`btn btn-link text-white ps-2 pe-1 ${styles.btnIcon}`}
                             >

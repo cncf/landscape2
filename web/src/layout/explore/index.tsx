@@ -112,7 +112,6 @@ const Explore = (props: Props) => {
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams);
-    updatedSearchParams.delete(param);
     updatedSearchParams.set(param, value);
 
     navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
@@ -124,8 +123,8 @@ const Explore = (props: Props) => {
 
   const updateHash = (hash?: string) => {
     const updatedSearchParams = new URLSearchParams();
-    updatedSearchParams.set(VIEW_MODE_PARAM, ViewMode.Card);
     updatedSearchParams.set(GROUP_PARAM, selectedGroup() || 'default');
+    updatedSearchParams.set(VIEW_MODE_PARAM, ViewMode.Card);
 
     navigate(`${location.pathname}?${updatedSearchParams.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
       replace: true,
@@ -302,12 +301,12 @@ const Explore = (props: Props) => {
                           class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold ${styles.navLink}`}
                           classList={{
                             [`active text-white ${styles.active}`]:
-                              !isUndefined(selectedGroup()) && group.name === selectedGroup(),
+                              !isUndefined(selectedGroup()) && group.normalized_name === selectedGroup(),
                           }}
                           onClick={() => {
-                            checkIfVisibleLoading(viewMode(), group.name);
-                            updateQueryString(GROUP_PARAM, group.name);
-                            setSelectedGroup(group.name);
+                            checkIfVisibleLoading(viewMode(), group.normalized_name);
+                            updateQueryString(GROUP_PARAM, group.normalized_name);
+                            setSelectedGroup(group.normalized_name);
                           }}
                         >
                           {group.name}
@@ -392,7 +391,7 @@ const Explore = (props: Props) => {
               </div>
               <select
                 class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                value={selectedGroup() || props.initialData.groups![0].name}
+                value={selectedGroup() || props.initialData.groups![0].normalized_name}
                 aria-label="Group"
                 onChange={(e) => {
                   const group = e.currentTarget.value;
@@ -402,7 +401,7 @@ const Explore = (props: Props) => {
               >
                 <For each={props.initialData.groups}>
                   {(group: Group) => {
-                    return <option value={group.name}>{group.name}</option>;
+                    return <option value={group.normalized_name}>{group.name}</option>;
                   }}
                 </For>
               </select>
@@ -477,9 +476,9 @@ const Explore = (props: Props) => {
                       {(group: Group) => {
                         return (
                           <Content
-                            group={group.name}
+                            group={group.normalized_name}
                             initialSelectedGroup={selectedGroup()}
-                            data={{ ...groupsData() }[group.name]}
+                            data={{ ...groupsData() }[group.normalized_name]}
                             categories_overridden={props.initialData.categories_overridden}
                             updateHash={updateHash}
                             finishLoading={finishLoading}

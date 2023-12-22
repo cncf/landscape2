@@ -5,10 +5,9 @@ import { Accessor, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { BaseItem, CardMenu, Item, SVGIconKind } from '../../../types';
-import convertStringSpaces from '../../../utils/convertStringSpaces';
+import getNormalizedName from '../../../utils/getNormalizedName';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoriesData } from '../../../utils/prepareData';
-import slugify from '../../../utils/slugify';
 import SVGIcon from '../../common/SVGIcon';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import Card from './Card';
@@ -38,7 +37,7 @@ const Content = (props: Props) => {
 
                 if (sortedItems().length === 0) return null;
 
-                const id = convertStringSpaces(`${cat}/${subcat}`);
+                const id = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
 
                 return (
                   <div id={`card_${id}`}>
@@ -50,7 +49,7 @@ const Content = (props: Props) => {
                         <Show when={isSectionInGuide(cat)}>
                           <div>
                             <A
-                              href={`/guide#${slugify(cat)}`}
+                              href={`/guide#${getNormalizedName({ cat: cat })}`}
                               state={{ from: 'explore' }}
                               class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
                             >
@@ -64,7 +63,7 @@ const Content = (props: Props) => {
                         <Show when={isSectionInGuide(cat, subcat)}>
                           <div>
                             <A
-                              href={`/guide#${slugify(`${cat} ${subcat}`)}`}
+                              href={`/guide#${getNormalizedName({ cat: cat, subcat: subcat, grouped: true })}`}
                               state={{ from: 'explore' }}
                               class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
                             >

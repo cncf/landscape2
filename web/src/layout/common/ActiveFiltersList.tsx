@@ -1,6 +1,6 @@
-import { startCase } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import startCase from 'lodash/startCase';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
 import { REGEX_UNDERSCORE } from '../../data';

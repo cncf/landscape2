@@ -5,7 +5,7 @@ import { createEffect, createSignal, For, Match, onMount, Show, Switch } from 's
 
 import { COLORS } from '../../../data';
 import { CardMenu, Item, ViewMode } from '../../../types';
-import convertStringSpaces from '../../../utils/convertStringSpaces';
+import getNormalizedName from '../../../utils/getNormalizedName';
 import { CategoriesData } from '../../../utils/prepareData';
 import prepareMenu from '../../../utils/prepareMenu';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
@@ -77,7 +77,7 @@ const ExploreMobileIndex = (props: Props) => {
                     const items = () => (data()[cat] && data()[cat][subcat] ? data()[cat][subcat]!.items : []);
                     if (items().length === 0) return null;
 
-                    const id = convertStringSpaces(`${cat}/${subcat}`);
+                    const id = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
 
                     return (
                       <div id={`card_${id}`} class="mb-3">

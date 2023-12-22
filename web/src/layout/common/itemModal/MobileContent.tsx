@@ -1,6 +1,6 @@
-import { isNull } from 'lodash';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
+import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import moment from 'moment';
