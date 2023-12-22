@@ -16,7 +16,10 @@ interface Props {
 
 const Screenshots = (props: Props) => {
   const [groupsData, setGroupsData] = createSignal<GroupData>();
-  const groups = () => props.initialData.groups || [{ name: 'default', categories: props.initialData.categories }];
+  const groups = () =>
+    props.initialData.groups || [
+      { name: 'default', normalized_name: 'default', categories: props.initialData.categories },
+    ];
 
   onMount(() => {
     // This class enables scroll in body to capture the full screenshot
@@ -35,7 +38,7 @@ const Screenshots = (props: Props) => {
           <For each={groups()}>
             {(group) => {
               const colorsList = () => generateColorsArray(group.categories.length);
-              const groupData = groupsData()![group.name];
+              const groupData = groupsData()![group.normalized_name];
               const categories = getCategoriesWithItems(groupData);
 
               return (
