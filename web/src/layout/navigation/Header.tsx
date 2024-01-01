@@ -40,6 +40,7 @@ const Header = (props: Props) => {
               setViewMode(ViewMode.Grid);
               setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
               navigate('/');
+              scrollToTop(false);
             }}
           >
             <img

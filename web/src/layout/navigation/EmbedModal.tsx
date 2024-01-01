@@ -360,7 +360,7 @@ const EmbedModal = () => {
                 language="html"
                 content={
                   !isUndefined(url())
-                    ? `<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;" />`
+                    ? `<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;"></iframe>`
                     : ''
                 }
                 codeClass={`bg-dark text-white ${styles.code}`}
