@@ -24,6 +24,7 @@
     "eslint-plugin-solid": "^0.13.0",
     "typescript": "^5.3.2",
     "vite": "^5.0.2",
-    "vite-plugin-solid": "^2.7.2"
+    "vite-plugin-solid": "^2.7.2",
+    "vite-plugin-static-copy": "^1.0.0"
   }
 }

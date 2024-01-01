@@ -1,5 +1,7 @@
-import { defineConfig } from 'vite'
-import solid from 'vite-plugin-solid'
+import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
 
 export default defineConfig({
   base: '/embed',
@@ -10,5 +12,14 @@ export default defineConfig({
       },
     },
   },
-  plugins: [solid()],
+  plugins: [solid(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: './src/assets/js/iframeResizer.contentWindow-v4.3.9.min.js',
+          dest: 'assets'
+        }
+      ]
+    })
+  ]
 });
