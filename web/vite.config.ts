@@ -39,7 +39,7 @@ export default defineConfig({
         return [
           {
             tag: 'link',
-            attrs: { rel: 'preload', href: assetHref, as: 'style' },
+            attrs: { rel: 'preload', href: assetHref, as: 'style', crossorigin: true },
             injectTo: 'head-prepend',
           },
         ]
