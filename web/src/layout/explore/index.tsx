@@ -111,7 +111,7 @@ const Explore = (props: Props) => {
   };
 
   const updateQueryString = (param: string, value: string) => {
-    const updatedSearchParams = new URLSearchParams(searchParams);
+    const updatedSearchParams = new URLSearchParams(searchParams as unknown as URLSearchParams);
     updatedSearchParams.set(param, value);
 
     navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {

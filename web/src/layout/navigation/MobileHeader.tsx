@@ -5,7 +5,7 @@ import { createEffect, createSignal, on, Show } from 'solid-js';
 
 import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { BaseItem, SVGIconKind } from '../../types';
+import { SVGIconKind } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
@@ -15,16 +15,12 @@ import { useSetMobileTOCStatus } from '../stores/mobileTOC';
 import MobileDropdown from './MobileDropdown';
 import styles from './MobileHeader.module.css';
 
-interface Props {
-  logo: string;
-  items: BaseItem[];
-}
-
 const NAV_HEIGHT = 121;
 
-const MobileHeader = (props: Props) => {
+const MobileHeader = () => {
   const location = useLocation();
   const openMenu = useSetMobileTOCStatus();
+  const logo = () => window.baseDS.images.header_logo;
   const { point } = useBreakpointDetect();
   const [sticky, setSticky] = createSignal<boolean>(false);
   const scroll = useWindowScrollPosition();
@@ -58,7 +54,7 @@ const MobileHeader = (props: Props) => {
         <div>
           <button class="btn btn-link" onClick={() => scrollToTop(true)}>
             <img
-              src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+              src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
               class={styles.stickyLogo}
               alt="Landscape logo"
               width="auto"
@@ -76,7 +72,7 @@ const MobileHeader = (props: Props) => {
             <A href="/" class="me-4 me-xl-5">
               <img
                 class={styles.logo}
-                src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+                src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
                 alt="Landscape logo"
                 width="auto"
                 height={48}
@@ -105,7 +101,7 @@ const MobileHeader = (props: Props) => {
           >
             <div class={`d-flex flex-row align-items-center mt-3 mt-md-4 ${styles.searchWrapper}`}>
               <div class="position-relative w-100">
-                <Searchbar items={props.items} />
+                <Searchbar />
               </div>
               <div class="d-none d-lg-flex align-items-center">
                 <DownloadDropdown />

@@ -1,4 +1,4 @@
-import { Route, Router, Routes } from '@solidjs/router';
+import { Route, Router } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
 import { createSignal, onMount } from 'solid-js';
@@ -62,18 +62,14 @@ const App = () => {
   });
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout data={data()} />}>
-          <Route path={['/', '/embed-setup']} element={<Explore initialData={data()} />} />
-          <Route path="/guide" element={<Guide />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/finances" element={<Finances />} />
-          <Route path="/screenshot" element={<Screenshots initialData={data()} />} />
-          <Route path="/logos-preview" element={<Logos />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+    <Router root={Layout}>
+      <Route path={['/', '/embed-setup']} component={() => <Explore initialData={data()} />} />
+      <Route path="/guide" component={Guide} />
+      <Route path="/stats" component={Stats} />
+      <Route path="/finances" component={Finances} />
+      <Route path="/screenshot" component={() => <Screenshots initialData={data()} />} />
+      <Route path="/logos-preview" component={Logos} />
+      <Route path="*" component={NotFound} />
     </Router>
   );
 };

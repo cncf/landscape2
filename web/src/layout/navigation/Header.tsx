@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
-import { BaseItem, SVGIconKind, ViewMode } from '../../types';
+import { SVGIconKind, ViewMode } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
@@ -14,14 +14,10 @@ import { useSetViewMode } from '../stores/viewMode';
 import EmbedModal from './EmbedModal';
 import styles from './Header.module.css';
 
-interface Props {
-  logo: string;
-  items: BaseItem[];
-}
-
-const Header = (props: Props) => {
+const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const logo = () => window.baseDS.images.header_logo;
   const setViewMode = useSetViewMode();
   const setSelectedGroup = useSetGroupActive();
 
@@ -45,7 +41,7 @@ const Header = (props: Props) => {
           >
             <img
               class={`${styles.logo}`}
-              src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+              src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
               alt="Landscape logo"
               width="auto"
               height={48}
@@ -123,7 +119,7 @@ const Header = (props: Props) => {
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
             <div class="position-relative me-4 w-100">
-              <Searchbar items={props.items} searchBarClass={`${styles.searchBar}`} />
+              <Searchbar searchBarClass={`${styles.searchBar}`} />
             </div>
 
             <div class={`d-flex align-items-center ${styles.icons}`}>

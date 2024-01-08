@@ -35,7 +35,7 @@ const getInitialGroupName = (groupParam: string | null): string | undefined => {
 
 function useGroupActiveProvider() {
   const [searchParams] = useSearchParams();
-  const [group, setGroup] = createSignal<string | undefined>(getInitialGroupName(searchParams[GROUP_PARAM]));
+  const [group, setGroup] = createSignal<string | undefined>(getInitialGroupName(searchParams[GROUP_PARAM] || null));
   return { group: group, setGroup: setGroup };
 }
 
