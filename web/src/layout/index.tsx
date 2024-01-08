@@ -1,6 +1,5 @@
-import { Outlet } from '@solidjs/router';
+import { JSXElement } from 'solid-js';
 
-import { BaseData } from '../types';
 import ItemModal from './common/itemModal';
 import ZoomModal from './common/zoomModal';
 import styles from './Layout.module.css';
@@ -18,7 +17,7 @@ import { VisibleZoomSectionProvider } from './stores/visibleZoomSection';
 import { ZoomProvider } from './stores/zoom';
 
 interface Props {
-  data: BaseData;
+  children?: JSXElement;
 }
 
 const Layout = (props: Props) => {
@@ -34,11 +33,9 @@ const Layout = (props: Props) => {
                     <GuideFileProvider>
                       <FinancesDataProvider>
                         <div class={`d-flex flex-column ${styles.container}`}>
-                          <MobileHeader logo={props.data.images.header_logo} items={props.data.items} />
-                          <Header logo={props.data.images.header_logo} items={props.data.items} />
-                          <div class="d-flex flex-column flex-grow-1">
-                            <Outlet />
-                          </div>
+                          <MobileHeader />
+                          <Header />
+                          <div class="d-flex flex-column flex-grow-1">{props.children}</div>
                         </div>
                         <ItemModal />
                         <ZoomModal />

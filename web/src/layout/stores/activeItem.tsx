@@ -12,7 +12,7 @@ function useActiveItemProvider() {
   const [activeItemId, setActiveItemId] = createSignal<string | undefined>(searchParams[ITEM_PARAM]);
 
   const updateActiveItem = (itemId?: string) => {
-    const updatedSearchParams = new URLSearchParams(searchParams);
+    const updatedSearchParams = new URLSearchParams(searchParams as unknown as URLSearchParams);
 
     if (isUndefined(itemId)) {
       updatedSearchParams.delete(ITEM_PARAM);

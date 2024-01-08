@@ -13,7 +13,6 @@ import styles from './Searchbar.module.css';
 import SVGIcon from './SVGIcon';
 
 interface Props {
-  items: BaseItem[];
   searchBarClass?: string;
 }
 
@@ -21,6 +20,7 @@ const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
+  const items = () => window.baseDS.items;
   const updateActiveItemId = useUpdateActiveItemId();
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
   const [dropdownRef, setDropdownRef] = createSignal<HTMLInputElement>();
@@ -86,7 +86,7 @@ const Searchbar = (props: Props) => {
   };
 
   const onSearch = (text: string) => {
-    const filteredItems = props.items.filter((item: BaseItem) => {
+    const filteredItems = items().filter((item: BaseItem) => {
       const re = new RegExp(text, 'i');
       if (re.test(item.name)) {
         return item;
