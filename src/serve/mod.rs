@@ -3,14 +3,14 @@
 use crate::ServeArgs;
 use anyhow::Result;
 use axum::{
-    http::{HeaderValue, Request},
+    extract::Request,
+    http::{header::CACHE_CONTROL, HeaderValue},
     middleware::{self, Next},
     response::IntoResponse,
-    Router, Server,
+    Router,
 };
-use reqwest::header::CACHE_CONTROL;
 use std::{env, net::SocketAddr};
-use tokio::signal;
+use tokio::{net::TcpListener, signal};
 use tower_http::services::{ServeDir, ServeFile};
 use tracing::{info, instrument};
 
@@ -30,24 +30,22 @@ pub(crate) async fn serve(args: &ServeArgs) -> Result<()> {
 
     // Setup and launch HTTP server
     let addr: SocketAddr = args.addr.parse()?;
+    let listener = TcpListener::bind(addr).await?;
     if !args.silent {
         info!("http server running (press ctrl+c to stop)");
         println!("\n🔗 Landscape available at: http://{addr}\n");
     }
     if args.graceful_shutdown {
-        Server::bind(&addr)
-            .serve(router.into_make_service())
-            .with_graceful_shutdown(shutdown_signal())
-            .await?;
+        axum::serve(listener, router).with_graceful_shutdown(shutdown_signal()).await?;
     } else {
-        Server::bind(&addr).serve(router.into_make_service()).await?;
+        axum::serve(listener, router).await?;
     };
 
     Ok(())
 }
 
 /// Middleware that sets the cache control header in the response.
-pub(crate) async fn set_cache_control_header<B>(req: Request<B>, next: Next<B>) -> impl IntoResponse {
+pub(crate) async fn set_cache_control_header(req: Request, next: Next) -> impl IntoResponse {
     // Prepare header value (based on the request uri)
     let cache_control = match req.uri().to_string() {
         u if u.starts_with("/assets/") => "max-age=31536000",
