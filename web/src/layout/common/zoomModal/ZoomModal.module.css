@@ -4,8 +4,8 @@
 
 .wrapper {
   background-color: var(--bs-white);
-  /* Tooltip height + Subcategory title height + Featured card height */
-  min-height: calc(262px + 35px + 68px * 2);
+  max-height: 90%;
+  width: 90%;
 }
 
 .catTitle {
@@ -24,6 +24,7 @@
 .content {
   background-color: var(--bs-gray-100);
   padding: 0.6rem;
+  max-height: calc(100% - 35px);
 }
 
 .grid {

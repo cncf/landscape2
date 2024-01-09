@@ -2,6 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../../types';
+import getItemDescription from '../../../utils/getItemDescription';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Image from '../../common/Image';
 import Loading from '../../common/Loading';
@@ -16,10 +17,13 @@ interface Props {
   showMoreInfo: boolean;
   activeDropdown: boolean;
   enableLazyLoad?: boolean;
+  container?: HTMLDivElement;
 }
 
 const DEFAULT_DROPDOWN_WIDTH = 450;
-const DEFAULT_MARGIN = 30;
+const DEFAULT_HEADER = 72;
+const DEFAULT_DROPDOWN_HEIGHT = 213 + 10; // Height + arrow with gap
+const DEFAULT_MARGIN = 35;
 
 const GridItem = (props: Props) => {
   let ref;
@@ -30,9 +34,13 @@ const GridItem = (props: Props) => {
   const [onLinkHover, setOnLinkHover] = createSignal(false);
   const [onDropdownHover, setOnDropdownHover] = createSignal(false);
   const [tooltipAlignment, setTooltipAlignment] = createSignal<'right' | 'left' | 'center'>('center');
+  const [tooltipVerticalAlignment, setTooltipVerticalAlignment] = createSignal<'top' | 'bottom'>('bottom');
   const [dropdownTimeout, setDropdownTimeout] = createSignal<number>();
   const [elWidth, setElWidth] = createSignal<number>(0);
   const [item, setItem] = createSignal<Item | undefined>();
+  const description = () => getItemDescription(props.item);
+  const containerWidth = () => (!isUndefined(props.container) ? props.container.clientWidth : window.innerWidth);
+  const containerHeight = () => (!isUndefined(props.container) ? props.container.clientHeight : window.innerHeight);
 
   createEffect(
     on(fullDataReady, () => {
@@ -44,19 +52,30 @@ const GridItem = (props: Props) => {
 
   const calculateTooltipPosition = () => {
     if (!isUndefined(wrapper())) {
-      const windowWidth = window.innerWidth;
       const bounding = wrapper()!.getBoundingClientRect();
       setElWidth(bounding.width);
-      const overflowTooltip = (DEFAULT_DROPDOWN_WIDTH - elWidth()) / 2;
+      const overflowTooltip = (DEFAULT_DROPDOWN_WIDTH - bounding.width) / 2;
+      const margin = !isUndefined(props.container) ? props.container?.getBoundingClientRect().x : DEFAULT_MARGIN;
+      const marginTop = !isUndefined(props.container)
+        ? props.container.getBoundingClientRect().y + DEFAULT_MARGIN
+        : DEFAULT_HEADER;
+      const dropdownHeight = description().length > 68 ? DEFAULT_DROPDOWN_HEIGHT + 17 : DEFAULT_DROPDOWN_HEIGHT;
+      // Horizontal positioning
       if (
-        DEFAULT_MARGIN + bounding.right + overflowTooltip < windowWidth &&
-        bounding.left - overflowTooltip - DEFAULT_MARGIN > 0
+        margin + bounding.right + overflowTooltip < containerWidth() &&
+        bounding.left - overflowTooltip - margin > 0
       ) {
         setTooltipAlignment('center');
-      } else if (windowWidth - bounding.right - DEFAULT_MARGIN < DEFAULT_DROPDOWN_WIDTH - bounding.width) {
-        setTooltipAlignment('right');
-      } else {
+      } else if (containerWidth() + margin - bounding.x > DEFAULT_DROPDOWN_WIDTH) {
         setTooltipAlignment('left');
+      } else {
+        setTooltipAlignment('right');
+      }
+      // Vertical positioning
+      if (containerHeight() - bounding.bottom > dropdownHeight) {
+        setTooltipVerticalAlignment('bottom');
+      } else if (bounding.top - marginTop > dropdownHeight) {
+        setTooltipVerticalAlignment('top');
       }
     }
   };
@@ -148,9 +167,10 @@ const GridItem = (props: Props) => {
               role="complementary"
               class={`dropdown-menu rounded-0 p-3 popover show ${styles.dropdown} ${
                 styles[`${tooltipAlignment()}Aligned`]
-              }`}
+              } ${styles[`${tooltipVerticalAlignment()}Aligned`]}`}
               style={{
                 'min-width': `${DEFAULT_DROPDOWN_WIDTH}px`,
+                'max-width': !isUndefined(props.container) && props.container.clientWidth < 750 ? '300px' : 'auto',
                 left: tooltipAlignment() === 'center' ? `${-(DEFAULT_DROPDOWN_WIDTH - elWidth()) / 2}px` : 'auto',
               }}
               onMouseEnter={() => {
