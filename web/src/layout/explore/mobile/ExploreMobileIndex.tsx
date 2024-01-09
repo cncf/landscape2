@@ -5,6 +5,7 @@ import { createEffect, createSignal, For, Match, onMount, Show, Switch } from 's
 
 import { COLORS } from '../../../data';
 import { CardMenu, Item, ViewMode } from '../../../types';
+import getGroupName from '../../../utils/getGroupName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import { CategoriesData } from '../../../utils/prepareData';
 import prepareMenu from '../../../utils/prepareMenu';
@@ -50,7 +51,7 @@ const ExploreMobileIndex = (props: Props) => {
     <div>
       <Sidebar
         label="Index"
-        header={selectedGroup() || 'Index'}
+        header={getGroupName(selectedGroup()) || 'Index'}
         visibleButton={false}
         open={props.openMenuStatus}
         onOpenStatusChange={props.closeMenuStatus}
