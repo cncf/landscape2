@@ -42,7 +42,7 @@ const SubcategoryGrid = (props: Props) => {
 
   return (
     <Show when={!isUndefined(props.items)}>
-      <div class={`d-grid d-sm-none justify-content-center ${styles.mobileItems}`}>
+      <div class={`d-grid d-sm-none justify-content-start ${styles.mobileItems}`}>
         <For each={props.items}>
           {(item: BaseItem | Item) => {
             return (
@@ -68,7 +68,7 @@ const SubcategoryGrid = (props: Props) => {
         </For>
       </div>
       <div class="d-none d-sm-block ">
-        <div ref={setContainer} class={`my-4 justify-content-center ${styles.grid}`}>
+        <div ref={setContainer} class={`my-4 justify-content-start ${styles.grid}`}>
           {(() => {
             const items = [];
             const itemsPerRow = calculateGridItemsPerRow(100, containerWidth(), 75, true);
