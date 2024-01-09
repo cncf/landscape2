@@ -1,5 +1,5 @@
 # Build CLI tool
-FROM rust:1-alpine3.18 as builder
+FROM rust:1-alpine3.19 as builder
 RUN apk --no-cache add musl-dev perl make libconfig-dev openssl-dev yarn
 WORKDIR /landscape2
 COPY embed embed
@@ -13,7 +13,7 @@ WORKDIR /landscape2/src
 RUN cargo build --release
 
 # Final stage
-FROM alpine:3.18.5
+FROM alpine:3.19.0
 RUN addgroup -S landscape2 && adduser -S landscape2 -G landscape2
 RUN apk --no-cache add bash chromium font-ubuntu
 USER landscape2
