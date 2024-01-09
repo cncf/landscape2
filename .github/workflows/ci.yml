@@ -7,46 +7,23 @@ on:
       - main
 
 jobs:
-  lint-cli-tool:
+  lint-and-test-cli-tool:
     runs-on:
       labels: ubuntu-latest-8-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.74.0
-          profile: minimal
+          toolchain: 1.75.0
           components: clippy, rustfmt
-          override: true
       - name: Run clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features -- --deny warnings
+        run: cargo clippy --all-targets --all-features -- --deny warnings
       - name: Run rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  test-cli-tool:
-    runs-on:
-      labels: ubuntu-latest-8-cores
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: 1.74.0
-          profile: minimal
-          override: true
+        run: cargo fmt --all -- --check
       - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+        run: cargo test
 
   lint-and-test-webapp:
     runs-on:
