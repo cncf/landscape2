@@ -157,6 +157,7 @@ impl LandscapeGuide {
 /// Guide category.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
+    #[allow(clippy::struct_field_names)]
     pub category: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -172,7 +173,9 @@ pub(crate) struct Category {
 /// Guide subcategory.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Subcategory {
+    #[allow(clippy::struct_field_names)]
     pub subcategory: String,
+
     pub content: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
