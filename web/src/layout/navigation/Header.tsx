@@ -126,7 +126,7 @@ const Header = () => {
               <EmbedModal />
               <DownloadDropdown />
               <ExternalLink
-                class={`btn btn-md text-dark ms-2 ms-xl-3 px-0 ${styles.btnLink}`}
+                class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
                 href="https://github.com/cncf/landscape2"
               >
                 <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />

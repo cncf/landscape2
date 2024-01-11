@@ -48,6 +48,7 @@ export type LoadedContent = {
 };
 
 const TITLE_GAP = 40;
+const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
 
 const Explore = (props: Props) => {
   const navigate = useNavigate();
@@ -67,6 +68,8 @@ const Explore = (props: Props) => {
   const updateContainerGridWidth = useSetGridWidth();
 
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
+  const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
+  const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
   const [landscapeData, setLandscapeData] = createSignal<Item[]>();
   const [visibleItems, setVisibleItems] = createSignal<(BaseItem | Item)[]>(props.initialData.items);
   const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
@@ -75,6 +78,7 @@ const Explore = (props: Props) => {
   const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
+  const [visibleSelectForGroups, setVisibleSelectForGroups] = createSignal<boolean>(false);
   const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
@@ -237,6 +241,27 @@ const Explore = (props: Props) => {
       if (width > 0) {
         updateContainerGridWidth(containerRef()!.offsetWidth - gap);
       }
+
+      // Avoid groups section with multiline
+      if (!SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
+        if (!isUndefined(controlsGroupWrapper())) {
+          if (controlsGroupWrapperWidth() === 0) {
+            const controlsGWidth = controlsGroupWrapper()!.clientWidth;
+            if (controlsGWidth + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+              setVisibleSelectForGroups(true);
+            } else {
+              setVisibleSelectForGroups(false);
+            }
+            setControlsGroupWrapperWidth(controlsGWidth);
+          } else {
+            if (controlsGroupWrapperWidth() + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+              setVisibleSelectForGroups(true);
+            } else {
+              setVisibleSelectForGroups(false);
+            }
+          }
+        }
+      }
     }
   };
 
@@ -290,35 +315,59 @@ const Explore = (props: Props) => {
             <div class="d-none d-lg-flex align-items-center">
               <Show when={!isUndefined(props.initialData.groups)}>
                 <div class={styles.btnGroupLegend}>
-                  <small class="text-muted me-2">GROUPS:</small>
+                  <small class="text-muted me-2">GROUP:</small>
                 </div>
-                <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
-                  <For each={props.initialData.groups}>
-                    {(group: Group) => {
-                      return (
-                        <button
-                          title={`Group: ${group.name}`}
-                          class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold ${styles.navLink}`}
-                          classList={{
-                            [`active text-white ${styles.active}`]:
-                              !isUndefined(selectedGroup()) && group.normalized_name === selectedGroup(),
-                          }}
-                          onClick={() => {
-                            checkIfVisibleLoading(viewMode(), group.normalized_name);
-                            updateQueryString(GROUP_PARAM, group.normalized_name);
-                            setSelectedGroup(group.normalized_name);
-                          }}
-                        >
-                          {group.name}
-                        </button>
-                      );
+                <div
+                  ref={setControlsGroupWrapper}
+                  classList={{ 'd-flex': !visibleSelectForGroups(), 'd-none': visibleSelectForGroups() }}
+                >
+                  <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                    <For each={props.initialData.groups}>
+                      {(group: Group) => {
+                        return (
+                          <button
+                            title={`Group: ${group.name}`}
+                            class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
+                            classList={{
+                              [`active text-white ${styles.active}`]:
+                                !isUndefined(selectedGroup()) && group.normalized_name === selectedGroup(),
+                            }}
+                            onClick={() => {
+                              checkIfVisibleLoading(viewMode(), group.normalized_name);
+                              updateQueryString(GROUP_PARAM, group.normalized_name);
+                              setSelectedGroup(group.normalized_name);
+                            }}
+                          >
+                            {group.name}
+                          </button>
+                        );
+                      }}
+                    </For>
+                  </div>
+                </div>
+                {/* Only visible when btn grouped for groups overflows wrapper */}
+                <div classList={{ 'd-none': !visibleSelectForGroups(), 'd-flex': visibleSelectForGroups() }}>
+                  <select
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect}`}
+                    value={selectedGroup() || props.initialData.groups![0].normalized_name}
+                    aria-label="Group"
+                    onChange={(e) => {
+                      const group = e.currentTarget.value;
+                      updateQueryString(GROUP_PARAM, group);
+                      setSelectedGroup(group);
                     }}
-                  </For>
+                  >
+                    <For each={props.initialData.groups}>
+                      {(group: Group) => {
+                        return <option value={group.normalized_name}>{group.name}</option>;
+                      }}
+                    </For>
+                  </select>
                 </div>
               </Show>
             </div>
             <div class={`d-none d-md-block ms-0 ms-md-auto ms-lg-0 ${styles.btnGroupLegend}`}>
-              <small class="text-muted me-2">VIEW MODE:</small>
+              <small class="text-muted text-nowrap me-2">VIEW MODE:</small>
             </div>
             <div
               class={`btn-group btn-group-sm me-0 me-lg-4 ms-auto ms-md-0 ${styles.btnGroup}`}
@@ -387,7 +436,7 @@ const Explore = (props: Props) => {
           <Show when={!isUndefined(props.initialData.groups)}>
             <div class="d-flex d-lg-none align-items-center mt-3 mt-md-4 mt-lg-0 mb-2 mb-md-3 mb-lg-0">
               <div class={`d-none d-md-block ${styles.btnGroupLegend}`}>
-                <small class="text-muted me-2">GROUPS:</small>
+                <small class="text-muted me-2">GROUP:</small>
               </div>
               <select
                 class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
