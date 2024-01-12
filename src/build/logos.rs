@@ -58,15 +58,17 @@ pub(crate) async fn prepare_logo(
 
     // Update viewbox to the smallest rectangle in which the object fits
     if let Ok(Some(bounding_box)) = get_svg_bounding_box(&svg_data) {
-        let new_viewbox_bounds = format!(
-            "{} {} {} {}",
-            bounding_box.left(),
-            bounding_box.top(),
-            bounding_box.right() - bounding_box.left(),
-            bounding_box.bottom() - bounding_box.top()
-        );
-        let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
-        svg_data = SVG_VIEWBOX.replace(&svg_data, new_viewbox.as_bytes()).into_owned();
+        if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
+            let new_viewbox_bounds = format!(
+                "{} {} {} {}",
+                bounding_box.left(),
+                bounding_box.top(),
+                bounding_box.right() - bounding_box.left(),
+                bounding_box.bottom() - bounding_box.top()
+            );
+            let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
+            svg_data = SVG_VIEWBOX.replace(&svg_data, new_viewbox.as_bytes()).into_owned();
+        }
     }
 
     // Write SVG data to cache
