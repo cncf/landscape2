@@ -191,7 +191,7 @@ const Filters = (props: Props) => {
           <Show
             when={!isUndefined(filtersFromData())}
             fallback={
-              <div class="py-5">
+              <div class="p-5 mt-3">
                 <Loading />
               </div>
             }
