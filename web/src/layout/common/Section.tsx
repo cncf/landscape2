@@ -57,7 +57,7 @@ const Section = (props: Props) => {
     return true;
   };
 
-  const renderChecksList = (
+  const renderChecksList = () => (
     <For each={props.section!.options}>
       {(opt: FilterOption) => {
         let subOpts: string[];
@@ -111,7 +111,7 @@ const Section = (props: Props) => {
 
   return (
     <Show when={visibleSection()}>
-      <Show when={isUndefined(props.onlyChecks) || !props.onlyChecks} fallback={renderChecksList}>
+      <Show when={isUndefined(props.onlyChecks) || !props.onlyChecks} fallback={renderChecksList()}>
         <div class={props.colClass || 'col-12 col-sm-6 col-lg-4'}>
           <div class="d-flex flex-column h-100">
             <div class="d-flex flex-row align-items-center pb-2">
@@ -126,7 +126,7 @@ const Section = (props: Props) => {
               </Show>
             </div>
             <div class={`postion-relative w-100 border p-0 p-sm-3 flex-grow-1 ${props.sectionClass}`}>
-              <div classList={{ 'd-flex flex-row': props.inLine }}>{renderChecksList}</div>
+              <div classList={{ 'd-flex flex-row': props.inLine }}>{renderChecksList()}</div>
             </div>
           </div>
         </div>
