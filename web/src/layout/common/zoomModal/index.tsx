@@ -1,7 +1,7 @@
 import { createElementSize } from '@solid-primitives/resize-observer';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, createEffect, createSignal, For, Show, untrack } from 'solid-js';
+import { Accessor, createEffect, createSignal, For, on, Show, untrack } from 'solid-js';
 
 import { ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
@@ -24,9 +24,12 @@ const ZoomModal = () => {
   const fullDataReady = useFullDataReady();
   const updateActiveSection = useSetVisibleZoom();
   const [container, setContainer] = createSignal<HTMLDivElement>();
+  const [itemsWrapper, setItemsWrapper] = createSignal<HTMLDivElement>();
   const [modal, setModal] = createSignal<HTMLDivElement>();
+  const [gridContainer, setGridContainer] = createSignal<HTMLDivElement>();
   const [items, setItems] = createSignal<Item[] | undefined | null>();
   const [containerWidth, setContainerWidth] = createSignal<string>('');
+  const [overflowGrid, setOverflowGrid] = createSignal<boolean>(false);
   const size = createElementSize(container);
 
   createEffect(() => {
@@ -66,6 +69,18 @@ const ZoomModal = () => {
     untrack(containerWidth);
   });
 
+  createEffect(
+    on(itemsWrapper, () => {
+      if (!isUndefined(itemsWrapper())) {
+        if (itemsWrapper()!.clientHeight < itemsWrapper()!.scrollHeight) {
+          setOverflowGrid(true);
+        } else {
+          setOverflowGrid(false);
+        }
+      }
+    })
+  );
+
   return (
     <Show when={!isUndefined(visibleZoomSection())}>
       <FullScreenModal
@@ -82,12 +97,8 @@ const ZoomModal = () => {
               </div>
             }
           >
-            <div class="d-flex flex-column p-5 h-100">
-              <div
-                ref={setModal}
-                class={`d-flex flex-row m-auto ${styles.wrapper}`}
-                style={{ width: containerWidth() !== '' ? containerWidth() : '100%', 'max-width': '100%' }}
-              >
+            <div class="d-flex flex-column align-items-center justify-content-center p-4 p-xl-5 h-100">
+              <div ref={setModal} class={`d-flex flex-row m-auto ${styles.wrapper}`}>
                 <div
                   class={`text-white border border-3 border-white fw-semibold p-2 py-5 ${styles.catTitle}`}
                   style={{ 'background-color': visibleZoomSection()!.bgColor }}
@@ -97,7 +108,7 @@ const ZoomModal = () => {
                   </div>
                 </div>
 
-                <div class="d-flex flex-column align-items-stretch w-100">
+                <div ref={setGridContainer} class="d-flex flex-column align-items-stretch w-100">
                   <div class={'col-12 d-flex flex-column border border-3 border-white border-start-0 border-bottom-0'}>
                     <div
                       class={`d-flex align-items-center text-white justify-content-center text-center px-2 w-100 fw-semibold ${styles.subcatTitle}`}
@@ -106,7 +117,12 @@ const ZoomModal = () => {
                       <div class="text-truncate">{visibleZoomSection()!.subcategory}</div>
                     </div>
                   </div>
-                  <div class={`h-100 overflow-auto ${styles.content}`}>
+                  {/* overflow-auto only necessary when items exceeds height */}
+                  <div
+                    ref={setItemsWrapper}
+                    class={`h-100 ${styles.content}`}
+                    classList={{ 'overflow-auto': overflowGrid() }}
+                  >
                     <div class={styles.grid}>
                       <For each={sortItemsByOrderValue(items()!)}>
                         {(item: BaseItem | Item) => {
@@ -115,6 +131,7 @@ const ZoomModal = () => {
                               item={item}
                               borderColor={visibleZoomSection()!.bgColor}
                               showMoreInfo={false}
+                              container={gridContainer()}
                               activeDropdown
                             />
                           );

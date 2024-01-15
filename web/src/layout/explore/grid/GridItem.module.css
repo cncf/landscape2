@@ -110,9 +110,9 @@
   min-width: 200px;
   font-size: 0.85rem;
   margin-top: calc(var(--card-size-height) + 0.5rem);
-  min-height: 10rem;
+  min-height: 210px;
   border-color: var(--bs-gray-600);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;
   z-index: 1020;
 }
 
@@ -132,6 +132,16 @@
   right: calc(var(--card-size-width) * -1);
 }
 
+.topAligned {
+  top: auto;
+  bottom: 10px;
+  box-shadow: 0 -0.15rem 1rem rgba(0, 0, 0, 0.25) !important;
+}
+
+.bottomAligned {
+  top: 0;
+}
+
 .card:global(.bigCard) .rightAligned {
   right: calc(var(--card-size-width) * 2 * -1);
 }
@@ -144,6 +154,14 @@
   border-bottom-color: var(--bs-gray-700);
   width: 0;
   height: 0;
+}
+
+.topAligned .arrow {
+  top: auto;
+  bottom: -0.5rem;
+  border-width: 0.5rem 0.5rem 0;
+  border-bottom-color: transparent;
+  border-top-color: var(--bs-gray-700);
 }
 
 .centerAligned .arrow {
