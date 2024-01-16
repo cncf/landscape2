@@ -81,10 +81,10 @@ const Menu = (props: Props) => {
                             onClick={() => {
                               // When menu sticky, we need to check #landscape
                               goToElement(!props.sticky, `card_${hash}`, 16);
-                              updateRoute(hash);
                               if (!isUndefined(props.onClickOption)) {
                                 props.onClickOption();
                               }
+                              updateRoute(hash);
                             }}
                           >
                             <Show when={`#${hash}` === location.hash}>

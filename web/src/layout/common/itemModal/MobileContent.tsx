@@ -116,7 +116,7 @@ const MobileContent = (props: Props) => {
                 </Show>
 
                 <Show when={!isUndefined(itemInfo()!.twitter_url)}>
-                  <ExternalLink title="Twitter" class={`me-2 ${styles.link}`} href={itemInfo()!.twitter_url!}>
+                  <ExternalLink title="X (Twitter)" class={`me-2 ${styles.link}`} href={itemInfo()!.twitter_url!}>
                     <SVGIcon kind={SVGIconKind.Twitter} />
                   </ExternalLink>
                 </Show>

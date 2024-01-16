@@ -76,6 +76,7 @@ const Header = () => {
                   navigate('/', {
                     state: { from: 'header' },
                   });
+                  scrollToTop(false);
                 }
               }}
             >
@@ -93,6 +94,7 @@ const Header = () => {
                     navigate('/guide', {
                       state: { from: 'header' },
                     });
+                    scrollToTop(false);
                   }
                 }}
               >
@@ -110,6 +112,7 @@ const Header = () => {
                   navigate('/stats', {
                     state: { from: 'header' },
                   });
+                  scrollToTop(false);
                 }
               }}
             >

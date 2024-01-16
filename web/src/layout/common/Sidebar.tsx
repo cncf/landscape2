@@ -26,7 +26,7 @@ export interface Props {
 const DEFAULT_DIRECTION = 'left';
 
 export const Sidebar = (props: Props) => {
-  const open = () => props.open;
+  const open = () => props.open || false;
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
   const direction = () => props.direction || DEFAULT_DIRECTION;
   const [ref, setRef] = createSignal<HTMLDivElement>();
@@ -42,9 +42,7 @@ export const Sidebar = (props: Props) => {
 
   createEffect(
     on(open, () => {
-      if (!isUndefined(open())) {
-        setOpenStatus(open()!);
-      }
+      setOpenStatus(open());
     })
   );
 

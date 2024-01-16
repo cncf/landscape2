@@ -20,3 +20,9 @@
   grid-auto-rows: var(--card-size-height);
   gap: var(--card-gap);
 }
+
+@media (hover: hover) {
+  .btnIcon:hover {
+    opacity: 0.8;
+  }
+}

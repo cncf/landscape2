@@ -148,6 +148,9 @@ const GuideIndex = () => {
 
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
     updateRoute(title);
+    if (onSmallDevice) {
+      onCloseMenu();
+    }
     if (title === firstItem()) {
       scrollToTop(onSmallDevice);
     } else {
@@ -186,7 +189,7 @@ const GuideIndex = () => {
           >
             <div class="position-relative">
               <Show when={!isUndefined(guide())} fallback={<Loading />}>
-                <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky={false} onClickOption={onCloseMenu} />
+                <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky={false} />
               </Show>
             </div>
           </Sidebar>

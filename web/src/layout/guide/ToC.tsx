@@ -10,14 +10,12 @@ interface Props {
   sticky: boolean;
   activeTitle?: string;
   updateActiveTitle: (activeTitle: string) => void;
-  onClickOption?: () => void;
 }
 
 interface OptionProps {
   option: ToCTitle;
   level: number;
   updateActiveTitle: (activeTitle: string) => void;
-  onClickOption?: () => void;
 }
 
 const ToCOption = (props: OptionProps) => {
@@ -36,9 +34,6 @@ const ToCOption = (props: OptionProps) => {
         }}
         onClick={() => {
           props.updateActiveTitle(props.option.id);
-          if (!isUndefined(props.onClickOption)) {
-            props.onClickOption();
-          }
         }}
       >
         {props.option.title}
@@ -47,14 +42,7 @@ const ToCOption = (props: OptionProps) => {
         <div class="mb-3">
           <For each={props.option.options}>
             {(el: ToCTitle) => {
-              return (
-                <ToCOption
-                  option={el}
-                  level={props.level + 1}
-                  updateActiveTitle={props.updateActiveTitle}
-                  onClickOption={props.onClickOption}
-                />
-              );
+              return <ToCOption option={el} level={props.level + 1} updateActiveTitle={props.updateActiveTitle} />;
             }}
           </For>
         </div>
@@ -76,14 +64,7 @@ const ToC = (props: Props) => {
         <div id="menu" class={`overflow-auto py-3 ${styles.content}`}>
           <For each={props.toc}>
             {(el: ToCTitle) => {
-              return (
-                <ToCOption
-                  option={el}
-                  level={0}
-                  updateActiveTitle={props.updateActiveTitle}
-                  onClickOption={props.onClickOption}
-                />
-              );
+              return <ToCOption option={el} level={0} updateActiveTitle={props.updateActiveTitle} />;
             }}
           </For>
         </div>

@@ -93,7 +93,8 @@ a,
 
   .noScroll-sidebar,
   .noScroll-modal,
-  .noScroll-loading {
+  .noScroll-loading,
+  .noScroll-dropdown {
     height: 100%;
     overflow: hidden;
     overflow-y: hidden !important;
@@ -117,7 +118,8 @@ a,
 
   .noScroll-sidebar #landscape,
   .noScroll-modal #landscape,
-  .noScroll-loading #landscape {
+  .noScroll-loading #landscape,
+  .noScroll-dropdown #landscape {
     height: 100%;
     overflow: hidden;
     overflow-y: hidden !important;
