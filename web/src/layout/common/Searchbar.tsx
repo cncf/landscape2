@@ -157,7 +157,7 @@ const Searchbar = (props: Props) => {
   const scrollToHighlightedItem = (index: number) => {
     const element = document.getElementById(`sl-opt${index}`);
     if (element && !isUndefined(dropdownRef())) {
-      element.scrollIntoView(false);
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     }
   };
 

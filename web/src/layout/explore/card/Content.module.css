@@ -46,4 +46,11 @@
 .btnIcon {
   line-height: 0.8rem;
   margin-top: -2px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .btnIcon:hover {
+    opacity: 0.8;
+  }
 }

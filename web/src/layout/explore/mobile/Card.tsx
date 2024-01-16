@@ -104,7 +104,7 @@ const Card = (props: Props) => {
             </Show>
 
             <Show when={!isUndefined(props.item.twitter_url)}>
-              <ExternalLink title="Twitter" class={`me-2 ${styles.link}`} href={props.item.twitter_url!}>
+              <ExternalLink title="X (Twitter)" class={`me-2 ${styles.link}`} href={props.item.twitter_url!}>
                 <SVGIcon kind={SVGIconKind.Twitter} />
               </ExternalLink>
             </Show>

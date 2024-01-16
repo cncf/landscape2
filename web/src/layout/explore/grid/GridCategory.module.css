@@ -12,17 +12,6 @@
   max-height: 130px;
 }
 
-.btnIcon {
-  font-size: 0.9rem;
-  line-height: 0.8rem;
-}
-
-.btnInCatTitle {
-  transform: rotate(180deg);
-  line-height: 1.25rem;
-  margin-right: -0.25rem;
-}
-
 .icon {
   margin-top: -2px;
   font-size: 0.9rem;
