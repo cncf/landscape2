@@ -37,7 +37,8 @@
     "typescript": "^5.3.3",
     "vite": "^5.0.10",
     "vite-plugin-ejs": "^1.7.0",
-    "vite-plugin-solid": "^2.8.0"
+    "vite-plugin-solid": "^2.8.0",
+    "vite-plugin-static-copy": "^1.0.0"
   },
   "description": "Landscape2 is a tool that generates interactive landscapes websites.",
   "license": "Apache-2.0"

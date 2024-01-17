@@ -8,7 +8,7 @@ use self::{
     github::collect_github_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{Images, QrCode},
+    settings::{Analytics, Images, QrCode},
 };
 use crate::{serve, BuildArgs, GuideSource, LogosSource, ServeArgs};
 use anyhow::{format_err, Context, Result};
@@ -155,7 +155,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     )?;
 
     // Render index file and write it to the output directory
-    render_index(&datasets, &args.output_dir)?;
+    render_index(&settings.analytics, &datasets, &args.output_dir)?;
 
     // Copy embed and web assets files to the output directory
     copy_embed_assets(&args.output_dir)?;
@@ -628,15 +628,16 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
 struct Index<'a> {
+    analytics: &'a Option<Analytics>,
     datasets: &'a Datasets,
 }
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(datasets: &Datasets, output_dir: &Path) -> Result<()> {
+fn render_index(analytics: &Option<Analytics>, datasets: &Datasets, output_dir: &Path) -> Result<()> {
     debug!("rendering index.html file");
 
-    let index = Index { datasets }.render()?;
+    let index = Index { analytics, datasets }.render()?;
     File::create(output_dir.join("index.html"))?.write_all(index.as_bytes())?;
 
     Ok(())
@@ -682,8 +683,16 @@ fn find_available_port() -> Option<u16> {
 }
 
 mod filters {
+    use super::settings::Analytics;
     use askama_escape::JsonEscapeBuffer;
     use serde::Serialize;
+
+    /// Filter to get the Google Tag Manager container ID from the analytics
+    /// instance provided.
+    #[allow(clippy::unnecessary_wraps)]
+    pub(crate) fn get_gtm_container_id(analytics: &Option<Analytics>) -> askama::Result<Option<String>> {
+        Ok(analytics.as_ref().and_then(|a| a.gtm.as_ref()).and_then(|gtm| gtm.container_id.clone()))
+    }
 
     /// Serialize to JSON.
     ///
