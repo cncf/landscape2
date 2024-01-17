@@ -9,7 +9,7 @@ use super::{
 use chrono::{Datelike, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// Format used to represent a date as year-month.
 pub const YEAR_MONTH_FORMAT: &str = "%Y-%m";
@@ -131,9 +131,18 @@ impl OrganizationsStats {
     /// in the landscape.
     fn new(landscape_data: &LandscapeData) -> Option<Self> {
         let mut stats = OrganizationsStats::default();
+        let mut crunchbase_data_processed = HashSet::new();
 
         // Collect stats from landscape items
         for item in &landscape_data.items {
+            // Check if this crunchbase data has already been processed
+            if let Some(url) = item.crunchbase_url.as_ref() {
+                if crunchbase_data_processed.contains(url) {
+                    continue;
+                }
+                crunchbase_data_processed.insert(url);
+            }
+
             // Acquisitions
             if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
                 for acq in acquisitions {
@@ -355,13 +364,21 @@ impl RepositoriesStats {
     /// in the landscape.
     fn new(landscape_data: &LandscapeData) -> Option<Self> {
         let mut stats = RepositoriesStats::default();
+        let mut repositories_processed = HashSet::new();
 
         // Collect stats from landscape items
         for item in &landscape_data.items {
             if let Some(repos) = &item.repositories {
-                stats.repositories += repos.len() as u64;
-
                 for repo in repos {
+                    // Check if this repository has already been processed
+                    if repositories_processed.contains(&repo.url) {
+                        continue;
+                    }
+                    repositories_processed.insert(&repo.url);
+
+                    // Number of repositories
+                    stats.repositories += 1;
+
                     if let Some(gh_data) = &repo.github_data {
                         // Contributors
                         stats.contributors += gh_data.contributors.count as u64;
