@@ -13,7 +13,7 @@ foundation: DEMO
 
 # Images (required)
 #
-# Urls some images used in the landscape UI.
+# Urls of some images used in the landscape UI.
 #
 # images:
 #   favicon: <FAVICON_URL>
@@ -24,6 +24,15 @@ foundation: DEMO
 images:
   footer_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
   header_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+
+# Analytics (optional)
+#
+# Analytics providers configuration. When an analytics provider is set up, some
+# additional code from the provider will be injected into the web application.
+#
+# analytics:
+#   gtm:                            # Google Tag Manager configuration
+#     container_id: <CONTAINER_ID>  # Landscape web application container ID
 
 # Categories (optional)
 #

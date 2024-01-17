@@ -24,6 +24,9 @@ pub(crate) struct LandscapeSettings {
     pub images: Images,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub analytics: Option<Analytics>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -329,6 +332,13 @@ impl LandscapeSettings {
     }
 }
 
+/// Landscape analytics providers.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Analytics {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gtm: Option<GoogleTagManager>,
+}
+
 /// Landscape category.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Category {
@@ -373,6 +383,13 @@ pub(crate) struct FeaturedItemRuleOption {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<usize>,
+}
+
+/// Google Tag Manager configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct GoogleTagManager {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub container_id: Option<String>,
 }
 
 /// Grid items size.

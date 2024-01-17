@@ -3,6 +3,7 @@ import isUndefined from 'lodash/isUndefined';
 import { defineConfig } from 'vite'
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid'
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
 
@@ -47,7 +48,15 @@ export default defineConfig({
         return html;
       }
     },
-  }],
+  },
+  viteStaticCopy({
+    targets: [
+      {
+        src: './src/assets/js/gtm.js',
+        dest: 'assets'
+      }
+    ]
+  })],
   preview: {
     port: 8000
   }
