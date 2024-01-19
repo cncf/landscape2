@@ -1,9 +1,3 @@
-.modalDialog {
-  min-height: calc(100% - 6rem) !important;
-  max-height: calc(100% - 6rem) !important;
-  margin: 3em auto !important;
-}
-
 .loadingWrapper {
   min-height: 500px;
 }
@@ -169,27 +163,21 @@
   padding: 1.5rem;
 }
 
-@media (min-width: 1200px) {
-  .highlightedTitle {
-    font-size: 2.5rem;
+@media (min-width: 992px) {
+  .visibleUpcomingEvent {
+    min-height: calc(100% - 6rem - 126px) !important;
+    max-height: calc(100% - 6rem - 126px) !important;
   }
 }
 
-@media (max-width: 1199.98px) {
-  .modalDialog {
-    width: 95%;
-    max-width: 95%;
+@media only screen and (min-width: 768px) and (max-width: 991.98px) {
+  .visibleUpcomingEvent {
+    min-height: calc(100% - 6rem - 101px) !important;
+    max-height: calc(100% - 6rem - 101px) !important;
   }
 }
 
 @media only screen and (max-width: 767.98px) {
-  .modalDialog {
-    width: 95%;
-    min-height: calc(100% - 1.5rem) !important;
-    max-height: calc(100% - 1.5rem) !important;
-    margin: 0.75em auto !important;
-  }
-
   .modalBody {
     padding: 0.75rem;
   }

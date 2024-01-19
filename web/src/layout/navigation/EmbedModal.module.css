@@ -8,12 +8,6 @@
   color: var(--color2);
 }
 
-.modalDialog {
-  min-height: calc(100% - 6rem) !important;
-  max-height: calc(100% - 6rem) !important;
-  margin: 3em auto !important;
-}
-
 .modalCloseBtn {
   top: 1.5rem;
   right: 1.5rem;
@@ -79,13 +73,4 @@
   height: 32px;
   padding: 0.4rem 1rem !important;
   font-size: 0.8rem;
-}
-
-@media only screen and (max-width: 767.98px) {
-  .modalDialog {
-    width: 95%;
-    min-height: calc(100% - 1.5rem) !important;
-    max-height: calc(100% - 1.5rem) !important;
-    margin: 0.75em auto !important;
-  }
 }

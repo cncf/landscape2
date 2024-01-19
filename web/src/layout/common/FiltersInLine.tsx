@@ -1,5 +1,6 @@
 import { Accessor, createSignal, For } from 'solid-js';
 
+import { BANNER_ID } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { ActiveFilters, FilterCategory, FilterSection } from '../../types';
 import styles from './FiltersInLine.module.css';
@@ -23,7 +24,7 @@ interface FiltersProps {
 const Filters = (props: FiltersProps) => {
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [ref, setRef] = createSignal<HTMLDivElement>();
-  useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
+  useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
 
   const updateActiveFilters = (value: FilterCategory, options: string[]) => {
     setVisibleDropdown(false);

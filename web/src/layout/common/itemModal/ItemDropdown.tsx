@@ -1,6 +1,7 @@
 // import BadgeModal from './BadgeModal';
 import { createSignal } from 'solid-js';
 
+import { BANNER_ID } from '../../../data';
 import { useOutsideClick } from '../../../hooks/useOutsideClick';
 import { SVGIconKind } from '../../../types';
 import SVGIcon from '../SVGIcon';
@@ -15,7 +16,7 @@ const ItemDropdown = (props: Props) => {
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
-  useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
+  useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
 
   const onCloseModal = () => {
     setOpenStatus(false);

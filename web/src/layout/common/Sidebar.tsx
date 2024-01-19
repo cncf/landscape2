@@ -30,7 +30,7 @@ export const Sidebar = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
   const direction = () => props.direction || DEFAULT_DIRECTION;
   const [ref, setRef] = createSignal<HTMLDivElement>();
-  useOutsideClick([ref], openStatus, () => openStatusChange(false));
+  useOutsideClick([ref], [], openStatus, () => openStatusChange(false));
   useBodyScroll(openStatus, 'sidebar');
 
   const openStatusChange = (open: boolean): void => {

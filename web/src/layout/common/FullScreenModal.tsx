@@ -2,6 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, JSXElement, onCleanup, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
+import { BANNER_ID } from '../../data';
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './FullScreenModal.module.css';
@@ -17,7 +18,7 @@ const FullScreenModal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
 
   useBodyScroll(openStatus, 'modal');
-  useOutsideClick(props.initialRefs || [], openStatus, () => {
+  useOutsideClick(props.initialRefs || [], [BANNER_ID], openStatus, () => {
     closeModal();
   });
 

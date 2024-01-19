@@ -61,7 +61,7 @@ mod base {
     use crate::build::{
         data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
         guide::LandscapeGuide,
-        settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks},
+        settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks, UpcomingEvent},
     };
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
@@ -99,6 +99,9 @@ mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub social_networks: Option<SocialNetworks>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub upcoming_event: Option<UpcomingEvent>,
     }
 
     impl Base {
@@ -118,6 +121,7 @@ mod base {
                 groups: settings.groups.clone().unwrap_or_default(),
                 qr_code: qr_code.clone(),
                 social_networks: settings.social_networks.clone(),
+                upcoming_event: settings.upcoming_event.clone(),
                 ..Default::default()
             };
 

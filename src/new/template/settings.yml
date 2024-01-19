@@ -224,3 +224,15 @@ social_networks:
 #   <TAG2>:
 #     - category: <CATEGORY2>
 #
+
+# Upcoming event (optional)
+#
+# This section allows configuring an upcoming event that will be featured on
+# the landscape web application. Expired events won't be displayed.
+#
+# upcoming_event:
+#   name: <NAME>         # Event name (required)
+#   start: <START_DATE>  # Start date: (required, format: YYYY-MM-DD)
+#   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
+#   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
+#   details_url: <URL>   # Event details URL (required)

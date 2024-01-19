@@ -31,20 +31,24 @@
       window.statsDS = {{ datasets.stats|json_compact|safe }};
     </script>
     <% } %>
-    {% set gtm_container_id = analytics|get_gtm_container_id %}
-    {% if gtm_container_id.is_some() %}
-    <!-- Google Tag Manager -->
-    <script defer data-container-id="{{ gtm_container_id.as_ref().unwrap() }}" src="assets/gtm.js"></script>
-    <!-- End Google Tag Manager -->
-    {% endif %}
+    <% if (!isDev) { %>
+      {% set gtm_container_id = analytics|get_gtm_container_id %}
+      {% if gtm_container_id.is_some() %}
+      <!-- Google Tag Manager -->
+      <script defer data-container-id="{{ gtm_container_id.as_ref().unwrap() }}" src="assets/gtm.js"></script>
+      <!-- End Google Tag Manager -->
+      {% endif %}
+    <% } %>
   </head>
   <body>
-    {% if gtm_container_id.is_some() %}
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id.unwrap() }}"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    {% endif %}
+    <% if (!isDev) { %>
+      {% if gtm_container_id.is_some() %}
+      <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id.unwrap() }}"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      <!-- End Google Tag Manager (noscript) -->
+      {% endif %}
+    <% } %>
     <div id="landscape"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>

@@ -1,6 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, JSXElement, Show } from 'solid-js';
 
+import { BANNER_ID } from '../../data';
 import { useBodyScroll } from '../../hooks/useBodyScroll';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { SVGIconKind } from '../../types';
@@ -26,7 +27,7 @@ const Modal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
   const [ref, setRef] = createSignal<HTMLDivElement>();
 
-  useOutsideClick([ref], openStatus, () => {
+  useOutsideClick([ref], [BANNER_ID], openStatus, () => {
     closeModal();
   });
 
@@ -47,11 +48,12 @@ const Modal = (props: Props) => {
 
       <div class={`modal d-block ${styles.modal} ${styles.active}`} role="dialog" aria-modal={true}>
         <div
-          class={`modal-dialog modal-${props.size || 'lg'} ${props.modalDialogClass}`}
+          ref={setRef}
+          class={`modal-dialog modal-${props.size || 'lg'} ${styles.modalDialog}`}
           classList={{
             'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,
+            [`${props.modalDialogClass}`]: !isUndefined(props.modalDialogClass),
           }}
-          ref={setRef}
         >
           <div class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
             <Show when={props.header}>

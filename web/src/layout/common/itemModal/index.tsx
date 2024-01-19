@@ -8,6 +8,7 @@ import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useActiveItemId, useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
+import { useEventVisibleContent } from '../../stores/upcomingEventData';
 import Loading from '../Loading';
 import Modal from '../Modal';
 import Content from './Content';
@@ -18,6 +19,7 @@ const ItemModal = () => {
   const fullDataReady = useFullDataReady();
   const visibleItemId = useActiveItemId();
   const updateActiveItemId = useUpdateActiveItemId();
+  const visibleEventContent = useEventVisibleContent();
   const [itemInfo, setItemInfo] = createSignal<Item | null | undefined>(undefined);
   const { point } = useBreakpointDetect();
 
@@ -43,7 +45,7 @@ const ItemModal = () => {
       <Modal
         size="xl"
         open
-        modalDialogClass={styles.modalDialog}
+        modalDialogClass={visibleEventContent() ? styles.visibleUpcomingEvent : ''}
         bodyClass={styles.modalBody}
         onClose={() => updateActiveItemId()}
       >
