@@ -194,7 +194,6 @@ const EmbedModal = () => {
         <Modal
           size="xxl"
           open
-          modalDialogClass={styles.modalDialog}
           bodyClass={styles.modalBody}
           onClose={onClose}
           header="Embeddable view setup"

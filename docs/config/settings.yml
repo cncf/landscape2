@@ -315,3 +315,21 @@ tags:
     - category: "Runtime"
       subcategories:
         - "Cloud Native Storage"
+
+# Upcoming event (optional)
+#
+# This section allows configuring an upcoming event that will be featured on
+# the landscape web application. Expired events won't be displayed.
+#
+# upcoming_event:
+#   name: <NAME>         # Event name (required)
+#   start: <START_DATE>  # Start date: (required, format: YYYY-MM-DD)
+#   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
+#   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
+#   details_url: <URL>   # Event details URL (required)
+upcoming_event:
+  name: "KubeCon + CloudNativeCon EU 2024"
+  start: "2024-03-19"
+  end: "2024-03-22"
+  banner_url: "https://www.cncf.io/wp-content/uploads/2024/01/kceu24_promo_2400x300.png"
+  details_url: "https://events.linuxfoundation.org/kubecon-cloudnativecon-europe/"

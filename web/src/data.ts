@@ -133,3 +133,5 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
     FilterCategory.Country,
   ],
 };
+
+export const BANNER_ID = 'banner-event';

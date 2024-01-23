@@ -16,7 +16,7 @@ interface Props {
 const MobileDropdown = (props: Props) => {
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [ref, setRef] = createSignal<HTMLDivElement>();
-  useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
+  useOutsideClick([ref], [], visibleDropdown, () => setVisibleDropdown(false));
 
   const closeDropdown = () => {
     setVisibleDropdown(false);

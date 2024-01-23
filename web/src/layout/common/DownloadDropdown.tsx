@@ -1,6 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
+import { BANNER_ID } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { SVGIconKind } from '../../types';
 import styles from './DownloadDropdown.module.css';
@@ -39,7 +40,7 @@ const DownloadDropdown = () => {
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [downloadingFile, setDownloadingFile] = createSignal<DocTypeDownloading | undefined>();
-  useOutsideClick([ref], visibleDropdown, () => setVisibleDropdown(false));
+  useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
 
   const downloadFile = (doc: DocType, format: Format) => {
     async function getFile() {

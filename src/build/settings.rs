@@ -10,6 +10,7 @@
 use super::data::{normalize_name, validate_url, CategoryName, SubCategoryName};
 use crate::SettingsSource;
 use anyhow::{format_err, Context, Result};
+use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::StatusCode;
@@ -55,6 +56,9 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<HashMap<TagName, Vec<TagRule>>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub upcoming_event: Option<UpcomingEvent>,
 }
 
 impl LandscapeSettings {
@@ -476,4 +480,14 @@ pub(crate) struct TagRule {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subcategories: Option<Vec<SubCategoryName>>,
+}
+
+/// Upcoming event details.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct UpcomingEvent {
+    pub name: String,
+    pub start: NaiveDate,
+    pub end: NaiveDate,
+    pub banner_url: String,
+    pub details_url: String,
 }

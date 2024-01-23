@@ -2,6 +2,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
 
+import { BANNER_ID } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { BaseItem, SVGIconKind } from '../../types';
 import { useUpdateActiveItemId } from '../stores/activeItem';
@@ -30,7 +31,7 @@ const Searchbar = (props: Props) => {
   const [highlightedItem, setHighlightedItem] = createSignal<number | null>(null);
   const [dropdownTimeout, setDropdownTimeout] = createSignal<number | null>(null);
 
-  useOutsideClick([dropdownRef], visibleDropdown, () => {
+  useOutsideClick([dropdownRef], [BANNER_ID], visibleDropdown, () => {
     setValue('');
     cleanItemsSearch();
   });

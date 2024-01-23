@@ -16,7 +16,7 @@ import FullScreenModal from '../FullScreenModal';
 import Loading from '../Loading';
 import styles from './ZoomModal.module.css';
 
-const GAP = 96 + 40; // Padding | Title
+const GAP = 40; // Title
 const CARD_WIDTH = ZOOM_LEVELS[10][0];
 
 const ZoomModal = () => {
@@ -98,7 +98,11 @@ const ZoomModal = () => {
             }
           >
             <div class="d-flex flex-column align-items-center justify-content-center p-4 p-xl-5 h-100">
-              <div ref={setModal} class={`d-flex flex-row m-auto ${styles.wrapper}`}>
+              <div
+                ref={setModal}
+                class={`d-flex flex-row m-auto ${styles.wrapper}`}
+                style={{ width: containerWidth() }}
+              >
                 <div
                   class={`text-white border border-3 border-white fw-semibold p-2 py-5 ${styles.catTitle}`}
                   style={{ 'background-color': visibleZoomSection()!.bgColor }}

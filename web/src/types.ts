@@ -16,6 +16,7 @@ export interface BaseData {
   items: BaseItem[];
   members_category?: string;
   qr_code?: string;
+  upcoming_event?: Event;
   social_networks?: {
     facebook?: string;
     flickr?: string;
@@ -360,6 +361,14 @@ export interface CategoryValueStats {
   subcategories: {
     [key: string]: number;
   };
+}
+
+export interface Event {
+  name: string;
+  start: string;
+  end: string;
+  details_url: string;
+  banner_url: string;
 }
 
 export enum ViewMode {
