@@ -8,9 +8,15 @@ export interface ItemsDataStatus {
 }
 
 export interface LogosOptionsGroup {
-  id: number;
+  id: LogosPreviewOptions;
   name: string;
   options: FilterOption[];
+}
+
+export enum LogosPreviewOptions {
+  Maturity = 'maturity',
+  Categories = 'categories',
+  Other = 'other',
 }
 
 interface CategoryOpt {
@@ -118,6 +124,12 @@ export class ItemsDataGetter {
     }
   }
 
+  public filterItemsByEndUser(): Item[] | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      return this.landscapeData.items.filter((i: Item) => i.enduser && window.baseDS.members_category === i.category);
+    }
+  }
+
   public prepareLogosOptions(): LogosOptionsGroup[] {
     const options: LogosOptionsGroup[] = [];
     if (this.ready && this.landscapeData && this.landscapeData.items) {
@@ -135,7 +147,7 @@ export class ItemsDataGetter {
 
       if (maturityTypes.length > 0) {
         options.push({
-          id: 0,
+          id: LogosPreviewOptions.Maturity,
           name: 'maturity',
           options: [...new Set(maturityTypes)].sort().map((m: string) => ({
             value: m,
@@ -162,11 +174,22 @@ export class ItemsDataGetter {
         });
 
         options.push({
-          id: 1,
+          id: LogosPreviewOptions.Categories,
           name: 'category / subcategory',
           options: opts,
         });
       }
+
+      options.push({
+        id: LogosPreviewOptions.Other,
+        name: 'Other',
+        options: [
+          {
+            value: 'enduser',
+            name: 'End user members',
+          },
+        ],
+      });
     }
     return options;
   }
