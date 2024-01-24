@@ -3,7 +3,7 @@ import orderBy from 'lodash/orderBy';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { FilterOption, Item, Option } from '../../types';
-import itemsDataGetter, { LogosOptionsGroup } from '../../utils/itemsDataGetter';
+import itemsDataGetter, { LogosOptionsGroup, LogosPreviewOptions } from '../../utils/itemsDataGetter';
 import Image from '../common/Image';
 import Loading from '../common/Loading';
 import Footer from '../navigation/Footer';
@@ -13,7 +13,7 @@ import styles from './Logos.module.css';
 const Logos = () => {
   const fullDataReady = useFullDataReady();
   const [options, setOptions] = createSignal<LogosOptionsGroup[]>();
-  const [selectedGroup, setSelectedGroup] = createSignal<number>();
+  const [selectedGroup, setSelectedGroup] = createSignal<string>();
   const [selectedOptionValue, setSelectedOptionValue] = createSignal<string>();
   const [selectedSuboptionValue, setSelectedSuboptionValue] = createSignal<string>();
   const [suboptions, setSuboptions] = createSignal<Option[]>();
@@ -39,18 +39,32 @@ const Logos = () => {
     let list: Item[] = [];
     if (!isUndefined(selectedGroup())) {
       switch (selectedGroup()) {
-        case 0:
+        case LogosPreviewOptions.Maturity:
           if (!isUndefined(selectedOptionValue())) {
             list = itemsDataGetter.filterItemsByMaturity(selectedOptionValue()!) || [];
           }
           break;
-        case 1:
+
+        case LogosPreviewOptions.Categories:
           if (!isUndefined(selectedOptionValue()) && !isUndefined(selectedSuboptionValue())) {
             list =
               itemsDataGetter.filterItemsBySection({
                 category: selectedOptionValue()!,
                 subcategory: selectedSuboptionValue()!,
               }) || [];
+          }
+          break;
+
+        case LogosPreviewOptions.Other:
+          if (!isUndefined(selectedOptionValue())) {
+            switch (selectedOptionValue()) {
+              case 'enduser':
+                list = itemsDataGetter.filterItemsByEndUser() || [];
+                break;
+
+              default:
+                break;
+            }
           }
           break;
 
@@ -61,12 +75,22 @@ const Logos = () => {
     setItems(cleanDuplicatedItems(list));
   };
 
+  const getOptions = (): FilterOption[] => {
+    const selectedOption = options()!.find((opt: LogosOptionsGroup) => opt.id === selectedGroup());
+    return selectedOption!.options;
+  };
+
   const getTitle = (selectPosition: number): string => {
     if (selectPosition === 1) {
-      if (selectedGroup() === 0) {
-        return 'Maturity';
-      } else {
-        return 'Category';
+      switch (selectedGroup()) {
+        case LogosPreviewOptions.Maturity:
+          return 'Maturity';
+
+        case LogosPreviewOptions.Categories:
+          return 'Category';
+
+        default:
+          return 'Options';
       }
     } else {
       return 'Subcategory';
@@ -112,7 +136,9 @@ const Logos = () => {
                           checked={option.id === selectedGroup()}
                         />
                         <label class="form-check-label" for={option.name}>
-                          By {option.name}
+                          <Show when={option.id !== LogosPreviewOptions.Other} fallback={option.name}>
+                            By {option.name}
+                          </Show>
                         </label>
                       </div>
                     )}
@@ -133,7 +159,7 @@ const Logos = () => {
                           setSelectedSuboptionValue();
                           setSuboptions();
                           setItems();
-                          const selectedOption = options()![selectedGroup()!].options.find((opt: FilterOption) => {
+                          const selectedOption = getOptions().find((opt: FilterOption) => {
                             return opt.value === e.currentTarget.value;
                           });
                           if (!isUndefined(selectedOption) && !isUndefined(selectedOption.suboptions)) {
@@ -144,14 +170,14 @@ const Logos = () => {
                         }}
                       >
                         <option value="" />
-                        <For each={options()![selectedGroup()!].options}>
+                        <For each={getOptions()}>
                           {(opt: FilterOption) => {
                             return <option value={opt.value}>{opt.name}</option>;
                           }}
                         </For>
                       </select>
                     </div>
-                    <Show when={selectedGroup() === 1}>
+                    <Show when={selectedGroup() === LogosPreviewOptions.Categories}>
                       <div class="col-12 col-md-6 col-lg-4 col-xxl-3">
                         <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
                           {getTitle(2)}
