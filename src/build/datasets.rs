@@ -95,6 +95,9 @@ mod base {
         pub items: Vec<Item>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub members_category: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub qr_code: Option<String>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -119,6 +122,7 @@ mod base {
                 colors: settings.colors.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
+                members_category: settings.members_category.clone(),
                 qr_code: qr_code.clone(),
                 social_networks: settings.social_networks.clone(),
                 upcoming_event: settings.upcoming_event.clone(),
