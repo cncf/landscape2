@@ -139,9 +139,19 @@ const Content = (props: Props) => {
               <div class={`d-none d-xl-flex badge border rounded-0 ${styles.badgeOutlineDark}`}>
                 {itemInfo()!.category}
               </div>
-              <div class={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>
+              <div class={`badge border ms-0 ms-xl-2 rounded-0 ${styles.badgeOutlineDark}`}>
                 {itemInfo()!.subcategory}
               </div>
+              <Show
+                when={
+                  !isUndefined(itemInfo()!.enduser) &&
+                  itemInfo()!.enduser &&
+                  window.baseDS.members_category === itemInfo()!.category
+                }
+              >
+                <div class={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${styles.badgeOutlineDark}`}>End user</div>
+              </Show>
+
               <div class="ms-auto">
                 <div class={`d-flex flex-row align-items-center ${styles.extra}`}>
                   <Show when={!isUndefined(websiteUrl())}>
