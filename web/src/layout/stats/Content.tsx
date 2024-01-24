@@ -216,7 +216,7 @@ const Content = () => {
                 <Box data={stats()!.repositories!.repositories} label="Repositories" />
                 <Box data={prettifyNumber(stats()!.repositories!.contributors, 1)} label="Contributors" />
                 <Box data={prettifyNumber(stats()!.repositories!.stars, 1)} label="Stars" />
-                <Box data={prettifyBytes(stats()!.repositories!.bytes, 1)} label="Source code" />
+                <Box data={prettifyBytes(stats()!.repositories!.bytes, 0)} label="Source code" />
               </div>
 
               <Show
