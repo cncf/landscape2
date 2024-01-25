@@ -27,6 +27,14 @@ images:
   header_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
   open_graph: "https://landscape.cncf.io/images/social.jpg"
 
+# Url (required)
+#
+# Url where the landscape will be hosted.
+#
+# url: <LANDSCAPE_URL>
+#
+url: https://landscape.cncf.io
+
 # Analytics (optional)
 #
 # Analytics providers configuration. When an analytics provider is set up, some
@@ -182,17 +190,6 @@ groups:
 # members_category: <CATEGORY_NAME>
 #
 members_category: CNCF Members
-
-# QR code configuration (optional)
-#
-# Defines the configuration of the QR code that will be displayed on the UI as
-# well as on the downloadable landscape in PDF and PNG formats.
-#
-# qr_code:
-#   url: <URL>
-#
-qr_code:
-  url: https://landscape.cncf.io
 
 # Screenshot width (optional)
 #

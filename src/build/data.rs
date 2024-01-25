@@ -344,6 +344,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.devstats_url = extra.dev_stats_url;
                         item.discord_url = extra.discord_url;
                         item.github_discussions_url = extra.github_discussions_url;
+                        item.gitter_url = extra.gitter_url;
                         item.graduated_at = extra.graduated;
                         item.incubating_at = extra.incubating;
                         item.latest_annual_review_at = extra.annual_review_date;
@@ -353,6 +354,8 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
                         item.tag = extra.tag;
+                        item.training_certifications = extra.training_certifications;
+                        item.training_type = extra.training_type;
                         item.youtube_url = extra.youtube_url;
 
                         // Summary information
@@ -496,6 +499,9 @@ pub(crate) struct Item {
     pub github_discussions_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub gitter_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub graduated_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -542,6 +548,12 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tag: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub training_certifications: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub training_type: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub twitter_url: Option<String>,
@@ -683,6 +695,9 @@ pub(crate) fn normalize_name(value: &str) -> String {
         })
         .collect::<String>();
     normalized_name = MULTIPLE_HYPHENS.replace(&normalized_name, "-").to_string();
+    if let Some(normalized_name_without_suffix) = normalized_name.strip_suffix('-') {
+        normalized_name = normalized_name_without_suffix.to_string();
+    }
     normalized_name
 }
 
@@ -836,6 +851,7 @@ mod legacy {
         pub discord_url: Option<String>,
         pub docker_url: Option<String>,
         pub github_discussions_url: Option<String>,
+        pub gitter_url: Option<String>,
         pub graduated: Option<NaiveDate>,
         pub incubating: Option<NaiveDate>,
         pub mailing_list_url: Option<String>,
@@ -851,6 +867,8 @@ mod legacy {
         pub summary_release_rate: Option<String>,
         pub summary_tags: Option<String>,
         pub tag: Option<String>,
+        pub training_certifications: Option<String>,
+        pub training_type: Option<String>,
         pub youtube_url: Option<String>,
     }
 
