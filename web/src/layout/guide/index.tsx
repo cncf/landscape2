@@ -127,9 +127,7 @@ const GuideIndex = () => {
 
   createEffect(
     on(openMenuTOCFromHeader, () => {
-      if (openMenuTOCFromHeader()) {
-        setOpenToCMobileStatus(true);
-      }
+      setOpenToCMobileStatus(openMenuTOCFromHeader());
     })
   );
 
@@ -141,15 +139,15 @@ const GuideIndex = () => {
     });
   };
 
-  const onCloseMenu = () => {
-    setOpenToCMobileStatus(false);
-    setMenuTOCFromHeader(false);
+  const openStatusChange = (open: boolean) => {
+    setOpenToCMobileStatus(open);
+    setMenuTOCFromHeader(open);
   };
 
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
     updateRoute(title);
     if (onSmallDevice) {
-      onCloseMenu();
+      openStatusChange(false);
     }
     if (title === firstItem()) {
       scrollToTop(onSmallDevice);
@@ -185,7 +183,7 @@ const GuideIndex = () => {
             buttonIcon={<SVGIcon kind={SVGIconKind.ToC} />}
             buttonType={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 mt-3 btnIconMobile ${styles.mobileToCBtn}`}
             open={openToCMobileStatus()}
-            onOpenStatusChange={onCloseMenu}
+            onOpenStatusChange={openStatusChange}
           >
             <div class="position-relative">
               <Show when={!isUndefined(guide())} fallback={<Loading />}>

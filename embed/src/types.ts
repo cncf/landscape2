@@ -50,5 +50,5 @@ export enum Size {
 export const DEFAULT_DISPLAY_HEADER = true;
 export const DEFAULT_STYLE_VIEW = Style.ShadowedBasic;
 export const DEFAULT_SIZE = Size.Medium;
-export const DEFAULT_BG_COLOR = '#6995d8';
+export const DEFAULT_BG_COLOR = '#323437';
 export const DEFAULT_FG_COLOR = '#ffffff';
