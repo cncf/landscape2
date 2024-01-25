@@ -12,8 +12,8 @@
 }
 
 .logo {
-  height: 34px;
-  max-width: 230px;
+  height: 40px;
+  max-width: 250px;
 }
 
 .footerCol {
@@ -34,7 +34,7 @@
 }
 
 .socialIcons {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
 }
 
 @media (hover: hover) {

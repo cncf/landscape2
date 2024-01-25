@@ -32,7 +32,9 @@ const MobileDropdown = (props: Props) => {
         aria-label="Mobile settings button"
         aria-expanded={visibleDropdown()}
       >
-        <SVGIcon kind={SVGIconKind.ThreeBars} />
+        <div class="d-flex align-items-center justify-content-center h-100 w-100">
+          <SVGIcon kind={SVGIconKind.ThreeBars} />
+        </div>
       </button>
 
       <div role="menu" class={`dropdown-menu rounded-0 ${styles.dropdown}`} classList={{ show: visibleDropdown() }}>

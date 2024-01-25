@@ -22,6 +22,7 @@ import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM } from '../../d
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Category, Subcategory, SVGIconKind } from '../../types';
 import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
+import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
 import CodeBlock from '../common/CodeBlock';
 import Modal from '../common/Modal';
@@ -52,6 +53,10 @@ const EmbedModal = () => {
   const selectedGroup = useGroupActive();
   const viewMode = useViewMode();
   const { point } = useBreakpointDetect();
+  const BG_COLOR =
+    !isUndefined(window.baseDS.colors) && !isUndefined(window.baseDS.colors!.color5)
+      ? rgba2hex(window.baseDS.colors.color5)
+      : DEFAULT_BG_COLOR;
   // Icon is only visible when Explore section is loaded
   const isVisible = () => ['/', '/embed-setup'].includes(location.pathname);
   const isEmbedSetupActive = () => location.pathname === '/embed-setup';
@@ -70,7 +75,7 @@ const EmbedModal = () => {
   const [selectedStyle, setSelectedStyle] = createSignal<Style>(DEFAULT_STYLE_VIEW);
   const [selectedSize, setSelectedSize] = createSignal<Size>(DEFAULT_SIZE);
   const [displayHeader, setDisplayHeader] = createSignal<boolean>(DEFAULT_DISPLAY_HEADER);
-  const [bgColor, setBgColor] = createSignal<string>(DEFAULT_BG_COLOR);
+  const [bgColor, setBgColor] = createSignal<string>(BG_COLOR);
   const [fgColor, setFgColor] = createSignal<string>(DEFAULT_FG_COLOR);
   const [url, setUrl] = createSignal<string>();
   const [prevHash, setPrevHash] = createSignal<string>('');
@@ -142,7 +147,7 @@ const EmbedModal = () => {
       setSelectedSize(DEFAULT_SIZE);
       setSelectedStyle(DEFAULT_STYLE_VIEW);
       setDisplayHeader(DEFAULT_DISPLAY_HEADER);
-      setBgColor(DEFAULT_BG_COLOR);
+      setBgColor(BG_COLOR);
       setFgColor(DEFAULT_FG_COLOR);
     });
   };

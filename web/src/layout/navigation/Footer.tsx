@@ -1,5 +1,6 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
+import moment from 'moment';
 import { JSXElement, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
@@ -16,18 +17,24 @@ const Footer = (props: Props) => {
     return (
       <div class={`d-flex flex-row flex-wrap ${styles.socialIcons}`}>
         <Show when={!isUndefined(window.baseDS.social_networks?.twitter)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.twitter as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.twitter as string}
+          >
             <SVGIcon kind={SVGIconKind.Twitter} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.github)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.github as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.github as string}
+          >
             <SVGIcon kind={SVGIconKind.GitHub} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.linkedin)}>
           <ExternalLink
-            class={`me-3 ps-0 pe-2 ${styles.link}`}
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.linkedin as string}
           >
             <SVGIcon kind={SVGIconKind.LinkedIn} />
@@ -35,42 +42,57 @@ const Footer = (props: Props) => {
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.instagram)}>
           <ExternalLink
-            class={`me-3 ps-0 pe-2 ${styles.link}`}
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.instagram as string}
           >
             <SVGIcon kind={SVGIconKind.Instagram} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.wechat)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.wechat as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.wechat as string}
+          >
             <SVGIcon kind={SVGIconKind.WeChat} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.youtube)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.youtube as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.youtube as string}
+          >
             <SVGIcon kind={SVGIconKind.Youtube} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.flickr)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.flickr as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.flickr as string}
+          >
             <SVGIcon kind={SVGIconKind.Flickr} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.facebook)}>
           <ExternalLink
-            class={`me-3 ps-0 pe-2 ${styles.link}`}
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
             href={window.baseDS.social_networks?.facebook as string}
           >
             <SVGIcon kind={SVGIconKind.Facebook} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.twitch)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.twitch as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.twitch as string}
+          >
             <SVGIcon kind={SVGIconKind.Twitch} />
           </ExternalLink>
         </Show>
         <Show when={!isUndefined(window.baseDS.social_networks?.slack)}>
-          <ExternalLink class={`me-3 ps-0 pe-2 ${styles.link}`} href={window.baseDS.social_networks?.slack as string}>
+          <ExternalLink
+            class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`}
+            href={window.baseDS.social_networks?.slack as string}
+          >
             <SVGIcon kind={SVGIconKind.Slack} />
           </ExternalLink>
         </Show>
@@ -83,14 +105,14 @@ const Footer = (props: Props) => {
       <div class="container-fluid px-0 px-lg-auto">
         <div class="d-flex flex-column flex-sm-row justify-content-between">
           <div class="d-flex flex-column">
-            <div class="d-flex flex-row align-items-top justify-content-between">
+            <div class="d-flex flex-row align-items-top justify-content-between mb-3 mb-lg-5">
               <Show
                 when={
                   !isUndefined(props.logo) ||
                   (!isUndefined(window.baseDS.social_networks) && !isEmpty(window.baseDS.social_networks))
                 }
               >
-                <div class="d-flex flex-column flex-lg-row justify-content-start align-items-lg-center mb-3 mb-lg-5">
+                <div class="d-flex flex-column flex-lg-row justify-content-start align-items-lg-center w-100">
                   <Show when={!isUndefined(window.baseDS.images.footer_logo)}>
                     <div class={styles.logoWrapper}>
                       <img
@@ -102,23 +124,11 @@ const Footer = (props: Props) => {
                       />
                     </div>
                   </Show>
-                  <div class="mt-3 mt-lg-0 mw-100">{renderSocialNetworkLinks()}</div>
+                  <div class="ms-lg-auto mt-3 mt-lg-0 mw-100">{renderSocialNetworkLinks()}</div>
                 </div>
               </Show>
-              <Show when={!isUndefined(window.baseDS.qr_code)}>
-                <img
-                  class={styles.qr}
-                  alt="QR code"
-                  src={
-                    import.meta.env.MODE === 'development'
-                      ? `../../static/${window.baseDS.qr_code}`
-                      : window.baseDS.qr_code
-                  }
-                  height={60}
-                  width={60}
-                />
-              </Show>
             </div>
+
             <div class="d-flex flex-column flex-md-row flex-wrap align-items-stretch justify-content-start text-light">
               <div class={styles.footerCol}>
                 <div class="h6 fw-bold text-uppercase">Project</div>
@@ -169,8 +179,9 @@ const Footer = (props: Props) => {
 
             <div>
               <div class={`pt-2 ${styles.copyright}`}>
-                Copyright © 2023 The Linux Foundation®. All rights reserved. The Linux Foundation has registered
-                trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our{' '}
+                Copyright © {moment().format('YYYY')} The Linux Foundation®. All rights reserved. The Linux Foundation
+                has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please
+                see our{' '}
                 <ExternalLink class="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/trademark-usage">
                   Trademark Usage
                 </ExternalLink>{' '}

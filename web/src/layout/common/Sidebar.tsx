@@ -56,7 +56,9 @@ export const Sidebar = (props: Props) => {
             [`${props.buttonType}`]: !isUndefined(props.buttonType),
             'btn-primary': isUndefined(props.buttonType),
           }}
-          onClick={() => openStatusChange(true)}
+          onClick={() => {
+            openStatusChange(true);
+          }}
           aria-label="Open sidebar"
           aria-expanded={openStatus()}
         >
