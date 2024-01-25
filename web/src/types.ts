@@ -320,7 +320,7 @@ export enum FilterCategory {
   City = 'city',
   Region = 'region',
   Industry = 'industry',
-  CompanyType = 'company-type',
+  OrgType = 'org-type',
   TAG = 'tag',
   Membership = 'membership',
   InvestmentType = 'investment-type',

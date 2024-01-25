@@ -13,7 +13,9 @@ import SVGIcon from './SVGIcon';
 
 interface Props {
   activeFilters: ActiveFilters;
+  maturityOptions?: string[];
   resetFilters: () => void;
+  resetFilter?: (name: FilterCategory) => void;
   removeFilter: (name: FilterCategory, value: string) => void;
 }
 
@@ -51,14 +53,44 @@ const ActiveFiltersList = (props: Props) => {
         <div class="d-flex flex-row flex-wrap">
           <For each={Object.keys(activeFilters())}>
             {(f: string) => {
-              if (isUndefined(props.activeFilters[f as FilterCategory])) return null;
+              const activeFiltersPerCategory = () => activeFilters()[f as FilterCategory];
+              if (isUndefined(activeFiltersPerCategory()) || isEmpty(activeFiltersPerCategory())) return null;
+
+              const allMatutirySelected = () =>
+                !isUndefined(props.maturityOptions) &&
+                f === FilterCategory.Maturity &&
+                props.maturityOptions.every((element) => activeFiltersPerCategory()!.includes(element));
+              const foundationLabel = getFoundationNameLabel();
+
               return (
-                <>
-                  {
-                    <For each={props.activeFilters[f as FilterCategory]}>
+                <Switch>
+                  <Match when={allMatutirySelected()}>
+                    <span
+                      role="listitem"
+                      class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+                    >
+                      <div class="d-flex flex-row align-items-baseline">
+                        <div>
+                          <small class="text-uppercase fw-normal me-2">{f}:</small>
+                          <span class="text-uppercase">{foundationLabel}</span>
+                        </div>
+                        <button
+                          class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                          onClick={() =>
+                            !isUndefined(props.resetFilter) ? props.resetFilter(f as FilterCategory) : null
+                          }
+                          aria-label={`Remove ${foundationLabel} filter`}
+                          title={`Remove ${foundationLabel} filter`}
+                        >
+                          <SVGIcon kind={SVGIconKind.ClearCircle} />
+                        </button>
+                      </div>
+                    </span>
+                  </Match>
+
+                  <Match when={!allMatutirySelected()}>
+                    <For each={activeFiltersPerCategory()}>
                       {(c: string) => {
-                        // Do not render maturity filter when is foundation name
-                        if (f === FilterCategory.Maturity && c === getFoundationNameLabel()) return null;
                         return (
                           <span
                             role="listitem"
@@ -69,13 +101,13 @@ const ActiveFiltersList = (props: Props) => {
                                 <small class="text-uppercase fw-normal me-2">{f}:</small>
                                 <span
                                   class={
-                                    [FilterCategory.Maturity, FilterCategory.CompanyType].includes(f as FilterCategory)
+                                    [FilterCategory.Maturity, FilterCategory.OrgType].includes(f as FilterCategory)
                                       ? 'text-uppercase'
                                       : ''
                                   }
                                 >
                                   <Switch fallback={<>{c}</>}>
-                                    <Match when={f === FilterCategory.CompanyType}>
+                                    <Match when={f === FilterCategory.OrgType}>
                                       <>{formatProfitLabel(c)}</>
                                     </Match>
                                     <Match when={f === FilterCategory.TAG}>
@@ -100,8 +132,8 @@ const ActiveFiltersList = (props: Props) => {
                         );
                       }}
                     </For>
-                  }
-                </>
+                  </Match>
+                </Switch>
               );
             }}
           </For>

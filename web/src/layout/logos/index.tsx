@@ -151,6 +151,7 @@ const Logos = () => {
                         {getTitle(1)}
                       </div>
                       <select
+                        id="options"
                         class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                         value={selectedOptionValue()}
                         aria-label="Options"
@@ -183,6 +184,7 @@ const Logos = () => {
                           {getTitle(2)}
                         </div>
                         <select
+                          id="suboptions"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedSuboptionValue()}
                           aria-label="Suboptions"

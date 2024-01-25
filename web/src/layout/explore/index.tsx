@@ -1,9 +1,11 @@
-import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { useLocation, useNavigate } from '@solidjs/router';
+import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
-import { createEffect, createMemo, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
+import uniq from 'lodash/uniq';
+import { createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
@@ -20,6 +22,7 @@ import {
 } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
 import filterData from '../../utils/filterData';
+import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareData, { GroupData } from '../../utils/prepareData';
 import scrollToTop from '../../utils/scrollToTop';
@@ -53,9 +56,8 @@ const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + Vi
 const Explore = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const { point } = useBreakpointDetect();
-  const state = createMemo(() => location.state || {});
+  const state = () => location.state || {};
   const from = () => (state() as StateContent).from || undefined;
 
   const fullDataReady = useFullDataReady();
@@ -67,12 +69,12 @@ const Explore = (props: Props) => {
   const setSelectedGroup = useSetGroupActive();
   const updateContainerGridWidth = useSetGridWidth();
 
+  const [readyData, setReadyData] = createSignal<boolean>(true);
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
   const [landscapeData, setLandscapeData] = createSignal<Item[]>();
   const [visibleItems, setVisibleItems] = createSignal<(BaseItem | Item)[]>(props.initialData.items);
-  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
   const [groupsData, setGroupsData] = createSignal<GroupData>(prepareData(props.initialData, props.initialData.items));
   const [numVisibleItems, setNumVisibleItems] = createSignal<number>();
   const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
@@ -83,6 +85,53 @@ const Explore = (props: Props) => {
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
   const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
+
+  const checkIfFullDataRequired = (): boolean => {
+    const activeFiltersKeys = Object.keys(activeFilters());
+    if (!isEmpty(activeFilters())) {
+      const filtersInBase = [FilterCategory.Maturity, FilterCategory.TAG];
+      // If base data is enough for active filters
+      if (activeFiltersKeys.every((f) => filtersInBase.includes(f as FilterCategory))) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const getMaturityOptions = () => {
+    const maturity = props.initialData.items.map((i: Item) => i.maturity);
+    return uniq(compact(maturity)) || [];
+  };
+
+  const maturityOptions = getMaturityOptions();
+
+  const getActiveFiltersFromUrl = (): ActiveFilters => {
+    const currentFilters: ActiveFilters = {};
+
+    const params = new URLSearchParams(location.search);
+    for (const [key, value] of params) {
+      const f = key as FilterCategory;
+      if (Object.values(FilterCategory).includes(f)) {
+        if (f === FilterCategory.Maturity && value === getFoundationNameLabel()) {
+          currentFilters[f] = maturityOptions;
+        } else {
+          if (currentFilters[f]) {
+            currentFilters[f] = [...currentFilters[f]!, value];
+          } else {
+            currentFilters[f] = [value];
+          }
+        }
+      }
+    }
+    setVisibleItems(filterData(landscapeData() || props.initialData.items, currentFilters));
+    return currentFilters;
+  };
+
+  // eslint-disable-next-line solid/reactivity
+  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>(getActiveFiltersFromUrl());
 
   const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
     // Not for small devices
@@ -115,8 +164,11 @@ const Explore = (props: Props) => {
   };
 
   const updateQueryString = (param: string, value: string) => {
-    const updatedSearchParams = new URLSearchParams(searchParams as unknown as URLSearchParams);
+    const updatedSearchParams = new URLSearchParams(location.search);
     updatedSearchParams.set(param, value);
+    if (location.search === '' && param === 'group') {
+      updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
+    }
 
     navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
       state: location.state,
@@ -125,12 +177,61 @@ const Explore = (props: Props) => {
     });
   };
 
-  const updateHash = (hash?: string) => {
-    const updatedSearchParams = new URLSearchParams();
-    updatedSearchParams.set(GROUP_PARAM, selectedGroup() || 'default');
-    updatedSearchParams.set(VIEW_MODE_PARAM, ViewMode.Card);
+  const getFiltersQuery = (filters?: ActiveFilters): URLSearchParams => {
+    const f = filters || activeFilters();
+    const params = new URLSearchParams();
+    const foundation = getFoundationNameLabel();
+    if (!isUndefined(f) && !isEmpty(f)) {
+      Object.keys(f).forEach((filterId: string) => {
+        if (
+          filterId === FilterCategory.Maturity &&
+          maturityOptions.every((element) => f![filterId as FilterCategory]!.includes(element))
+        ) {
+          return params.append(filterId as string, foundation);
+        } else {
+          return f![filterId as FilterCategory]!.forEach((id: string) => {
+            if (id.toString() !== foundation) {
+              params.append(filterId as string, id.toString());
+            }
+          });
+        }
+      });
+    }
+    return params;
+  };
 
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
+  const updateFiltersQueryString = (filters: ActiveFilters) => {
+    const params = new URLSearchParams(location.search);
+    Object.values(FilterCategory).forEach((f: string) => {
+      params.delete(f);
+    });
+
+    if (params.toString() === '') {
+      params.set(GROUP_PARAM, selectedGroup()!);
+      params.set(VIEW_MODE_PARAM, viewMode());
+    }
+
+    const filtersParams = getFiltersQuery(filters);
+    for (const [key, val] of filtersParams.entries()) {
+      params.append(key, val);
+    }
+
+    const query = params.toString();
+
+    // Keep hash if exists
+    navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${location.hash !== '' ? location.hash : ''}`, {
+      state: location.state,
+      replace: true,
+      scroll: true, // default
+    });
+  };
+
+  const updateHash = (hash?: string) => {
+    const params = new URLSearchParams(location.search);
+    params.set(GROUP_PARAM, selectedGroup() || 'default');
+    params.set(VIEW_MODE_PARAM, ViewMode.Card);
+
+    navigate(`${location.pathname}?${params.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
       replace: true,
       scroll: false,
     });
@@ -140,11 +241,12 @@ const Explore = (props: Props) => {
     try {
       const fullData = await itemsDataGetter.getAll();
       setLandscapeData(fullData);
-      // Full data is only applied when card view is active to avoid re-render grid
-      // When filters are applied or view mode changes, we use fullData if available
-      if (viewMode() === ViewMode.Card) {
-        setVisibleItems(fullData);
+      // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
+      // After this when filters are applied or view mode changes, we use fullData if available
+      if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
+        setVisibleItems(filterData(fullData, activeFilters()));
         setFullDataApplied(true);
+        setReadyData(true);
       }
     } catch {
       setLandscapeData(undefined);
@@ -226,12 +328,17 @@ const Explore = (props: Props) => {
     applyFilters({});
   };
 
+  const resetFilter = (name: FilterCategory) => {
+    updateActiveFilters(name, []);
+  };
+
   const applyFilters = (newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
     setVisibleItems(filterData(landscapeData() || props.initialData.items, newFilters));
     if (!isUndefined(landscapeData())) {
       setFullDataApplied(true);
     }
+    updateFiltersQueryString(newFilters);
   };
 
   const handler = () => {
@@ -265,7 +372,18 @@ const Explore = (props: Props) => {
     }
   };
 
+  createEffect(
+    on(from, () => {
+      // When we click on header logo, we reset filters
+      if (from() === 'logo-header') {
+        resetFilters();
+      }
+    })
+  );
+
   onMount(() => {
+    setReadyData(!checkIfFullDataRequired());
+
     if (from() === 'header') {
       scrollToTop(false);
     }
@@ -290,7 +408,7 @@ const Explore = (props: Props) => {
   });
 
   return (
-    <Show when={!isUndefined(groupsData())}>
+    <Show when={!isUndefined(groupsData()) && readyData()}>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
         <div class="d-flex flex-column flex-lg-row my-2 my-md-3 py-1">
           <div class="d-flex flex-row align-items-center mb-1 mb-md-0">
@@ -348,6 +466,7 @@ const Explore = (props: Props) => {
                 {/* Only visible when btn grouped for groups overflows wrapper */}
                 <div classList={{ 'd-none': !visibleSelectForGroups(), 'd-flex': visibleSelectForGroups() }}>
                   <select
+                    id="desktop-group"
                     class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect}`}
                     value={selectedGroup() || props.initialData.groups![0].normalized_name}
                     aria-label="Group"
@@ -439,6 +558,7 @@ const Explore = (props: Props) => {
                 <small class="text-muted me-2">GROUP:</small>
               </div>
               <select
+                id="mobile-group"
                 class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                 value={selectedGroup() || props.initialData.groups![0].normalized_name}
                 aria-label="Group"
@@ -459,7 +579,13 @@ const Explore = (props: Props) => {
         </div>
 
         <div class="d-none d-lg-block">
-          <ActiveFiltersList activeFilters={activeFilters()} resetFilters={resetFilters} removeFilter={removeFilter} />
+          <ActiveFiltersList
+            activeFilters={activeFilters()}
+            maturityOptions={maturityOptions}
+            resetFilter={resetFilter}
+            resetFilters={resetFilters}
+            removeFilter={removeFilter}
+          />
         </div>
 
         <Show when={numVisibleItems() === 0}>
@@ -508,7 +634,9 @@ const Explore = (props: Props) => {
                   class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()}`}
                   classList={{ [styles.loadingContent]: visibleLoading() }}
                 >
-                  {visibleLoading() && <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />}
+                  {(visibleLoading() || !readyData()) && (
+                    <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />
+                  )}
 
                   <Show
                     when={!isUndefined(props.initialData.groups)}

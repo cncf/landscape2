@@ -1,10 +1,21 @@
+import { intersection } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
 import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
 
 import { FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
-import { ActiveFilters, BaseData, FilterCategory, FilterSection, FilterTitle, Item, SVGIconKind } from '../../../types';
+import {
+  ActiveFilters,
+  BaseData,
+  FilterCategory,
+  FilterOption,
+  FilterSection,
+  FilterTitle,
+  Item,
+  SVGIconKind,
+} from '../../../types';
+import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import prepareData from '../../../utils/prepareData';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import Loading from '../../common/Loading';
@@ -30,10 +41,27 @@ const Filters = (props: Props) => {
   const [filters, setFilters] = createSignal<FilterSection[]>([]);
   const [visibleTitles, setVisibleTitles] = createSignal<FilterTitle[]>([]);
 
+  // Keep only available filters in selected group filters
+  const cleanInitialActiveFilters = (): ActiveFilters => {
+    const cleanFilters: ActiveFilters = {};
+    Object.keys(props.initialActiveFilters()).forEach((f: string) => {
+      const filter: FilterCategory = f as FilterCategory;
+      const currentFilter = filters().find((section: FilterSection) => section.value === filter);
+      if (currentFilter) {
+        const opts = currentFilter.options.map((opt: FilterOption) => opt.value);
+        // Add non-foundation label
+        if (filter === FilterCategory.Maturity) {
+          opts.push(`non-${getFoundationNameLabel()}`);
+        }
+        cleanFilters[filter] = intersection(opts, props.initialActiveFilters()[filter]);
+      }
+    });
+    return cleanFilters;
+  };
+
   createEffect(
     on(visibleFiltersModal, () => {
       if (visibleFiltersModal()) {
-        setTmpActiveFilters(props.initialActiveFilters);
         if (filters().length === 0) {
           const f = getFiltersPerGroup(prepareData(props.data, props.initialLandscapeData()!));
           if (!isEmpty(f)) {
@@ -41,6 +69,7 @@ const Filters = (props: Props) => {
             setFilters(f[props.initialSelectedGroup() || 'default']);
           }
         }
+        setTmpActiveFilters(cleanInitialActiveFilters());
       }
     })
   );
@@ -116,11 +145,6 @@ const Filters = (props: Props) => {
     updateActiveFilters(name, []);
   };
 
-  const resetFilters = () => {
-    setTmpActiveFilters({});
-    props.applyFilters({});
-  };
-
   return (
     <>
       <div class="position-relative">
@@ -152,8 +176,7 @@ const Filters = (props: Props) => {
               class="btn btn-sm btn-link text-muted py-0"
               onClick={(e) => {
                 e.preventDefault();
-                resetFilters();
-                setVisibleFiltersModal(false);
+                setTmpActiveFilters({});
               }}
               aria-label="Reset filters"
             >
@@ -253,8 +276,8 @@ const Filters = (props: Props) => {
 
                 <Section
                   title="Type"
-                  section={getSectionInPredefinedFilters(FilterCategory.CompanyType)}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.CompanyType]}
+                  section={getSectionInPredefinedFilters(FilterCategory.OrgType)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.OrgType]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={styles.section}

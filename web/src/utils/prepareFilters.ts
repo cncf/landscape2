@@ -155,7 +155,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
 
     if (companyTypes.length > 0) {
       filters.push({
-        value: FilterCategory.CompanyType,
+        value: FilterCategory.OrgType,
         title: 'Organization type',
         options: [...new Set(companyTypes)].sort().map((ot: string) => ({
           value: cleanValue(ot),
