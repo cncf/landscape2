@@ -8,9 +8,12 @@ use self::{
     github::collect_github_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{Analytics, Images, QrCode},
+    settings::{Analytics, Images},
 };
-use crate::{serve, BuildArgs, GuideSource, LogosSource, ServeArgs};
+use crate::{
+    build::api::{Api, ApiSources},
+    serve, BuildArgs, GuideSource, LogosSource, ServeArgs,
+};
 use anyhow::{format_err, Context, Result};
 use askama::Template;
 use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
@@ -41,6 +44,7 @@ use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument, warn};
 use url::Url;
 
+mod api;
 mod cache;
 mod clomonitor;
 mod crunchbase;
@@ -56,6 +60,9 @@ mod stats;
 
 /// Maximum number of CLOMonitor reports summaries to fetch concurrently.
 const CLOMONITOR_MAX_CONCURRENCY: usize = 10;
+
+/// Path where the API data files will be written to in the output directory.
+const API_PATH: &str = "api";
 
 /// Path where the datasets will be written to in the output directory.
 const DATASETS_PATH: &str = "data";
@@ -135,11 +142,17 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_crunchbase_data(&crunchbase_data)?;
     landscape_data.add_github_data(&github_data)?;
 
+    // Generate API data files
+    generate_api(
+        &ApiSources {
+            landscape_data: &landscape_data,
+            settings: &settings,
+        },
+        &args.output_dir,
+    )?;
+
     // Generate QR code
-    let mut qr_code = None;
-    if let Some(cfg) = &settings.qr_code {
-        qr_code = Some(generate_qr_code(cfg, &args.output_dir)?);
-    }
+    let qr_code = generate_qr_code(&settings.url, &args.output_dir)?;
 
     // Generate datasets for web application
     let datasets = generate_datasets(
@@ -318,6 +331,34 @@ You can see it in action by running the following command:
     );
 }
 
+/// Generate API data files and write them to API_PATH in the output directory.
+#[instrument(skip_all, err)]
+fn generate_api(input: &ApiSources, output_dir: &Path) -> Result<()> {
+    debug!("generating api");
+
+    let api = Api::new(input);
+    let api_path = output_dir.join(API_PATH);
+
+    // Write data files to output dir
+    for (endpoint, data) in &api.endpoints {
+        let endpoint_full_path = api_path.join(endpoint.strip_prefix('/').unwrap_or(endpoint));
+
+        // Create endpoint parent directory if needed
+        let Some(parent_path) = endpoint_full_path.parent() else {
+            continue;
+        };
+        if parent_path != Path::new("") && !parent_path.exists() {
+            fs::create_dir_all(parent_path)?;
+        }
+
+        // Write data file
+        let mut file = File::create(endpoint_full_path)?;
+        file.write_all(data.as_bytes())?;
+    }
+
+    Ok(())
+}
+
 /// Generate datasets from the landscape data and settings, as well as from the
 /// data collected from external services (GitHub, Crunchbase, etc). Some of
 /// the datasets will be embedded in the index document, and the rest will be
@@ -384,11 +425,11 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
 
 /// Generate QR code and copy it to output directory.
 #[instrument(skip_all, err)]
-fn generate_qr_code(cfg: &QrCode, output_dir: &Path) -> Result<String> {
+fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
     debug!("generating qr code");
 
     // Generate QR code
-    let code = qrcode::QrCode::new(cfg.url.as_bytes())?;
+    let code = qrcode::QrCode::new(url.as_bytes())?;
     let svg = code
         .render()
         .min_dimensions(200, 200)
@@ -652,6 +693,11 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
     if !output_dir.exists() {
         debug!("creating output directory");
         fs::create_dir_all(output_dir)?;
+    }
+
+    let api_path = output_dir.join(API_PATH);
+    if !api_path.exists() {
+        fs::create_dir(api_path)?;
     }
 
     let datasets_path = output_dir.join(DATASETS_PATH);

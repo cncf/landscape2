@@ -3,7 +3,8 @@
 //! as from data collected from other external sources like GitHub. Some of
 //! these datasets may be embedded in the index document (or used while
 //! rendering it), whereas others will be written to the output directory so
-//! that they can be fetched when needed.
+//! that they can be fetched when needed. These datasets are not meant to be
+//! consumed by other applications, as they can change at any time.
 
 use self::{base::Base, embed::Embed, full::Full};
 use super::{
@@ -49,7 +50,7 @@ pub(crate) struct NewDatasetsInput<'a> {
     pub github_data: &'a GithubData,
     pub guide: &'a Option<LandscapeGuide>,
     pub landscape_data: &'a LandscapeData,
-    pub qr_code: &'a Option<String>,
+    pub qr_code: &'a String,
     pub settings: &'a LandscapeSettings,
 }
 
@@ -72,6 +73,7 @@ mod base {
         pub finances_available: bool,
         pub foundation: String,
         pub images: Images,
+        pub qr_code: String,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
@@ -98,9 +100,6 @@ mod base {
         pub members_category: Option<String>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub qr_code: Option<String>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
         pub social_networks: Option<SocialNetworks>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -113,7 +112,7 @@ mod base {
             landscape_data: &LandscapeData,
             settings: &LandscapeSettings,
             guide: &Option<LandscapeGuide>,
-            qr_code: &Option<String>,
+            qr_code: &str,
         ) -> Self {
             let mut base = Base {
                 foundation: settings.foundation.clone(),
@@ -123,7 +122,7 @@ mod base {
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
                 members_category: settings.members_category.clone(),
-                qr_code: qr_code.clone(),
+                qr_code: qr_code.to_string(),
                 social_networks: settings.social_networks.clone(),
                 upcoming_event: settings.upcoming_event.clone(),
                 ..Default::default()

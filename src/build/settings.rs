@@ -23,6 +23,7 @@ use tracing::{debug, instrument};
 pub(crate) struct LandscapeSettings {
     pub foundation: String,
     pub images: Images,
+    pub url: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub analytics: Option<Analytics>,
@@ -44,9 +45,6 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub members_category: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub qr_code: Option<QrCode>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub screenshot_width: Option<u32>,
@@ -126,6 +124,11 @@ impl LandscapeSettings {
         // Check foundation is not empty
         if self.foundation.is_empty() {
             return Err(format_err!("foundation cannot be empty"));
+        }
+
+        // Check url is not empty
+        if self.url.is_empty() {
+            return Err(format_err!("url cannot be empty"));
         }
 
         // Check members category is not empty
@@ -428,12 +431,6 @@ pub(crate) struct Images {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_graph: Option<String>,
-}
-
-/// QR code configuration.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct QrCode {
-    pub url: String,
 }
 
 /// Social networks urls.
