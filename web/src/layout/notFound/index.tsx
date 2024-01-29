@@ -21,7 +21,7 @@ const NotFound = () => {
           Back Home
         </A>
       </main>
-      <Footer logo={window.baseDS.images.footer_logo} />
+      <Footer />
     </>
   );
 };

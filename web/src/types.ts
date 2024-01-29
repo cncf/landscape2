@@ -2,10 +2,6 @@ export interface BaseData {
   finances_available: boolean;
   foundation: string;
   guide_summary?: GuideSummary;
-  images: {
-    footer_logo?: string;
-    header_logo: string;
-  };
   colors?: {
     [key: string]: string;
   };
@@ -17,9 +13,22 @@ export interface BaseData {
   members_category?: string;
   qr_code?: string;
   upcoming_event?: Event;
-  social_networks?: {
+  header?: HeaderContent;
+  footer?: FooterContent;
+}
+
+export interface HeaderContent {
+  links?: {
+    github?: string;
+  };
+  logo?: string;
+}
+
+export interface FooterContent {
+  links?: {
     facebook?: string;
     flickr?: string;
+    homepage?: string;
     github?: string;
     instagram?: string;
     linkedin?: string;
@@ -29,6 +38,8 @@ export interface BaseData {
     wechat?: string;
     youtube?: string;
   };
+  logo?: string;
+  text?: string;
 }
 
 export interface Group {

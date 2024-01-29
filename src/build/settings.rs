@@ -22,7 +22,6 @@ use tracing::{debug, instrument};
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct LandscapeSettings {
     pub foundation: String,
-    pub images: Images,
     pub url: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -38,19 +37,25 @@ pub(crate) struct LandscapeSettings {
     pub featured_items: Option<Vec<FeaturedItemRule>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub footer: Option<Footer>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub header: Option<Header>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub grid_items_size: Option<GridItemsSize>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub groups: Option<Vec<Group>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub images: Option<Images>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub members_category: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub screenshot_width: Option<u32>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub social_networks: Option<SocialNetworks>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<HashMap<TagName, Vec<TagRule>>>,
@@ -105,9 +110,22 @@ impl LandscapeSettings {
     fn new_from_raw_data(raw_data: &str) -> Result<Self> {
         let mut settings: LandscapeSettings = serde_yaml::from_str(raw_data)?;
         settings.validate().context("the landscape settings file provided is not valid")?;
+        settings.footer_text_to_html().context("error converting footer md text to html")?;
         settings.set_groups_normalized_name();
 
         Ok(settings)
+    }
+
+    /// Convert the provided footer text in markdown format to HTML.
+    fn footer_text_to_html(&mut self) -> Result<()> {
+        if let Some(footer) = &mut self.footer {
+            if let Some(text) = &mut footer.text {
+                let options = markdown::Options::default();
+                *text = markdown::to_html_with_options(text, &options).map_err(|err| format_err!("{err}"))?;
+            }
+        }
+
+        Ok(())
     }
 
     /// Set the normalized name field of the provided groups.
@@ -126,10 +144,8 @@ impl LandscapeSettings {
             return Err(format_err!("foundation cannot be empty"));
         }
 
-        // Check url is not empty
-        if self.url.is_empty() {
-            return Err(format_err!("url cannot be empty"));
-        }
+        // Check url is valid
+        validate_url("landscape", &Some(self.url.clone()))?;
 
         // Check members category is not empty
         if let Some(members_category) = &self.members_category {
@@ -148,9 +164,10 @@ impl LandscapeSettings {
         self.validate_categories()?;
         self.validate_colors()?;
         self.validate_featured_items()?;
+        self.validate_footer()?;
         self.validate_groups()?;
+        self.validate_header()?;
         self.validate_images()?;
-        self.validate_social_networks()?;
         self.validate_tags()?;
 
         Ok(())
@@ -248,6 +265,43 @@ impl LandscapeSettings {
         Ok(())
     }
 
+    /// Check footer is valid.
+    fn validate_footer(&self) -> Result<()> {
+        let Some(footer) = &self.footer else { return Ok(()) };
+
+        // Links
+        if let Some(links) = &footer.links {
+            let urls = [
+                ("facebook", &links.facebook),
+                ("flickr", &links.flickr),
+                ("github", &links.github),
+                ("homepage", &links.homepage),
+                ("instagram", &links.instagram),
+                ("linkedin", &links.linkedin),
+                ("slack", &links.slack),
+                ("twitch", &links.twitch),
+                ("twitter", &links.twitter),
+                ("wechat", &links.wechat),
+                ("youtube", &links.youtube),
+            ];
+            for (name, url) in urls {
+                validate_url(name, url)?;
+            }
+        }
+
+        // Logo
+        validate_url("footer logo", &footer.logo)?;
+
+        // Text
+        if let Some(text) = &footer.text {
+            if text.is_empty() {
+                return Err(format_err!("footer text cannot be empty"));
+            }
+        }
+
+        Ok(())
+    }
+
     /// Check groups are valid.
     fn validate_groups(&self) -> Result<()> {
         if let Some(groups) = &self.groups {
@@ -277,39 +331,31 @@ impl LandscapeSettings {
         Ok(())
     }
 
-    /// Check images are valid.
-    fn validate_images(&self) -> Result<()> {
-        let urls = [
-            ("favicon", &self.images.favicon),
-            ("footer_logo", &self.images.footer_logo),
-            ("header_logo", &self.images.header_logo),
-            ("open_graph", &self.images.open_graph),
-        ];
-        for (name, url) in urls {
-            validate_url(name, url)?;
+    /// Check header is valid.
+    fn validate_header(&self) -> Result<()> {
+        let Some(header) = &self.header else { return Ok(()) };
+
+        // Links
+        if let Some(links) = &header.links {
+            let urls = [("github", &links.github)];
+            for (name, url) in urls {
+                validate_url(name, url)?;
+            }
         }
+
+        // Logo
+        validate_url("header logo", &header.logo)?;
 
         Ok(())
     }
 
-    /// Check social networks are valid.
-    fn validate_social_networks(&self) -> Result<()> {
-        if let Some(social_networks) = &self.social_networks {
-            let urls = [
-                ("facebook", &social_networks.facebook),
-                ("flickr", &social_networks.flickr),
-                ("github", &social_networks.github),
-                ("instagram", &social_networks.instagram),
-                ("linkedin", &social_networks.linkedin),
-                ("slack", &social_networks.slack),
-                ("twitch", &social_networks.twitch),
-                ("twitter", &social_networks.twitter),
-                ("wechat", &social_networks.wechat),
-                ("youtube", &social_networks.youtube),
-            ];
-            for (name, url) in urls {
-                validate_url(name, url)?;
-            }
+    /// Check images are valid.
+    fn validate_images(&self) -> Result<()> {
+        let Some(images) = &self.images else { return Ok(()) };
+
+        let urls = [("favicon", &images.favicon), ("open_graph", &images.open_graph)];
+        for (name, url) in urls {
+            validate_url(name, url)?;
         }
 
         Ok(())
@@ -424,18 +470,25 @@ pub(crate) struct Images {
     pub favicon: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub footer_logo: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub header_logo: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub open_graph: Option<String>,
 }
 
-/// Social networks urls.
+/// Footer configuration.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct SocialNetworks {
+pub(crate) struct Footer {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub links: Option<FooterLinks>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+}
+
+/// Footer links.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct FooterLinks {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub facebook: Option<String>,
 
@@ -444,6 +497,9 @@ pub(crate) struct SocialNetworks {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub github: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub homepage: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub instagram: Option<String>,
@@ -465,6 +521,23 @@ pub(crate) struct SocialNetworks {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub youtube: Option<String>,
+}
+
+/// Header configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Header {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub links: Option<HeaderLinks>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<String>,
+}
+
+/// Header links.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct HeaderLinks {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub github: Option<String>,
 }
 
 /// Type alias to represent a TAG name.

@@ -257,7 +257,7 @@ const GuideIndex = () => {
         </div>
       </main>
       <Show when={!isUndefined(guide())}>
-        <Footer logo={window.baseDS.images.footer_logo} />
+        <Footer />
       </Show>
     </>
   );

@@ -9,13 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **BREAKING**: new required [url field to settings file](https://github.com/cncf/landscape2/blob/8728c797eeef557be21181f77e453134b17cdbf7/docs/config/settings.yml#L30-L36) (#475)
+- **BREAKING**: settings: new required [url field](https://github.com/cncf/landscape2/blob/8728c797eeef557be21181f77e453134b17cdbf7/docs/config/settings.yml#L30-L36) (#475)
 - Landscape API endpoints (#475)
 - Provide ability to run GTM containers (#457)
 - Display upcoming events and make them configurable (#468)
 - Display member end user badge (#471)
 - Members category to base data set (#470)
 - More options to logos-preview endpoint (#472)
+- Allow extra header and footer customization
 
 ### Fixed
 
@@ -27,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING**: settings: fields in `social_networks` moved to `footer -> links`
+- **BREAKING**: settings: `images -> header_logo` field moved to `header -> logo`
+- **BREAKING**: settings: `images -> footer_logo` field moved to `footer -> logo`
+- Settings: `images` field is now optional
 - Minor improvements to footer (#474)
 - Update header default background color in embed (#474)
 - Some minor improvements to web application (#454)

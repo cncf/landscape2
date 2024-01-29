@@ -20,7 +20,7 @@ const StatsIndex = () => {
           <Content />
         </Suspense>
       </main>
-      <Footer logo={window.baseDS.images.footer_logo} />
+      <Footer />
     </>
   );
 };

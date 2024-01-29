@@ -11,20 +11,6 @@
 #
 foundation: DEMO
 
-# Images (required)
-#
-# Urls of some images used in the landscape UI.
-#
-# images:
-#   favicon: <FAVICON_URL>
-#   footer_logo: <FOOTER_LOGO_URL>
-#   header_logo: <HEADER_LOGO_URL>
-#   open_graph: <OPEN_GRAPH_IMAGE_URL>
-#
-images:
-  footer_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
-  header_logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
-
 # Url (required)
 #
 # Url where the landscape will be hosted.
@@ -113,6 +99,41 @@ featured_items:
         order: 1
         label: Graduated
 
+# Footer (optional)
+#
+# This section allows customizing some aspects of the footer.
+#
+# footer:
+#   links:
+#     facebook: <FACEBOOK_URL>
+#     flickr: <FLICKR_URL>
+#     github: <GITHUB_URL>
+#     homepage: <HOMEPAGE_URL>
+#     instagram: <INSTAGRAM_URL>
+#     linkedin: <LINKEDIN_URL>
+#     slack: <SLACK_URL>
+#     twitch: <TWITCH_URL>
+#     twitter: <TWITTER_URL>
+#     wechat: <WECHAT_URL>
+#     youtube: <YOUTUBE_URL>
+#   logo: <LOGO_URL>  # Foundation logo featured on the footer
+#   text: <TEXT>      # Copyright notice, for example
+#
+footer:
+  links:
+    facebook: "https://www.facebook.com/CloudNativeComputingFoundation/"
+    flickr: "https://www.flickr.com/photos/143247548@N03/albums"
+    github: "https://github.com/cncf"
+    homepage: "https://cncf.io"
+    instagram: "https://www.instagram.com/humans.of.cloudnative/"
+    linkedin: "https://www.linkedin.com/company/cloud-native-computing-foundation/"
+    slack: "https://slack.cncf.io/"
+    twitch: "https://www.twitch.tv/cloudnativefdn"
+    twitter: "https://twitter.com/cloudnativefdn"
+    wechat: "https://www.cncf.io/wechat/"
+    youtube: "https://www.youtube.com/c/cloudnativefdn"
+  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
+
 # Grid items size (optional)
 #
 # Defines the preferred size of the landscape items in the grid mode. When the
@@ -148,6 +169,29 @@ groups:
     categories:
       - Category 2
 
+# Header (optional)
+#
+# This section allows customizing some aspects of the header.
+#
+# header:
+#   links:
+#     github: <GITHUB_URL>
+#   logo: <LOGO_URL>  # Foundation logo featured on the header
+#
+header:
+  links:
+    github: "https://github.com/cncf/landscape2"
+  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+
+# Images (optional)
+#
+# Urls of some images used in the landscape UI.
+#
+# images:
+#   favicon: <FAVICON_URL>
+#   open_graph: <OPEN_GRAPH_IMAGE_URL>
+#
+
 # Name of the members category (optional)
 #
 # Landscapes usually have a special category dedicated to the members of the
@@ -166,35 +210,6 @@ groups:
 # screenshot_width: <WIDTH_IN_PIXELS>
 #
 screenshot_width: 1500
-
-# Social networks urls (optional)
-#
-# List of social networks urls that will be used to create some links in the
-# landscape web application.
-#
-# social_networks:
-#   facebook: <FACEBOOK_URL>
-#   flickr: <FLICKR_URL>
-#   github: <GITHUB_URL>
-#   instagram: <INSTAGRAM_URL>
-#   linkedin: <LINKEDIN_URL>
-#   slack: <SLACK_URL>
-#   twitch: <TWITCH_URL>
-#   twitter: <TWITTER_URL>
-#   wechat: <WECHAT_URL>
-#   youtube: <YOUTUBE_URL>
-#
-social_networks:
-  facebook: "https://www.facebook.com/CloudNativeComputingFoundation/"
-  flickr: "https://www.flickr.com/photos/143247548@N03/albums"
-  github: "https://github.com/cncf"
-  instagram: "https://www.instagram.com/humans.of.cloudnative/"
-  linkedin: "https://www.linkedin.com/company/cloud-native-computing-foundation/"
-  slack: "https://slack.cncf.io/"
-  twitch: "https://www.twitch.tv/cloudnativefdn"
-  twitter: "https://twitter.com/cloudnativefdn"
-  wechat: "https://www.cncf.io/wechat/"
-  youtube: "https://www.youtube.com/c/cloudnativefdn"
 
 # TAGs (optional)
 #

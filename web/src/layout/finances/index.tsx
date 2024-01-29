@@ -508,7 +508,7 @@ const Finances = () => {
           </div>
         </Show>
       </main>
-      <Footer logo={window.baseDS.images.footer_logo} />
+      <Footer />
     </Show>
   );
 };
