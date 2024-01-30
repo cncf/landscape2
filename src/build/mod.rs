@@ -8,7 +8,7 @@ use self::{
     github::collect_github_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{Analytics, Images},
+    settings::Analytics,
 };
 use crate::{
     build::api::{Api, ApiSources},
@@ -120,8 +120,8 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_member_subcategory(&settings.members_category);
     landscape_data.add_tags(&settings);
 
-    // Get settings images and update their urls to the local copy
-    settings.images = get_settings_images(&settings, &args.output_dir).await?;
+    // Fetch some settings images and update their urls to the local copy
+    prepare_settings_images(&mut settings, &args.output_dir).await?;
 
     // Prepare guide and copy it to the output directory
     let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
@@ -444,53 +444,6 @@ fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
     Ok(svg_path.to_string_lossy().into_owned())
 }
 
-/// Get settings images and copy them to the output directory.
-#[instrument(skip_all, err)]
-async fn get_settings_images(settings: &LandscapeSettings, output_dir: &Path) -> Result<Images> {
-    // Helper function to process the image provided
-    async fn process_image(url: &Option<String>, output_dir: &Path) -> Result<Option<String>> {
-        let Some(url) = url else {
-            return Ok(None);
-        };
-
-        // Fetch image from url
-        let resp = reqwest::get(url).await?;
-        if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status ({}) code getting logo {url}",
-                resp.status()
-            ));
-        }
-        let img = resp.bytes().await?.to_vec();
-
-        // Write image to output dir
-        let url = Url::parse(url).context("invalid image url")?;
-        let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
-            return Err(format_err!("invalid image url: {url}"));
-        };
-        let img_path = Path::new(IMAGES_PATH).join(file_name);
-        File::create(output_dir.join(&img_path))?.write_all(&img)?;
-
-        Ok(Some(img_path.to_string_lossy().into_owned()))
-    }
-
-    debug!("getting settings images");
-
-    let (favicon, footer_logo, header_logo) = tokio::try_join!(
-        process_image(&settings.images.favicon, output_dir),
-        process_image(&settings.images.footer_logo, output_dir),
-        process_image(&settings.images.header_logo, output_dir),
-    )?;
-    let images = Images {
-        favicon,
-        footer_logo,
-        header_logo,
-        open_graph: settings.images.open_graph.clone(),
-    };
-
-    Ok(images)
-}
-
 /// Prepare guide and copy it to the output directory.
 #[instrument(skip_all, err)]
 async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<LandscapeGuide>> {
@@ -662,6 +615,57 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     server.abort();
 
     debug!("done!");
+    Ok(())
+}
+
+/// Fetch some settings images, copy them to the output directory and update
+/// their urls to the local copy.
+#[instrument(skip_all, err)]
+async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &Path) -> Result<()> {
+    // Helper function to process the image provided
+    async fn process_image(url: &Option<String>, output_dir: &Path) -> Result<Option<String>> {
+        let Some(url) = url else {
+            return Ok(None);
+        };
+
+        // Fetch image from url
+        let resp = reqwest::get(url).await?;
+        if resp.status() != StatusCode::OK {
+            return Err(format_err!(
+                "unexpected status ({}) code getting logo {url}",
+                resp.status()
+            ));
+        }
+        let img = resp.bytes().await?.to_vec();
+
+        // Write image to output dir
+        let url = Url::parse(url).context("invalid image url")?;
+        let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
+            return Err(format_err!("invalid image url: {url}"));
+        };
+        let img_path = Path::new(IMAGES_PATH).join(file_name);
+        File::create(output_dir.join(&img_path))?.write_all(&img)?;
+
+        Ok(Some(img_path.to_string_lossy().into_owned()))
+    }
+
+    debug!("preparing settings images");
+
+    // Header
+    if let Some(header) = &mut settings.header {
+        header.logo = process_image(&header.logo, output_dir).await?;
+    };
+
+    // Footer
+    if let Some(footer) = &mut settings.footer {
+        footer.logo = process_image(&footer.logo, output_dir).await?;
+    };
+
+    // Other images
+    if let Some(images) = &mut settings.images {
+        images.favicon = process_image(&images.favicon, output_dir).await?;
+    };
+
     Ok(())
 }
 

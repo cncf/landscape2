@@ -4,6 +4,7 @@ import isUndefined from 'lodash/isUndefined';
 import { JSXElement } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
+import styles from './ExternalLink.module.css';
 import SVGIcon from './SVGIcon';
 
 interface Props {
@@ -43,7 +44,7 @@ const ExternalLink = (props: Props) => {
         <button
           title={props.title}
           type="button"
-          class={`btn p-0 link ${props.class}`}
+          class={`btn p-0 link ${styles.link} ${props.class}`}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -63,7 +64,7 @@ const ExternalLink = (props: Props) => {
       ) : (
         <a
           title={props.title}
-          class={`link ${props.class}`}
+          class={`link ${styles.link} ${props.class}`}
           href={props.href}
           target={props.target || '_blank'}
           rel="noopener noreferrer"

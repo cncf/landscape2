@@ -226,7 +226,7 @@ const Logos = () => {
           </div>
         </div>
       </main>
-      <Footer logo={window.baseDS.images.footer_logo} />
+      <Footer />
     </>
   );
 };

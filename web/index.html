@@ -4,13 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <% if (!isDev) { %>
-      {% if datasets.base.images.favicon.is_some() %}
-      <link rel="shortcut icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
-      <link rel="apple-touch-icon" href="{{ datasets.base.images.favicon.as_ref().unwrap() }}" />
+      {% if let Some(images) = datasets.base.images %}
+      {% if let Some(favicon) = images.favicon %}
+      <link rel="shortcut icon" href="{{ favicon }}" />
+      <link rel="apple-touch-icon" href="{{ favicon }}" />
       {% endif %}
-      {% if datasets.base.images.open_graph.is_some() %}
-      <meta property="og:image" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}">
-      <meta name="twitter:image:src" content="{{ datasets.base.images.open_graph.as_ref().unwrap() }}" />
+      {% if let Some(open_graph) = images.open_graph %}
+      <meta property="og:image" content="{{ open_graph }}">
+      <meta name="twitter:image:src" content="{{ open_graph }}" />
+      {% endif %}
       {% endif %}
     <% } %>
     <title>{{ datasets.base.foundation }} Landscape</title>
@@ -33,18 +35,18 @@
     <% } %>
     <% if (!isDev) { %>
       {% set gtm_container_id = analytics|get_gtm_container_id %}
-      {% if gtm_container_id.is_some() %}
+      {% if let Some(gtm_container_id) = gtm_container_id %}
       <!-- Google Tag Manager -->
-      <script defer data-container-id="{{ gtm_container_id.as_ref().unwrap() }}" src="assets/gtm.js"></script>
+      <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
       <!-- End Google Tag Manager -->
       {% endif %}
     <% } %>
   </head>
   <body>
     <% if (!isDev) { %>
-      {% if gtm_container_id.is_some() %}
+      {% if let Some(gtm_container_id) = gtm_container_id %}
       <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id.unwrap() }}"
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id }}"
       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- End Google Tag Manager (noscript) -->
       {% endif %}

@@ -20,7 +20,7 @@ const NAV_HEIGHT = 121;
 const MobileHeader = () => {
   const location = useLocation();
   const openMenu = useSetMobileTOCStatus();
-  const logo = () => window.baseDS.images.header_logo;
+  const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
   const { point } = useBreakpointDetect();
   const [sticky, setSticky] = createSignal<boolean>(false);
   const scroll = useWindowScrollPosition();
@@ -52,15 +52,17 @@ const MobileHeader = () => {
           </Show>
         </div>
         <div>
-          <button class="btn btn-link" onClick={() => scrollToTop(true)}>
-            <img
-              src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
-              class={styles.stickyLogo}
-              alt="Landscape logo"
-              width="auto"
-              height={35}
-            />
-          </button>
+          <Show when={!isUndefined(logo())}>
+            <button class="btn btn-link" onClick={() => scrollToTop(true)}>
+              <img
+                src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
+                class={styles.stickyLogo}
+                alt="Landscape logo"
+                width="auto"
+                height={35}
+              />
+            </button>
+          </Show>
         </div>
         <div>
           <MobileDropdown inSticky />
@@ -69,16 +71,18 @@ const MobileHeader = () => {
       <header class="d-block d-lg-none navbar navbar-expand p-0 mb-2 border-bottom shadow-sm">
         <div class="container-fluid d-flex flex-column flex-lg-row align-items-center p-3 p-lg-4 mainPadding">
           <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
-            <A href="/" class="me-4 me-xl-5">
-              <img
-                class={styles.logo}
-                src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
-                alt="Landscape logo"
-                width="auto"
-                height={48}
-              />
-            </A>
-            <div class="d-flex d-lg-none">
+            <Show when={!isUndefined(logo())}>
+              <A href="/" class="me-4 me-xl-5">
+                <img
+                  class={styles.logo}
+                  src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
+                  alt="Landscape logo"
+                  width="auto"
+                  height={48}
+                />
+              </A>
+            </Show>
+            <div class="ms-auto d-flex d-lg-none">
               <MobileDropdown />
             </div>
           </div>

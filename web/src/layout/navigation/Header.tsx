@@ -17,7 +17,7 @@ import styles from './Header.module.css';
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const logo = () => window.baseDS.images.header_logo;
+  const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
   const setViewMode = useSetViewMode();
   const setSelectedGroup = useSetGroupActive();
 
@@ -28,26 +28,28 @@ const Header = () => {
   return (
     <header class={`d-none d-lg-flex navbar navbar-expand mb-2 border-bottom shadow-sm top-0 ${styles.navbar}`}>
       <div class="container-fluid d-flex flex-row align-items-center px-3 px-lg-4 mainPadding">
-        <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
-          <button
-            class="btn btn-link p-0 me-3 me-xl-5"
-            onClick={() => {
-              const groups = window.baseDS.groups;
-              setViewMode(ViewMode.Grid);
-              setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
-              navigate('/');
-              scrollToTop(false);
-            }}
-          >
-            <img
-              class={`${styles.logo}`}
-              src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
-              alt="Landscape logo"
-              width="auto"
-              height={48}
-            />
-          </button>
-        </div>
+        <Show when={!isUndefined(logo())}>
+          <div class={`d-flex flex-row justify-content-between align-items-center me-3 ${styles.logoWrapper}`}>
+            <button
+              class="btn btn-link p-0 pe-3 me-2 me-xl-5"
+              onClick={() => {
+                const groups = window.baseDS.groups;
+                setViewMode(ViewMode.Grid);
+                setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
+                navigate('/');
+                scrollToTop(false);
+              }}
+            >
+              <img
+                class={`${styles.logo}`}
+                src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
+                alt="Landscape logo"
+                width="auto"
+                height={48}
+              />
+            </button>
+          </div>
+        </Show>
 
         <Show
           when={location.pathname !== '/screenshot'}
@@ -128,12 +130,20 @@ const Header = () => {
             <div class={`d-flex align-items-center ${styles.icons}`}>
               <EmbedModal />
               <DownloadDropdown />
-              <ExternalLink
-                class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
-                href="https://github.com/cncf/landscape2"
+              <Show
+                when={
+                  !isUndefined(window.baseDS.header) &&
+                  !isUndefined(window.baseDS.header!.links) &&
+                  !isUndefined(window.baseDS.header!.links!.github)
+                }
               >
-                <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
-              </ExternalLink>
+                <ExternalLink
+                  class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
+                  href={window.baseDS.header!.links!.github!}
+                >
+                  <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
+                </ExternalLink>
+              </Show>
             </div>
           </div>
         </Show>

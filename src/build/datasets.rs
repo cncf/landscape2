@@ -62,7 +62,7 @@ mod base {
     use crate::build::{
         data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
         guide::LandscapeGuide,
-        settings::{Colors, GridItemsSize, Group, Images, LandscapeSettings, SocialNetworks, UpcomingEvent},
+        settings::{Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent},
     };
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
@@ -72,7 +72,6 @@ mod base {
     pub(crate) struct Base {
         pub finances_available: bool,
         pub foundation: String,
-        pub images: Images,
         pub qr_code: String,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -85,6 +84,9 @@ mod base {
         pub colors: Option<Colors>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub footer: Option<Footer>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub grid_items_size: Option<GridItemsSize>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -93,14 +95,17 @@ mod base {
         #[serde(skip_serializing_if = "HashMap::is_empty")]
         pub guide_summary: GuideSummary,
 
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub header: Option<Header>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub images: Option<Images>,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub members_category: Option<String>,
-
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub social_networks: Option<SocialNetworks>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub upcoming_event: Option<UpcomingEvent>,
@@ -119,11 +124,12 @@ mod base {
                 images: settings.images.clone(),
                 categories: landscape_data.categories.clone(),
                 colors: settings.colors.clone(),
+                footer: settings.footer.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
+                header: settings.header.clone(),
                 members_category: settings.members_category.clone(),
                 qr_code: qr_code.to_string(),
-                social_networks: settings.social_networks.clone(),
                 upcoming_event: settings.upcoming_event.clone(),
                 ..Default::default()
             };

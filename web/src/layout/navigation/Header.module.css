@@ -32,7 +32,7 @@
   color: var(--color1) !important;
   letter-spacing: 2px;
   border-bottom: 6px solid transparent;
-  margin-left: 2rem;
+  margin-right: 2rem;
 }
 
 .link:global(.activeLink) {
@@ -83,6 +83,6 @@
 
 @media only screen and (max-width: 1199.98px) {
   .link {
-    margin-left: 1.5rem;
+    margin-right: 1.5rem;
   }
 }

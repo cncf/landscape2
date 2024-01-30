@@ -542,7 +542,7 @@ const Explore = (props: Props) => {
           </Switch>
         </Show>
       </main>
-      <Footer logo={window.baseDS.images.footer_logo} />
+      <Footer />
     </Show>
   );
 };
