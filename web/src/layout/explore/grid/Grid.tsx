@@ -71,7 +71,7 @@ export const ItemsList = (props: ItemsListProps) => {
           }
         }
 
-        return !isEqual(tmpItems, items()) ? tmpItems : prev;
+        return !isEqual(tmpItems, prev) ? tmpItems : prev;
       });
     })
   );
