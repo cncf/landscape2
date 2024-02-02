@@ -15,6 +15,7 @@ class ItemIterator implements Iterable<Item | BaseItem> {
   private processedItemsNumber: number = 0;
   private currentRowItemIndex: number = 0;
   private lineWithFeaturedItem: boolean = false;
+  private prevItem: boolean = true;
 
   constructor(items: (Item | BaseItem)[], itemsPerRow: number) {
     this.items = items;
@@ -29,15 +30,13 @@ class ItemIterator implements Iterable<Item | BaseItem> {
       next: () => {
         if (this.shouldUseProvidedOrder()) {
           return {
-            done: this.processedItemsNumber == this.items.length,
+            done: this.processedItemsNumber === this.items.length,
             value: this.items[this.processedItemsNumber++],
           };
         } else {
-          const nextIndex = this.findNextItem() as number;
-
           return {
-            done: this.processedItemsNumber == this.items.length,
-            value: this.items[nextIndex],
+            done: this.processedItemsNumber === this.items.length,
+            value: this.items[this.findNextItem() as number],
           };
         }
       },
@@ -46,6 +45,12 @@ class ItemIterator implements Iterable<Item | BaseItem> {
 
   private findNextItem(): number | null {
     const startIndex: number = this.firstNonProcessed || this.lastProcessed;
+
+    // When not prev item, a new line is forced
+    if (!this.prevItem) {
+      this.currentRowItemIndex = 0;
+      this.lineWithFeaturedItem = false;
+    }
 
     for (let i = startIndex; i < this.items.length; i++) {
       const item = this.items[i];
@@ -77,24 +82,26 @@ class ItemIterator implements Iterable<Item | BaseItem> {
         }
 
         // Mark as processed
+        this.prevItem = true;
         this.lastProcessed = i;
         this.processedItems[item.id] = true;
         this.processedItemsNumber++;
-
         return i;
       } else {
-        if (isUndefined(this.firstNonProcessed) && i !== this.firstNonProcessed) {
+        if (isUndefined(this.firstNonProcessed)) {
           this.firstNonProcessed = i;
         }
       }
     }
 
+    this.prevItem = false;
     return null;
   }
 
   // Sometimes the provided order is good to proceed.
   private shouldUseProvidedOrder(): boolean {
     const featuredItemsNumber = this.items.filter((item: BaseItem | Item) => !isUndefined(item.featured)).length;
+
     // When items per row is even
     if (this.itemsPerRow % 2 === 0) {
       return true;
@@ -110,7 +117,7 @@ class ItemIterator implements Iterable<Item | BaseItem> {
       return true;
     }
 
-    // When  any item is featured
+    // When any item is featured
     if (featuredItemsNumber === 0) {
       return true;
     }
