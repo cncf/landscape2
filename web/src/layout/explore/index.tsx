@@ -408,7 +408,7 @@ const Explore = (props: Props) => {
   });
 
   return (
-    <Show when={!isUndefined(groupsData()) && readyData()}>
+    <Show when={!isUndefined(groupsData())}>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
         <div class="d-flex flex-column flex-lg-row my-2 my-md-3 py-1">
           <div class="d-flex flex-row align-items-center mb-1 mb-md-0">
@@ -588,7 +588,7 @@ const Explore = (props: Props) => {
           />
         </div>
 
-        <Show when={numVisibleItems() === 0}>
+        <Show when={numVisibleItems() === 0 && readyData()}>
           <div class="pt-5">
             <NoData>
               <>
@@ -613,15 +613,17 @@ const Explore = (props: Props) => {
         <Show when={!isUndefined(point())}>
           <Switch>
             <Match when={SMALL_DEVICES_BREAKPOINTS.includes(point()!)}>
-              <div ref={setContainerRef}>
-                <ExploreMobileIndex
-                  openMenuStatus={openMenuStatus()}
-                  closeMenuStatus={closeMenuStatus}
-                  data={{ ...groupsData() }[selectedGroup() || 'default']}
-                  categories_overridden={props.initialData.categories_overridden}
-                  finishLoading={finishLoading}
-                />
-              </div>
+              <Show when={readyData()}>
+                <div ref={setContainerRef}>
+                  <ExploreMobileIndex
+                    openMenuStatus={openMenuStatus()}
+                    closeMenuStatus={closeMenuStatus}
+                    data={{ ...groupsData() }[selectedGroup() || 'default']}
+                    categories_overridden={props.initialData.categories_overridden}
+                    finishLoading={finishLoading}
+                  />
+                </div>
+              </Show>
             </Match>
             <Match when={!SMALL_DEVICES_BREAKPOINTS.includes(point()!)}>
               <div class="position-relative d-flex w-100 pt-1">
@@ -638,31 +640,33 @@ const Explore = (props: Props) => {
                     <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />
                   )}
 
-                  <Show
-                    when={!isUndefined(props.initialData.groups)}
-                    fallback={
-                      <Content
-                        data={{ ...groupsData() }.default}
-                        categories_overridden={props.initialData.categories_overridden}
-                        updateHash={updateHash}
-                        finishLoading={finishLoading}
-                      />
-                    }
-                  >
-                    <For each={props.initialData.groups}>
-                      {(group: Group) => {
-                        return (
-                          <Content
-                            group={group.normalized_name}
-                            initialSelectedGroup={selectedGroup()}
-                            data={{ ...groupsData() }[group.normalized_name]}
-                            categories_overridden={props.initialData.categories_overridden}
-                            updateHash={updateHash}
-                            finishLoading={finishLoading}
-                          />
-                        );
-                      }}
-                    </For>
+                  <Show when={readyData()}>
+                    <Show
+                      when={!isUndefined(props.initialData.groups)}
+                      fallback={
+                        <Content
+                          data={{ ...groupsData() }.default}
+                          categories_overridden={props.initialData.categories_overridden}
+                          updateHash={updateHash}
+                          finishLoading={finishLoading}
+                        />
+                      }
+                    >
+                      <For each={props.initialData.groups}>
+                        {(group: Group) => {
+                          return (
+                            <Content
+                              group={group.normalized_name}
+                              initialSelectedGroup={selectedGroup()}
+                              data={{ ...groupsData() }[group.normalized_name]}
+                              categories_overridden={props.initialData.categories_overridden}
+                              updateHash={updateHash}
+                              finishLoading={finishLoading}
+                            />
+                          );
+                        }}
+                      </For>
+                    </Show>
                   </Show>
                 </div>
               </div>
