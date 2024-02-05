@@ -19,6 +19,10 @@ export const MODAL_PARAM = 'modal';
 export const ITEM_PARAM = 'item';
 export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
+export const PAGE_PARAM = 'page';
+export const FINANCES_KIND_PARAM = 'kind';
+export const SORT_BY_PARAM = 'sort-by';
+export const SORT_DIRECTION_PARAM = 'sort-direction';
 
 export const REGEX_SPACE = / /g;
 export const REGEX_PLUS = /\+/g;
@@ -109,8 +113,8 @@ export const FILTERS: FilterSection[] = [
     ],
   },
   {
-    value: FilterCategory.CompanyType,
-    title: 'Company type',
+    value: FilterCategory.OrgType,
+    title: 'Organization type',
     options: [
       {
         value: 'for_profit',
@@ -128,7 +132,7 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
   [FilterTitle.Project]: [FilterCategory.Maturity, FilterCategory.TAG, FilterCategory.License],
   [FilterTitle.Organization]: [
     FilterCategory.Organization,
-    FilterCategory.CompanyType,
+    FilterCategory.OrgType,
     FilterCategory.Industry,
     FilterCategory.Country,
   ],

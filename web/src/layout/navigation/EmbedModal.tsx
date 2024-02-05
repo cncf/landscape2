@@ -225,6 +225,7 @@ const EmbedModal = () => {
                   <div>
                     <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Category</div>
                     <select
+                      id="categories"
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedCategory()}
                       aria-label="Categories"
@@ -242,6 +243,7 @@ const EmbedModal = () => {
                   <div class="mt-4">
                     <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Subcategory</div>
                     <select
+                      id="subcategories"
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedSubcategory() || subcategoriesList()[0].normalized_name}
                       aria-label="Subcategories"
@@ -312,6 +314,7 @@ const EmbedModal = () => {
                   <div class="mt-4">
                     <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item Style</div>
                     <select
+                      id="styles"
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedStyle()}
                       aria-label="Styles"
@@ -329,6 +332,7 @@ const EmbedModal = () => {
                   <div class="mt-4">
                     <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item size</div>
                     <select
+                      id="sizes"
                       class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                       value={selectedSize()}
                       aria-label="Sizes"

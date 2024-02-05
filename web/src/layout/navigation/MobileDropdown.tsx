@@ -73,31 +73,27 @@ const MobileDropdown = (props: Props) => {
             Stats
           </A>
         </div>
-        <hr />
-        <div class="dropdown-item mb-2">
-          <ExternalLink
-            class="text-decoration-none fw-semibold d-inline-block w-100"
-            label="Open documentation"
-            href="https://github.com/cncf/landscape2"
-          >
-            <div class="d-flex align-items-center">
-              <SVGIcon kind={SVGIconKind.Documentation} class="me-2" />
-              Documentation
-            </div>
-          </ExternalLink>
-        </div>
-        <div class="dropdown-item mb-2">
-          <ExternalLink
-            class="text-decoration-none fw-semibold d-inline-block w-100"
-            label="Open documentation"
-            href="https://github.com/cncf/landscape2"
-          >
-            <div class="d-flex align-items-center">
-              <SVGIcon kind={SVGIconKind.GitHub} class="me-2" />
-              GitHub
-            </div>
-          </ExternalLink>
-        </div>
+        <Show
+          when={
+            !isUndefined(window.baseDS.header) &&
+            !isUndefined(window.baseDS.header!.links) &&
+            !isUndefined(window.baseDS.header!.links!.github)
+          }
+        >
+          <hr />
+          <div class="dropdown-item mb-2">
+            <ExternalLink
+              class="text-decoration-none fw-semibold d-inline-block w-100"
+              label="Open GitHub link"
+              href={window.baseDS.header!.links!.github!}
+            >
+              <div class="d-flex align-items-center">
+                <SVGIcon kind={SVGIconKind.GitHub} class="me-2" />
+                GitHub
+              </div>
+            </ExternalLink>
+          </div>
+        </Show>
       </div>
     </div>
   );

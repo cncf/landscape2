@@ -1,3 +1,5 @@
+import { useLocation, useNavigate } from '@solidjs/router';
+import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
@@ -5,7 +7,15 @@ import orderBy from 'lodash/orderBy';
 import moment from 'moment';
 import { batch, createEffect, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
 
-import { DEFAULT_FINANCES_KIND, REGEX_UNDERSCORE, SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import {
+  DEFAULT_FINANCES_KIND,
+  FINANCES_KIND_PARAM,
+  PAGE_PARAM,
+  REGEX_UNDERSCORE,
+  SMALL_DEVICES_BREAKPOINTS,
+  SORT_BY_PARAM,
+  SORT_DIRECTION_PARAM,
+} from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { AcquisitionData, ActiveFilters, FilterCategory, FinancesData, FinancesKind, FundingData } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
@@ -91,6 +101,8 @@ const filterFinances = (
 };
 
 const Finances = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const fullDataReady = useFullDataReady();
   const financesData = useFinancesDataContent();
   const setFinancesData = useSetFinancesDataContent();
@@ -107,10 +119,55 @@ const Finances = () => {
   const { point } = useBreakpointDetect();
   const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
 
+  const prepareQuery = () => {
+    if (location.search === '') {
+      navigate(
+        `${location.pathname}?${FINANCES_KIND_PARAM}=${DEFAULT_FINANCES_KIND}&${PAGE_PARAM}=1&${SORT_BY_PARAM}=${DEFAULT_SORT_BY}&${SORT_DIRECTION_PARAM}=${DEFAULT_SORT_DIRECTION}`,
+        {
+          replace: true,
+          scroll: true, // default
+        }
+      );
+    } else {
+      const currentFilters: ActiveFilters = {};
+      const params = new URLSearchParams(location.search);
+      for (const [key, value] of params) {
+        const f = key as FilterCategory;
+        if (Object.values(FilterCategory).includes(f)) {
+          if (currentFilters[f]) {
+            currentFilters[f] = [...currentFilters[f]!, value];
+          } else {
+            currentFilters[f] = [value];
+          }
+        }
+      }
+
+      batch(() => {
+        setActiveFilters(currentFilters);
+        setSelectedKind(
+          !isNull(params.get(FINANCES_KIND_PARAM))
+            ? (params.get(FINANCES_KIND_PARAM) as FinancesKind)
+            : DEFAULT_FINANCES_KIND
+        );
+        setPageNumber(!isNull(params.get(PAGE_PARAM)) ? parseInt(params.get(PAGE_PARAM)!) : 1);
+        setOffset(
+          !isNull(params.get(PAGE_PARAM)) ? DEFAULT_LIMIT_PER_PAGE * (parseInt(params.get(PAGE_PARAM)!) - 1) : 0
+        );
+        setSelectedSortOption({
+          by: params.get(SORT_BY_PARAM) || DEFAULT_SORT_BY,
+          direction: !isNull(params.get(SORT_DIRECTION_PARAM))
+            ? (params.get(SORT_DIRECTION_PARAM) as 'asc') || 'desc'
+            : DEFAULT_SORT_DIRECTION,
+        });
+      });
+    }
+  };
+
   const onPageNumberChange = (pNumber: number) => {
     scrollToTop(onSmallDevice);
     setOffset(DEFAULT_LIMIT_PER_PAGE * (pNumber - 1));
     setPageNumber(pNumber);
+    updateQueryString(PAGE_PARAM, pNumber.toString());
   };
 
   const formatVisibleData = () => {
@@ -135,6 +192,65 @@ const Finances = () => {
     }
   };
 
+  const updateFiltersQueryString = (filters: ActiveFilters) => {
+    const f = filters || activeFilters();
+    const params = new URLSearchParams();
+    if (!isUndefined(f) && !isEmpty(f)) {
+      Object.keys(f).forEach((filterId: string) => {
+        return f![filterId as FilterCategory]!.forEach((id: string) => {
+          params.append(filterId as string, id.toString());
+        });
+      });
+    }
+
+    const query = params.toString();
+
+    navigate(
+      `${location.pathname}?${FINANCES_KIND_PARAM}=${selectedKind()}&${PAGE_PARAM}=${pageNumber()}&${SORT_BY_PARAM}=${
+        selectedSortOption().by
+      }&${SORT_DIRECTION_PARAM}=${selectedSortOption().direction}${query !== '' ? `&${query}` : ''}`,
+      {
+        replace: true,
+        scroll: true, // default
+      }
+    );
+  };
+
+  const updateQueryString = (param: string, value: string) => {
+    const updatedSearchParams = new URLSearchParams(location.search);
+    updatedSearchParams.set(param, value);
+
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
+      replace: true,
+      scroll: true, // default
+    });
+  };
+
+  const updateSortQueryString = (sort: SortOption) => {
+    const updatedSearchParams = new URLSearchParams(location.search);
+    updatedSearchParams.set(PAGE_PARAM, '1');
+    updatedSearchParams.set(SORT_BY_PARAM, sort.by);
+    updatedSearchParams.set(SORT_DIRECTION_PARAM, sort.direction);
+
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
+      replace: true,
+      scroll: true, // default
+    });
+  };
+
+  const updateKindQueryString = (kind: FinancesKind) => {
+    const updatedSearchParams = new URLSearchParams();
+    updatedSearchParams.set(FINANCES_KIND_PARAM, kind);
+    updatedSearchParams.set(PAGE_PARAM, '1');
+    updatedSearchParams.set(SORT_BY_PARAM, DEFAULT_SORT_BY);
+    updatedSearchParams.set(SORT_DIRECTION_PARAM, DEFAULT_SORT_DIRECTION);
+
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
+      replace: true,
+      scroll: true, // default
+    });
+  };
+
   const getItemsPerPage = (items: AcquisitionData[] | FundingData[]): AcquisitionData[] | FundingData[] => {
     return items.slice(offset(), offset() + DEFAULT_LIMIT_PER_PAGE);
   };
@@ -142,6 +258,7 @@ const Finances = () => {
   const applyFilters = (newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
     formatVisibleData();
+    updateFiltersQueryString(newFilters);
   };
 
   const removeFilter = (name: FilterCategory, value: string) => {
@@ -170,15 +287,18 @@ const Finances = () => {
 
   const orderSelect = () => (
     <select
+      id="order"
       class={`form-select form-select-sm rounded-0 ${styles.select}`}
       value={`${selectedSortOption().by}-${selectedSortOption().direction}`}
       aria-label="Order"
       onChange={(e) => {
         const options = e.target.value.split('-');
+        const selectedOption = { by: options[0], direction: options[1] as 'asc' | 'desc' };
         batch(() => {
           setPageNumber(1);
           setOffset(0);
-          setSelectedSortOption({ by: options[0], direction: options[1] as 'asc' | 'desc' });
+          setSelectedSortOption(selectedOption);
+          updateSortQueryString(selectedOption);
         });
       }}
     >
@@ -189,7 +309,9 @@ const Finances = () => {
       </For>
     </select>
   );
+
   onMount(() => {
+    prepareQuery();
     if (!isUndefined(financesData())) {
       setTimeout(() => {
         setData(financesData());
@@ -269,6 +391,7 @@ const Finances = () => {
                               setActiveFilters({});
                               setSelectedKind(value);
                               setSelectedSortOption({ by: DEFAULT_SORT_BY, direction: DEFAULT_SORT_DIRECTION });
+                              updateKindQueryString(value);
                             });
                           }
                         }}

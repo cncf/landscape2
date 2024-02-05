@@ -36,7 +36,9 @@ const Header = () => {
                 const groups = window.baseDS.groups;
                 setViewMode(ViewMode.Grid);
                 setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
-                navigate('/');
+                navigate('/', {
+                  state: { from: 'logo-header' },
+                });
                 scrollToTop(false);
               }}
             >

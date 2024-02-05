@@ -1,4 +1,4 @@
-import isEqual from 'lodash/isEqual';
+import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
@@ -24,6 +24,7 @@ interface Props {
 const Section = (props: Props) => {
   const onChange = (name: FilterCategory, value: string, checked: boolean, subOtps?: string[]) => {
     let tmpActiveFilters: string[] = props.activeFilters ? [...props.activeFilters] : [];
+
     if (!checked) {
       if (props.activeFilters) {
         tmpActiveFilters = props.activeFilters.filter((f: string) => f !== value && !(subOtps || []).includes(f));
@@ -33,17 +34,10 @@ const Section = (props: Props) => {
         tmpActiveFilters.push(value);
       } else {
         tmpActiveFilters = [...tmpActiveFilters, ...subOtps];
-        tmpActiveFilters.push(value);
         tmpActiveFilters = [...new Set(tmpActiveFilters)];
       }
     }
 
-    // Remove foundation value from maturity category when no more options
-    if (name === FilterCategory.Maturity) {
-      if (isEqual(tmpActiveFilters, [window.baseDS.foundation.toLowerCase()])) {
-        tmpActiveFilters = [];
-      }
-    }
     props.updateActiveFilters(name, tmpActiveFilters);
   };
 
@@ -60,7 +54,7 @@ const Section = (props: Props) => {
   const renderChecksList = () => (
     <For each={props.section!.options}>
       {(opt: FilterOption) => {
-        let subOpts: string[];
+        let subOpts: string[] | undefined;
         let suboptions = opt.suboptions;
         if (
           opt.value === getFoundationNameLabel() &&
@@ -82,7 +76,11 @@ const Section = (props: Props) => {
               class={isUndefined(props.inLine) ? 'my-2' : 'mt-2'}
               label={opt.name}
               device={props.device}
-              checked={(props.activeFilters || []).includes(opt.value)}
+              checked={
+                !isUndefined(subOpts)
+                  ? intersection(subOpts, props.activeFilters || []).length > 0
+                  : (props.activeFilters || []).includes(opt.value)
+              }
               onChange={(value: string, checked: boolean) => onChange(props.section!.value!, value, checked, subOpts)}
             />
             <div class="ms-3">
@@ -97,7 +95,9 @@ const Section = (props: Props) => {
                       label={subOpt.name}
                       device={props.device}
                       checked={(props.activeFilters || []).includes(subOpt.value)}
-                      onChange={(value: string, checked: boolean) => onChange(props.section!.value!, value, checked)}
+                      onChange={(value: string, checked: boolean) => {
+                        onChange(props.section!.value!, value, checked);
+                      }}
                     />
                   )}
                 </For>

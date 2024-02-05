@@ -53,10 +53,10 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       }
 
       // Filter CompanyType
-      if (activeFilters[FilterCategory.CompanyType]) {
+      if (activeFilters[FilterCategory.OrgType]) {
         if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.company_type)) {
           return false;
-        } else if (!activeFilters[FilterCategory.CompanyType].includes(item.crunchbase_data.company_type)) {
+        } else if (!activeFilters[FilterCategory.OrgType].includes(item.crunchbase_data.company_type)) {
           return false;
         }
       }
