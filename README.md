@@ -58,13 +58,13 @@ brew install cncf/landscape2/landscape2
 #### Install via shell script
 
 ```text
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.5.0/landscape2-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/cncf/landscape2/releases/download/v0.6.0/landscape2-installer.sh | sh
 ```
 
 #### Install via powershell script
 
 ```text
-irm https://github.com/cncf/landscape2/releases/download/v0.5.0/landscape2-installer.ps1 | iex
+irm https://github.com/cncf/landscape2/releases/download/v0.6.0/landscape2-installer.ps1 | iex
 ```
 
 ### Container image
