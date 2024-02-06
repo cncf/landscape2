@@ -18,7 +18,7 @@ import {
   Style,
   STYLE_PARAM,
 } from '../../../../embed/src/types';
-import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM } from '../../data';
+import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Category, Subcategory, SVGIconKind } from '../../types';
 import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
@@ -27,8 +27,6 @@ import CheckBox from '../common/Checkbox';
 import CodeBlock from '../common/CodeBlock';
 import Modal from '../common/Modal';
 import SVGIcon from '../common/SVGIcon';
-import { useGroupActive } from '../stores/groupActive';
-import { useViewMode } from '../stores/viewMode';
 import styles from './EmbedModal.module.css';
 
 enum InputType {
@@ -50,8 +48,6 @@ const SIZES_LEGENDS = {
 const EmbedModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const selectedGroup = useGroupActive();
-  const viewMode = useViewMode();
   const { point } = useBreakpointDetect();
   const BG_COLOR =
     !isUndefined(window.baseDS.colors) && !isUndefined(window.baseDS.colors!.color5)
@@ -79,6 +75,7 @@ const EmbedModal = () => {
   const [fgColor, setFgColor] = createSignal<string>(DEFAULT_FG_COLOR);
   const [url, setUrl] = createSignal<string>();
   const [prevHash, setPrevHash] = createSignal<string>('');
+  const [prevSearch, setPrevSearch] = createSignal<string>('');
 
   const getUrl = () => {
     return `${
@@ -128,11 +125,7 @@ const EmbedModal = () => {
   };
 
   const onClose = () => {
-    const updatedSearchParams = new URLSearchParams();
-    updatedSearchParams.set(GROUP_PARAM, selectedGroup() || 'default');
-    updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
-
-    navigate(`/?${updatedSearchParams.toString()}${prevHash()}`, {
+    navigate(`/${prevSearch() !== '' ? prevSearch() : ''}${prevHash()}`, {
       replace: true,
     });
     setVisibleModal(false);
@@ -171,6 +164,7 @@ const EmbedModal = () => {
   createEffect(
     on(visibleModal, () => {
       if (visibleModal()) {
+        setPrevSearch(location.search);
         setPrevHash(location.hash);
         setUrl(getUrl());
       }
