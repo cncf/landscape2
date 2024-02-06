@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-02-06
+
 ### Added
 
 - **BREAKING**: settings: new required [url field](https://github.com/cncf/landscape2/blob/8728c797eeef557be21181f77e453134b17cdbf7/docs/config/settings.yml#L30-L36) (#475)
 - Landscape API endpoints (#475)
 - Provide ability to run GTM containers (#457)
 - Display upcoming events and make them configurable (#468)
+- Filters used to url (#485)
 - Display member end user badge (#471)
 - Members category to base data set (#470)
 - More options to logos-preview endpoint (#472)
@@ -20,9 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Issue rendering grid (#484)
 - Issue generating stats (#456)
 - Issue closing sidebar on mobile devices (#474)
 - Issue copying `gtm.js` file (#459)
+- Issue displaying loading animation (#486)
 - Header menu icon alignment (#474)
 - Issue displaying decimals in stats (#473)
 
