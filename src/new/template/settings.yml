@@ -202,6 +202,22 @@ header:
 # members_category: <CATEGORY_NAME>
 #
 
+# Osano (optional)
+#
+# Osano cookies consent form configuration. When the Osano configuration is
+# provided, some additional code will be injected into the web application.
+#
+# The `customer_id` and `customer_configuration_id` fields values can be
+# obtained from the url in the configuration script code available on the Osano
+# site:
+#
+#   https://cmp.osano.com/<CUSTOMER_ID>/<CUSTOMER_CONFIGURATION_ID>/osano.js
+#
+# osano:
+#   customer_id: <CUSTOMER_ID>
+#   customer_configuration_id: <CUSTOMER_CONFIGURATION_ID>
+#
+
 # Screenshot width (optional)
 #
 # Width of the landscape screenshots automatically generated (in pixels).

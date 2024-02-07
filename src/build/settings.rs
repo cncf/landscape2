@@ -52,6 +52,9 @@ pub(crate) struct LandscapeSettings {
     pub images: Option<Images>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub osano: Option<Osano>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub members_category: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -147,20 +150,6 @@ impl LandscapeSettings {
         // Check url is valid
         validate_url("landscape", &Some(self.url.clone()))?;
 
-        // Check members category is not empty
-        if let Some(members_category) = &self.members_category {
-            if members_category.is_empty() {
-                return Err(format_err!("members category cannot be empty"));
-            }
-        }
-
-        // Check screenshot width is valid
-        if let Some(screenshot_width) = &self.screenshot_width {
-            if *screenshot_width <= 1000 {
-                return Err(format_err!("screenshot width must be greater than 1000"));
-            }
-        }
-
         self.validate_categories()?;
         self.validate_colors()?;
         self.validate_featured_items()?;
@@ -168,6 +157,9 @@ impl LandscapeSettings {
         self.validate_groups()?;
         self.validate_header()?;
         self.validate_images()?;
+        self.validate_members_category()?;
+        self.validate_osano()?;
+        self.validate_screenshot_width()?;
         self.validate_tags()?;
 
         Ok(())
@@ -361,6 +353,48 @@ impl LandscapeSettings {
         Ok(())
     }
 
+    /// Check members category is valid.
+    fn validate_members_category(&self) -> Result<()> {
+        let Some(members_category) = &self.members_category else {
+            return Ok(());
+        };
+
+        // Check members category is not empty
+        if members_category.is_empty() {
+            return Err(format_err!("members category cannot be empty"));
+        }
+
+        Ok(())
+    }
+
+    /// Check Osano configuration is valid.
+    fn validate_osano(&self) -> Result<()> {
+        let Some(osano) = &self.osano else { return Ok(()) };
+
+        // Check customer id and customer configuration id are not empty
+        if osano.customer_id.is_empty() {
+            return Err(format_err!("osano customer id cannot be empty"));
+        }
+        if osano.customer_configuration_id.is_empty() {
+            return Err(format_err!("osano customer configuration id cannot be empty"));
+        }
+
+        Ok(())
+    }
+
+    /// Check screenshot width is valid.
+    fn validate_screenshot_width(&self) -> Result<()> {
+        let Some(screenshot_width) = &self.screenshot_width else {
+            return Ok(());
+        };
+
+        if *screenshot_width <= 1000 {
+            return Err(format_err!("screenshot width must be greater than 1000"));
+        }
+
+        Ok(())
+    }
+
     /// Check tags are valid.
     fn validate_tags(&self) -> Result<()> {
         if let Some(tags) = &self.tags {
@@ -438,41 +472,6 @@ pub(crate) struct FeaturedItemRuleOption {
     pub order: Option<usize>,
 }
 
-/// Google Tag Manager configuration.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct GoogleTagManager {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub container_id: Option<String>,
-}
-
-/// Grid items size.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub(crate) enum GridItemsSize {
-    Small,
-    Medium,
-    Large,
-}
-
-/// Landscape group. A group provides a mechanism to organize sets of
-/// categories in the web application.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Group {
-    pub name: String,
-    pub normalized_name: Option<String>,
-    pub categories: Vec<CategoryName>,
-}
-
-/// Images urls.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
-pub(crate) struct Images {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub favicon: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub open_graph: Option<String>,
-}
-
 /// Footer configuration.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Footer {
@@ -523,6 +522,31 @@ pub(crate) struct FooterLinks {
     pub youtube: Option<String>,
 }
 
+/// Google Tag Manager configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct GoogleTagManager {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub container_id: Option<String>,
+}
+
+/// Grid items size.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum GridItemsSize {
+    Small,
+    Medium,
+    Large,
+}
+
+/// Landscape group. A group provides a mechanism to organize sets of
+/// categories in the web application.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Group {
+    pub name: String,
+    pub normalized_name: Option<String>,
+    pub categories: Vec<CategoryName>,
+}
+
 /// Header configuration.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Header {
@@ -538,6 +562,23 @@ pub(crate) struct Header {
 pub(crate) struct HeaderLinks {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub github: Option<String>,
+}
+
+/// Images urls.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Images {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub favicon: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub open_graph: Option<String>,
+}
+
+/// Osano configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Osano {
+    pub customer_id: String,
+    pub customer_configuration_id: String,
 }
 
 /// Type alias to represent a TAG name.

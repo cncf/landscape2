@@ -59,6 +59,12 @@ const App = () => {
 
     loadColors();
     itemsDataGetter.init();
+
+    if (window.Osano) {
+      window.Osano.cm.addEventListener('osano-cm-initialized', () => {
+        document.body.classList.add('osano-loaded');
+      });
+    }
   });
 
   return (

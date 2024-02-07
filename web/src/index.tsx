@@ -1,5 +1,6 @@
 import './styles/default.scss';
 import './App.css';
+import './styles/cookies.css';
 
 import { render } from 'solid-js/web';
 

@@ -8,7 +8,7 @@ use self::{
     github::collect_github_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::Analytics,
+    settings::{Analytics, Osano},
 };
 use crate::{
     build::api::{Api, ApiSources},
@@ -168,7 +168,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     )?;
 
     // Render index file and write it to the output directory
-    render_index(&settings.analytics, &datasets, &args.output_dir)?;
+    render_index(&settings.analytics, &datasets, &settings.osano, &args.output_dir)?;
 
     // Copy embed and web assets files to the output directory
     copy_embed_assets(&args.output_dir)?;
@@ -675,14 +675,25 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
 struct Index<'a> {
     analytics: &'a Option<Analytics>,
     datasets: &'a Datasets,
+    osano: &'a Option<Osano>,
 }
 
 /// Render index file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(analytics: &Option<Analytics>, datasets: &Datasets, output_dir: &Path) -> Result<()> {
+fn render_index(
+    analytics: &Option<Analytics>,
+    datasets: &Datasets,
+    osano: &Option<Osano>,
+    output_dir: &Path,
+) -> Result<()> {
     debug!("rendering index.html file");
 
-    let index = Index { analytics, datasets }.render()?;
+    let index = Index {
+        analytics,
+        datasets,
+        osano,
+    }
+    .render()?;
     File::create(output_dir.join("index.html"))?.write_all(index.as_bytes())?;
 
     Ok(())
