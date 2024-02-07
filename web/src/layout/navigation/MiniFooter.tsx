@@ -1,3 +1,6 @@
+import isUndefined from 'lodash/isUndefined';
+import { Show } from 'solid-js';
+
 import ExternalLink from '../common/ExternalLink';
 import styles from './Footer.module.css';
 
@@ -8,19 +11,17 @@ const MiniFooter = () => {
         <div class="d-flex flex-column flex-sm-row justify-content-between">
           <div class="d-flex flex-column">
             <div>
-              <div class={`pt-2 ${styles.copyright}`}>
-                Copyright © 2023 The Linux Foundation®. All rights reserved. The Linux Foundation has registered
-                trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our{' '}
-                <ExternalLink class="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/trademark-usage">
-                  Trademark Usage
-                </ExternalLink>{' '}
-                page. Linux is a registered trademark of Linus Torvalds.{' '}
-                <ExternalLink class="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/privacy">
-                  Privacy Policy
-                </ExternalLink>{' '}
-                and{' '}
-                <ExternalLink class="p-0 fw-semibold text-white" href="https://www.linuxfoundation.org/terms">
-                  Terms of Use
+              <Show when={!isUndefined(window.baseDS.footer) && !isUndefined(window.baseDS.footer!.text)}>
+                {/* eslint-disable-next-line solid/no-innerhtml */}
+                <div class={`pb-2 ${styles.legend}`} innerHTML={window.baseDS.footer!.text} />
+              </Show>
+              <div class={styles.legend}>
+                Powered by{' '}
+                <ExternalLink
+                  class="p-0 fw-semibold text-white text-underline"
+                  href="https://github.com/cncf/landscape2"
+                >
+                  CNCF interactive landscapes generator
                 </ExternalLink>
                 .
               </div>
