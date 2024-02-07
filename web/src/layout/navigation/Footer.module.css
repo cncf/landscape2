@@ -32,6 +32,31 @@
   text-decoration: underline;
 }
 
+.cookieBtnWrapper {
+  display: none;
+  right: 3rem;
+  bottom: 2rem;
+}
+
+:global(.osano-loaded) .cookieBtnWrapper {
+  display: block;
+}
+
+.cookieBtn {
+  transition:
+    transform 0.1s linear 0s,
+    opacity 0.4s linear 0ms;
+  opacity: 0.9;
+  font-size: 1.75rem;
+  line-height: 1.75;
+}
+
+.cookieBtn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  transform-origin: center;
+}
+
 @media (hover: hover) {
   .link:hover {
     color: var(--color2);

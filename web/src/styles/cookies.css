@@ -1,0 +1,96 @@
+.osano-cm-widget {
+  display: none;
+}
+
+.osano-cm-info {
+  font-family: var(--bs-font-sans-serif);
+  background: var(--bs-white);
+  box-shadow: -5px 0px 5px 0px rgba(0, 0, 0, 0.25);
+}
+
+.osano-cm-header,
+.osano-cm-info-dialog-header,
+.osano-cm-dialog {
+  background: var(--bs-white);
+}
+
+.osano-cm-dialog {
+  border: 2px solid var(--bs-gray-400);
+  color: var(--bs-body-color);
+  font-size: 0.85rem;
+}
+
+.osano-cm-powered-by {
+  margin: 0;
+}
+
+.osano-cm-powered-by__link {
+  display: none;
+}
+
+.osano-cm-disclosure__toggle:focus,
+.osano-cm-disclosure__toggle:hover {
+  text-decoration: none;
+}
+
+.osano-cm-widget__outline {
+  fill: var(--bs-white);
+  stroke: var(--bs-black);
+}
+
+.osano-cm-widget__dot {
+  fill: var(--color2);
+}
+
+.osano-cm-close {
+  background-color: transparent !important;
+  color: var(--bs-black);
+  border: none;
+  transform: none !important;
+}
+
+.osano-cm-close svg {
+  height: 14px;
+  width: 14px;
+}
+
+.osano-cm-toggle {
+  margin: 0.5rem 0;
+}
+
+.osano-cm-toggle__switch {
+  background-color: var(--bs-gray-200);
+}
+
+.osano-cm-toggle__input:focus + .osano-cm-toggle__switch,
+.osano-cm-toggle__input:hover + .osano-cm-toggle__switch {
+  background-color: var(--bs-gray-400);
+  border-color: var(--bs-gray-400);
+}
+
+.osano-cm-toggle__input:focus + .osano-cm-toggle__switch::before {
+  border-color: var(--bs-gray-400);
+}
+
+.osano-cm-dialog__close:hover,
+.osano-cm-dialog__close:focus,
+.osano-cm-dialog__close:focus:hover,
+.osano-cm-info-dialog-header__close:hover,
+.osano-cm-info-dialog-header__close:focus,
+.osano-cm-info-dialog-header__close:focus:hover {
+  stroke: var(--bs-black);
+  border: transparent;
+}
+
+.osano-cm-button {
+  color: var(--bs-white);
+  border-radius: 0;
+  border: none;
+  background-color: var(--color2);
+}
+
+.osano-cm-button:focus,
+.osano-cm-button:hover {
+  background-color: var(--color2);
+  filter: brightness(95%);
+}
