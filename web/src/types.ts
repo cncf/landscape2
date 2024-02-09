@@ -428,6 +428,7 @@ export enum SVGIconKind {
   Menu,
   NotImage,
   OpenssfBestPractices,
+  OsanoCookie,
   PDF,
   PNG,
   Search,

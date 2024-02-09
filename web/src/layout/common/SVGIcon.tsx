@@ -612,6 +612,19 @@ const OpenssfBestPractices = (props: IconProps) => (
   </svg>
 );
 
+const OsanoCookie = (props: IconProps) => (
+  <svg class={props.class} xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 71.85 72.23">
+    <path
+      d="M67.6 36.73a6.26 6.26 0 0 1-3.2-2.8 5.86 5.86 0 0 0-5.2-3.1h-.3a11 11 0 0 1-11.4-9.5 6 6 0 0 1-.1-1.4 9.2 9.2 0 0 1 .4-2.9 8.65 8.65 0 0 0 .2-1.6 5.38 5.38 0 0 0-1.9-4.3 7.3 7.3 0 0 1-2.5-5.5 3.91 3.91 0 0 0-3.5-3.9 36.46 36.46 0 0 0-15 1.5A33.14 33.14 0 0 0 3 25.93a35.62 35.62 0 0 0-1.5 10.2 34.07 34.07 0 0 0 4.8 17.6.75.75 0 0 0 .07.12c.11.17 1.22 1.39 2.68 3-.36.47 5.18 6.16 5.65 6.52a34.62 34.62 0 0 0 55.6-21.9 4.38 4.38 0 0 0-2.7-4.74z"
+      fill="#fff"
+      stroke="#000"
+    />
+    <g fill="var(--color2)">
+      <path d="M26.6 31.43A5.4 5.4 0 1 1 32 26a5.38 5.38 0 0 1-5.33 5.43zM25.2 53.13a5.4 5.4 0 1 1 5.4-5.4 5.44 5.44 0 0 1-5.4 5.4zM47.9 52.33a5.4 5.4 0 1 1 5.4-5.4 5.32 5.32 0 0 1-5.24 5.4z" />
+    </g>
+  </svg>
+);
+
 const PDF = (props: IconProps) => (
   <svg
     class={props.class}
@@ -909,6 +922,7 @@ const icons: ValidComponent[] = [
   Menu,
   NotImage,
   OpenssfBestPractices,
+  OsanoCookie,
   PDF,
   PNG,
   Search,

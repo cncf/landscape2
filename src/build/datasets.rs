@@ -120,18 +120,21 @@ mod base {
             qr_code: &str,
         ) -> Self {
             let mut base = Base {
+                finances_available: false,
                 foundation: settings.foundation.clone(),
+                qr_code: qr_code.to_string(),
                 images: settings.images.clone(),
                 categories: landscape_data.categories.clone(),
+                categories_overridden: vec![],
                 colors: settings.colors.clone(),
                 footer: settings.footer.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
+                guide_summary: HashMap::new(),
                 header: settings.header.clone(),
+                items: vec![],
                 members_category: settings.members_category.clone(),
-                qr_code: qr_code.to_string(),
                 upcoming_event: settings.upcoming_event.clone(),
-                ..Default::default()
             };
 
             // Update categories overridden in settings

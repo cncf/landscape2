@@ -76,7 +76,7 @@ const Footer = () => {
   };
 
   return (
-    <footer role="contentinfo" class={`bg-black text-white mt-4 ${styles.footer}`}>
+    <footer role="contentinfo" class={`position-relative bg-black text-white mt-4 ${styles.footer}`}>
       <div class="container-fluid px-0 px-lg-auto">
         <div class="d-flex flex-column flex-sm-row justify-content-between w-100">
           <div class="d-flex flex-column w-100">
@@ -152,6 +152,17 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+      <Show when={window.navigator.onLine && !isUndefined(window.Osano)}>
+        <div id="osano-cookie" class={`position-absolute ${styles.cookieBtnWrapper}`}>
+          <button
+            class={`btn btn-link btn-lg ${styles.cookieBtn}`}
+            onClick={() => window.Osano.cm.showDrawer('osano-cm-dom-info-dialog-open')}
+          >
+            <SVGIcon kind={SVGIconKind.OsanoCookie} />
+          </button>
+        </div>
+      </Show>
     </footer>
   );
 };

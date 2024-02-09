@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Provide ability to display Osano cookies consent form
+
 ## [0.6.1] - 2024-02-07
 
 ### Fixed
 
 - Use settings footer text in screenshot (#492)
+- Keep current filters when closing embed modal (#490)
 
 ## [0.6.0] - 2024-02-06
 
