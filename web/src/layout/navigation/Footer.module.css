@@ -43,7 +43,9 @@
 }
 
 .cookieBtn {
-  transition: transform 0.1s linear 0s, opacity 0.4s linear 0ms;
+  transition:
+    transform 0.1s linear 0s,
+    opacity 0.4s linear 0ms;
   opacity: 0.9;
   font-size: 1.75rem;
   line-height: 1.75;
