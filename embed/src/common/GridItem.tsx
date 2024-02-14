@@ -1,3 +1,4 @@
+import { Show } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
 import { BaseItem, Size } from '../types';
@@ -9,6 +10,8 @@ interface Props {
   item: BaseItem;
   size: Size;
   borderless: boolean;
+  withName: boolean;
+  itemNameSize: number;
   withShadow?: boolean;
   class?: string;
 }
@@ -17,6 +20,11 @@ interface ItemProps {
   borderless: boolean;
   withShadow: boolean;
   size: Size;
+}
+
+interface ItemNameProps {
+  itemNameSize: number;
+  borderless: boolean;
 }
 
 type PaddingSize = {
@@ -35,9 +43,11 @@ const Item = styled('div')`
   border: ${(props: ItemProps) => (!props.borderless ? '1px solid rgba(0, 0, 0, 0.175)' : '')};
   box-shadow: ${(props: ItemProps) => (props.withShadow ? '0 .125rem .25rem rgba(0,0,0,.075)' : 'none')};
   padding: ${(props: ItemProps) => PADDINGS_SIZES[props.size]};
+  background-color: ${(props: ItemProps) => (!props.borderless ? '#fff' : 'transparent')};
 `;
 
 const ItemClass = css`
+  position: relative;
   display: flex;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -67,6 +77,21 @@ const ImageClass = css`
   height: auto;
 `;
 
+const ItemName = styled('div')`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: ${(props: ItemNameProps) => (props.itemNameSize < 40 ? `${props.itemNameSize}px` : '40px')};
+  line-height: ${(props: ItemNameProps) => (props.itemNameSize < 40 ? `${props.itemNameSize - 2}px` : '38px')};
+  padding: ${(props: ItemNameProps) => (!props.borderless ? '0.35rem 0.25rem' : '0.35rem 0')};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-top: ${(props: ItemNameProps) => (!props.borderless ? '1px solid rgba(0, 0, 0, 0.175)' : '')};
+`;
+
 const GridItem = (props: Props) => {
   return (
     <Item
@@ -75,8 +100,17 @@ const GridItem = (props: Props) => {
       withShadow={typeof props.withShadow !== 'undefined' && props.withShadow}
       size={props.size}
     >
-      <ExternalLink href={`${getUrl()}?item=${props.item.id}`} class={LinkClass}>
+      <ExternalLink
+        href={`${getUrl()}?item=${props.item.id}`}
+        paddingBottom={props.withName ? props.itemNameSize + 8 : 0}
+        class={LinkClass}
+      >
         <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+        <Show when={props.withName}>
+          <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
+            {props.item.name}
+          </ItemName>
+        </Show>
       </ExternalLink>
     </Item>
   );

@@ -1,13 +1,23 @@
 import { JSXElement } from 'solid-js';
-import { css } from 'solid-styled-components';
+import { css, styled } from 'solid-styled-components';
 
 interface Props {
   children: JSXElement | JSXElement[] | string;
   href: string;
+  paddingBottom?: number;
   class?: string;
   label?: string;
   title?: string;
 }
+
+interface LinkProps {
+  paddingBottom?: number;
+}
+
+const Link = styled('a')`
+  padding-bottom: ${(props: LinkProps) =>
+    typeof props.paddingBottom !== 'undefined' ? `${props.paddingBottom}px` : '0'};
+`;
 
 const LinkClass = css`
   color: inherit;
@@ -20,7 +30,7 @@ const LinkClass = css`
 
 const ExternalLink = (props: Props) => {
   return (
-    <a
+    <Link
       title={props.title}
       class={`${LinkClass} ${props.class}`}
       href={props.href}
@@ -28,9 +38,10 @@ const ExternalLink = (props: Props) => {
       rel="noopener noreferrer"
       aria-label={props.label || 'Open external link'}
       tabIndex={-1}
+      paddingBottom={props.paddingBottom}
     >
       {props.children}
-    </a>
+    </Link>
   );
 };
 
