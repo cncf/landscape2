@@ -22,7 +22,7 @@ body {
 
 button:focus,
 a:focus,
-input:not([type='color']):focus,
+input:not([type='color']):not(.withShadow):focus,
 select:focus {
   outline: none !important;
   box-shadow: 0 0 0 0 transparent !important;

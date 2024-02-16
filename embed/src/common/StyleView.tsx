@@ -1,13 +1,17 @@
 import { For, Match, Switch } from 'solid-js';
-import { styled } from 'solid-styled-components';
+import { css, styled } from 'solid-styled-components';
 
-import { BaseItem, Size, Style } from '../types';
+import { Alignment, BaseItem, Size, Style } from '../types';
 import GridItem from './GridItem';
 
 interface Props {
   style: Style;
   size: Size;
   items: BaseItem[];
+  alignment: Alignment;
+  displayName: boolean;
+  itemNameSize: number;
+  spacing?: number;
 }
 
 type CardSizes = {
@@ -20,6 +24,8 @@ type CardSizes = {
 
 interface GridProps {
   size: Size;
+  alignment: Alignment;
+  spacing?: number;
 }
 
 const CARD_SIZES: CardSizes = {
@@ -54,38 +60,73 @@ const Grid = styled('div')`
   --card-size-width: ${(props: GridProps) => CARD_SIZES[props.size].width};
   --card-size-height: ${(props: GridProps) => CARD_SIZES[props.size].height};
 
-  display: grid;
-  grid-template-columns: repeat(auto-fit, var(--card-size-width));
-  grid-auto-rows: var(--card-size-height);
-  gap: ${(props: GridProps) => CARD_SIZES[props.size].gap};
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: ${(props: GridProps) =>
+    typeof props.spacing !== 'undefined' ? `${props.spacing}px` : CARD_SIZES[props.size].gap};
+  justify-content: ${(props: GridProps) => props.alignment};
+`;
+
+const ItemClass = css`
+  width: var(--card-size-width);
+  height: var(--card-size-height);
 `;
 
 const StyleView = (props: Props) => {
   return (
     <Switch>
       <Match when={props.style === Style.Basic}>
-        <Grid size={props.size}>
+        <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
           <For each={props.items}>
             {(item: BaseItem) => {
-              return <GridItem item={item} size={props.size} borderless />;
+              return (
+                <GridItem
+                  item={item}
+                  size={props.size}
+                  class={ItemClass}
+                  withName={props.displayName}
+                  itemNameSize={props.itemNameSize}
+                  borderless
+                />
+              );
             }}
           </For>
         </Grid>
       </Match>
       <Match when={props.style === Style.BorderedBasic}>
-        <Grid size={props.size}>
+        <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
           <For each={props.items}>
             {(item: BaseItem) => {
-              return <GridItem item={item} size={props.size} borderless={false} />;
+              return (
+                <GridItem
+                  item={item}
+                  size={props.size}
+                  class={ItemClass}
+                  withName={props.displayName}
+                  itemNameSize={props.itemNameSize}
+                  borderless={false}
+                />
+              );
             }}
           </For>
         </Grid>
       </Match>
       <Match when={props.style === Style.ShadowedBasic}>
-        <Grid size={props.size}>
+        <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
           <For each={props.items}>
             {(item: BaseItem) => {
-              return <GridItem item={item} size={props.size} borderless={false} withShadow />;
+              return (
+                <GridItem
+                  item={item}
+                  size={props.size}
+                  class={ItemClass}
+                  withName={props.displayName}
+                  itemNameSize={props.itemNameSize}
+                  borderless={false}
+                  withShadow
+                />
+              );
             }}
           </For>
         </Grid>

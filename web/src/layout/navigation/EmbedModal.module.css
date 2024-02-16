@@ -21,6 +21,14 @@
   padding: 1.7rem;
 }
 
+.mainWrapper {
+  min-height: 1px;
+}
+
+.contentWrapper {
+  min-height: 100%;
+}
+
 .configWrapper {
   background-color: var(--bs-gray-100);
 }
@@ -38,7 +46,8 @@
   padding-top: 1.5rem;
 }
 
-.select {
+.select,
+.input {
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
   margin: 0.5rem 0.2rem;
   width: 250px;
@@ -46,7 +55,8 @@
   font-size: 0.8rem;
 }
 
-.select:focus {
+.select:focus,
+.input:focus {
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
 }
 
