@@ -126,10 +126,20 @@ export const FILTERS: FilterSection[] = [
       },
     ],
   },
+  {
+    value: FilterCategory.Extra,
+    title: 'Extra',
+    options: [
+      {
+        value: 'specification',
+        name: 'Specification',
+      },
+    ],
+  },
 ];
 
 export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
-  [FilterTitle.Project]: [FilterCategory.Maturity, FilterCategory.TAG, FilterCategory.License],
+  [FilterTitle.Project]: [FilterCategory.Maturity, FilterCategory.TAG, FilterCategory.License, FilterCategory.Extra],
   [FilterTitle.Organization]: [
     FilterCategory.Organization,
     FilterCategory.OrgType,

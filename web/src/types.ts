@@ -324,6 +324,7 @@ export enum FilterCategory {
   TAG = 'tag',
   Membership = 'membership',
   InvestmentType = 'investment-type',
+  Extra = 'extra',
 }
 
 export interface Stats {

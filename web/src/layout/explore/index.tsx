@@ -52,6 +52,7 @@ export type LoadedContent = {
 
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
+const EXTRA_FILTERS = ['specification'];
 
 const Explore = (props: Props) => {
   const navigate = useNavigate();
@@ -122,6 +123,14 @@ const Explore = (props: Props) => {
             currentFilters[f] = [...currentFilters[f]!, value];
           } else {
             currentFilters[f] = [value];
+          }
+        }
+      } else {
+        if (EXTRA_FILTERS.includes(key)) {
+          if (currentFilters[f]) {
+            currentFilters[FilterCategory.Extra] = [...currentFilters[FilterCategory.Extra]!, key];
+          } else {
+            currentFilters[FilterCategory.Extra] = [key];
           }
         }
       }
@@ -205,6 +214,9 @@ const Explore = (props: Props) => {
     Object.values(FilterCategory).forEach((f: string) => {
       params.delete(f);
     });
+    EXTRA_FILTERS.forEach((f: string) => {
+      params.delete(f);
+    });
 
     if (params.toString() === '') {
       params.set(GROUP_PARAM, selectedGroup()!);
@@ -213,7 +225,11 @@ const Explore = (props: Props) => {
 
     const filtersParams = getFiltersQuery(filters);
     for (const [key, val] of filtersParams.entries()) {
-      params.append(key, val);
+      if (key === FilterCategory.Extra) {
+        params.append(val, 'true');
+      } else {
+        params.append(key, val);
+      }
     }
 
     const query = params.toString();
