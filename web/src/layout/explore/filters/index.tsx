@@ -250,6 +250,15 @@ const Filters = (props: Props) => {
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                 />
+
+                <Section
+                  title="Extra"
+                  section={getSection(FilterCategory.Extra)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Extra]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                  sectionClass={styles.section}
+                />
               </div>
             </Show>
 

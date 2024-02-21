@@ -6,6 +6,16 @@ import getFoundationNameLabel from './getFoundationNameLabel';
 const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
   if (Object.keys(activeFilters).length > 0) {
     const filteredItems: Item[] = items.filter((item: Item) => {
+      // Filter Extra
+      if (activeFilters[FilterCategory.Extra]) {
+        if (
+          activeFilters[FilterCategory.Extra].includes('specification') &&
+          (isUndefined(item.specification) || !item.specification)
+        ) {
+          return false;
+        }
+      }
+
       // Filter Organization
       if (activeFilters[FilterCategory.Organization]) {
         if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.name)) {

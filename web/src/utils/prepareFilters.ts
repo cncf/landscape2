@@ -50,6 +50,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   const licenses: string[] = [];
   const countries: string[] = [];
   const companyTypes: string[] = [];
+  const extraTypes: string[] = [];
   let categories: string[] = [];
 
   items.forEach((i: Item) => {
@@ -59,6 +60,10 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
 
     if (i.tag) {
       tags.push(i.tag);
+    }
+
+    if (i.specification) {
+      extraTypes.push('specification');
     }
 
     if (i.crunchbase_data) {
@@ -161,6 +166,19 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
           value: cleanValue(ot),
           name: ot,
         })),
+      });
+    }
+
+    if (extraTypes.length > 0) {
+      filters.push({
+        value: FilterCategory.Extra,
+        title: 'Extra',
+        options: [
+          {
+            value: 'specification',
+            name: 'Specification',
+          },
+        ],
       });
     }
   }

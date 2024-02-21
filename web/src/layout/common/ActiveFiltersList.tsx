@@ -56,7 +56,7 @@ const ActiveFiltersList = (props: Props) => {
               const activeFiltersPerCategory = () => activeFilters()[f as FilterCategory];
               if (isUndefined(activeFiltersPerCategory()) || isEmpty(activeFiltersPerCategory())) return null;
 
-              const allMatutirySelected = () =>
+              const allMaturitySelected = () =>
                 !isUndefined(props.maturityOptions) &&
                 f === FilterCategory.Maturity &&
                 props.maturityOptions.every((element) => activeFiltersPerCategory()!.includes(element));
@@ -64,7 +64,7 @@ const ActiveFiltersList = (props: Props) => {
 
               return (
                 <Switch>
-                  <Match when={allMatutirySelected()}>
+                  <Match when={allMaturitySelected()}>
                     <span
                       role="listitem"
                       class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
@@ -88,7 +88,34 @@ const ActiveFiltersList = (props: Props) => {
                     </span>
                   </Match>
 
-                  <Match when={!allMatutirySelected()}>
+                  <Match when={f === FilterCategory.Extra}>
+                    <For each={activeFiltersPerCategory()}>
+                      {(c: string) => {
+                        return (
+                          <span
+                            role="listitem"
+                            class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+                          >
+                            <div class="d-flex flex-row align-items-baseline">
+                              <div>
+                                <span class="text-uppercase">{c}</span>
+                              </div>
+                              <button
+                                class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                                onClick={() => props.removeFilter(f as FilterCategory, c)}
+                                aria-label={`Remove ${c} filter`}
+                                title={`Remove ${c} filter`}
+                              >
+                                <SVGIcon kind={SVGIconKind.ClearCircle} />
+                              </button>
+                            </div>
+                          </span>
+                        );
+                      }}
+                    </For>
+                  </Match>
+
+                  <Match when={!allMaturitySelected()}>
                     <For each={activeFiltersPerCategory()}>
                       {(c: string) => {
                         return (
