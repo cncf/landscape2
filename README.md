@@ -206,6 +206,10 @@ Some operations like collecting data from external sources or processing a lot o
 > [!NOTE]
 > In addition to the customization options available in the embed setup view, it's also possible to embed views using [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer). This feature can be enabled by adding `iframe-resizer=true` to the embed url ([demo](https://codepen.io/cynthiasg/pen/WNmQjje)).
 
+## Adopters
+
+A list of landscapes built using **landscape2** is available at [ADOPTERS.md](./ADOPTERS.md). Please consider adding yours!
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
