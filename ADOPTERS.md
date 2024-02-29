@@ -13,6 +13,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [LF Energy](https://lfenergy.landscape2.io)
 - [LF Networking](https://lfnetworking.landscape2.io)
 - [Open Mainframe Project](https://omp.landscape2.io)
+- [Open Neuroscience Foundation](https://neuroscience-landscape.com)
 - [Open Source Program Offices](https://ospo.landscape2.io)
 - [OpenSSF](https://openssf.landscape2.io)
 - [Presto](https://presto.landscape2.io)
