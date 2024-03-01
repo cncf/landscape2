@@ -66,6 +66,14 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       extraTypes.push('specification');
     }
 
+    if (i.locations) {
+      for (const l of i.locations) {
+        if (l.country) {
+          countries.push(l.country);
+        }
+      }
+    }
+
     if (i.crunchbase_data) {
       if (i.crunchbase_data.name) {
         organizations.push(i.crunchbase_data.name);

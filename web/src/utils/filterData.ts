@@ -27,9 +27,21 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // Filter Country
       if (activeFilters[FilterCategory.Country]) {
-        if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.country)) {
-          return false;
-        } else if (!activeFilters[FilterCategory.Country].includes(item.crunchbase_data.country)) {
+        let hasCountry = false;
+
+        if (!isUndefined(item.crunchbase_data) && !isUndefined(item.crunchbase_data.country)) {
+          hasCountry = activeFilters[FilterCategory.Country].includes(item.crunchbase_data.country);
+        }
+
+        if (!isUndefined(item.locations)) {
+          item.locations!.forEach((location) => {
+            if (activeFilters[FilterCategory.Country]!.includes(location.country)) {
+              hasCountry = true;
+            }
+          });
+        }
+
+        if (!hasCountry) {
           return false;
         }
       }

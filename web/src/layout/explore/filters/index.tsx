@@ -219,9 +219,19 @@ const Filters = (props: Props) => {
               </div>
             }
           >
+            <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
+              <SearchbarSection
+                title="Location"
+                placeholder="Search country"
+                section={getSection(FilterCategory.Country)}
+                initialActiveFilters={tmpActiveFilters}
+                updateActiveFilters={updateActiveFilters}
+                resetFilter={resetFilter}
+              />
+            </div>
+
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
-
               <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <Section
                   title="Status"
@@ -290,15 +300,6 @@ const Filters = (props: Props) => {
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={styles.section}
-                />
-
-                <SearchbarSection
-                  title="Location"
-                  placeholder="Search country"
-                  section={getSection(FilterCategory.Country)}
-                  initialActiveFilters={tmpActiveFilters}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
                 />
               </div>
             </Show>

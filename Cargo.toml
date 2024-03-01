@@ -1,13 +1,13 @@
 [package]
-name = "landscape2"
-description = "Landscape2 CLI tool"
+name = "landscape2-academic"
+description = "Landscape2 Academic CLI tool"
 version = "0.6.1"
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.70"
-repository = "https://github.com/cncf/landscape2"
+repository = "https://github.com/open-neuroscience-foundation/landscape2-academic"
 readme = "README.md"
-authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
+authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia", "Nikolay Dubina"]
 
 [dependencies]
 anyhow = "1.0.79"
@@ -81,7 +81,13 @@ installers = ["shell", "powershell", "homebrew"]
 # A GitHub repo to push Homebrew formulas to
 tap = "cncf/homebrew-landscape2"
 # Target platforms to build apps for (Rust target-triple syntax)
-targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu", "x86_64-unknown-linux-musl", "x86_64-pc-windows-msvc"]
+targets = [
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "x86_64-pc-windows-msvc",
+]
 # Publish jobs to run in CI
 publish-jobs = ["homebrew"]
 # Publish jobs to run in CI

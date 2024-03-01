@@ -74,6 +74,7 @@ export interface BaseItem {
   featured?: Featured;
   maturity?: string;
   tag?: string;
+  locations?: Location[];
   additional_categories?: AdditionalCategory[];
 }
 
@@ -498,3 +499,8 @@ export type FilterCategoriesPerTitle = {
 export enum ModalType {
   Item = 'item',
 }
+
+export interface Location {
+  country: string;
+  city: string;
+};

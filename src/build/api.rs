@@ -296,6 +296,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub youtube_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locations: Option<Vec<Location>>,
 }
 
 impl Item {
@@ -335,6 +338,7 @@ impl Item {
             openssf_best_practices_url: item.openssf_best_practices_url.clone(),
             oss: item.oss,
             repositories: item.repositories.as_ref().map(|repos| repos.iter().map(Into::into).collect()),
+            locations: item.locations.as_ref().map(|repos| repos.iter().map(Into::into).collect()),
             slack_url: item.slack_url.clone(),
             specification: item.specification,
             stack_overflow_url: item.stack_overflow_url.clone(),
@@ -370,6 +374,24 @@ impl From<&data::Repository> for Repository {
             branch: r.branch.clone(),
             languages: r.github_data.as_ref().and_then(|gh| gh.languages.clone()),
             primary: r.primary,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Location {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub city: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub country: Option<String>,
+}
+
+impl From<&data::Location> for Location {
+    fn from(r: &data::Location) -> Self {
+        Self {
+            city: r.city.clone(),
+            country: r.country.clone(),
         }
     }
 }

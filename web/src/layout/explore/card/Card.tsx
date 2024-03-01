@@ -79,6 +79,14 @@ const Card = (props: Props) => {
 
         <div class={`p-3 ms-2 ${styles.itemInfo}`}>
           <CardTitle title={props.item.name} isVisible={props.isVisible} />
+
+          <Show when={!isUndefined(props.item!.locations) && props.item!.locations!.length > 0}>
+            <div class={`text-muted pt-1 ${styles.location}`}>
+              <Show when={!isUndefined(props.item!.locations![0].city)}>{props.item!.locations![0].city}, </Show>
+              {props.item!.locations![0].country}
+            </div>
+          </Show>
+
           <Show when={props.item.crunchbase_data && props.item.crunchbase_data.name}>
             <div class={`text-muted text-truncate ${styles.name}`}>
               <small>{props.item.crunchbase_data!.name}</small>

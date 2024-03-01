@@ -144,7 +144,6 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
     FilterCategory.Organization,
     FilterCategory.OrgType,
     FilterCategory.Industry,
-    FilterCategory.Country,
   ],
 };
 

@@ -20,7 +20,7 @@ mod validate;
 #[derive(Parser)]
 #[command(
     version,
-    about = "Landscape2 CLI tool
+    about = "Landscape2 Academic CLI tool
 
 https://github.com/cncf/landscape2#usage"
 )]

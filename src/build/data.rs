@@ -332,6 +332,20 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.repositories = Some(repositories);
                     }
 
+                    let mut locations = vec![];
+                    if let Some(ll) = legacy_item.locations {
+                        for l in ll {
+                            locations.push(Location {
+                                city: l.city,
+                                country: l.country,
+                                ..Default::default()
+                            });
+                        }
+                    }
+                    if !locations.is_empty() {
+                        item.locations = Some(locations);
+                    }
+
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.accepted_at = extra.accepted;
@@ -563,6 +577,18 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub youtube_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locations: Option<Vec<Location>>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Location {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub city: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub country: Option<String>,
 }
 
 impl Item {
@@ -826,6 +852,7 @@ mod legacy {
         pub twitter: Option<String>,
         pub url_for_bestpractices: Option<String>,
         pub unnamed_organization: Option<bool>,
+        pub locations: Option<Vec<Location>>,
     }
 
     /// Landscape item repository.
@@ -833,6 +860,12 @@ mod legacy {
     pub(crate) struct Repository {
         pub repo_url: String,
         pub branch: Option<String>,
+    }
+
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Location {
+        pub city: Option<String>,
+        pub country: Option<String>,
     }
 
     /// Extra information for a landscape item.

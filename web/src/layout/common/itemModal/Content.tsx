@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy';
 import moment from 'moment';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
-import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
+import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind, Location } from '../../../types';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import { formatTAGName } from '../../../utils/prepareFilters';
@@ -130,11 +130,21 @@ const Content = (props: Props) => {
                 </Show>
               </div>
             </div>
+
+            <Show when={!isUndefined(itemInfo()!.locations) && itemInfo()!.locations!.length > 0}>
+              <div class={`text-muted pt-1 ${styles.location}`}>
+                <For each={itemInfo()!.locations}>
+                  {(l: Location, i) => <span><Show when={i() > 0}>{" | "}</Show><Show when={!isUndefined(l.city)}>{l.city}, </Show>{l.country}</span>}
+                </For>
+              </div>
+            </Show>
+
             <Show when={!isUndefined(itemInfo()!.crunchbase_data) && itemInfo()!.crunchbase_data!.name}>
               <div class={`text-muted text-truncate ${styles.name}`}>
                 <small>{itemInfo()!.crunchbase_data!.name}</small>
               </div>
             </Show>
+
             <div class="d-flex flex-row align-items-center mb-1">
               <div class={`d-none d-xl-flex badge border rounded-0 ${styles.badgeOutlineDark}`}>
                 {itemInfo()!.category}

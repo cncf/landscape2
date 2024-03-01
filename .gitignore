@@ -10,3 +10,4 @@ web/static/*
 embed/node_modules
 embed/dist
 embed/static/*
+*.mjs
