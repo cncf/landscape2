@@ -136,7 +136,7 @@ const Footer = () => {
 
             <div>
               <Show when={!isUndefined(window.baseDS.footer) && !isUndefined(window.baseDS.footer!.citation)}>
-                <div class={`pt-4 ${styles.codeWrapper}`}>
+                <div class={`p-3 ${styles.codeWrapper}`}>
                   <CodeBlock
                     language="html"
                     content={window.baseDS.footer!.citation!}

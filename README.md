@@ -5,8 +5,8 @@
 This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provides extra features:
 
 - Academic
-    - [ ] hindex metric
-    - [ ] num citations metric
+    - [x] hindex metric
+    - [x] num citations metric
     - [ ] number of papers metric
 - Main
     - [x] manual location
@@ -15,7 +15,6 @@ This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provid
     - [ ] manual crunchbase data
     - [ ] filter by tags
     - [ ] search by tags
-    - [ ] image in summary
     - [ ] feature manually
     - [ ] git organization url instead of repository url
     - [ ] search by everything

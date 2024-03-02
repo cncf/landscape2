@@ -76,6 +76,7 @@ export interface BaseItem {
   maturity?: string;
   tag?: string;
   locations?: Location[];
+  academics?: Academic[];
   additional_categories?: AdditionalCategory[];
 }
 
@@ -116,6 +117,14 @@ export interface Item extends BaseItem {
   unnamed_organization?: boolean;
   youtube_url?: string;
   audits?: SecurityAudit[];
+  academics?: Academic[];
+}
+
+export interface Academic {
+  name: string;
+  profile_url: string;
+  hindex: number
+  citations: number,
 }
 
 export interface SecurityAudit {

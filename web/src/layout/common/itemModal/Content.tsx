@@ -27,6 +27,7 @@ import FundingRoundsTable from './FundingRoundsTable';
 import ItemDropdown from './ItemDropdown';
 import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
+import AcademicSection from './AcademicSection';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
@@ -293,6 +294,7 @@ const Content = (props: Props) => {
         </Show>
         {/* Maturity */}
         <MaturitySection item={itemInfo()!} class={styles.fieldset} />
+        <AcademicSection item={itemInfo()!} class={styles.fieldset} />
         {/* Repositories */}
         <Show when={!isUndefined(itemInfo()!.repositories)}>
           <div class={`position-relative border ${styles.fieldset}`}>

@@ -346,6 +346,22 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.locations = Some(locations);
                     }
 
+                    let mut academics = vec![];
+                    if let Some(vs) = legacy_item.academics {
+                        for q in vs {
+                            academics.push(Academic {
+                                name: q.name,
+                                profile_url: q.profile_url,
+                                hindex: q.hindex,
+                                citations: q.citations,
+                                ..Default::default()
+                            });
+                        }
+                    }
+                    if !academics.is_empty() {
+                        item.academics = Some(academics);
+                    }
+
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.accepted_at = extra.accepted;
@@ -580,6 +596,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locations: Option<Vec<Location>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub academics: Option<Vec<Academic>>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -589,6 +608,14 @@ pub(crate) struct Location {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Academic {
+    pub name: String,
+    pub profile_url: String,
+    pub hindex: i32,
+    pub citations: i32,
 }
 
 impl Item {
@@ -853,6 +880,7 @@ mod legacy {
         pub url_for_bestpractices: Option<String>,
         pub unnamed_organization: Option<bool>,
         pub locations: Option<Vec<Location>>,
+        pub academics: Option<Vec<Academic>>,
     }
 
     /// Landscape item repository.
@@ -866,6 +894,14 @@ mod legacy {
     pub(crate) struct Location {
         pub city: Option<String>,
         pub country: Option<String>,
+    }
+
+    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    pub(crate) struct Academic {
+        pub name: String,
+        pub profile_url: String,
+        pub hindex: i32,
+        pub citations: i32,
     }
 
     /// Extra information for a landscape item.

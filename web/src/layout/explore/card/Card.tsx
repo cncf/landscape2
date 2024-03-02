@@ -26,6 +26,8 @@ interface Props {
 const Card = (props: Props) => {
   const [description, setDescription] = createSignal<string>();
   const [stars, setStars] = createSignal<number>();
+  const [numCitations, setCitations] = createSignal<number>();
+  const [hIndex, setHIndex] = createSignal<number>();
   const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
   const [lastSecurityAudit, setLastSecurityAudit] = createSignal<string>();
@@ -46,6 +48,11 @@ const Card = (props: Props) => {
         }
       });
       setStars(starsCount);
+    }
+
+    if (props.item.academics && props.item.academics.length > 0) {
+      setCitations(props.item.academics[0].citations);
+      setHIndex(props.item.academics[0].hindex);
     }
 
     // If homepage_url is undefined or is equal to main repository url
@@ -186,12 +193,24 @@ const Card = (props: Props) => {
               <div class="fw-semibold">{prettifyNumber(props.item.crunchbase_data!.funding!)}</div>
             </Match>
             <Match when={!isUndefined(stars())}>
-              <div class="d-flex flex-row align-items-baseline">
+              <div class="p-1 d-flex flex-row align-items-baseline">
                 <small class="me-1 text-black-50">GitHub stars:</small>
                 <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
               </div>
             </Match>
           </Switch>
+          <Show when={!isUndefined(numCitations())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">Citations:</small>
+              <div class="fw-semibold">{numCitations ? prettifyNumber(numCitations()!, 1) : '-'}</div>
+            </div>
+          </Show>
+          <Show when={!isUndefined(hIndex())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">h-index:</small>
+              <div class="fw-semibold">{hIndex ? prettifyNumber(hIndex()!, 1) : '-'}</div>
+            </div>
+          </Show>
         </div>
 
         <Show when={!isUndefined(props.item.tag)}>

@@ -299,6 +299,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub locations: Option<Vec<Location>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub academics: Option<Vec<Academic>>,
 }
 
 impl Item {
@@ -348,6 +351,7 @@ impl Item {
             training_type: item.training_type.clone(),
             twitter_url: item.twitter_url.clone(),
             youtube_url: item.youtube_url.clone(),
+            academics: item.academics.as_ref().map(|vs| vs.iter().map(Into::into).collect()),
         }
     }
 }
@@ -392,6 +396,25 @@ impl From<&data::Location> for Location {
         Self {
             city: r.city.clone(),
             country: r.country.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct Academic {
+    pub name: String,
+    pub profile_url: String,
+    pub hindex: i32,
+    pub citations: i32,
+}
+
+impl From<&data::Academic> for Academic {
+    fn from(r: &data::Academic) -> Self {
+        Self {
+            name: r.name.clone(),
+            profile_url: r.profile_url.clone(),
+            hindex: r.hindex,
+            citations: r.citations,
         }
     }
 }
