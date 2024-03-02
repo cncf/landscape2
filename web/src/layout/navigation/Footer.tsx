@@ -5,6 +5,7 @@ import { JSXElement, Show } from 'solid-js';
 import { SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
 import SVGIcon from '../common/SVGIcon';
+import CodeBlock from '../common/CodeBlock';
 import styles from './Footer.module.css';
 
 const Footer = () => {
@@ -134,6 +135,17 @@ const Footer = () => {
             </Show>
 
             <div>
+              <Show when={!isUndefined(window.baseDS.footer) && !isUndefined(window.baseDS.footer!.citation)}>
+                <div class={`pt-4 ${styles.codeWrapper}`}>
+                  <CodeBlock
+                    language="html"
+                    content={window.baseDS.footer!.citation!}
+                    codeClass={`bg-dark text-white ${styles.code}`}
+                    withCopyBtn={false}
+                  />
+                </div>
+              </Show>
+
               <Show when={!isUndefined(window.baseDS.footer) && !isUndefined(window.baseDS.footer!.text)}>
                 {/* eslint-disable-next-line solid/no-innerhtml */}
                 <div class={`pt-2 ${styles.legend}`} innerHTML={window.baseDS.footer!.text} />
@@ -142,9 +154,9 @@ const Footer = () => {
                 Powered by{' '}
                 <ExternalLink
                   class="p-0 fw-semibold text-white text-underline"
-                  href="https://github.com/cncf/landscape2"
+                  href="http://github.com/open-neuroscience-foundation/landscape2-academic"
                 >
-                  CNCF interactive landscapes generator
+                  CNCF interactive landscapes generator academic mode
                 </ExternalLink>
                 .
               </div>

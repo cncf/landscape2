@@ -19,9 +19,9 @@ const MiniFooter = () => {
                 Powered by{' '}
                 <ExternalLink
                   class="p-0 fw-semibold text-white text-underline"
-                  href="https://github.com/cncf/landscape2"
+                  href="http://github.com/open-neuroscience-foundation/landscape2-academic"
                 >
-                  CNCF interactive landscapes generator
+                  CNCF interactive landscapes generator academic mode
                 </ExternalLink>
                 .
               </div>

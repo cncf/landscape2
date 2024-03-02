@@ -40,6 +40,7 @@ export interface FooterContent {
   };
   logo?: string;
   text?: string;
+  citation?: string;
 }
 
 export interface Group {

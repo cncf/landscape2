@@ -2,19 +2,19 @@
 
 This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provides extra features:
 
-- Laboratories
-    - [ ] hindex of head
-    - [ ] citations metric
+- Academic
+    - [ ] hindex metric
+    - [ ] num citations metric
     - [ ] number of papers metric
-    - [ ] head description
 - Main
     - [x] manual location
     - [x] filter by location
+    - [x] citation in footer
+    - [ ] manual crunchbase data
     - [ ] filter by tags
     - [ ] search by tags
     - [ ] image in summary
     - [ ] feature manually
-    - [ ] BibTeX citation in footer
     - [ ] git organization url instead of repository url
     - [ ] search by everything
 - Books
@@ -23,6 +23,7 @@ This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provid
 Other differences
 - no homebrew
 - no docker
+- updated footer "Powered by" link
 
 ## Notes
 
