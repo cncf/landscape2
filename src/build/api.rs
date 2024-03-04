@@ -406,6 +406,9 @@ pub(crate) struct Academic {
     pub profile_url: String,
     pub hindex: i32,
     pub citations: i32,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub i10index: Option<i32>,
 }
 
 impl From<&data::Academic> for Academic {
@@ -414,6 +417,7 @@ impl From<&data::Academic> for Academic {
             name: r.name.clone(),
             profile_url: r.profile_url.clone(),
             hindex: r.hindex,
+            i10index: r.i10index,
             citations: r.citations,
         }
     }

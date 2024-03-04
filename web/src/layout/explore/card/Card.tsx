@@ -28,6 +28,7 @@ const Card = (props: Props) => {
   const [stars, setStars] = createSignal<number>();
   const [numCitations, setCitations] = createSignal<number>();
   const [hIndex, setHIndex] = createSignal<number>();
+  const [i10Index, seti10Index] = createSignal<number>();
   const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
   const [lastSecurityAudit, setLastSecurityAudit] = createSignal<string>();
@@ -53,6 +54,7 @@ const Card = (props: Props) => {
     if (props.item.academics && props.item.academics.length > 0) {
       setCitations(props.item.academics[0].citations);
       setHIndex(props.item.academics[0].hindex);
+      seti10Index(props.item.academics[0].i10index);
     }
 
     // If homepage_url is undefined or is equal to main repository url
@@ -209,6 +211,12 @@ const Card = (props: Props) => {
             <div class="p-1 d-flex flex-row align-items-baseline">
               <small class="me-1 text-black-50">h-index:</small>
               <div class="fw-semibold">{hIndex ? prettifyNumber(hIndex()!, 1) : '-'}</div>
+            </div>
+          </Show>
+          <Show when={!isUndefined(i10Index())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">i10-index:</small>
+              <div class="fw-semibold">{i10Index ? prettifyNumber(i10Index()!, 1) : '-'}</div>
             </div>
           </Show>
         </div>

@@ -5,8 +5,10 @@
 This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provides extra features:
 
 - Academic
-    - [x] hindex metric
+    - [x] scholars details section
     - [x] num citations metric
+    - [x] h-index metric
+    - [x] i10-index metric
     - [ ] number of papers metric
 - Main
     - [x] manual location
@@ -18,12 +20,13 @@ This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provid
     - [ ] git organization url instead of repository url
     - [ ] search by everything
 - Books
-    - [ ] dedicated Amazon URL icon
+    - [ ] Amazon URL icon
 
 Other differences
 - no homebrew
 - no docker
 - updated footer "Powered by" link
+- `CRUNCHBASE_CACHE_TTL` env var, and setting it to 0 causes not refreshing crunchbase
 
 ## Notes
 

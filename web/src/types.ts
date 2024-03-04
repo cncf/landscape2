@@ -124,6 +124,7 @@ export interface Academic {
   name: string;
   profile_url: string;
   hindex: number
+  i10index?: number;
   citations: number,
 }
 

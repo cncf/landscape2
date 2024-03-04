@@ -353,6 +353,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                                 name: q.name,
                                 profile_url: q.profile_url,
                                 hindex: q.hindex,
+                                i10index: q.i10index,
                                 citations: q.citations,
                                 ..Default::default()
                             });
@@ -616,6 +617,9 @@ pub(crate) struct Academic {
     pub profile_url: String,
     pub hindex: i32,
     pub citations: i32,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub i10index: Option<i32>,
 }
 
 impl Item {
@@ -902,6 +906,9 @@ mod legacy {
         pub profile_url: String,
         pub hindex: i32,
         pub citations: i32,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub i10index: Option<i32>,
     }
 
     /// Extra information for a landscape item.
