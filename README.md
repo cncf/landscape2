@@ -12,7 +12,6 @@ This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provid
     - [x] manual location
     - [x] filter by location
     - [x] citation in footer
-    - [ ] manual crunchbase data
     - [ ] filter by tags
     - [ ] search by tags
     - [ ] feature manually
@@ -28,6 +27,6 @@ Other differences
 
 ## Notes
 
-- `2023-03-01`, decoupling location from organization since some items do not have organization
+- `2024-03-01`, decoupling location from organization since some items do not have organization
 - `2024-02-29`, not using SerpAPI for h-index, since it is expensive
-- `2024-02-29`, not using Crunchbase for company info, since it requires expensive Enterprise level subscription
+- `2024-02-29`, not using Crunchbase API for company info, since it requires expensive Enterprise level subscription

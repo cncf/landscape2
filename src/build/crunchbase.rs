@@ -37,6 +37,7 @@ pub(crate) async fn collect_crunchbase_data(
     landscape_data: &LandscapeData,
 ) -> Result<CrunchbaseData> {
     debug!("collecting organizations information from crunchbase (this may take a while)");
+    debug!("cache: {cache:?}");
 
     // Read cached data (if available)
     let mut cached_data: Option<CrunchbaseData> = None;
@@ -71,6 +72,12 @@ pub(crate) async fn collect_crunchbase_data(
     urls.sort();
     urls.dedup();
 
+    let mut cache_ttl = CRUNCHBASE_CACHE_TTL;
+    match env::var("CRUNCHBASE_CACHE_TTL")?.parse::<i64>() {
+        Ok(n) => cache_ttl = n,
+        Err(_) => {}
+    }
+
     // Collect information from Crunchbase, reusing cached data when available
     let limiter = RateLimiter::builder().initial(1).interval(CRUNCHBASE_RATE_LIMITER_INTERVAL).build();
     let crunchbase_data: CrunchbaseData = stream::iter(urls)
@@ -80,10 +87,14 @@ pub(crate) async fn collect_crunchbase_data(
             // Use cached data when available if it hasn't expired yet
             if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|org| {
-                    if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
+                    if cache_ttl <= 0 {
                         Some(org)
                     } else {
-                        None
+                        if org.generated_at + chrono::Duration::days(cache_ttl) > Utc::now() {
+                            Some(org)
+                        } else {
+                            None
+                        }
                     }
                 })
             }) {
