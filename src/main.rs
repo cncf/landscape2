@@ -1,5 +1,5 @@
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(clippy::doc_markdown)]
+#![allow(clippy::doc_markdown, clippy::blocks_in_conditions)]
 
 use anyhow::Result;
 use build::build;
