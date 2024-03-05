@@ -219,11 +219,20 @@ const Filters = (props: Props) => {
               </div>
             }
           >
-            <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
+            <div class="p-1 row g-4 g-lg-5 mb-4 mb-lg-5">
               <SearchbarSection
                 title="Location"
                 placeholder="Search country"
                 section={getSection(FilterCategory.Country)}
+                initialActiveFilters={tmpActiveFilters}
+                updateActiveFilters={updateActiveFilters}
+                resetFilter={resetFilter}
+              />
+
+              <SearchbarSection
+                title="Tags"
+                placeholder="Search tags"
+                section={getSection(FilterCategory.Tags)}
                 initialActiveFilters={tmpActiveFilters}
                 updateActiveFilters={updateActiveFilters}
                 resetFilter={resetFilter}

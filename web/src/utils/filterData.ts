@@ -83,6 +83,23 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         }
       }
 
+      // Filter Tags
+      if (activeFilters[FilterCategory.Tags]) {
+        let hasTag = false;
+
+        if (!isUndefined(item.summary) && !isUndefined(item.summary.tags)) {
+          item.summary!.tags.forEach((tag) => {
+            if (activeFilters[FilterCategory.Tags]!.includes(tag)) {
+              hasTag = true;
+            }
+          });
+        }
+
+        if (!hasTag) {
+          return false;
+        }
+      }
+
       // Filter TAG
       if (activeFilters[FilterCategory.TAG]) {
         if (isUndefined(item.tag)) {

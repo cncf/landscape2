@@ -353,6 +353,7 @@ export enum FilterCategory {
   Industry = 'industry',
   OrgType = 'org-type',
   TAG = 'tag',
+  Tags = 'tags',
   Membership = 'membership',
   InvestmentType = 'investment-type',
   Extra = 'extra',

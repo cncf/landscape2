@@ -1,3 +1,4 @@
+import { isUndefined } from 'lodash';
 import { REGEX_DASH } from '../data';
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
@@ -52,6 +53,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   const companyTypes: string[] = [];
   const extraTypes: string[] = [];
   let categories: string[] = [];
+  const summaryTags: string[] = [];
 
   items.forEach((i: Item) => {
     if (i.maturity) {
@@ -60,6 +62,15 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
 
     if (i.tag) {
       tags.push(i.tag);
+    }
+
+    if (!isUndefined(i.summary) && !isUndefined(i.summary.tags)) {
+      for (const tag of i.summary.tags) {
+        if (tag == "" || isUndefined(tag)) {
+          continue;
+        }
+        summaryTags.push(tag);
+      }
     }
 
     if (i.specification) {
@@ -120,6 +131,14 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
         value: tag,
         name: formatTAGName(tag),
       })),
+    });
+  }
+
+  if (summaryTags.length > 0) {
+    filters.push({
+      value: FilterCategory.Tags,
+      title: 'Tags',
+      options: [...new Set(summaryTags)].sort().map((tag: string) => ({ value: tag, name: tag })),
     });
   }
 
