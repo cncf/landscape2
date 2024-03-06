@@ -29,8 +29,6 @@ const AcademicSection = (props: Props) => {
           <Box value={prettifyNumber(primary()!.citations, 1)} legend="Citations" />
           <Box value={prettifyNumber(primary()!.hindex, 1)} legend="h-index" />
           <Box value={!isUndefined(primary()!.i10index) ? prettifyNumber(primary()!.i10index!, 1) : "-"} legend="i10-index" />
-          <Box value={"-"} legend="-" />
-          <Box value={"-"} legend="-" />
         </div>
 
         <Show when={props.item.academics!.length > 1}>

@@ -7,7 +7,8 @@ use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use deadpool::unmanaged::{Object, Pool};
-use futures::stream::{self, StreamExt};
+use futures::stream::StreamExt;
+use futures::stream::{self};
 use lazy_static::lazy_static;
 #[cfg(test)]
 use mockall::automock;
@@ -16,7 +17,7 @@ use octorust::types::{FullRepository, ParticipationStats};
 use regex::Regex;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use tracing::{debug, instrument, warn};
 
@@ -173,6 +174,11 @@ pub(crate) async fn collect_github_org_data(
         }
     }
 
+    cache.write(
+        GITHUB_ORG_CACHE_FILE,
+        &serde_json::to_vec_pretty(&github_org_stats)?,
+    )?;
+
     Ok(github_org_stats)
 }
 
@@ -213,6 +219,9 @@ pub(crate) struct GithubOrganizationStats {
     pub url: String,
     pub generated_at: DateTime<Utc>,
     pub num_repositories: i32,
+    pub num_contributors: i32,
+    pub languages: HashMap<String, i64>,
+    pub participation: Vec<i64>,
     pub stars: i64,
     pub first_repo_created_at: Option<DateTime<Utc>>,
     pub last_commit_at: Option<DateTime<Utc>>,
@@ -240,6 +249,43 @@ impl GithubOrganizationStats {
                 .filter(|d| d.is_some())
                 .map(|d| d.unwrap())
                 .max(),
+            languages: futures::stream::iter(repos.iter())
+                .map(|r| async { gh.get_languages(owner.as_str(), &r.name).await })
+                .fold(HashMap::new(), |mut acc, c| async move {
+                    if let Ok(languages) = c.await {
+                        if let Some(languages) = languages {
+                            for (k, v) in languages {
+                                *acc.entry(k).or_insert(0) += v;
+                            }
+                        }
+                    }
+                    acc
+                })
+                .await,
+            participation: futures::stream::iter(repos.iter())
+                .map(|r| async { gh.get_participation_stats(owner.as_str(), &r.name).await })
+                .fold(Vec::new(), |mut acc, c| async move {
+                    if let Ok(stats) = c.await {
+                        for (i, v) in stats.all.iter().enumerate() {
+                            if i >= acc.len() {
+                                acc.push(0);
+                            }
+                            acc[i] += v;
+                        }
+                    }
+                    acc
+                })
+                .await,
+            num_contributors: futures::stream::iter(repos.iter())
+                .map(|r| async { gh.get_contributors(owner.as_str(), &r.name).await })
+                .fold(HashSet::new(), |mut acc, c| async move {
+                    if let Ok(contributors) = c.await {
+                        acc.extend(contributors);
+                    }
+                    acc
+                })
+                .await
+                .len() as i32,
         })
     }
 }
@@ -347,6 +393,8 @@ trait GH {
 
     async fn get_owner_repos(&self, owner: &str) -> Result<Vec<octorust::types::MinimalRepository>>;
 
+    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<String>>;
+
     /// Get latest commit.
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
 
@@ -415,6 +463,12 @@ impl GH for GHApi {
             }
         }
         Ok(count)
+    }
+
+    /// [GH::get_contributors]
+    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<String>> {
+        let contributors = self.gh_client.repos().list_all_contributors(owner, repo, "").await;
+        Ok(contributors?.iter().map(|c| c.login.clone()).collect())
     }
 
     /// [GH::get_first_commit]

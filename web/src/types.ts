@@ -248,6 +248,9 @@ export interface GithubOrgStats {
   url: string;
   generated_at: string;
   num_repositories: number;
+  num_contributors: number;
+  languages: { [key: string]: number };
+  participation: number[];
   stars: number;
   first_repo_created_at: string;
   last_commit_at: string;
