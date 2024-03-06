@@ -36,19 +36,22 @@ const Card = (props: Props) => {
   onMount(() => {
     setDescription(getItemDescription(props.item));
     setWebsiteUrl(props.item.homepage_url);
-    let starsCount: number | undefined;
 
-    if (props.item.repositories) {
-      props.item.repositories.forEach((repo: Repository) => {
-        if (repo.primary) {
-          setMainRepoUrl(repo.url);
-        }
-
-        if (repo.github_data) {
-          starsCount = starsCount || 0 + repo.github_data.stars;
-        }
-      });
-      setStars(starsCount);
+    if (!isUndefined(props.item.github_org_stats)) {
+      setStars(props.item.github_org_stats.stars);
+    } else {
+      let starsCount: number | undefined;
+      if (props.item.repositories) {
+        props.item.repositories.forEach((repo: Repository) => {
+          if (repo.primary) {
+            setMainRepoUrl(repo.url);
+          }
+          if (repo.github_data) {
+            starsCount = starsCount || 0 + repo.github_data.stars;
+          }
+        });
+        setStars(starsCount);
+      }
     }
 
     if (props.item.academics && props.item.academics.length > 0) {
@@ -128,6 +131,12 @@ const Card = (props: Props) => {
 
             <Show when={!isUndefined(mainRepoUrl())}>
               <ExternalLink title="Repository" class={`me-2 ${styles.link}`} href={mainRepoUrl()!}>
+                <SVGIcon kind={SVGIconKind.GitHubCircle} />
+              </ExternalLink>
+            </Show>
+
+            <Show when={!isUndefined(props.item.github_org_url) && isUndefined(mainRepoUrl())}>
+              <ExternalLink title="Repository" class={`me-2 ${styles.link}`} href={props.item.github_org_url!}>
                 <SVGIcon kind={SVGIconKind.GitHubCircle} />
               </ExternalLink>
             </Show>

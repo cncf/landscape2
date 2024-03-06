@@ -1,6 +1,6 @@
 import isUndefined from 'lodash/isUndefined';
 
-import { ActiveSection, CrunchbaseData, FilterOption, GithubData, Item, LandscapeData, Repository } from '../types';
+import { ActiveSection, CrunchbaseData, FilterOption, GithubData, GithubOrgData, Item, LandscapeData, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
 
 export interface ItemsDataStatus {
@@ -37,7 +37,7 @@ export class ItemsDataGetter {
       fetch(import.meta.env.MODE === 'development' ? '../../static/data/full.json' : './data/full.json')
         .then((res) => res.json())
         .then((data: LandscapeData) => {
-          const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
+          const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data, data.github_org_data);
           this.landscapeData = {
             ...data,
             items: extendedItems,
@@ -71,7 +71,7 @@ export class ItemsDataGetter {
     return undefined;
   }
 
-  private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
+  private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData, githubOrgData?: GithubOrgData): Item[] {
     const itemsList: Item[] = [];
 
     if (!isUndefined(items)) {
@@ -84,6 +84,10 @@ export class ItemsDataGetter {
           !isUndefined(crunchbaseData[item.crunchbase_url!])
         ) {
           extendedItem.crunchbase_data = crunchbaseData[item.crunchbase_url!];
+        }
+
+        if (!isUndefined(item.github_org_url) && !isUndefined(githubOrgData) && !isUndefined(githubOrgData[item.github_org_url])) {
+          extendedItem.github_org_stats = githubOrgData[item.github_org_url];
         }
 
         // Extend repositories Item with github_data

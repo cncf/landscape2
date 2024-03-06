@@ -23,6 +23,8 @@ use tracing::{debug, instrument, warn};
 /// File used to cache data collected from GitHub.
 const GITHUB_CACHE_FILE: &str = "github.json";
 
+const GITHUB_ORG_CACHE_FILE: &str = "github_org.json";
+
 /// How long the GitHub data in the cache is valid (in days).
 const GITHUB_CACHE_TTL: i64 = 7;
 
@@ -127,6 +129,53 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     Ok(github_data)
 }
 
+#[instrument(skip_all, err)]
+pub(crate) async fn collect_github_org_data(
+    cache: &Cache,
+    landscape_data: &LandscapeData,
+) -> Result<GithubOrgData> {
+    debug!("collecting github org information from github (this may take a while)");
+
+    match cache.read(GITHUB_ORG_CACHE_FILE) {
+        Ok(Some((_, json_data))) => match serde_json::from_slice(&json_data) {
+            Ok(github_data) => return Ok(github_data),
+            Err(err) => warn!("error parsing github cache file: {err:?}"),
+        },
+        Ok(None) => {}
+        Err(err) => warn!("error reading github cache file: {err:?}"),
+    }
+
+    // Setup GitHub API clients pool if any tokens have been provided
+    let tokens: Option<Vec<String>> = match env::var(GITHUB_TOKENS) {
+        Ok(tokens) if !tokens.is_empty() => Some(tokens.split(',').map(ToString::to_string).collect()),
+        Ok(_) | Err(_) => None,
+    };
+    let gh_pool: Option<Pool<DynGH>> = if let Some(tokens) = &tokens {
+        let mut gh_clients: Vec<DynGH> = vec![];
+        for token in tokens {
+            let gh = Box::new(GHApi::new(token)?);
+            gh_clients.push(gh);
+        }
+        Some(Pool::from(gh_clients))
+    } else {
+        warn!("github tokens not provided: no information will be collected from github");
+        None
+    };
+
+    let mut github_org_stats = GithubOrgData::new();
+
+    for item in &landscape_data.items {
+        if let Some(url) = &item.github_org_url {
+            if let Some(gh_pool) = &gh_pool {
+                let gh = gh_pool.get().await.expect("token -when available-");
+                github_org_stats.insert(url.to_string(), GithubOrganizationStats::new(gh, url).await?);
+            }
+        }
+    }
+
+    Ok(github_org_stats)
+}
+
 /// Type alias to represent some repositories' GitHub data.
 pub(crate) type GithubData = HashMap<RepositoryUrl, Repository>;
 
@@ -155,6 +204,44 @@ pub(crate) struct Repository {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
+}
+
+pub(crate) type GithubOrgData = HashMap<String, GithubOrganizationStats>;
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub(crate) struct GithubOrganizationStats {
+    pub url: String,
+    pub generated_at: DateTime<Utc>,
+    pub num_repositories: i32,
+    pub stars: i64,
+    pub first_repo_created_at: Option<DateTime<Utc>>,
+    pub last_commit_at: Option<DateTime<Utc>>,
+}
+
+impl GithubOrganizationStats {
+    async fn new(gh: Object<DynGH>, org_url: &str) -> Result<Self> {
+        let owner = get_owner(org_url)?;
+        let repos = gh.get_owner_repos(&owner).await?;
+
+        Ok(GithubOrganizationStats {
+            url: org_url.to_string(),
+            generated_at: Utc::now(),
+            num_repositories: repos.len() as i32,
+            stars: repos.iter().map(|r| r.stargazers_count).sum(),
+            first_repo_created_at: repos
+                .iter()
+                .map(|r| r.created_at)
+                .filter(|d| d.is_some())
+                .map(|d| d.unwrap())
+                .min(),
+            last_commit_at: repos
+                .iter()
+                .map(|r| r.pushed_at)
+                .filter(|d| d.is_some())
+                .map(|d| d.unwrap())
+                .max(),
+        })
+    }
 }
 
 impl Repository {
@@ -258,6 +345,8 @@ trait GH {
     /// Get languages used in repository.
     async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>>;
 
+    async fn get_owner_repos(&self, owner: &str) -> Result<Vec<octorust::types::MinimalRepository>>;
+
     /// Get latest commit.
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
 
@@ -357,6 +446,21 @@ impl GH for GHApi {
         Ok(None)
     }
 
+    /// [GH::get_owner_repos]
+    #[instrument(fields(?owner), skip_all, err)]
+    async fn get_owner_repos(&self, owner: &str) -> Result<Vec<octorust::types::MinimalRepository>> {
+        return self
+            .gh_client
+            .repos()
+            .list_all_for_org(
+                owner,
+                octorust::types::ReposListOrgType::Sources,
+                octorust::types::ReposListOrgSort::Updated,
+                octorust::types::Order::Desc,
+            )
+            .await;
+    }
+
     /// [GH::get_languages]
     #[instrument(fields(?owner, ?repo), skip_all, err)]
     async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>> {
@@ -401,9 +505,19 @@ impl GH for GHApi {
 
 lazy_static! {
     /// GitHub repository url regular expression.
+    pub(crate) static ref GITHUB_ORG_URL: Regex =
+        Regex::new("^https://github.com/(?P<owner>[^/]+)/?$")
+            .expect("exprs in GITHUB_ORG_URL to be valid");
+
+    /// GitHub repository url regular expression.
     pub(crate) static ref GITHUB_REPO_URL: Regex =
         Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
             .expect("exprs in GITHUB_REPO_URL to be valid");
+}
+
+fn get_owner(owner_url: &str) -> Result<String> {
+    let c = GITHUB_ORG_URL.captures(owner_url).ok_or_else(|| format_err!("invalid url"))?;
+    Ok(c["owner"].to_string())
 }
 
 /// Extract the owner and repository from the repository url provided.

@@ -25,6 +25,9 @@ interface Props {
 const Card = (props: Props) => {
   const [description, setDescription] = createSignal<string>();
   const [stars, setStars] = createSignal<number>();
+  const [numCitations, setCitations] = createSignal<number>();
+  const [hIndex, setHIndex] = createSignal<number>();
+  const [i10Index, seti10Index] = createSignal<number>();
   const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
   const [lastSecurityAudit, setLastSecurityAudit] = createSignal<string>();
@@ -32,19 +35,28 @@ const Card = (props: Props) => {
   onMount(() => {
     setDescription(getItemDescription(props.item));
     setWebsiteUrl(props.item.homepage_url);
-    let starsCount: number | undefined;
 
-    if (props.item.repositories) {
-      props.item.repositories.forEach((repo: Repository) => {
-        if (repo.primary) {
-          setMainRepoUrl(repo.url);
-        }
+    if (!isUndefined(props.item.github_org_stats)) {
+      setStars(props.item.github_org_stats.stars);
+    } else {
+      let starsCount: number | undefined;
+      if (props.item.repositories) {
+        props.item.repositories.forEach((repo: Repository) => {
+          if (repo.primary) {
+            setMainRepoUrl(repo.url);
+          }
+          if (repo.github_data) {
+            starsCount = starsCount || 0 + repo.github_data.stars;
+          }
+        });
+        setStars(starsCount);
+      }
+    }
 
-        if (repo.github_data) {
-          starsCount = starsCount || 0 + repo.github_data.stars;
-        }
-      });
-      setStars(starsCount);
+    if (props.item.academics && props.item.academics.length > 0) {
+      setCitations(props.item.academics[0].citations);
+      setHIndex(props.item.academics[0].hindex);
+      seti10Index(props.item.academics[0].i10index);
     }
 
     // If homepage_url is undefined or is equal to main repository url
@@ -139,6 +151,24 @@ const Card = (props: Props) => {
               </div>
             </Match>
           </Switch>
+          <Show when={!isUndefined(numCitations())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">Citations:</small>
+              <div class="fw-semibold">{numCitations ? prettifyNumber(numCitations()!, 1) : '-'}</div>
+            </div>
+          </Show>
+          <Show when={!isUndefined(hIndex())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">h-index:</small>
+              <div class="fw-semibold">{hIndex ? prettifyNumber(hIndex()!, 1) : '-'}</div>
+            </div>
+          </Show>
+          <Show when={!isUndefined(i10Index())}>
+            <div class="p-1 d-flex flex-row align-items-baseline">
+              <small class="me-1 text-black-50">i10-index:</small>
+              <div class="fw-semibold">{i10Index ? prettifyNumber(i10Index()!, 1) : '-'}</div>
+            </div>
+          </Show>
         </div>
 
         <Show when={!isUndefined(props.item.tag)}>

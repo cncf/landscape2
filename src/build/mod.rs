@@ -6,6 +6,7 @@ use self::{
     datasets::{Datasets, NewDatasetsInput},
     export::generate_items_csv,
     github::collect_github_data,
+    github::collect_github_org_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
     settings::{Analytics, Osano},
@@ -133,9 +134,10 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
 
     // Collect data from external services
-    let (crunchbase_data, github_data) = tokio::try_join!(
+    let (crunchbase_data, github_data, github_org_data) = tokio::try_join!(
         collect_crunchbase_data(&cache, &landscape_data),
-        collect_github_data(&cache, &landscape_data)
+        collect_github_data(&cache, &landscape_data),
+        collect_github_org_data(&cache, &landscape_data)
     )?;
 
     // Add data collected from external services to the landscape data
@@ -159,6 +161,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
         &NewDatasetsInput {
             crunchbase_data: &crunchbase_data,
             github_data: &github_data,
+            github_org_data: &github_org_data,
             guide: &guide,
             landscape_data: &landscape_data,
             qr_code: &qr_code,

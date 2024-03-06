@@ -101,6 +101,8 @@ export interface Item extends BaseItem {
   docker_url?: string;
   enduser?: boolean;
   github_discussions_url?: string;
+  github_org_url?: string;
+  github_org_stats?: GithubOrgStats;
   graduated_at?: string;
   incubating_at?: string;
   joined_at?: string;
@@ -227,6 +229,7 @@ export interface LandscapeData {
   items?: Item[];
   crunchbase_data?: CrunchbaseData;
   github_data?: GithubData;
+  github_org_data?: GithubOrgData,
 }
 
 export interface CrunchbaseData {
@@ -235,6 +238,19 @@ export interface CrunchbaseData {
 
 export interface GithubData {
   [key: string]: GithubRepository;
+}
+
+export interface GithubOrgData {
+  [key: string]: GithubOrgStats;
+}
+
+export interface GithubOrgStats {
+  url: string;
+  generated_at: string;
+  num_repositories: number;
+  stars: number;
+  first_repo_created_at: string;
+  last_commit_at: string;
 }
 
 export interface FilterSection {

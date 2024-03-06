@@ -275,6 +275,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         subcategory: legacy_subcategory.name.clone(),
                         twitter_url: legacy_item.twitter,
                         unnamed_organization: legacy_item.unnamed_organization,
+                        github_org_url: legacy_item.github_org_url,
                         ..Default::default()
                     };
                     item.set_id();
@@ -564,6 +565,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub github_org_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slack_url: Option<String>,
@@ -879,6 +883,7 @@ mod legacy {
         pub joined: Option<NaiveDate>,
         pub project: Option<String>,
         pub repo_url: Option<String>,
+        pub github_org_url: Option<String>,
         pub second_path: Option<Vec<String>>,
         pub twitter: Option<String>,
         pub url_for_bestpractices: Option<String>,

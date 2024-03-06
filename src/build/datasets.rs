@@ -8,8 +8,8 @@
 
 use self::{base::Base, embed::Embed, full::Full};
 use super::{
-    crunchbase::CrunchbaseData, github::GithubData, guide::LandscapeGuide, settings::LandscapeSettings,
-    stats::Stats, LandscapeData,
+    crunchbase::CrunchbaseData, github::GithubData, github::GithubOrgData, guide::LandscapeGuide,
+    settings::LandscapeSettings, stats::Stats, LandscapeData,
 };
 use anyhow::{Ok, Result};
 
@@ -35,7 +35,12 @@ impl Datasets {
         let datasets = Datasets {
             base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
             embed: Embed::new(i.landscape_data),
-            full: Full::new(i.crunchbase_data, i.github_data, i.landscape_data),
+            full: Full::new(
+                i.crunchbase_data,
+                i.github_data,
+                i.github_org_data,
+                i.landscape_data,
+            ),
             stats: Stats::new(i.landscape_data, i.settings),
         };
 
@@ -48,6 +53,7 @@ impl Datasets {
 pub(crate) struct NewDatasetsInput<'a> {
     pub crunchbase_data: &'a CrunchbaseData,
     pub github_data: &'a GithubData,
+    pub github_org_data: &'a GithubOrgData,
     pub guide: &'a Option<LandscapeGuide>,
     pub landscape_data: &'a LandscapeData,
     pub qr_code: &'a String,
@@ -318,6 +324,7 @@ mod full {
         crunchbase::CrunchbaseData,
         data::{Item, LandscapeData},
         github::GithubData,
+        github::GithubOrgData,
     };
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
@@ -331,6 +338,9 @@ mod full {
         #[serde(skip_serializing_if = "HashMap::is_empty")]
         pub github_data: GithubData,
 
+        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        pub github_org_data: GithubOrgData,
+
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
@@ -340,11 +350,13 @@ mod full {
         pub(crate) fn new(
             crunchbase_data: &CrunchbaseData,
             github_data: &GithubData,
+            github_org_data: &GithubOrgData,
             landscape_data: &LandscapeData,
         ) -> Self {
             Full {
                 crunchbase_data: crunchbase_data.clone(),
                 github_data: github_data.clone(),
+                github_org_data: github_org_data.clone(),
                 items: landscape_data.items.clone(),
             }
         }

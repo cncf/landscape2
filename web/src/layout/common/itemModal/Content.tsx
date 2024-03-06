@@ -28,6 +28,7 @@ import ItemDropdown from './ItemDropdown';
 import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
 import AcademicSection from './AcademicSection';
+import GithubOrgSection from './GithubOrgSection';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
@@ -177,6 +178,12 @@ const Content = (props: Props) => {
                     </ExternalLink>
                   </Show>
 
+                  <Show when={!isUndefined(itemInfo()!.github_org_url) && isUndefined(mainRepo())}>
+                    <ExternalLink title="Repository" class={`ms-3 ${styles.link}`} href={itemInfo()!.github_org_url!}>
+                      <SVGIcon kind={SVGIconKind.GitHubCircle} />
+                    </ExternalLink>
+                  </Show>
+
                   <Show when={!isUndefined(itemInfo()!.devstats_url)}>
                     <ExternalLink title="Devstats" class={`ms-3 ${styles.link}`} href={itemInfo()!.devstats_url!}>
                       <SVGIcon kind={SVGIconKind.Stats} />
@@ -295,6 +302,7 @@ const Content = (props: Props) => {
         {/* Maturity */}
         <MaturitySection item={itemInfo()!} class={styles.fieldset} />
         <AcademicSection item={itemInfo()!} class={styles.fieldset} />
+        <GithubOrgSection item={itemInfo()!} class={styles.fieldset} />
         {/* Repositories */}
         <Show when={!isUndefined(itemInfo()!.repositories)}>
           <div class={`position-relative border ${styles.fieldset}`}>
