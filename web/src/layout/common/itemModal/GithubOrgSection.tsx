@@ -21,7 +21,7 @@ const GithubOrgSection = (props: Props) => {
   };
 
   return (
-    <Show when={!isUndefined(props.item.github_org_stats)}>
+    <Show when={!isUndefined(props.item.github_org_stats) && props.item.github_org_stats.num_repositories > 0}>
       <div class={`position-relative border ${styles.fieldset}`}>
         <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>GitHub</div>
 

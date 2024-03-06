@@ -16,7 +16,7 @@ This is fork of [CNCF Landscape2](http://github.com/cncf/landscape2) that provid
     - [x] citation in footer
     - [x] filter by tags
     - [x] git organization metrics
-    - [ ] feature manually
+    - [x] feature by tags
     - [ ] search by everything
 - Books
     - [ ] Amazon URL icon

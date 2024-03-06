@@ -123,6 +123,23 @@ impl LandscapeData {
                         }
                     }
                 }
+                "tag" => {
+                    for item in &mut self.items {
+                        if let Some(summary) = &item.summary {
+                            if let Some(tags) = &summary.tags {
+                                for tag in tags {
+                                    if let Some(option) = rule.options.iter().find(|o| o.value == *tag) {
+                                        item.featured = Some(ItemFeatured {
+                                            order: option.order,
+                                            label: option.label.clone(),
+                                        });
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 _ => {}
             }
         }
