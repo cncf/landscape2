@@ -41,7 +41,7 @@ impl Datasets {
                 i.github_org_data,
                 i.landscape_data,
             ),
-            stats: Stats::new(i.landscape_data, i.settings),
+            stats: Stats::new(i.landscape_data, i.settings, i.github_org_data),
         };
 
         Ok(datasets)

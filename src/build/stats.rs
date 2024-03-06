@@ -3,6 +3,7 @@
 
 use super::{
     data::{CategoryName, SubCategoryName},
+    github::GithubOrgData,
     settings::{LandscapeSettings, TagName},
     LandscapeData,
 };
@@ -43,12 +44,16 @@ pub(crate) struct Stats {
 impl Stats {
     /// Create a new Stats instance from the information available in the
     /// landscape.
-    pub(crate) fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
+    pub(crate) fn new(
+        landscape_data: &LandscapeData,
+        settings: &LandscapeSettings,
+        github_org_data: &GithubOrgData,
+    ) -> Self {
         Self {
             members: MembersStats::new(landscape_data, settings),
             organizations: OrganizationsStats::new(landscape_data),
             projects: ProjectsStats::new(landscape_data),
-            repositories: RepositoriesStats::new(landscape_data),
+            repositories: RepositoriesStats::new(landscape_data, github_org_data),
         }
     }
 }
@@ -362,7 +367,7 @@ pub(crate) struct RepositoriesStats {
 impl RepositoriesStats {
     /// Create a new RepositoriesStats instance from the information available
     /// in the landscape.
-    fn new(landscape_data: &LandscapeData) -> Option<Self> {
+    fn new(landscape_data: &LandscapeData, githubuorg_data: &GithubOrgData) -> Option<Self> {
         let mut stats = RepositoriesStats::default();
         let mut repositories_processed = HashSet::new();
 
@@ -418,6 +423,31 @@ impl RepositoriesStats {
                         stats.stars += gh_data.stars.unsigned_abs();
                     }
                 }
+            }
+
+            // github org data is not reflected in repositories
+            if let Some(githuborg_url) = &item.github_org_url {
+                let githuborg_data = &githubuorg_data[githuborg_url];
+                stats.repositories += githuborg_data.num_repositories as u64;
+                stats.contributors += githuborg_data.num_contributors as u64;
+
+                for (language, value) in &githuborg_data.languages {
+                    stats.bytes += value.unsigned_abs();
+                    increment(&mut stats.languages_bytes, language, value.unsigned_abs());
+                }
+
+                if stats.participation_stats.is_empty() {
+                    stats.participation_stats = githuborg_data.participation.clone();
+                } else {
+                    stats.participation_stats = stats
+                        .participation_stats
+                        .iter()
+                        .zip(&githuborg_data.participation)
+                        .map(|(accum_v, v)| accum_v + v)
+                        .collect();
+                }
+
+                stats.stars += githuborg_data.stars.unsigned_abs();
             }
         }
 
