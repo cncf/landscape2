@@ -15,11 +15,23 @@
       {% endif %}
       {% endif %}
 
+      {% if let Some(description) = datasets.base.metadata_description %}
+      <meta name="description" content="{{ description }}" />
+      {% endif %}
+      
+      {% if let Some(keywords) = datasets.base.metadata_keywords %}
+      <meta name="keywords" content="{{ keywords }}" />
+      {% endif %}
+      
+      {% if let Some(thumbnail) = datasets.base.metadata_thumbnail %}
+      <meta name="thumbnail" content="{{ thumbnail }}" />
+      {% endif %}
+
       {% if let Some(osano) = osano %}
       <script defer src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
       {% endif %}
     <% } %>
-    <title>{{ datasets.base.foundation }} Landscape</title>
+    <title>{{ datasets.base.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <% if (isDev) { %>
     <script>

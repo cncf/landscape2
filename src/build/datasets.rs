@@ -115,6 +115,17 @@ mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub upcoming_event: Option<UpcomingEvent>,
+
+        pub title: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub metadata_description: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub metadata_keywords: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub metadata_thumbnail: Option<String>,
     }
 
     impl Base {
@@ -141,6 +152,10 @@ mod base {
                 items: vec![],
                 members_category: settings.members_category.clone(),
                 upcoming_event: settings.upcoming_event.clone(),
+                title: settings.title.clone(),
+                metadata_description: settings.metadata_description.clone(),
+                metadata_keywords: settings.metadata_keywords.clone(),
+                metadata_thumbnail: settings.metadata_thumbnail.clone(),
             };
 
             // Update categories overridden in settings

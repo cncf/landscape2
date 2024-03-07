@@ -65,6 +65,17 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upcoming_event: Option<UpcomingEvent>,
+
+    pub title: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata_description: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata_keywords: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata_thumbnail: Option<String>,
 }
 
 impl LandscapeSettings {
