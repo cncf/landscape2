@@ -14,7 +14,7 @@
   "dependencies": {
     "@solid-primitives/resize-observer": "^2.0.23",
     "@solid-primitives/scroll": "^2.0.21",
-    "@solidjs/router": "^0.12.5",
+    "@solidjs/router": "^0.13.1",
     "add": "^2.0.6",
     "apexcharts": "^3.46.0",
     "bootstrap": "^5.3.3",

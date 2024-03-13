@@ -1,4 +1,4 @@
-import { CategoriesData } from './prepareData';
+import { CategoriesData } from './itemsDataGetter';
 
 const countVisibleItems = (data: CategoriesData): number => {
   let num = 0;

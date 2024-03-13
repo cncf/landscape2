@@ -53,7 +53,7 @@ const ZoomModal = () => {
   createEffect(() => {
     async function fetchItems() {
       try {
-        setItems(await itemsDataGetter.filterItemsBySection(visibleZoomSection()!));
+        setItems(await itemsDataGetter.getItemsBySection(visibleZoomSection()!));
       } catch {
         setItems(null);
       }

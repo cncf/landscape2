@@ -1,18 +1,15 @@
 import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, Show } from 'solid-js';
+import { createEffect, createSignal, on, onMount, Show } from 'solid-js';
 
-import { CardMenu } from '../../../types';
+import { CardMenu, ClassifiedOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
-import { CategoriesData } from '../../../utils/prepareData';
-import prepareMenu from '../../../utils/prepareMenu';
-import scrollToTop from '../../../utils/scrollToTop';
+import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
 import Content from './Content';
@@ -20,10 +17,12 @@ import Menu from './Menu';
 
 interface Props {
   initialIsVisible: boolean;
-  data: CategoriesData;
-  categories_overridden?: string[];
-  updateHash: (hash?: string) => void;
-  finishLoading: () => void;
+  group: string;
+  classified: ClassifiedOption;
+  sorted: SortOption;
+  direction: SortDirection;
+  data: unknown;
+  menu?: CardMenu;
 }
 
 const TITLE_OFFSET = 16;
@@ -31,124 +30,119 @@ const TITLE_OFFSET = 16;
 const CardCategory = (props: Props) => {
   const location = useLocation();
   const [firstLoad, setFirstLoad] = createSignal<boolean>(false);
-  const [menu, setMenu] = createSignal<CardMenu>({});
   const [firstItem, setFirstItem] = createSignal<string>();
-  const [initialFullRender, setInitialFullRender] = createSignal<boolean>(false);
   const fullDataReady = useFullDataReady();
   const data = () => props.data;
   const isVisible = () => props.initialIsVisible;
-
-  const updateRoute = (hash: string) => {
-    props.updateHash(hash);
-  };
+  const menu = () => props.menu;
 
   const isAvailableSelectedSection = (): boolean => {
     const selection = location.hash.replace('#', '');
-    const names = getName(selection);
-    if (
-      !isUndefined(menu()) &&
-      !isNull(names) &&
-      Object.keys(menu()!).includes(names.category) &&
-      !isUndefined(names.subcategory) &&
-      menu()![names.category].includes(names.subcategory)
-    ) {
-      return true;
+    if (props.classified === ClassifiedOption.Maturity) {
+      const status = selection.split('--')[1];
+      if (!isUndefined(menu()) && !isUndefined(menu()!.Maturity) && menu()!.Maturity.includes(status)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (props.classified === ClassifiedOption.Tag) {
+      const tagOpt = selection.split('--')[1];
+      if (!isUndefined(menu()) && !isUndefined(menu()!.Tag) && menu()!.Tag.includes(tagOpt)) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      const names = getName(selection);
+      if (
+        !isUndefined(menu()) &&
+        !isNull(names) &&
+        Object.keys(menu()!).includes(names.category) &&
+        !isUndefined(names.subcategory) &&
+        menu()![names.category].includes(names.subcategory)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
     }
   };
 
   const updateActiveSection = () => {
     const firstItemInMenu = firstItem();
     if (firstItemInMenu) {
-      if (initialFullRender()) {
-        updateRoute(firstItemInMenu);
-      } else {
-        if (location.hash !== '' && isAvailableSelectedSection()) {
-          const cleanHash = location.hash.replace('#', '');
-          if (cleanHash !== firstItemInMenu) {
-            if (!isElementInView(`btn_${cleanHash}`)) {
-              const target = window.document.getElementById(`btn_${cleanHash}`);
-              if (target) {
-                target.scrollIntoView({ block: 'nearest' });
-              }
+      if (location.hash !== '' && isAvailableSelectedSection()) {
+        const cleanHash = location.hash.replace('#', '');
+        if (cleanHash !== firstItemInMenu) {
+          if (!isElementInView(`btn_${cleanHash}`)) {
+            const target = window.document.getElementById(`btn_${cleanHash}`);
+            if (target) {
+              target.scrollIntoView({ block: 'nearest' });
             }
-            setTimeout(() => {
-              goToElement(false, `card_${cleanHash}`, TITLE_OFFSET);
-            }, 100);
           }
-        } else {
-          updateRoute(firstItemInMenu);
-          scrollToTop(false);
+          setTimeout(() => {
+            goToElement(false, `card_${cleanHash}`, TITLE_OFFSET);
+          }, 100);
         }
-        setInitialFullRender(true);
       }
     }
   };
 
-  const onMenuChange = (menuTmp: CardMenu) => {
-    if (!isEmpty(menuTmp)) {
-      const firstCategory = Object.keys(menuTmp)[0];
-      const firstSubcategory = menuTmp[firstCategory][0];
-      if (!isUndefined(firstSubcategory)) {
-        const firstItemInMenu = getNormalizedName({ cat: firstCategory, subcat: firstSubcategory, grouped: true });
-        setFirstItem(firstItemInMenu);
+  // When data changes, we need to update the first item in the menu
+  createEffect(
+    on(data, () => {
+      if (!isUndefined(menu()) && !isEmpty(menu())) {
+        const firstTitle = Object.keys(menu()!)[0];
+        const firstSubtitle = menu()![firstTitle][0];
+        if (!isUndefined(firstSubtitle)) {
+          const firstItemInMenu = getNormalizedName({
+            title: firstTitle.toLowerCase(),
+            subtitle: firstSubtitle,
+            grouped: true,
+          });
+          setFirstItem(firstItemInMenu);
+        }
       }
-    }
-    // Clean prev hash
-    if (isEmpty(menuTmp) && isVisible()) {
-      updateRoute('');
-    }
-  };
+    })
+  );
 
   createEffect(
     on(isVisible, () => {
       if (isVisible()) {
         if (!firstLoad()) {
           setFirstLoad(true);
-          props.finishLoading();
-        }
-
-        if (isUndefined(menu())) {
-          const menuTmp = prepareMenu(data(), props.categories_overridden);
-          onMenuChange(menuTmp);
-          setMenu(menuTmp);
-        } else {
-          updateActiveSection();
         }
       }
     })
   );
 
-  createEffect(
-    on(data, () => {
-      if (!isUndefined(menu())) {
-        const menuTmp = prepareMenu(data(), props.categories_overridden);
-        onMenuChange(menuTmp);
-        setMenu((prev) => (!isEqual(prev, menuTmp) ? menuTmp : prev));
-      }
-    })
-  );
-
-  createEffect(
-    on(menu, () => {
-      if (isVisible()) {
-        updateActiveSection();
-      }
-    })
-  );
+  onMount(() => {
+    if (isVisible()) {
+      updateActiveSection();
+    }
+  });
 
   return (
     <Show when={firstLoad()}>
       <div class="d-flex flex-row mt-2">
-        <Show when={!isEmpty(menu())}>
-          <Menu menu={menu} isVisible={props.initialIsVisible} sticky />
-          <div class={`d-flex flex-column ${styles.content}`}>
-            <Show when={fullDataReady()}>
-              <Content menu={menu} data={props.data} isVisible={props.initialIsVisible} />
-            </Show>
-          </div>
+        <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+          <Menu menu={menu()!} isVisible={props.initialIsVisible} sticky />
         </Show>
+        <div
+          class={`d-flex flex-column ${styles.content}`}
+          classList={{ 'w-100': props.classified === ClassifiedOption.None }}
+        >
+          <Show when={fullDataReady() && !isUndefined(data())}>
+            <Content
+              data={data!}
+              classified={props.classified}
+              isVisible={props.initialIsVisible}
+              sorted={props.sorted}
+              direction={props.direction}
+            />
+          </Show>
+          <ButtonToTopScroll />
+        </div>
       </div>
     </Show>
   );

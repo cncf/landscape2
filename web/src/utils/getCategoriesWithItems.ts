@@ -1,4 +1,4 @@
-import { CategoriesData } from './prepareData';
+import { CategoriesData } from './itemsDataGetter';
 
 const getCategoriesWithItems = (data: CategoriesData): string[] => {
   const categories: string[] = [];

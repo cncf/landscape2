@@ -1,0 +1,44 @@
+.sticky {
+  bottom: 1.5rem;
+}
+
+.smallDevice {
+  margin-right: 0.5rem;
+}
+
+.btnTop {
+  background-color: var(--bs-secondary-bg-subtle);
+  border-color: var(--bs-secondary-bg-subtle);
+  height: 40px;
+  width: 40px;
+  font-size: 1.15rem;
+}
+
+.smallDevice .btnTop {
+  height: 35px;
+  width: 35px;
+  font-size: 1rem;
+}
+
+.btnTopIcon {
+  top: -1px;
+}
+
+.btnTopWrapper::before {
+  content: '';
+  position: absolute;
+  top: -0.35rem;
+  bottom: -0.35rem;
+  left: -0.35rem;
+  right: -0.35rem;
+  background-color: var(--bs-white);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+@media (hover: hover) {
+  .btnTop:hover {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+  }
+}
