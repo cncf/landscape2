@@ -1,6 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 
+import { ALL_OPTION } from '../../data';
 import { BaseData } from '../../types';
 import generateColorsArray from '../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../utils/getCategoriesWithItems';
@@ -18,7 +19,7 @@ const Screenshots = (props: Props) => {
   const [groupsData, setGroupsData] = createSignal<GroupData>();
   const groups = () =>
     props.initialData.groups || [
-      { name: 'default', normalized_name: 'default', categories: props.initialData.categories },
+      { name: ALL_OPTION, normalized_name: ALL_OPTION, categories: props.initialData.categories },
     ];
 
   onMount(() => {

@@ -98,6 +98,7 @@ const Grid = (props: Props) => {
   const data = () => props.initialCategoryData;
 
   createEffect(() => {
+    if (gridWidth() === 0) return;
     setGrid((prev) => {
       const newGrid = getGridCategoryLayout({
         containerWidth: gridWidth(),

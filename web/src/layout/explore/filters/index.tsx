@@ -4,7 +4,7 @@ import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
 import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
 
-import { FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
+import { ALL_OPTION, FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
 import {
   ActiveFilters,
   BaseData,
@@ -66,7 +66,7 @@ const Filters = (props: Props) => {
           const f = getFiltersPerGroup(prepareData(props.data, props.initialLandscapeData()!));
           if (!isEmpty(f)) {
             setFiltersFromData(f);
-            setFilters(f[props.initialSelectedGroup() || 'default']);
+            setFilters(f[props.initialSelectedGroup() || ALL_OPTION]);
           }
         }
         setTmpActiveFilters(cleanInitialActiveFilters());
@@ -85,7 +85,7 @@ const Filters = (props: Props) => {
   createEffect(
     on(props.initialSelectedGroup, () => {
       if (!isUndefined(filtersFromData())) {
-        setFilters(filtersFromData()![props.initialSelectedGroup() || 'default']);
+        setFilters(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION]);
       }
     })
   );

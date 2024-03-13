@@ -1,7 +1,25 @@
+import { groupBy } from 'lodash';
 import isUndefined from 'lodash/isUndefined';
 
-import { ActiveSection, CrunchbaseData, FilterOption, GithubData, Item, LandscapeData, Repository } from '../types';
+import { ALL_OPTION } from '../data';
+import {
+  ActiveFilters,
+  ActiveSection,
+  BaseItem,
+  CardMenu,
+  ClassifiedOption,
+  CrunchbaseData,
+  FilterOption,
+  GithubData,
+  Group,
+  Item,
+  LandscapeData,
+  Repository,
+} from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
+import filterData from './filterData';
+import nestArray from './nestArray';
+import { GroupData } from './prepareData';
 
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;
@@ -25,8 +43,8 @@ interface CategoryOpt {
 
 export class ItemsDataGetter {
   private updateStatus?: ItemsDataStatus;
-  public ready = false;
-  public landscapeData?: LandscapeData;
+  private ready = false;
+  private landscapeData?: LandscapeData;
 
   public subscribe(updateStatus: ItemsDataStatus) {
     this.updateStatus = updateStatus;
@@ -102,6 +120,95 @@ export class ItemsDataGetter {
       });
     }
     return itemsList;
+  }
+
+  private groupData(items: (BaseItem | Item)[]): { [key: string]: (Item | BaseItem)[] } {
+    const gData = groupBy(items, 'category');
+    const groups: Group[] = window.baseDS.groups || [];
+
+    const groupedItems: { [key: string]: (BaseItem | Item)[] } = {};
+
+    for (const group of groups) {
+      groupedItems[group.normalized_name] = [];
+      group.categories.forEach((c: string) => {
+        const groupData = gData[c];
+        if (groupData) {
+          groupedItems[group.normalized_name].push(...groupData);
+        }
+      });
+    }
+    groupedItems[ALL_OPTION] = [...items];
+
+    return groupedItems;
+  }
+
+  public classifyItems(items: (BaseItem | Item)[], classified: ClassifiedOption): unknown | undefined {
+    switch (classified) {
+      case ClassifiedOption.None:
+        return items;
+      case ClassifiedOption.Category:
+        return nestArray(items, ['category', 'subcategory']);
+      case ClassifiedOption.Maturity:
+        return groupBy(items, 'maturity');
+    }
+  }
+
+  private prepareGridData(groupedItems: { [key: string]: (Item | BaseItem)[] }) {
+    const data: GroupData = {};
+    if (!isUndefined(groupedItems)) {
+      Object.keys(groupedItems).forEach((group: string) => {
+        data[group] = {};
+        const items = groupedItems![group];
+        items.forEach((item: BaseItem | Item) => {
+          if (data[group][item.category]) {
+            if (data[group][item.category][item.subcategory]) {
+              data[group][item.category][item.subcategory].items.push(item);
+              data[group][item.category][item.subcategory].itemsCount++;
+              if (item.featured) {
+                data[group][item.category][item.subcategory].itemsFeaturedCount++;
+              }
+            } else {
+              data[group][item.category][item.subcategory] = {
+                items: [item],
+                itemsCount: 1,
+                itemsFeaturedCount: item.featured ? 1 : 0,
+              };
+            }
+          } else {
+            data[group][item.category] = {
+              [item.subcategory]: {
+                items: [item],
+                itemsCount: 1,
+                itemsFeaturedCount: item.featured ? 1 : 0,
+              },
+            };
+          }
+        });
+      });
+    }
+    return data;
+  }
+
+  private getMenuOptions = (data: unknown, classified: ClassifiedOption) => {
+    const menu: CardMenu = {};
+    switch (classified) {
+      case ClassifiedOption.None:
+        return;
+      case ClassifiedOption.Category:
+        Object.keys(data as never).sort().forEach((category: string) => {
+          menu[category] = Object.keys((data as { [key: string]: never })[category]).sort();
+        });
+        return menu;
+      case ClassifiedOption.Maturity:
+        return { 'Maturity': Object.keys(data as { [key: string]: (BaseItem | Item)[] }) };
+    }
+  }
+
+  public queryItems(input: ActiveFilters, group: string, classified: ClassifiedOption) {
+    const filteredItems = filterData(this.ready ? this.getAll() : window.baseDS.items, input);
+    const groupedItems = this.groupData(filteredItems);
+    const classifiedGroup = this.classifyItems(groupedItems[group], classified);
+    return { grid: this.prepareGridData(groupedItems), card: {content: classifiedGroup, menu: this.getMenuOptions(classifiedGroup, classified)} };
   }
 
   public findById(id: string): Item | undefined {

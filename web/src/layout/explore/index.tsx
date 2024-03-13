@@ -7,24 +7,35 @@ import throttle from 'lodash/throttle';
 import uniq from 'lodash/uniq';
 import { createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
-import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
+import {
+  ALL_OPTION,
+  CLASSIFIED_PARAM,
+  DEFAULT_CLASSIFIED,
+  DEFAULT_SORT,
+  GROUP_PARAM,
+  SMALL_DEVICES_BREAKPOINTS,
+  SORT_BY_PARAM,
+  VIEW_MODE_PARAM,
+  ZOOM_LEVELS,
+} from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import {
   ActiveFilters,
   BaseData,
-  BaseItem,
+  CardMenu,
+  ClassifiedOption,
   FilterCategory,
   Group,
   Item,
+  SortOption,
   StateContent,
   SVGIconKind,
   ViewMode,
 } from '../../types';
 import countVisibleItems from '../../utils/countVisibleItems';
-import filterData from '../../utils/filterData';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
 import itemsDataGetter from '../../utils/itemsDataGetter';
-import prepareData, { GroupData } from '../../utils/prepareData';
+import { GroupData } from '../../utils/prepareData';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
 import Loading from '../common/Loading';
@@ -37,6 +48,7 @@ import { useGroupActive, useSetGroupActive } from '../stores/groupActive';
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import { useSetViewMode, useViewMode } from '../stores/viewMode';
 import { useSetZoomLevel, useZoomLevel } from '../stores/zoom';
+import CardCategory from './card';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
@@ -75,13 +87,16 @@ const Explore = (props: Props) => {
   const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
   const [landscapeData, setLandscapeData] = createSignal<Item[]>();
-  const [visibleItems, setVisibleItems] = createSignal<(BaseItem | Item)[]>(props.initialData.items);
-  const [groupsData, setGroupsData] = createSignal<GroupData>(prepareData(props.initialData, props.initialData.items));
+  const [groupsData, setGroupsData] = createSignal<GroupData>();
+  const [cardData, setCardData] = createSignal<unknown>();
+  const [cardMenu, setCardMenu] = createSignal<CardMenu>();
   const [numVisibleItems, setNumVisibleItems] = createSignal<number>();
   const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
   const [visibleSelectForGroups, setVisibleSelectForGroups] = createSignal<boolean>(false);
+  const [classified, setClassified] = createSignal<ClassifiedOption>(DEFAULT_CLASSIFIED);
+  const [sorted, setSorted] = createSignal<SortOption>(DEFAULT_SORT);
   const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
@@ -105,6 +120,19 @@ const Explore = (props: Props) => {
   const getMaturityOptions = () => {
     const maturity = props.initialData.items.map((i: Item) => i.maturity);
     return uniq(compact(maturity)) || [];
+  };
+
+  const finishLoading = () => {
+    setVisibleLoading(false);
+  };
+
+  const prepareData = (newData: GroupData) => {
+    const currentNumber = countVisibleItems(newData[selectedGroup() || ALL_OPTION]);
+    if (currentNumber === 0) {
+      finishLoading();
+    }
+    setNumVisibleItems(currentNumber);
+    setGroupsData(newData);
   };
 
   const maturityOptions = getMaturityOptions();
@@ -135,7 +163,11 @@ const Explore = (props: Props) => {
         }
       }
     }
-    setVisibleItems(filterData(landscapeData() || props.initialData.items, currentFilters));
+    const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classified()!);
+    prepareData(data.grid as GroupData);
+    setCardData(data.card.content);
+    setCardMenu(data.card.menu);
+
     return currentFilters;
   };
 
@@ -146,8 +178,8 @@ const Explore = (props: Props) => {
     // Not for small devices
     if (!onSmallDevice) {
       if (viewMode) {
-        const group = groupName || selectedGroup() || 'default';
-        if (!loaded()[viewMode].includes(groupName || 'default')) {
+        const group = groupName || selectedGroup() || ALL_OPTION;
+        if (!loaded()[viewMode].includes(groupName || ALL_OPTION)) {
           setVisibleLoading(true);
 
           setLoaded({
@@ -161,10 +193,6 @@ const Explore = (props: Props) => {
         setVisibleLoading(false);
       }
     }
-  };
-
-  const finishLoading = () => {
-    setVisibleLoading(false);
   };
 
   const closeMenuStatus = () => {
@@ -260,7 +288,11 @@ const Explore = (props: Props) => {
       // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
-        setVisibleItems(filterData(fullData, activeFilters()));
+        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+        prepareData(data.grid as GroupData);
+        setCardData(data.card.content);
+        setCardMenu(data.card.menu);
+
         setFullDataApplied(true);
         setReadyData(true);
       }
@@ -278,25 +310,25 @@ const Explore = (props: Props) => {
   );
 
   createEffect(
-    on(visibleItems, () => {
-      const newData = prepareData(props.initialData, visibleItems());
-
-      const currentNumber = countVisibleItems(newData[selectedGroup() || 'default']);
-      if (currentNumber === 0) {
-        finishLoading();
+    on(selectedGroup, () => {
+      if (groupsData()) {
+        const currentNumber = countVisibleItems(groupsData()![selectedGroup() || ALL_OPTION]);
+        if (currentNumber === 0) {
+          finishLoading();
+        }
+        setNumVisibleItems(currentNumber);
+        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+        setCardData(data.card.content);
+        setCardMenu(data.card.menu);
       }
-      setNumVisibleItems(currentNumber);
-      setGroupsData(newData);
     })
   );
 
   createEffect(
-    on(selectedGroup, () => {
-      const currentNumber = countVisibleItems(groupsData()[selectedGroup() || 'default']);
-      if (currentNumber === 0) {
-        finishLoading();
-      }
-      setNumVisibleItems(currentNumber);
+    on(classified, () => {
+      const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+      setCardData(data.card.content);
+      setCardMenu(data.card.menu);
     })
   );
 
@@ -306,7 +338,10 @@ const Explore = (props: Props) => {
         if (!isEmpty(activeFilters())) {
           applyFilters(activeFilters());
         } else {
-          setVisibleItems(landscapeData()!);
+          const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classified()!);
+          prepareData(data.grid as GroupData);
+          setCardData(data.card.content);
+          setCardMenu(data.card.menu);
         }
       }
     })
@@ -349,8 +384,12 @@ const Explore = (props: Props) => {
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
+    console.log(newFilters);
     setActiveFilters(newFilters);
-    setVisibleItems(filterData(landscapeData() || props.initialData.items, newFilters));
+    const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+    prepareData(data.grid as GroupData);
+    setCardData(data.card.content);
+    setCardMenu(data.card.menu);
     if (!isUndefined(landscapeData())) {
       setFullDataApplied(true);
     }
@@ -416,6 +455,10 @@ const Explore = (props: Props) => {
       fetchItems();
     }
 
+    const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+    setGroupsData(data.grid);
+    setCardData(data.card.content);
+    setCardMenu(data.card.menu);
     checkIfVisibleLoading(viewMode(), selectedGroup());
   });
 
@@ -456,6 +499,23 @@ const Explore = (props: Props) => {
                   classList={{ 'd-flex': !visibleSelectForGroups(), 'd-none': visibleSelectForGroups() }}
                 >
                   <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                    <Show when={viewMode() === ViewMode.Card}>
+                      <button
+                        title="All"
+                        class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
+                        classList={{
+                          [`active text-white ${styles.active}`]:
+                            !isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup(),
+                        }}
+                        onClick={() => {
+                          checkIfVisibleLoading(viewMode(), ALL_OPTION);
+                          updateQueryString(GROUP_PARAM, ALL_OPTION);
+                          setSelectedGroup(ALL_OPTION);
+                        }}
+                      >
+                        All
+                      </button>
+                    </Show>
                     <For each={props.initialData.groups}>
                       {(group: Group) => {
                         return (
@@ -537,35 +597,84 @@ const Explore = (props: Props) => {
               </For>
             </div>
             <div class="d-none d-lg-flex align-items-center">
-              <Show when={viewMode() === ViewMode.Grid}>
-                <div class={styles.btnGroupLegend}>
-                  <small class="text-muted me-2">ZOOM:</small>
-                </div>
-                <div class="d-flex flex-row">
-                  <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
-                    <button
-                      title="Increase zoom level"
-                      class="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoom() === 0}
-                      onClick={() => {
-                        updateZoom(zoom() - 1);
-                      }}
-                    >
-                      <div class={styles.btnSymbol}>-</div>
-                    </button>
-                    <button
-                      title="Decrease zoom level"
-                      class="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoom() === 10}
-                      onClick={() => {
-                        updateZoom(zoom() + 1);
-                      }}
-                    >
-                      <div class={styles.btnSymbol}>+</div>
-                    </button>
+              <Switch>
+                <Match when={viewMode() === ViewMode.Grid}>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted me-2">ZOOM:</small>
                   </div>
-                </div>
-              </Show>
+                  <div class="d-flex flex-row">
+                    <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                      <button
+                        title="Increase zoom level"
+                        class="btn btn-outline-primary rounded-0 fw-semibold"
+                        disabled={zoom() === 0}
+                        onClick={() => {
+                          updateZoom(zoom() - 1);
+                        }}
+                      >
+                        <div class={styles.btnSymbol}>-</div>
+                      </button>
+                      <button
+                        title="Decrease zoom level"
+                        class="btn btn-outline-primary rounded-0 fw-semibold"
+                        disabled={zoom() === 10}
+                        onClick={() => {
+                          updateZoom(zoom() + 1);
+                        }}
+                      >
+                        <div class={styles.btnSymbol}>+</div>
+                      </button>
+                    </div>
+                  </div>
+                </Match>
+                <Match when={viewMode() === ViewMode.Card}>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted text-uppercase me-2">Classified:</small>
+                  </div>
+                  <select
+                    id="classified"
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
+                    value={classified()}
+                    aria-label="Classified"
+                    onChange={(e) => {
+                      const classifiedOpt = e.currentTarget.value as ClassifiedOption;
+                      updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
+                      setClassified(classifiedOpt);
+                    }}
+                  >
+                    <For each={Object.keys(ClassifiedOption)}>
+                      {(opt: string) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const value = (ClassifiedOption as any)[opt];
+                        return <option value={value}>{opt}</option>;
+                      }}
+                    </For>
+                  </select>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted text-uppercase me-2">Sort:</small>
+                  </div>
+                  <select
+                    id="classified"
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
+                    value={sorted()}
+                    aria-label="Sort"
+                    onChange={(e) => {
+                      const sortOpt = e.currentTarget.value as SortOption;
+                      updateQueryString(SORT_BY_PARAM, sortOpt);
+                      setSorted(sortOpt);
+                    }}
+                  >
+                    <option value="" />
+                    <For each={Object.keys(SortOption)}>
+                      {(opt: string) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const value = (SortOption as any)[opt];
+                        return <option value={value}>{opt}</option>;
+                      }}
+                    </For>
+                  </select>
+                </Match>
+              </Switch>
             </div>
           </div>
           <Show when={!isUndefined(props.initialData.groups)}>
@@ -629,12 +738,13 @@ const Explore = (props: Props) => {
         <Show when={!isUndefined(point())}>
           <Switch>
             <Match when={SMALL_DEVICES_BREAKPOINTS.includes(point()!)}>
-              <Show when={readyData()}>
+              <Show when={readyData() && !isUndefined(groupsData())}>
                 <div ref={setContainerRef}>
                   <ExploreMobileIndex
                     openMenuStatus={openMenuStatus()}
                     closeMenuStatus={closeMenuStatus}
-                    data={{ ...groupsData() }[selectedGroup() || 'default']}
+                    data={{ ...groupsData() }[selectedGroup() || ALL_OPTION]}
+                    menu={cardMenu()}
                     categories_overridden={props.initialData.categories_overridden}
                     finishLoading={finishLoading}
                   />
@@ -661,7 +771,7 @@ const Explore = (props: Props) => {
                       when={!isUndefined(props.initialData.groups)}
                       fallback={
                         <Content
-                          data={{ ...groupsData() }.default}
+                          data={{ ...groupsData() }[ALL_OPTION]}
                           categories_overridden={props.initialData.categories_overridden}
                           updateHash={updateHash}
                           finishLoading={finishLoading}
@@ -682,6 +792,21 @@ const Explore = (props: Props) => {
                           );
                         }}
                       </For>
+                    </Show>
+
+                    <Show when={fullDataReady()}>
+                      <div class={viewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
+                        <CardCategory
+                          initialIsVisible={viewMode() === ViewMode.Card}
+                          data={cardData()}
+                          menu={cardMenu()}
+                          group={selectedGroup() || ALL_OPTION}
+                          classified={classified()}
+                          sorted={sorted()}
+                          updateHash={updateHash}
+                          finishLoading={finishLoading}
+                        />
+                      </div>
                     </Show>
                   </Show>
                 </div>

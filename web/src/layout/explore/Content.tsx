@@ -3,7 +3,6 @@ import isUndefined from 'lodash/isUndefined';
 import { ViewMode } from '../../types';
 import { CategoriesData } from '../../utils/prepareData';
 import { useViewMode } from '../stores/viewMode';
-import CardCategory from './card';
 import GridCategory from './grid';
 
 interface Props {
@@ -21,15 +20,6 @@ const Content = (props: Props) => {
 
   return (
     <div class={isSelected() ? 'd-block' : 'd-none'}>
-      <div class={selectedViewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
-        <CardCategory
-          initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Card}
-          data={props.data}
-          categories_overridden={props.categories_overridden}
-          updateHash={props.updateHash}
-          finishLoading={props.finishLoading}
-        />
-      </div>
       <div class={selectedViewMode() === ViewMode.Grid ? 'd-block' : 'd-none'}>
         <GridCategory
           initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Grid}

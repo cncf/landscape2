@@ -60,6 +60,7 @@ const getCategoriesData = (categoriesList: Category[], items: (BaseItem | Item)[
 
 const prepareData = (data: BaseData, items: (BaseItem | Item)[]): GroupData => {
   const groups: GroupData = {};
+  groups.all = getCategoriesData(data.categories, items);
 
   if (data.groups) {
     data.groups.map((g: Group) => {
@@ -74,8 +75,6 @@ const prepareData = (data: BaseData, items: (BaseItem | Item)[]): GroupData => {
 
       groups[g.normalized_name] = getCategoriesData(categoriesList, items);
     });
-  } else {
-    groups.default = getCategoriesData(data.categories, items);
   }
 
   return groups;

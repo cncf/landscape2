@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
+import { ALL_OPTION } from '../../data';
 import { SVGIconKind, ViewMode } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
@@ -35,7 +36,7 @@ const Header = () => {
               onClick={() => {
                 const groups = window.baseDS.groups;
                 setViewMode(ViewMode.Grid);
-                setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
+                setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : ALL_OPTION);
                 navigate('/', {
                   state: { from: 'logo-header' },
                 });

@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, createEffect, createSignal, For, Show } from 'solid-js';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu, SVGIconKind } from '../../../types';
@@ -10,7 +10,7 @@ import SVGIcon from '../../common/SVGIcon';
 import styles from './Menu.module.css';
 
 interface Props {
-  menu: Accessor<CardMenu>;
+  menu: CardMenu;
   isVisible: boolean;
   sticky: boolean;
   onClickOption?: () => void;
@@ -47,7 +47,7 @@ const Menu = (props: Props) => {
     <div class={`d-flex flex-column ${styles.toc}`} classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}>
       <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
         <div ref={setRef}>
-          <For each={Object.keys(props.menu())}>
+          <For each={Object.keys(props.menu)}>
             {(cat, index) => {
               return (
                 <div>
@@ -62,10 +62,10 @@ const Menu = (props: Props) => {
                   <div
                     class={`d-flex flex-column text-start border border-3 py-3 border-white ${styles.subcategories}`}
                     classList={{
-                      'border-bottom-0': index() !== Object.keys(props.menu()).length - 1,
+                      'border-bottom-0': index() !== Object.keys(props.menu).length - 1,
                     }}
                   >
-                    <For each={props.menu()[cat]}>
+                    <For each={props.menu[cat]}>
                       {(subcat: string) => {
                         const hash = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
 

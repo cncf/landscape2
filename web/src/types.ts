@@ -491,6 +491,19 @@ export enum FilterTitle {
   Organization = 'Organization',
 }
 
+export enum ClassifiedOption {
+  None = 'none',
+  Category = 'category',
+  Maturity = 'maturity',
+}
+
+export enum SortOption {
+  Name = 'name',
+  Stars = 'stars',
+  DateAdded = 'date-added',
+  FirstCommit = 'first-commit',
+}
+
 export type FilterCategoriesPerTitle = {
   [key in FilterTitle]: FilterCategory[];
 };

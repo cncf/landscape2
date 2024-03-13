@@ -52,6 +52,10 @@
   font-weight: 700;
 }
 
+.miniSelect {
+  width: 125px;
+}
+
 .select {
   max-width: 400px;
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200);

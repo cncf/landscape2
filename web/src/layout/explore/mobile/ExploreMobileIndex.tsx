@@ -1,14 +1,13 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
-import { createEffect, createSignal, For, Match, onMount, Show, Switch } from 'solid-js';
+import { For, Match, onMount, Show, Switch } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu, Item, ViewMode } from '../../../types';
 import getGroupName from '../../../utils/getGroupName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import { CategoriesData } from '../../../utils/prepareData';
-import prepareMenu from '../../../utils/prepareMenu';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import Loading from '../../common/Loading';
 import { Sidebar } from '../../common/Sidebar';
@@ -24,24 +23,20 @@ interface Props {
   openMenuStatus: boolean;
   closeMenuStatus: () => void;
   data: CategoriesData;
+  menu?: CardMenu;
   categories_overridden?: string[];
   finishLoading: () => void;
 }
 
 const ExploreMobileIndex = (props: Props) => {
   const data = () => props.data;
+  const menu = () => props.menu;
   const selectedViewMode = useViewMode();
   const updateActiveItemId = useUpdateActiveItemId();
   const selectedGroup = useGroupActive();
-  const [menu, setMenu] = createSignal<CardMenu>({});
 
   const sortItems = (items: Item[]): Item[] =>
     orderBy(items, [(item: Item) => item.name.toLowerCase().toString()], 'asc');
-
-  createEffect(() => {
-    const menu = prepareMenu(data(), props.categories_overridden);
-    setMenu(menu);
-  });
 
   onMount(() => {
     props.finishLoading();
@@ -57,14 +52,14 @@ const ExploreMobileIndex = (props: Props) => {
         onOpenStatusChange={props.closeMenuStatus}
       >
         <div class="position-relative">
-          <Show when={!isEmpty(menu())} fallback={<Loading />}>
-            <Menu menu={menu} sticky={false} onClickOption={props.closeMenuStatus} isVisible />
+          <Show when={!isUndefined(menu()) && !isEmpty(menu())} fallback={<Loading />}>
+            <Menu menu={menu()!} sticky={false} onClickOption={props.closeMenuStatus} isVisible />
           </Show>
         </div>
       </Sidebar>
 
-      <Show when={!isEmpty(menu())}>
-        <For each={Object.keys(menu())}>
+      <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+        <For each={Object.keys(menu()!)}>
           {(cat) => {
             return (
               <>
@@ -73,7 +68,7 @@ const ExploreMobileIndex = (props: Props) => {
                     <div class="text-white text-nowrap text-truncate text-uppercase">{cat}</div>
                   </div>
                 </div>
-                <For each={menu()[cat]}>
+                <For each={menu()![cat]}>
                   {(subcat: string) => {
                     const items = () => (data()[cat] && data()[cat][subcat] ? data()[cat][subcat]!.items : []);
                     if (items().length === 0) return null;
