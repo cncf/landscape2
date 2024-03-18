@@ -149,8 +149,8 @@ const Grid = (props: Props) => {
                           <div>
                             <A
                               href={`/guide#${getNormalizedName({
-                                cat: props.categoryName,
-                                subcat: subcat.subcategoryName,
+                                title: props.categoryName,
+                                subtitle: subcat.subcategoryName,
                                 grouped: true,
                               })}`}
                               state={{ from: 'explore' }}

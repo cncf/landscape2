@@ -3,8 +3,8 @@ import isUndefined from 'lodash/isUndefined';
 import { Category, Subcategory } from '../types';
 
 interface Name {
-  cat: string;
-  subcat?: string;
+  title: string;
+  subtitle?: string;
   grouped?: boolean;
 }
 
@@ -17,13 +17,13 @@ const slugify = (text: string): string => {
 };
 
 const getNormalizedName = (opt: Name): string => {
-  const selectedCat = window.baseDS.categories.find((cat: Category) => cat.name === opt.cat);
+  const selectedCat = window.baseDS.categories.find((cat: Category) => cat.name === opt.title);
 
   if (!isUndefined(selectedCat)) {
-    if (isUndefined(opt.subcat)) {
+    if (isUndefined(opt.subtitle)) {
       return selectedCat.normalized_name;
     } else {
-      const selectedSubcat = selectedCat.subcategories.find((subcat: Subcategory) => subcat.name === opt.subcat);
+      const selectedSubcat = selectedCat.subcategories.find((subcat: Subcategory) => subcat.name === opt.subtitle);
       if (!isUndefined(selectedSubcat)) {
         if (isUndefined(opt.grouped) || !opt.grouped) {
           return selectedSubcat.normalized_name;
@@ -31,11 +31,11 @@ const getNormalizedName = (opt: Name): string => {
           return `${selectedCat.normalized_name}--${selectedSubcat.normalized_name}`;
         }
       } else {
-        return slugify(`${opt.cat}--${opt.subcat}`);
+        return `${slugify(opt.title)}--${slugify(opt.subtitle)}`;
       }
     }
   } else {
-    return slugify(`${opt.cat}${!isUndefined(opt.subcat) ? `--${opt.subcat}` : ''}`);
+    return `${slugify(opt.title)}${!isUndefined(opt.subtitle) ? `--${slugify(opt.subtitle)}` : ''}`;
   }
 };
 

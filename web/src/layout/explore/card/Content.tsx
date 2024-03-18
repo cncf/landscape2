@@ -1,9 +1,19 @@
 import { A } from '@solidjs/router';
+import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
-import { For, Match, Show, Switch } from 'solid-js';
+import { Accessor, For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS } from '../../../data';
-import { BaseItem, Item, SortOption, SVGIconKind } from '../../../types';
+import {
+  BaseItem,
+  Category,
+  ClassifiedOption,
+  Item,
+  SortDirection,
+  SortOption,
+  Subcategory,
+  SVGIconKind,
+} from '../../../types';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import sortItems from '../../../utils/sortItems';
@@ -14,20 +24,24 @@ import styles from './Content.module.css';
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
+  data: Accessor<any>;
+  classified: ClassifiedOption;
   sorted: SortOption;
+  direction: SortDirection;
   isVisible: boolean;
 }
 
 interface ListProps {
   items: BaseItem[];
   sorted: SortOption;
+  direction: SortDirection;
   isVisible: boolean;
 }
 
 const CardList = (props: ListProps) => {
   const updateActiveItemId = useUpdateActiveItemId();
-  const items = () => sortItems(props.items, props.sorted);
+  const itemsList = () => props.items;
+  const items = () => sortItems(itemsList(), props.sorted, props.direction);
 
   return (
     <div class="row g-4 mb-4">
@@ -59,30 +73,48 @@ const CardList = (props: ListProps) => {
 
 const Content = (props: Props) => {
   const bgColor = COLORS[0];
-  const data = () => props.data;
+  const data = () => props.data();
+
+  const getSubtitles = (content: { [key: string]: unknown }, title: string): string[] => {
+    let subtitles = Object.keys(content).sort();
+    if (
+      props.classified === ClassifiedOption.Category &&
+      window.baseDS.categories_overridden &&
+      window.baseDS.categories_overridden.includes(title)
+    ) {
+      const currentCategory = window.baseDS.categories.find((c: Category) => c.name === title);
+      if (currentCategory) {
+        const subcategories: string[] = currentCategory.subcategories.map((s: Subcategory) => s.name);
+        subtitles = intersection(subcategories, subtitles);
+      }
+    }
+
+    return subtitles;
+  };
 
   return (
     <Show when={!isUndefined(data())}>
       <Switch>
         <Match when={Array.isArray(data())}>
-          <CardList items={data()} isVisible={props.isVisible} sorted={props.sorted} />
+          <CardList items={data()} isVisible={props.isVisible} sorted={props.sorted} direction={props.direction} />
         </Match>
         <Match when={!Array.isArray(data())}>
           <For each={Object.keys(data()).sort()}>
             {(title: string) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const content = (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];
+              const content = () => (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];
+
               return (
                 <div>
                   <Switch>
-                    <Match when={!Array.isArray(content)}>
-                      <For each={Object.keys(content)}>
+                    <Match when={!Array.isArray(content())}>
+                      <For each={getSubtitles(content() as { [key: string]: unknown }, title)}>
                         {(subtitle: string) => {
                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          const items = () => (content as any)[subtitle];
+                          const items = () => (content() as any)[subtitle];
                           if (items().length === 0) return null;
 
-                          const id = getNormalizedName({ cat: title, subcat: subtitle, grouped: true });
+                          const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
                           return (
                             <div id={`card_${id}`} class="mb-3">
@@ -94,7 +126,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title)}>
                                     <div>
                                       <A
-                                        href={`/guide#${getNormalizedName({ cat: title })}`}
+                                        href={`/guide#${getNormalizedName({ title: title })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
                                       >
@@ -110,7 +142,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title, subtitle)}>
                                     <div>
                                       <A
-                                        href={`/guide#${getNormalizedName({ cat: title, subcat: subtitle, grouped: true })}`}
+                                        href={`/guide#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
                                       >
@@ -118,28 +150,36 @@ const Content = (props: Props) => {
                                       </A>
                                     </div>
                                   </Show>
-                                  <div class="flex-grow-1 text-truncate">{subtitle}</div>
+                                  <div class="flex-grow-1 text-truncate">
+                                    {subtitle} ({items().length})
+                                  </div>
                                 </div>
                               </div>
-                              <CardList items={items()} isVisible={props.isVisible} sorted={props.sorted} />
+                              <CardList
+                                items={items()}
+                                isVisible={props.isVisible}
+                                sorted={props.sorted}
+                                direction={props.direction}
+                              />
                             </div>
                           );
                         }}
                       </For>
                     </Match>
                     <Match when={Array.isArray(content)}>
-                      <div id={`card_${title}`} class="mb-3">
+                      <div id={`card_${props.classified}--${title}`} class="mb-3">
                         <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                           <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                             <div class="flex-grow-1 text-truncate text-capitalize">
-                              {title === 'undefined' ? 'None' : title}
+                              {title === 'undefined' ? 'None' : title} ({(content() as (BaseItem | Item)[]).length})
                             </div>
                           </div>
                         </div>
                         <CardList
-                          items={content as (BaseItem | Item)[]}
+                          items={content() as (BaseItem | Item)[]}
                           isVisible={props.isVisible}
                           sorted={props.sorted}
+                          direction={props.direction}
                         />
                       </div>
                     </Match>

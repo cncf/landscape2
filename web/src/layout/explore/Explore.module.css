@@ -18,6 +18,10 @@
   min-height: 28px;
 }
 
+.navLink {
+  min-width: 50px !important;
+}
+
 .btnSymbol {
   position: relative;
   font-size: 1.25rem;
@@ -68,6 +72,16 @@
 
 .mobileToCBtn svg {
   margin-top: -2px;
+}
+
+@media (max-width: 1199.98px) {
+  .desktopSelect {
+    width: 210px;
+  }
+
+  .miniSelect {
+    width: 125px;
+  }
 }
 
 @media (max-width: 991.98px) {

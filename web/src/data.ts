@@ -7,6 +7,7 @@ import {
   FilterTitle,
   FinancesKind,
   GridItemsSize,
+  SortDirection,
   SortOption,
   Tab,
   ViewMode,
@@ -51,6 +52,7 @@ export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 export const DEFAULT_FINANCES_KIND = FinancesKind.Funding;
 export const DEFAULT_CLASSIFIED = ClassifiedOption.Category;
 export const DEFAULT_SORT = SortOption.Name;
+export const DEFAULT_SORT_DIRECTION = SortDirection.Asc;
 export const ALL_OPTION = 'all';
 
 const FOUNDATION = window.baseDS.foundation;
@@ -155,3 +157,10 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
 };
 
 export const BANNER_ID = 'banner-event';
+
+export const SORT_OPTION_LABEL = {
+  [SortOption.Name]: 'Name',
+  [SortOption.Stars]: 'Stars',
+  [SortOption.DateAdded]: 'Date added',
+  [SortOption.FirstCommit]: 'First commit',
+}

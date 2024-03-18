@@ -1,4 +1,5 @@
-import { groupBy } from 'lodash';
+import groupBy from 'lodash/groupBy';
+import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 
 import { ALL_OPTION } from '../data';
@@ -7,6 +8,7 @@ import {
   ActiveSection,
   BaseItem,
   CardMenu,
+  Category,
   ClassifiedOption,
   CrunchbaseData,
   FilterOption,
@@ -15,6 +17,7 @@ import {
   Item,
   LandscapeData,
   Repository,
+  Subcategory,
 } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
 import filterData from './filterData';
@@ -191,33 +194,51 @@ export class ItemsDataGetter {
 
   private getMenuOptions = (data: unknown, classified: ClassifiedOption) => {
     const menu: CardMenu = {};
+    let maturityTypes: string[] = [];
     switch (classified) {
       case ClassifiedOption.None:
         return;
       case ClassifiedOption.Category:
-        Object.keys(data as never).sort().forEach((category: string) => {
-          menu[category] = Object.keys((data as { [key: string]: never })[category]).sort();
-        });
+        Object.keys(data as never)
+          .sort()
+          .forEach((category: string) => {
+            let tmpSubcategories = Object.keys((data as { [key: string]: never })[category]).sort();
+            const isOverriden =
+              !isUndefined(window.baseDS.categories_overridden) &&
+              window.baseDS.categories_overridden.includes(category);
+            if (isOverriden) {
+              const currentCategory = window.baseDS.categories.find((c: Category) => c.name === category);
+              if (currentCategory) {
+                const subcategories: string[] = currentCategory.subcategories.map((s: Subcategory) => s.name);
+                tmpSubcategories = intersection(subcategories, tmpSubcategories);
+              }
+            }
+            menu[category] = tmpSubcategories;
+          });
         return menu;
       case ClassifiedOption.Maturity:
-        return { 'Maturity': Object.keys(data as { [key: string]: (BaseItem | Item)[] }) };
+        maturityTypes = Object.keys(data as { [key: string]: never }).sort();
+        return maturityTypes.length > 0 ? { Maturity: maturityTypes } : {};
     }
-  }
+  };
 
   public queryItems(input: ActiveFilters, group: string, classified: ClassifiedOption) {
     const filteredItems = filterData(this.ready ? this.getAll() : window.baseDS.items, input);
     const groupedItems = this.groupData(filteredItems);
     const classifiedGroup = this.classifyItems(groupedItems[group], classified);
-    return { grid: this.prepareGridData(groupedItems), card: {content: classifiedGroup, menu: this.getMenuOptions(classifiedGroup, classified)} };
+    return {
+      grid: this.prepareGridData(groupedItems),
+      card: { content: classifiedGroup, menu: this.getMenuOptions(classifiedGroup, classified) },
+    };
   }
 
-  public findById(id: string): Item | undefined {
+  public getItemById(id: string): Item | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.find((i: Item) => id === i.id);
     }
   }
 
-  public filterItemsBySection(activeSection: ActiveSection): Item[] | undefined {
+  public getItemsBySection(activeSection: ActiveSection): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
         (i: Item) => activeSection.subcategory === i.subcategory && activeSection.category === i.category
@@ -225,13 +246,13 @@ export class ItemsDataGetter {
     }
   }
 
-  public filterItemsByMaturity(level: string): Item[] | undefined {
+  public getItemsByMaturity(level: string): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.maturity === level);
     }
   }
 
-  public filterItemsByEndUser(): Item[] | undefined {
+  public getItemsByEndUser(): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.enduser && window.baseDS.members_category === i.category);
     }

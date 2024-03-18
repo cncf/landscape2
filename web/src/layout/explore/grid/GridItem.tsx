@@ -45,7 +45,7 @@ const GridItem = (props: Props) => {
   createEffect(
     on(fullDataReady, () => {
       if (fullDataReady()) {
-        setItem(itemsDataGetter.findById(props.item.id));
+        setItem(itemsDataGetter.getItemById(props.item.id));
       }
     })
   );

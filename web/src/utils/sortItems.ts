@@ -1,11 +1,11 @@
 import { orderBy } from 'lodash';
 
-import { Item, SortOption } from '../types';
+import { Item, SortDirection, SortOption } from '../types';
 
-const sortItems = (items: Item[], option: SortOption): Item[] => {
+const sortItems = (items: Item[], option: SortOption, direction: SortDirection): Item[] => {
   switch (option) {
     case SortOption.DateAdded:
-      return orderBy(items, [(item: Item) => item.accepted_at], 'asc');
+      return orderBy(items, [(item: Item) => item.accepted_at], direction);
 
     case SortOption.Stars:
       return orderBy(
@@ -23,7 +23,7 @@ const sortItems = (items: Item[], option: SortOption): Item[] => {
             return stars;
           },
         ],
-        'desc'
+        direction
       );
 
     case SortOption.FirstCommit:
@@ -45,7 +45,7 @@ const sortItems = (items: Item[], option: SortOption): Item[] => {
             return firstCommit;
           },
         ],
-        'asc'
+        direction
       );
 
     default:

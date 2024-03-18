@@ -1,20 +1,23 @@
-import { useLocation, useNavigate } from '@solidjs/router';
+import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
 import uniq from 'lodash/uniq';
-import { createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { batch, createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import {
   ALL_OPTION,
   CLASSIFIED_PARAM,
   DEFAULT_CLASSIFIED,
   DEFAULT_SORT,
+  DEFAULT_SORT_DIRECTION,
   GROUP_PARAM,
   SMALL_DEVICES_BREAKPOINTS,
   SORT_BY_PARAM,
+  SORT_DIRECTION_PARAM,
+  SORT_OPTION_LABEL,
   VIEW_MODE_PARAM,
   ZOOM_LEVELS,
 } from '../../data';
@@ -27,6 +30,7 @@ import {
   FilterCategory,
   Group,
   Item,
+  SortDirection,
   SortOption,
   StateContent,
   SVGIconKind,
@@ -64,11 +68,13 @@ export type LoadedContent = {
 
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
+const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 385 - 101; // + Classified/Sort - Zoom
 const EXTRA_FILTERS = ['specification'];
 
 const Explore = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { point } = useBreakpointDetect();
   const state = () => location.state || {};
   const from = () => (state() as StateContent).from || undefined;
@@ -95,8 +101,15 @@ const Explore = (props: Props) => {
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
   const [visibleSelectForGroups, setVisibleSelectForGroups] = createSignal<boolean>(false);
-  const [classified, setClassified] = createSignal<ClassifiedOption>(DEFAULT_CLASSIFIED);
-  const [sorted, setSorted] = createSignal<SortOption>(DEFAULT_SORT);
+  const [classified, setClassified] = createSignal<ClassifiedOption>(
+    searchParams[CLASSIFIED_PARAM] ? (searchParams[CLASSIFIED_PARAM] as ClassifiedOption) : DEFAULT_CLASSIFIED
+  );
+  const [sorted, setSorted] = createSignal<SortOption>(
+    searchParams[SORT_BY_PARAM] ? (searchParams[SORT_BY_PARAM] as SortOption) : DEFAULT_SORT
+  );
+  const [sortDirection, setSortDirection] = createSignal<SortDirection>(
+    searchParams[SORT_DIRECTION_PARAM] ? (searchParams[SORT_DIRECTION_PARAM] as SortDirection) : DEFAULT_SORT_DIRECTION
+  );
   const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
@@ -202,9 +215,24 @@ const Explore = (props: Props) => {
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(location.search);
-    updatedSearchParams.set(param, value);
+    if (param === 'sort') {
+      const sortOpt = value.split('_');
+      updatedSearchParams.set(SORT_BY_PARAM, sortOpt[0]);
+      updatedSearchParams.set(SORT_DIRECTION_PARAM, sortOpt[1]);
+    } else {
+      updatedSearchParams.set(param, value);
+    }
     if (location.search === '' && param === 'group') {
       updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
+    }
+    if (param === VIEW_MODE_PARAM) {
+      if (value === ViewMode.Grid) {
+        updatedSearchParams.delete(CLASSIFIED_PARAM);
+        updatedSearchParams.delete(SORT_BY_PARAM);
+      } else {
+        updatedSearchParams.set(CLASSIFIED_PARAM, classified());
+        updatedSearchParams.set(SORT_BY_PARAM, sorted());
+      }
     }
 
     navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
@@ -249,6 +277,12 @@ const Explore = (props: Props) => {
     if (params.toString() === '') {
       params.set(GROUP_PARAM, selectedGroup()!);
       params.set(VIEW_MODE_PARAM, viewMode());
+
+      if (viewMode() === ViewMode.Card) {
+        params.set(CLASSIFIED_PARAM, classified());
+        params.set(SORT_BY_PARAM, sorted());
+        params.set(SORT_DIRECTION_PARAM, sortDirection());
+      }
     }
 
     const filtersParams = getFiltersQuery(filters);
@@ -274,6 +308,9 @@ const Explore = (props: Props) => {
     const params = new URLSearchParams(location.search);
     params.set(GROUP_PARAM, selectedGroup() || 'default');
     params.set(VIEW_MODE_PARAM, ViewMode.Card);
+    params.set(CLASSIFIED_PARAM, classified());
+    params.set(SORT_BY_PARAM, sorted());
+    params.set(SORT_DIRECTION_PARAM, sortDirection());
 
     navigate(`${location.pathname}?${params.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
       replace: true,
@@ -384,7 +421,6 @@ const Explore = (props: Props) => {
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
-    console.log(newFilters);
     setActiveFilters(newFilters);
     const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
     prepareData(data.grid as GroupData);
@@ -406,17 +442,18 @@ const Explore = (props: Props) => {
 
       // Avoid groups section with multiline
       if (!SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
+        const controls = viewMode() === ViewMode.Card ? CONTROLS_CARD_WIDTH : CONTROLS_WIDTH;
         if (!isUndefined(controlsGroupWrapper())) {
           if (controlsGroupWrapperWidth() === 0) {
             const controlsGWidth = controlsGroupWrapper()!.clientWidth;
-            if (controlsGWidth + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+            if (controlsGWidth + controls > containerRef()!.clientWidth) {
               setVisibleSelectForGroups(true);
             } else {
               setVisibleSelectForGroups(false);
             }
             setControlsGroupWrapperWidth(controlsGWidth);
           } else {
-            if (controlsGroupWrapperWidth() + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+            if (controlsGroupWrapperWidth() + controls > containerRef()!.clientWidth) {
               setVisibleSelectForGroups(true);
             } else {
               setVisibleSelectForGroups(false);
@@ -476,6 +513,7 @@ const Explore = (props: Props) => {
                 title="Index"
                 class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-1 me-lg-4 btnIconMobile ${styles.mobileToCBtn}`}
                 onClick={() => setOpenMenuStatus(true)}
+                disabled={numVisibleItems() === 0}
               >
                 <SVGIcon kind={SVGIconKind.ToC} />
               </button>
@@ -487,6 +525,13 @@ const Explore = (props: Props) => {
               initialSelectedGroup={selectedGroup}
               initialActiveFilters={activeFilters}
               applyFilters={applyFilters}
+              classified={classified()}
+              sorted={sorted()}
+              sortDirection={sortDirection()}
+              updateQueryString={updateQueryString}
+              setClassified={setClassified}
+              setSorted={setSorted}
+              setSortDirection={setSortDirection}
             />
 
             <div class="d-none d-lg-flex align-items-center">
@@ -654,14 +699,19 @@ const Explore = (props: Props) => {
                     <small class="text-muted text-uppercase me-2">Sort:</small>
                   </div>
                   <select
-                    id="classified"
-                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
-                    value={sorted()}
+                    id="sorted"
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.miniSelect}`}
+                    value={`${sorted()}_${sortDirection()}`}
                     aria-label="Sort"
                     onChange={(e) => {
-                      const sortOpt = e.currentTarget.value as SortOption;
-                      updateQueryString(SORT_BY_PARAM, sortOpt);
-                      setSorted(sortOpt);
+                      const sortValue = e.currentTarget.value;
+                      const sortOpt = sortValue.split('_');
+                      updateQueryString('sort', sortValue);
+
+                      batch(() => {
+                        setSorted(sortOpt[0] as SortOption);
+                        setSortDirection(sortOpt[1] as SortDirection);
+                      });
                     }}
                   >
                     <option value="" />
@@ -669,7 +719,18 @@ const Explore = (props: Props) => {
                       {(opt: string) => {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const value = (SortOption as any)[opt];
-                        return <option value={value}>{opt}</option>;
+
+                        return (
+                          <For each={Object.values(SortDirection)}>
+                            {(direction: string) => {
+                              return (
+                                <option value={`${value}_${direction}`}>
+                                  {(SORT_OPTION_LABEL as never)[value]} ({direction})
+                                </option>
+                              );
+                            }}
+                          </For>
+                        );
                       }}
                     </For>
                   </select>
@@ -693,6 +754,7 @@ const Explore = (props: Props) => {
                   setSelectedGroup(group);
                 }}
               >
+                {/* Do not display All option for mobile */}
                 <For each={props.initialData.groups}>
                   {(group: Group) => {
                     return <option value={group.normalized_name}>{group.name}</option>;
@@ -794,15 +856,16 @@ const Explore = (props: Props) => {
                       </For>
                     </Show>
 
-                    <Show when={fullDataReady()}>
+                    <Show when={fullDataApplied()}>
                       <div class={viewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
                         <CardCategory
                           initialIsVisible={viewMode() === ViewMode.Card}
-                          data={cardData()}
+                          data={cardData}
                           menu={cardMenu()}
                           group={selectedGroup() || ALL_OPTION}
                           classified={classified()}
                           sorted={sorted()}
+                          direction={sortDirection()}
                           updateHash={updateHash}
                           finishLoading={finishLoading}
                         />

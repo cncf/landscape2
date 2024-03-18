@@ -504,6 +504,11 @@ export enum SortOption {
   FirstCommit = 'first-commit',
 }
 
+export enum SortDirection {
+  Asc = 'asc',
+  Desc = 'desc',
+}
+
 export type FilterCategoriesPerTitle = {
   [key in FilterTitle]: FilterCategory[];
 };

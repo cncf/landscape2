@@ -73,7 +73,7 @@ const ExploreMobileIndex = (props: Props) => {
                     const items = () => (data()[cat] && data()[cat][subcat] ? data()[cat][subcat]!.items : []);
                     if (items().length === 0) return null;
 
-                    const id = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
+                    const id = getNormalizedName({ title: cat, subtitle: subcat, grouped: true });
 
                     return (
                       <div id={`card_${id}`} class="mb-3">

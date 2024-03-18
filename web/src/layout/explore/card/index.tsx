@@ -2,9 +2,9 @@ import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, Show } from 'solid-js';
+import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
 
-import { CardMenu, ClassifiedOption, SortOption } from '../../../types';
+import { CardMenu, ClassifiedOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
@@ -20,7 +20,8 @@ interface Props {
   group: string;
   classified: ClassifiedOption;
   sorted: SortOption;
-  data: unknown;
+  direction: SortDirection;
+  data: Accessor<unknown>;
   menu?: CardMenu;
   updateHash: (hash?: string) => void;
   finishLoading: () => void;
@@ -34,7 +35,7 @@ const CardCategory = (props: Props) => {
   const [firstItem, setFirstItem] = createSignal<string>();
   const [initialFullRender, setInitialFullRender] = createSignal<boolean>(false);
   const fullDataReady = useFullDataReady();
-  const data = () => props.data;
+  const data = () => props.data();
   const isVisible = () => props.initialIsVisible;
   const menu = () => props.menu;
 
@@ -93,7 +94,11 @@ const CardCategory = (props: Props) => {
         const firstCategory = Object.keys(menu()!)[0];
         const firstSubcategory = menu()![firstCategory][0];
         if (!isUndefined(firstSubcategory)) {
-          const firstItemInMenu = getNormalizedName({ cat: firstCategory, subcat: firstSubcategory, grouped: true });
+          const firstItemInMenu = getNormalizedName({
+            title: firstCategory,
+            subtitle: firstSubcategory,
+            grouped: true,
+          });
           setFirstItem(firstItemInMenu);
         }
       }
@@ -147,7 +152,13 @@ const CardCategory = (props: Props) => {
           classList={{ 'w-100': props.classified === ClassifiedOption.None }}
         >
           <Show when={fullDataReady() && !isUndefined(data())}>
-            <Content data={data()!} isVisible={props.initialIsVisible} sorted={props.sorted} />
+            <Content
+              data={data!}
+              classified={props.classified}
+              isVisible={props.initialIsVisible}
+              sorted={props.sorted}
+              direction={props.direction}
+            />
           </Show>
         </div>
       </div>

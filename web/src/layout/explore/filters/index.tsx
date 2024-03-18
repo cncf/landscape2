@@ -2,18 +2,22 @@ import { intersection } from 'lodash';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
-import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
+import { Accessor, batch, createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { ALL_OPTION, FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
+import { ALL_OPTION, CLASSIFIED_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, SORT_OPTION_LABEL } from '../../../data';
 import {
   ActiveFilters,
   BaseData,
+  ClassifiedOption,
   FilterCategory,
   FilterOption,
   FilterSection,
   FilterTitle,
   Item,
+  SortDirection,
+  SortOption,
   SVGIconKind,
+  ViewMode,
 } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import prepareData from '../../../utils/prepareData';
@@ -22,6 +26,7 @@ import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
 import Section from '../../common/Section';
 import SVGIcon from '../../common/SVGIcon';
+import { useViewMode } from '../../stores/viewMode';
 import styles from './Filters.module.css';
 import SearchbarSection from './SearchbarSection';
 
@@ -31,9 +36,17 @@ interface Props {
   initialSelectedGroup: Accessor<string | undefined>;
   applyFilters: (newFilters: ActiveFilters) => void;
   initialActiveFilters: Accessor<ActiveFilters>;
+  sorted: SortOption;
+  sortDirection: SortDirection;
+  classified: ClassifiedOption;
+  updateQueryString: (param: string, value: string) => void;
+  setClassified: (classified: ClassifiedOption) => void;
+  setSorted: (sorted: SortOption) => void;
+  setSortDirection: (direction: SortDirection) => void;
 }
 
 const Filters = (props: Props) => {
+  const viewMode = useViewMode();
   const [disabledBtn, setDisabledBtn] = createSignal<boolean>(true);
   const [visibleFiltersModal, setVisibleFiltersModal] = createSignal<boolean>(false);
   const [tmpActiveFilters, setTmpActiveFilters] = createSignal<ActiveFilters>(props.initialActiveFilters());
@@ -219,6 +232,77 @@ const Filters = (props: Props) => {
               </div>
             }
           >
+            <div class="d-flex d-lg-none">
+              <Show when={viewMode() === ViewMode.Card}>
+                <div class="d-flex flex-row mb-4">
+                  <div class="d-flex flex-column align-items-start">
+                    <div class={styles.btnGroupLegend}>
+                      <div class={`text-uppercase fw-semibold ${styles.title} mb-1`}>Classified:</div>
+                    </div>
+                    <select
+                      id="classified"
+                      class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
+                      value={props.classified}
+                      aria-label="Classified"
+                      onChange={(e) => {
+                        const classifiedOpt = e.currentTarget.value as ClassifiedOption;
+                        props.updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
+                        props.setClassified(classifiedOpt);
+                      }}
+                    >
+                      <For each={Object.keys(ClassifiedOption)}>
+                        {(opt: string) => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const value = (ClassifiedOption as any)[opt];
+                          return <option value={value}>{opt}</option>;
+                        }}
+                      </For>
+                    </select>
+                  </div>
+                  <div class="d-flex flex-column align-items-start ms-3">
+                    <div class={styles.btnGroupLegend}>
+                      <div class={`text-uppercase fw-semibold ${styles.title} mb-1`}>Sort:</div>
+                    </div>
+                    <select
+                      id="sorted"
+                      class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.miniSelect}`}
+                      value={`${props.sorted}_${props.sortDirection}`}
+                      aria-label="Sort"
+                      onChange={(e) => {
+                        const sortValue = e.currentTarget.value;
+                        const sortOpt = sortValue.split('_');
+                        props.updateQueryString('sort', sortValue);
+
+                        batch(() => {
+                          props.setSorted(sortOpt[0] as SortOption);
+                          props.setSortDirection(sortOpt[1] as SortDirection);
+                        });
+                      }}
+                    >
+                      <option value="" />
+                      <For each={Object.keys(SortOption)}>
+                        {(opt: string) => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const value = (SortOption as any)[opt];
+
+                          return (
+                            <For each={Object.values(SortDirection)}>
+                              {(direction: string) => {
+                                return (
+                                  <option value={`${value}_${direction}`}>
+                                    {(SORT_OPTION_LABEL as never)[value]} ({direction})
+                                  </option>
+                                );
+                              }}
+                            </For>
+                          );
+                        }}
+                      </For>
+                    </select>
+                  </div>
+                </div>
+              </Show>
+            </div>
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
 
@@ -232,7 +316,6 @@ const Filters = (props: Props) => {
                   resetFilter={resetFilter}
                   sectionClass={styles.section}
                 />
-
                 <Section
                   title="TAG"
                   section={getSection(FilterCategory.TAG)}
@@ -241,7 +324,6 @@ const Filters = (props: Props) => {
                   resetFilter={resetFilter}
                   sectionClass={styles.section}
                 />
-
                 <SearchbarSection
                   title="License"
                   placeholder="Search license"
@@ -250,7 +332,6 @@ const Filters = (props: Props) => {
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                 />
-
                 <Section
                   title="Extra"
                   section={getSection(FilterCategory.Extra)}

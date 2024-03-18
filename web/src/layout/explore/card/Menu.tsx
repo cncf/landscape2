@@ -48,7 +48,7 @@ const Menu = (props: Props) => {
       <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
         <div ref={setRef}>
           <For each={Object.keys(props.menu)}>
-            {(cat, index) => {
+            {(title, index) => {
               return (
                 <div>
                   <div
@@ -56,7 +56,7 @@ const Menu = (props: Props) => {
                     classList={{ 'border-top-0': index() === 0 }}
                     style={{ 'background-color': bgColor }}
                   >
-                    {cat}
+                    {title}
                   </div>
 
                   <div
@@ -65,15 +65,15 @@ const Menu = (props: Props) => {
                       'border-bottom-0': index() !== Object.keys(props.menu).length - 1,
                     }}
                   >
-                    <For each={props.menu[cat]}>
-                      {(subcat: string) => {
-                        const hash = getNormalizedName({ cat: cat, subcat: subcat, grouped: true });
+                    <For each={props.menu[title]}>
+                      {(subtitle: string) => {
+                        const hash = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
                         return (
                           <button
                             id={`btn_${hash}`}
-                            title={subcat}
-                            class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate ${styles.subcategoryBtn}`}
+                            title={subtitle}
+                            class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
                             classList={{
                               [`fw-bold ${styles.selected}`]: `#${hash}` === location.hash,
                             }}
@@ -92,7 +92,7 @@ const Menu = (props: Props) => {
                                 <SVGIcon kind={SVGIconKind.ArrowRight} />
                               </div>
                             </Show>
-                            {subcat}
+                            {subtitle === 'undefined' ? 'None' : subtitle}
                           </button>
                         );
                       }}
