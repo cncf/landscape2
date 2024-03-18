@@ -32,6 +32,15 @@
   right: -5px;
 }
 
+.miniSelect {
+  width: 140px;
+}
+
+.selectTitle {
+  font-size: 0.8rem;
+  color: var(--color4);
+}
+
 @media (max-width: 1199.98px) {
   .modal {
     width: 90%;

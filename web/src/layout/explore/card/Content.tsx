@@ -166,7 +166,7 @@ const Content = (props: Props) => {
                         }}
                       </For>
                     </Match>
-                    <Match when={Array.isArray(content)}>
+                    <Match when={Array.isArray(content())}>
                       <div id={`card_${props.classified}--${title}`} class="mb-3">
                         <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                           <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>

@@ -43,6 +43,7 @@ interface Props {
   setClassified: (classified: ClassifiedOption) => void;
   setSorted: (sorted: SortOption) => void;
   setSortDirection: (direction: SortDirection) => void;
+  availableMaturityClassification: boolean;
 }
 
 const Filters = (props: Props) => {
@@ -236,12 +237,12 @@ const Filters = (props: Props) => {
               <Show when={viewMode() === ViewMode.Card}>
                 <div class="d-flex flex-row mb-4">
                   <div class="d-flex flex-column align-items-start">
-                    <div class={styles.btnGroupLegend}>
-                      <div class={`text-uppercase fw-semibold ${styles.title} mb-1`}>Classified:</div>
+                    <div class="mb-1">
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Classified:</small>
                     </div>
                     <select
                       id="classified"
-                      class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
+                      class={`form-select form-select-sm text-muted rounded-0 me-4 ${styles.miniSelect}`}
                       value={props.classified}
                       aria-label="Classified"
                       onChange={(e) => {
@@ -252,6 +253,8 @@ const Filters = (props: Props) => {
                     >
                       <For each={Object.keys(ClassifiedOption)}>
                         {(opt: string) => {
+                          if (opt === ClassifiedOption.Maturity && !props.availableMaturityClassification) return null;
+
                           // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           const value = (ClassifiedOption as any)[opt];
                           return <option value={value}>{opt}</option>;
@@ -259,13 +262,13 @@ const Filters = (props: Props) => {
                       </For>
                     </select>
                   </div>
-                  <div class="d-flex flex-column align-items-start ms-3">
-                    <div class={styles.btnGroupLegend}>
-                      <div class={`text-uppercase fw-semibold ${styles.title} mb-1`}>Sort:</div>
+                  <div class="d-flex flex-column align-items-start ms-2">
+                    <div class="mb-1">
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Sort:</small>
                     </div>
                     <select
                       id="sorted"
-                      class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.miniSelect}`}
+                      class={`form-select form-select-sm text-muted rounded-0 ${styles.miniSelect}`}
                       value={`${props.sorted}_${props.sortDirection}`}
                       aria-label="Sort"
                       onChange={(e) => {

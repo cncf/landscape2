@@ -1,13 +1,13 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import orderBy from 'lodash/orderBy';
 import { For, Match, onMount, Show, Switch } from 'solid-js';
 
 import { COLORS } from '../../../data';
-import { CardMenu, Item, ViewMode } from '../../../types';
+import { CardMenu, ClassifiedOption, Item, SortDirection, SortOption, ViewMode } from '../../../types';
 import getGroupName from '../../../utils/getGroupName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import { CategoriesData } from '../../../utils/prepareData';
+import sortItems from '../../../utils/sortItems';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import Loading from '../../common/Loading';
 import { Sidebar } from '../../common/Sidebar';
@@ -23,20 +23,54 @@ interface Props {
   openMenuStatus: boolean;
   closeMenuStatus: () => void;
   data: CategoriesData;
+  cardData: unknown;
   menu?: CardMenu;
   categories_overridden?: string[];
   finishLoading: () => void;
+  classified: ClassifiedOption;
+  sorted: SortOption;
+  direction: SortDirection;
 }
+
+interface ListProps {
+  items: Item[];
+  sorted: SortOption;
+  direction: SortDirection;
+}
+
+const CardsList = (props: ListProps) => {
+  const updateActiveItemId = useUpdateActiveItemId();
+  const items = () => props.items;
+
+  return (
+    <div class="row g-2 mb-2">
+      <For each={sortItems(items(), props.sorted, props.direction)}>
+        {(item: Item) => {
+          return (
+            <div class="col-12 col-sm-6">
+              <div
+                class={`card rounded-0 p-3 ${styles.card}`}
+                classList={{
+                  [styles.archived]: !isUndefined(item.maturity) && item.maturity === 'archived',
+                }}
+                onClick={() => updateActiveItemId(item.id)}
+              >
+                <Card item={item} logoClass={styles.logo} class={`h-100 ${styles.cardContent}`} isVisible />
+              </div>
+            </div>
+          );
+        }}
+      </For>
+    </div>
+  );
+};
 
 const ExploreMobileIndex = (props: Props) => {
   const data = () => props.data;
+  const cardData = () => props.cardData;
   const menu = () => props.menu;
   const selectedViewMode = useViewMode();
-  const updateActiveItemId = useUpdateActiveItemId();
   const selectedGroup = useGroupActive();
-
-  const sortItems = (items: Item[]): Item[] =>
-    orderBy(items, [(item: Item) => item.name.toLowerCase().toString()], 'asc');
 
   onMount(() => {
     props.finishLoading();
@@ -58,74 +92,142 @@ const ExploreMobileIndex = (props: Props) => {
         </div>
       </Sidebar>
 
-      <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
-        <For each={Object.keys(menu()!)}>
-          {(cat) => {
-            return (
-              <>
-                <div class={`d-flex flex-row fw-semibold mb-2 ${styles.title}`}>
-                  <div class="d-flex flex-row align-items-center p-2 w-100" style={{ 'background-color': COLORS[1] }}>
-                    <div class="text-white text-nowrap text-truncate text-uppercase">{cat}</div>
-                  </div>
-                </div>
-                <For each={menu()![cat]}>
-                  {(subcat: string) => {
-                    const items = () => (data()[cat] && data()[cat][subcat] ? data()[cat][subcat]!.items : []);
-                    if (items().length === 0) return null;
+      <Switch>
+        <Match when={selectedViewMode() === ViewMode.Grid}>
+          <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+            <For each={Object.keys(menu()!)}>
+              {(title) => {
+                return (
+                  <>
+                    <div class={`d-flex flex-row fw-semibold mb-2 ${styles.title}`}>
+                      <div
+                        class="d-flex flex-row align-items-center p-2 w-100"
+                        style={{ 'background-color': COLORS[1] }}
+                      >
+                        <div class="text-white text-nowrap text-truncate text-uppercase">{title}</div>
+                      </div>
+                    </div>
+                    <For each={menu()![title]}>
+                      {(subtitle: string) => {
+                        const items = () =>
+                          data()[title] && data()[title][subtitle] ? data()[title][subtitle]!.items : [];
+                        if (items().length === 0) return null;
 
-                    const id = getNormalizedName({ title: cat, subtitle: subcat, grouped: true });
+                        const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
+                        return (
+                          <div id={`card_${id}`} class="mb-3">
+                            <div class={`d-flex flex-row fw-semibold mb-3 ${styles.title}`}>
+                              <div
+                                class="d-flex flex-row align-items-center p-2 w-100"
+                                style={{ 'background-color': COLORS[0] }}
+                              >
+                                <div class="text-white text-nowrap text-truncate">{subtitle}</div>
+                              </div>
+                            </div>
+                            <MobileGrid items={sortItemsByOrderValue(items())} bgColor={COLORS[0]} />
+                          </div>
+                        );
+                      }}
+                    </For>
+                  </>
+                );
+              }}
+            </For>
+          </Show>
+        </Match>
+        <Match when={selectedViewMode() === ViewMode.Card}>
+          <Switch>
+            <Match when={props.classified === ClassifiedOption.Category}>
+              <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+                <For each={Object.keys(menu()!)}>
+                  {(title) => {
                     return (
-                      <div id={`card_${id}`} class="mb-3">
-                        <div class={`d-flex flex-row fw-semibold mb-3 ${styles.title}`}>
+                      <>
+                        <div class={`d-flex flex-row fw-semibold mb-2 ${styles.title}`}>
                           <div
                             class="d-flex flex-row align-items-center p-2 w-100"
-                            style={{ 'background-color': COLORS[0] }}
+                            style={{ 'background-color': COLORS[1] }}
                           >
-                            <div class="text-white text-nowrap text-truncate">{subcat}</div>
+                            <div class="text-white text-nowrap text-truncate text-uppercase">{title}</div>
                           </div>
                         </div>
-                        <Switch>
-                          <Match when={selectedViewMode() === ViewMode.Grid}>
-                            <MobileGrid items={sortItemsByOrderValue(items())} bgColor={COLORS[0]} />
-                          </Match>
-                          <Match when={selectedViewMode() === ViewMode.Card}>
-                            <div class="row g-2 mb-2">
-                              <For each={sortItems(items())}>
-                                {(item: Item) => {
-                                  return (
-                                    <div class="col-12 col-sm-6">
-                                      <div
-                                        class={`card rounded-0 p-3 ${styles.card}`}
-                                        classList={{
-                                          [styles.archived]:
-                                            !isUndefined(item.maturity) && item.maturity === 'archived',
-                                        }}
-                                        onClick={() => updateActiveItemId(item.id)}
-                                      >
-                                        <Card
-                                          item={item}
-                                          logoClass={styles.logo}
-                                          class={`h-100 ${styles.cardContent}`}
-                                          isVisible
-                                        />
-                                      </div>
-                                    </div>
-                                  );
-                                }}
-                              </For>
-                            </div>
-                          </Match>
-                        </Switch>
-                      </div>
+                        <For each={menu()![title]}>
+                          {(subtitle: string) => {
+                            const items = () =>
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                              (cardData() as any)[title] && (cardData() as any)[title][subtitle]
+                                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  (cardData() as any)[title][subtitle]
+                                : [];
+                            if (items().length === 0) return null;
+
+                            const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
+
+                            return (
+                              <div id={`card_${id}`} class="mb-3">
+                                <div class={`d-flex flex-row fw-semibold mb-3 ${styles.title}`}>
+                                  <div
+                                    class="d-flex flex-row align-items-center p-2 w-100"
+                                    style={{ 'background-color': COLORS[0] }}
+                                  >
+                                    <div class="text-white text-nowrap text-truncate">{subtitle}</div>
+                                  </div>
+                                </div>
+                                <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                              </div>
+                            );
+                          }}
+                        </For>
+                      </>
                     );
                   }}
                 </For>
-              </>
-            );
-          }}
-        </For>
-      </Show>
+              </Show>
+            </Match>
+            <Match when={props.classified === ClassifiedOption.Maturity}>
+              <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+                <For each={Object.keys(menu()!)}>
+                  {(title) => {
+                    return (
+                      <For each={menu()![title]}>
+                        {(subtitle: string) => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const items = () => ((cardData() as any)[subtitle] ? (cardData() as any)[subtitle] : []);
+                          if (items().length === 0) return null;
+
+                          const id = getNormalizedName({
+                            title: ClassifiedOption.Maturity,
+                            subtitle: subtitle,
+                            grouped: true,
+                          });
+
+                          return (
+                            <>
+                              <div id={`card_${id}`} class={`d-flex flex-row fw-semibold mb-2 ${styles.title}`}>
+                                <div
+                                  class="d-flex flex-row align-items-center p-2 w-100"
+                                  style={{ 'background-color': COLORS[0] }}
+                                >
+                                  <div class="text-white text-nowrap text-truncate text-uppercase">{subtitle}</div>
+                                </div>
+                              </div>
+                              <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                            </>
+                          );
+                        }}
+                      </For>
+                    );
+                  }}
+                </For>
+              </Show>
+            </Match>
+            <Match when={props.classified === ClassifiedOption.None}>
+              <CardsList items={cardData() as Item[]} sorted={props.sorted} direction={props.direction} />
+            </Match>
+          </Switch>
+        </Match>
+      </Switch>
     </div>
   );
 };

@@ -163,4 +163,4 @@ export const SORT_OPTION_LABEL = {
   [SortOption.Stars]: 'Stars',
   [SortOption.DateAdded]: 'Date added',
   [SortOption.FirstCommit]: 'First commit',
-}
+};

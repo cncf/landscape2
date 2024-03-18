@@ -2,7 +2,7 @@ import { useLocation } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
+import { createEffect, createSignal, on, Show } from 'solid-js';
 
 import { CardMenu, ClassifiedOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
@@ -21,7 +21,7 @@ interface Props {
   classified: ClassifiedOption;
   sorted: SortOption;
   direction: SortDirection;
-  data: Accessor<unknown>;
+  data: unknown;
   menu?: CardMenu;
   updateHash: (hash?: string) => void;
   finishLoading: () => void;
@@ -35,7 +35,7 @@ const CardCategory = (props: Props) => {
   const [firstItem, setFirstItem] = createSignal<string>();
   const [initialFullRender, setInitialFullRender] = createSignal<boolean>(false);
   const fullDataReady = useFullDataReady();
-  const data = () => props.data();
+  const data = () => props.data;
   const isVisible = () => props.initialIsVisible;
   const menu = () => props.menu;
 
@@ -125,18 +125,20 @@ const CardCategory = (props: Props) => {
   );
 
   createEffect(
-    on(data, () => {
-      // TODO: check if this is necessary
+    on(menu, () => {
       if (isVisible()) {
-        props.finishLoading();
+        updateActiveSection();
       }
     })
   );
 
   createEffect(
-    on(menu, () => {
+    on(isVisible, () => {
       if (isVisible()) {
-        updateActiveSection();
+        if (!firstLoad()) {
+          setFirstLoad(true);
+          props.finishLoading();
+        }
       }
     })
   );

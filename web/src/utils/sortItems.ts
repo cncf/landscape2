@@ -3,6 +3,8 @@ import { orderBy } from 'lodash';
 import { Item, SortDirection, SortOption } from '../types';
 
 const sortItems = (items: Item[], option: SortOption, direction: SortDirection): Item[] => {
+  if (!Array.isArray(items) || items.length === 0) return [];
+
   switch (option) {
     case SortOption.DateAdded:
       return orderBy(items, [(item: Item) => item.accepted_at], direction);

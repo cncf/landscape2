@@ -225,10 +225,20 @@ export class ItemsDataGetter {
   public queryItems(input: ActiveFilters, group: string, classified: ClassifiedOption) {
     const filteredItems = filterData(this.ready ? this.getAll() : window.baseDS.items, input);
     const groupedItems = this.groupData(filteredItems);
-    const classifiedGroup = this.classifyItems(groupedItems[group], classified);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const classifiedCardData: any = {};
+    const menuData: { [key: string]: CardMenu | undefined } = {};
+    Object.keys(groupedItems).forEach((group: string) => {
+      const classifiedGroup = this.classifyItems(groupedItems[group], classified);
+      classifiedCardData[group] = classifiedGroup;
+      menuData[group] = this.getMenuOptions(classifiedGroup, classified);
+    });
+
+    this.classifyItems(groupedItems[group], classified);
     return {
       grid: this.prepareGridData(groupedItems),
-      card: { content: classifiedGroup, menu: this.getMenuOptions(classifiedGroup, classified) },
+      card: classifiedCardData,
+      menu: menuData,
     };
   }
 
