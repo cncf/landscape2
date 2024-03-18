@@ -238,7 +238,7 @@ const Filters = (props: Props) => {
                 <div class="d-flex flex-row mb-4">
                   <div class="d-flex flex-column align-items-start">
                     <div class="mb-1">
-                      <small class={`fw-semibold ${styles.selectTitle}`}>Classified:</small>
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Classify by:</small>
                     </div>
                     <select
                       id="classified"
@@ -264,7 +264,7 @@ const Filters = (props: Props) => {
                   </div>
                   <div class="d-flex flex-column align-items-start ms-2">
                     <div class="mb-1">
-                      <small class={`fw-semibold ${styles.selectTitle}`}>Sort:</small>
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Sort by:</small>
                     </div>
                     <select
                       id="sorted"
