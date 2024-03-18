@@ -137,9 +137,10 @@ pub(crate) async fn collect_github_org_data(
 ) -> Result<GithubOrgData> {
     debug!("collecting github org information from github (this may take a while)");
 
+    let mut cached_data: Option<GithubOrgData> = None;
     match cache.read(GITHUB_ORG_CACHE_FILE) {
         Ok(Some((_, json_data))) => match serde_json::from_slice(&json_data) {
-            Ok(github_data) => return Ok(github_data),
+            Ok(github_data) => cached_data = Some(github_data),
             Err(err) => warn!("error parsing github cache file: {err:?}"),
         },
         Ok(None) => {}
@@ -167,6 +168,13 @@ pub(crate) async fn collect_github_org_data(
 
     for item in &landscape_data.items {
         if let Some(url) = &item.github_org_url {
+            if let Some(ref cache) = cached_data {
+                if cache.contains_key(url) {
+                    github_org_stats.insert(url.to_string(), cache.get(url).unwrap().clone());
+                    continue;
+                }
+            }
+
             if let Some(gh_pool) = &gh_pool {
                 let gh = gh_pool.get().await.expect("token -when available-");
                 github_org_stats.insert(url.to_string(), GithubOrganizationStats::new(gh, url).await?);
