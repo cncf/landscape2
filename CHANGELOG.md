@@ -9,7 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Provide ability to display Osano cookies consent form
+- Provide ability to display Osano cookies consent form (#497)
+- Specification filter (#509)
+
+### Fixed
+
+- Footer cookies icon position (#499)
+- Hide Osano window in screenshot url (#520)
+
+### Changed
+
+- Extend embed configurator with some more options (#502)
+- Improve deploy subcommand
+- Upgrade CLI dependencies (#518)
+- Upgrade web application dependencies (#521)
 
 ## [0.6.1] - 2024-02-07
 

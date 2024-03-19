@@ -14,7 +14,7 @@ use mockall::automock;
 use regex::Regex;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, sync::Arc, time::Duration};
+use std::{collections::BTreeMap, env, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
 
 /// File used to cache data collected from Crunchbase.
@@ -98,7 +98,7 @@ pub(crate) async fn collect_crunchbase_data(
             }
         })
         .buffer_unordered(1)
-        .collect::<HashMap<String, Result<Organization>>>()
+        .collect::<BTreeMap<String, Result<Organization>>>()
         .await
         .into_iter()
         .filter_map(|(url, result)| {
@@ -121,7 +121,7 @@ pub(crate) async fn collect_crunchbase_data(
 }
 
 /// Type alias to represent some organizations' Crunchbase data.
-pub(crate) type CrunchbaseData = HashMap<CrunchbaseUrl, Organization>;
+pub(crate) type CrunchbaseData = BTreeMap<CrunchbaseUrl, Organization>;
 
 /// Type alias to represent a crunchbase url.
 type CrunchbaseUrl = String;

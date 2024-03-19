@@ -26,14 +26,17 @@ dirs = "5.0.1"
 futures = "0.3.30"
 headless_chrome = { git = "https://github.com/rust-headless-chrome/rust-headless-chrome", rev = "973ebea" }
 hex = "0.4.3"
+imagesize = "0.12.0"
 itertools = "0.12.1"
 lazy_static = "1.4.0"
 leaky-bucket = "1.0.1"
 markdown = "1.0.0-alpha.16"
+md-5 = "0.10.6"
 mime_guess = "2.0.4"
 num_cpus = "1.16.0"
 octorust = "0.3.2"
 parse_link_header = "0.3.3"
+qrcode = "0.13.0"
 regex = "1.10.3"
 reqwest = { version = "0.11.24", features = ["native-tls-vendored"] }
 rust-embed = "8.3.0"
@@ -55,8 +58,6 @@ tower-http = { version = "0.5.2", features = ["fs", "set-header"] }
 url = "2.5.0"
 usvg = "0.37.0"
 walkdir = "2.5.0"
-imagesize = "0.12.0"
-qrcode = "0.13.0"
 
 [dev-dependencies]
 mockall = "0.12.1"

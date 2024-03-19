@@ -65,7 +65,7 @@ mod base {
         settings::{Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent},
     };
     use serde::{Deserialize, Serialize};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     /// Base dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -92,7 +92,7 @@ mod base {
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub groups: Vec<Group>,
 
-        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
         pub guide_summary: GuideSummary,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -130,7 +130,7 @@ mod base {
                 footer: settings.footer.clone(),
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
-                guide_summary: HashMap::new(),
+                guide_summary: BTreeMap::new(),
                 header: settings.header.clone(),
                 items: vec![],
                 members_category: settings.members_category.clone(),
@@ -232,7 +232,7 @@ mod base {
     }
 
     /// Type alias to represent the guide summary.
-    type GuideSummary = HashMap<String, Vec<String>>;
+    type GuideSummary = BTreeMap<String, Vec<String>>;
 }
 
 /// Embed dataset.
@@ -320,15 +320,15 @@ mod full {
         github::GithubData,
     };
     use serde::{Deserialize, Serialize};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
 
     /// Full dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub(crate) struct Full {
-        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
         pub crunchbase_data: CrunchbaseData,
 
-        #[serde(skip_serializing_if = "HashMap::is_empty")]
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
         pub github_data: GithubData,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
