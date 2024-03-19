@@ -307,8 +307,6 @@ const Explore = (props: Props) => {
 
     const query = params.toString();
 
-    console.log('explore -> ', location.hash);
-
     // Keep hash if exists
     navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${location.hash !== '' ? location.hash : ''}`, {
       state: location.state,
@@ -431,15 +429,15 @@ const Explore = (props: Props) => {
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
-    setActiveFilters(newFilters);
-    updateFiltersQueryString(newFilters);
-
     batch(() => {
-      const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+      setActiveFilters(newFilters);
+      const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classified()!);
       prepareData(data.grid as GroupData);
       setCardData(data.card);
       setCardMenu(data.menu);
     });
+
+    updateFiltersQueryString(newFilters);
     if (!isUndefined(landscapeData())) {
       setFullDataApplied(true);
     }
@@ -871,7 +869,9 @@ const Explore = (props: Props) => {
                         />
                       }
                     >
-                      <div class={viewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
+                      <div
+                        class={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION ? 'd-block' : 'd-none'}
+                      >
                         <CardCategory
                           initialIsVisible={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION}
                           data={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}

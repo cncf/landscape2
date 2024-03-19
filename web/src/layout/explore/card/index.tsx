@@ -91,12 +91,12 @@ const CardCategory = (props: Props) => {
   createEffect(
     on(data, () => {
       if (!isUndefined(menu()) && !isEmpty(menu())) {
-        const firstCategory = Object.keys(menu()!)[0];
-        const firstSubcategory = menu()![firstCategory][0];
-        if (!isUndefined(firstSubcategory)) {
+        const firstTitle = Object.keys(menu()!)[0];
+        const firstSubtitle = menu()![firstTitle][0];
+        if (!isUndefined(firstSubtitle)) {
           const firstItemInMenu = getNormalizedName({
-            title: firstCategory,
-            subtitle: firstSubcategory,
+            title: firstTitle.toLowerCase(),
+            subtitle: firstSubtitle,
             grouped: true,
           });
           setFirstItem(firstItemInMenu);
