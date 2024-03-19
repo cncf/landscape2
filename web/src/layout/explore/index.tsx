@@ -178,10 +178,13 @@ const Explore = (props: Props) => {
         }
       }
     }
-    const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classified()!);
-    prepareData(data.grid as GroupData);
-    setCardData(data.card);
-    setCardMenu(data.menu);
+
+    batch(() => {
+      const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classified()!);
+      prepareData(data.grid as GroupData);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+    });
 
     return currentFilters;
   };
@@ -231,6 +234,12 @@ const Explore = (props: Props) => {
       if (value === ViewMode.Grid) {
         updatedSearchParams.delete(CLASSIFIED_PARAM);
         updatedSearchParams.delete(SORT_BY_PARAM);
+        if (selectedGroup() === ALL_OPTION && !isUndefined(window.baseDS.groups)) {
+          const firstGroup = props.initialData.groups![0].normalized_name;
+          updatedSearchParams.set(GROUP_PARAM, firstGroup);
+          checkIfVisibleLoading(viewMode(), firstGroup);
+          setSelectedGroup(firstGroup);
+        }
       } else {
         updatedSearchParams.set(CLASSIFIED_PARAM, classified());
         updatedSearchParams.set(SORT_BY_PARAM, sorted());
@@ -297,6 +306,8 @@ const Explore = (props: Props) => {
     }
 
     const query = params.toString();
+
+    console.log('explore -> ', location.hash);
 
     // Keep hash if exists
     navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${location.hash !== '' ? location.hash : ''}`, {
@@ -421,14 +432,17 @@ const Explore = (props: Props) => {
 
   const applyFilters = (newFilters: ActiveFilters) => {
     setActiveFilters(newFilters);
-    const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
-    prepareData(data.grid as GroupData);
-    setCardData(data.card);
-    setCardMenu(data.menu);
+    updateFiltersQueryString(newFilters);
+
+    batch(() => {
+      const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+      prepareData(data.grid as GroupData);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+    });
     if (!isUndefined(landscapeData())) {
       setFullDataApplied(true);
     }
-    updateFiltersQueryString(newFilters);
   };
 
   const handler = () => {
@@ -495,11 +509,13 @@ const Explore = (props: Props) => {
       setAvailableMaturityClassification(true);
     }
 
-    const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
-    setGroupsData(data.grid);
-    setCardData(data.card);
-    setCardMenu(data.menu);
-    checkIfVisibleLoading(viewMode(), selectedGroup());
+    batch(() => {
+      const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+      setGroupsData(data.grid);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+      checkIfVisibleLoading(viewMode(), selectedGroup());
+    });
   });
 
   onCleanup(() => {
@@ -888,22 +904,6 @@ const Explore = (props: Props) => {
                         }}
                       </For>
                     </Show>
-
-                    {/* <Show when={fullDataApplied()}>
-                      <div class={viewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
-                        <CardCategory
-                          initialIsVisible={viewMode() === ViewMode.Card}
-                          data={cardData}
-                          menu={cardMenu()}
-                          group={selectedGroup() || ALL_OPTION}
-                          classified={classified()}
-                          sorted={sorted()}
-                          direction={sortDirection()}
-                          updateHash={updateHash}
-                          finishLoading={finishLoading}
-                        />
-                      </div>
-                    </Show> */}
                   </Show>
                 </div>
               </div>
