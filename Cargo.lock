@@ -1809,6 +1809,7 @@ dependencies = [
  "lazy_static",
  "leaky-bucket",
  "markdown",
+ "md-5",
  "mime_guess",
  "mockall",
  "num_cpus",

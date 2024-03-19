@@ -16,7 +16,7 @@ use octorust::types::{FullRepository, ParticipationStats};
 use regex::Regex;
 use reqwest::header;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::env;
 use tracing::{debug, instrument, warn};
 
@@ -108,7 +108,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
             }
         })
         .buffer_unordered(concurrency)
-        .collect::<HashMap<String, Result<Repository>>>()
+        .collect::<BTreeMap<String, Result<Repository>>>()
         .await
         .into_iter()
         .filter_map(|(url, result)| {
@@ -128,7 +128,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
 }
 
 /// Type alias to represent some repositories' GitHub data.
-pub(crate) type GithubData = HashMap<RepositoryUrl, Repository>;
+pub(crate) type GithubData = BTreeMap<RepositoryUrl, Repository>;
 
 /// Type alias to represent a GitHub repository url.
 pub(crate) type RepositoryUrl = String;
@@ -148,7 +148,7 @@ pub(crate) struct Repository {
     pub first_commit: Option<Commit>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub languages: Option<HashMap<String, i64>>,
+    pub languages: Option<BTreeMap<String, i64>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub latest_release: Option<Release>,
@@ -256,7 +256,7 @@ trait GH {
     async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Option<Commit>>;
 
     /// Get languages used in repository.
-    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>>;
+    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<BTreeMap<String, i64>>>;
 
     /// Get latest commit.
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit>;
@@ -359,9 +359,9 @@ impl GH for GHApi {
 
     /// [GH::get_languages]
     #[instrument(fields(?owner, ?repo), skip_all, err)]
-    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<HashMap<String, i64>>> {
+    async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<BTreeMap<String, i64>>> {
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/languages");
-        let languages: HashMap<String, i64> = self.http_client.get(url).send().await?.json().await?;
+        let languages: BTreeMap<String, i64> = self.http_client.get(url).send().await?.json().await?;
         Ok(Some(languages))
     }
 

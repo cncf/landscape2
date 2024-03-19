@@ -15,7 +15,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::BTreeMap, fs, path::Path};
 use tracing::{debug, instrument};
 
 /// Landscape settings.
@@ -61,7 +61,7 @@ pub(crate) struct LandscapeSettings {
     pub screenshot_width: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<HashMap<TagName, Vec<TagRule>>>,
+    pub tags: Option<BTreeMap<TagName, Vec<TagRule>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upcoming_event: Option<UpcomingEvent>,
