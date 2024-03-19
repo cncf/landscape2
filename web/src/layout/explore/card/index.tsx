@@ -45,17 +45,27 @@ const CardCategory = (props: Props) => {
 
   const isAvailableSelectedSection = (): boolean => {
     const selection = location.hash.replace('#', '');
-    const names = getName(selection);
-    if (
-      !isUndefined(menu()) &&
-      !isNull(names) &&
-      Object.keys(menu()!).includes(names.category) &&
-      !isUndefined(names.subcategory) &&
-      menu()![names.category].includes(names.subcategory)
-    ) {
-      return true;
+    if (props.classified === ClassifiedOption.Maturity) {
+      const status = selection.split('--')[1];
+      if (!isUndefined(menu()) && menu()!.Maturity.includes(status)) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      const names = getName(selection);
+      console.log(names);
+      if (
+        !isUndefined(menu()) &&
+        !isNull(names) &&
+        Object.keys(menu()!).includes(names.category) &&
+        !isUndefined(names.subcategory) &&
+        menu()![names.category].includes(names.subcategory)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
     }
   };
 
@@ -76,6 +86,7 @@ const CardCategory = (props: Props) => {
             }
             setTimeout(() => {
               goToElement(false, `card_${cleanHash}`, TITLE_OFFSET);
+              updateRoute(cleanHash);
             }, 100);
           }
         } else {

@@ -336,13 +336,15 @@ const Explore = (props: Props) => {
       // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
-        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
-        prepareData(data.grid as GroupData);
-        setCardData(data.card);
-        setCardMenu(data.menu);
+        batch(() => {
+          const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+          prepareData(data.grid as GroupData);
+          setCardData(data.card);
+          setCardMenu(data.menu);
 
-        setFullDataApplied(true);
-        setReadyData(true);
+          setFullDataApplied(true);
+          setReadyData(true);
+        });
       }
     } catch {
       setLandscapeData(undefined);
@@ -360,6 +362,7 @@ const Explore = (props: Props) => {
   createEffect(
     on(selectedGroup, () => {
       if (groupsData()) {
+        // Update count of visible items when group changes
         const currentNumber = countVisibleItems(groupsData()![selectedGroup() || ALL_OPTION]);
         if (currentNumber === 0) {
           finishLoading();
@@ -371,9 +374,13 @@ const Explore = (props: Props) => {
 
   createEffect(
     on(classified, () => {
-      const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
-      setCardData(data.card);
-      setCardMenu(data.menu);
+      batch(() => {
+        // Reset card loaded data when classified changes
+        setLoaded({ ...loaded(), card: [] });
+        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+        setCardData(data.card);
+        setCardMenu(data.menu);
+      });
     })
   );
 
@@ -383,10 +390,12 @@ const Explore = (props: Props) => {
         if (!isEmpty(activeFilters())) {
           applyFilters(activeFilters());
         } else {
-          const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classified()!);
-          prepareData(data.grid as GroupData);
-          setCardData(data.card);
-          setCardMenu(data.menu);
+          batch(() => {
+            const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classified()!);
+            prepareData(data.grid as GroupData);
+            setCardData(data.card);
+            setCardMenu(data.menu);
+          });
         }
       }
     })
