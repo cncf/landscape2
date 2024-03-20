@@ -54,7 +54,6 @@ const CardCategory = (props: Props) => {
       }
     } else {
       const names = getName(selection);
-      console.log(names);
       if (
         !isUndefined(menu()) &&
         !isNull(names) &&

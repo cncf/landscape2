@@ -49,10 +49,12 @@ export class ItemsDataGetter {
   private ready = false;
   private landscapeData?: LandscapeData;
 
+  // Subscribe to the updateStatus
   public subscribe(updateStatus: ItemsDataStatus) {
     this.updateStatus = updateStatus;
   }
 
+  // Initialize the data
   public init() {
     if (!this.ready) {
       fetch(import.meta.env.MODE === 'development' ? '../../static/data/full.json' : './data/full.json')
@@ -71,6 +73,7 @@ export class ItemsDataGetter {
     }
   }
 
+  // Get all items
   public getAll(): Item[] {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items;
@@ -78,6 +81,7 @@ export class ItemsDataGetter {
     return [];
   }
 
+  // Get crunchbase data
   public getCrunchbaseData(): CrunchbaseData | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.crunchbase_data) {
       return this.landscapeData.crunchbase_data;
@@ -85,13 +89,7 @@ export class ItemsDataGetter {
     return undefined;
   }
 
-  public getGithubData(): GithubData | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.github_data) {
-      return this.landscapeData.github_data;
-    }
-    return undefined;
-  }
-
+  // Extend items with crunchbase and github data
   private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
     const itemsList: Item[] = [];
 
@@ -125,6 +123,7 @@ export class ItemsDataGetter {
     return itemsList;
   }
 
+  // Group items
   private groupData(items: (BaseItem | Item)[]): { [key: string]: (Item | BaseItem)[] } {
     const gData = groupBy(items, 'category');
     const groups: Group[] = window.baseDS.groups || [];
@@ -145,6 +144,7 @@ export class ItemsDataGetter {
     return groupedItems;
   }
 
+  // Classify items
   public classifyItems(items: (BaseItem | Item)[], classified: ClassifiedOption): unknown | undefined {
     switch (classified) {
       case ClassifiedOption.None:
@@ -156,6 +156,7 @@ export class ItemsDataGetter {
     }
   }
 
+  // Prepare grid data
   private prepareGridData(groupedItems: { [key: string]: (Item | BaseItem)[] }) {
     const data: GroupData = {};
     if (!isUndefined(groupedItems)) {
@@ -192,6 +193,7 @@ export class ItemsDataGetter {
     return data;
   }
 
+  // Prepare menu options
   private getMenuOptions = (data: unknown, classified: ClassifiedOption) => {
     const menu: CardMenu = {};
     let maturityTypes: string[] = [];
@@ -222,6 +224,7 @@ export class ItemsDataGetter {
     }
   };
 
+  // Query items
   public queryItems(input: ActiveFilters, group: string, classified: ClassifiedOption) {
     const filteredItems = filterData(this.ready ? this.getAll() : window.baseDS.items, input);
     const groupedItems = this.groupData(filteredItems);
@@ -242,12 +245,14 @@ export class ItemsDataGetter {
     };
   }
 
+  // Get item by id
   public getItemById(id: string): Item | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.find((i: Item) => id === i.id);
     }
   }
 
+  // Get items by section
   public getItemsBySection(activeSection: ActiveSection): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
@@ -256,18 +261,21 @@ export class ItemsDataGetter {
     }
   }
 
+  // Get items by maturity status
   public getItemsByMaturity(level: string): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.maturity === level);
     }
   }
 
+  // Get items by end user
   public getItemsByEndUser(): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.enduser && window.baseDS.members_category === i.category);
     }
   }
 
+  // Prepare logos options
   public prepareLogosOptions(): LogosOptionsGroup[] {
     const options: LogosOptionsGroup[] = [];
     if (this.ready && this.landscapeData && this.landscapeData.items) {
@@ -333,5 +341,6 @@ export class ItemsDataGetter {
   }
 }
 
+// Create an instance of the ItemsDataGetter
 const itemsDataGetter = new ItemsDataGetter();
 export default itemsDataGetter;
