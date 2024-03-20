@@ -10,6 +10,7 @@ import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
 import scrollToTop from '../../../utils/scrollToTop';
+import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
 import Content from './Content';
@@ -172,6 +173,7 @@ const CardCategory = (props: Props) => {
               direction={props.direction}
             />
           </Show>
+          <ButtonToTopScroll />
         </div>
       </div>
     </Show>

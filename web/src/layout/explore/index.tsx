@@ -69,7 +69,7 @@ export type LoadedContent = {
 
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
-const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 385 - 101; // + Classified/Sort - Zoom
+const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 425 - 101; // + Classified/Sort - Zoom
 const EXTRA_FILTERS = ['specification'];
 
 const Explore = (props: Props) => {
@@ -701,13 +701,13 @@ const Explore = (props: Props) => {
                 </Match>
                 <Match when={viewMode() === ViewMode.Card}>
                   <div class={styles.btnGroupLegend}>
-                    <small class="text-muted text-uppercase me-2">Classified:</small>
+                    <small class="text-muted text-uppercase me-2">Classify:</small>
                   </div>
                   <select
                     id="classified"
                     class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
                     value={classified()}
-                    aria-label="Classified"
+                    aria-label="Classify"
                     onChange={(e) => {
                       const classifiedOpt = e.currentTarget.value as ClassifiedOption;
                       updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
@@ -729,7 +729,7 @@ const Explore = (props: Props) => {
                   </div>
                   <select
                     id="sorted"
-                    class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.miniSelect}`}
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.midSelect}`}
                     value={`${sorted()}_${sortDirection()}`}
                     aria-label="Sort"
                     onChange={(e) => {

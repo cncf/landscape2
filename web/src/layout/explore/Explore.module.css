@@ -60,6 +60,10 @@
   width: 125px;
 }
 
+.midSelect {
+  width: 165px;
+}
+
 .select {
   max-width: 400px;
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
@@ -79,7 +83,8 @@
     width: 210px;
   }
 
-  .miniSelect {
+  .miniSelect,
+  .midSelect {
     width: 125px;
   }
 }

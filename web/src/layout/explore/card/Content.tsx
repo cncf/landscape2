@@ -17,6 +17,7 @@ import {
 import getNormalizedName from '../../../utils/getNormalizedName';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import sortItems from '../../../utils/sortItems';
+import sortMaturityStatusTitles from '../../../utils/sortMaturityStatusTitles';
 import SVGIcon from '../../common/SVGIcon';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import Card from './Card';
@@ -99,10 +100,17 @@ const Content = (props: Props) => {
           <CardList items={data()} isVisible={props.isVisible} sorted={props.sorted} direction={props.direction} />
         </Match>
         <Match when={!Array.isArray(data())}>
-          <For each={Object.keys(data()).sort()}>
+          <For each={sortMaturityStatusTitles(Object.keys(data()))}>
             {(title: string) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const content = () => (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];
+              let numItems: number = 0;
+              if (props.classified === ClassifiedOption.Category) {
+                Object.keys(content()).forEach((subtitle: string) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  numItems += (content() as any)[subtitle].length;
+                });
+              }
 
               return (
                 <div>
@@ -134,7 +142,9 @@ const Content = (props: Props) => {
                                       </A>
                                     </div>
                                   </Show>
-                                  <div class="text-white text-nowrap text-truncate">{title}</div>
+                                  <div class="text-white text-nowrap text-truncate">
+                                    {title} ({numItems})
+                                  </div>
                                 </div>
                                 <div
                                   class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}

@@ -23,6 +23,7 @@ import capitalizeFirstLetter from './capitalizeFirstLetter';
 import filterData from './filterData';
 import nestArray from './nestArray';
 import { GroupData } from './prepareData';
+import sortMaturityStatusTitles from './sortMaturityStatusTitles';
 
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;
@@ -219,7 +220,7 @@ export class ItemsDataGetter {
           });
         return menu;
       case ClassifiedOption.Maturity:
-        maturityTypes = Object.keys(data as { [key: string]: never }).sort();
+        maturityTypes = sortMaturityStatusTitles(Object.keys(data as { [key: string]: never }));
         return maturityTypes.length > 0 ? { Maturity: maturityTypes } : {};
     }
   };

@@ -7,7 +7,7 @@ const sortItems = (items: Item[], option: SortOption, direction: SortDirection):
 
   switch (option) {
     case SortOption.DateAdded:
-      return orderBy(items, [(item: Item) => item.accepted_at], direction);
+      return orderBy(items, [(item: Item) => item.accepted_at || item.joined_at], direction);
 
     case SortOption.Stars:
       return orderBy(
