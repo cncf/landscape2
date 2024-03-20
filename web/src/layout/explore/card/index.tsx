@@ -147,8 +147,8 @@ const CardCategory = (props: Props) => {
       if (isVisible()) {
         if (!firstLoad()) {
           setFirstLoad(true);
-          props.finishLoading();
         }
+        props.finishLoading();
       }
     })
   );
