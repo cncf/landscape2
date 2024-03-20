@@ -51,7 +51,7 @@ const sortItems = (items: Item[], option: SortOption, direction: SortDirection):
       );
 
     default:
-      return orderBy(items, [(item: Item) => item.name.toLowerCase().toString()], 'asc');
+      return orderBy(items, [(item: Item) => item.name.toLowerCase().toString()], direction);
   }
 };
 
