@@ -4,7 +4,7 @@
 }
 
 .card:global(.whithoutRepo) {
-  background-color: #f6f7f9;
+  background-color: white;
 }
 
 .cardContent {
