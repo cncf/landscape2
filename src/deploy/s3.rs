@@ -67,7 +67,7 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
 }
 
 /// Check that the required environment variables have been provided.
-#[instrument(skip_all, err)]
+#[instrument(err)]
 fn check_env_vars() -> Result<()> {
     let required_env_vars = ["AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"];
 

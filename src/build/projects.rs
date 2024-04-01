@@ -40,15 +40,9 @@ impl From<&LandscapeData> for Vec<Project> {
             .iter()
             .cloned()
             .filter_map(|item| {
-                // Prepare maturity
-                let Some(maturity) = item.maturity else {
-                    return None;
-                };
-
-                // Prepare tag
-                let Some(tag) = item.tag else {
-                    return None;
-                };
+                // Prepare maturity and tag
+                let maturity = item.maturity?;
+                let tag = item.tag?;
 
                 // Prepare sandbox date
                 let sandbox_at = if item.accepted_at == item.incubating_at {

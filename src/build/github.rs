@@ -312,7 +312,7 @@ impl GHApi {
 #[async_trait]
 impl GH for GHApi {
     /// [GH::get_contributors_count]
-    #[instrument(fields(?owner, ?repo), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_contributors_count(&self, owner: &str, repo: &str) -> Result<usize> {
         let mut count = 1;
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/contributors?per_page=1&anon=true");
@@ -329,7 +329,7 @@ impl GH for GHApi {
     }
 
     /// [GH::get_first_commit]
-    #[instrument(fields(?owner, ?repo, ?ref_), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Option<Commit>> {
         // Get last commits page
         let mut last_page = 1;
@@ -358,7 +358,7 @@ impl GH for GHApi {
     }
 
     /// [GH::get_languages]
-    #[instrument(fields(?owner, ?repo), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_languages(&self, owner: &str, repo: &str) -> Result<Option<BTreeMap<String, i64>>> {
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/languages");
         let languages: BTreeMap<String, i64> = self.http_client.get(url).send().await?.json().await?;
@@ -366,14 +366,14 @@ impl GH for GHApi {
     }
 
     /// [GH::get_latest_commit]
-    #[instrument(fields(?owner, ?repo, ?ref_), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit> {
         let commit: Commit = self.gh_client.repos().get_commit(owner, repo, 1, 1, ref_).await?.into();
         Ok(commit)
     }
 
     /// [GH::get_latest_release]
-    #[instrument(fields(?owner, ?repo), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_latest_release(&self, owner: &str, repo: &str) -> Result<Option<Release>> {
         match self.gh_client.repos().get_latest_release(owner, repo).await {
             Ok(release) => Ok(Some(release.into())),
@@ -387,13 +387,13 @@ impl GH for GHApi {
     }
 
     /// [GH::get_participation_stats]
-    #[instrument(fields(?owner, ?repo), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_participation_stats(&self, owner: &str, repo: &str) -> Result<ParticipationStats> {
         self.gh_client.repos().get_participation_stats(owner, repo).await
     }
 
     /// [GH::get_repository]
-    #[instrument(fields(?owner, ?repo), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_repository(&self, owner: &str, repo: &str) -> Result<FullRepository> {
         self.gh_client.repos().get(owner, repo).await
     }
