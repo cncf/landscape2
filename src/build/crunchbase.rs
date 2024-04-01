@@ -350,7 +350,7 @@ impl CBApi {
 #[async_trait]
 impl CB for CBApi {
     /// [CB::get_organization]
-    #[instrument(fields(?permalink), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_organization(&self, permalink: &str) -> Result<CBOrganizationEntity> {
         let cards = &[
             "acquiree_acquisitions",

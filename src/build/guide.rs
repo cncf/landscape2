@@ -17,7 +17,7 @@ pub(crate) struct LandscapeGuide {
 
 impl LandscapeGuide {
     /// Create a new landscape guide instance from the source provided.
-    #[instrument(skip_all, err)]
+    #[instrument(err)]
     pub(crate) async fn new(src: &GuideSource) -> Result<Option<Self>> {
         // Try from file
         if let Some(file) = &src.guide_file {

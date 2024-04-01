@@ -36,7 +36,7 @@ impl Cache {
     }
 
     /// Read data from the cache file provided if available.
-    #[instrument(skip_all, err)]
+    #[instrument(skip(self), err)]
     pub(crate) fn read(&self, file_name: &str) -> Result<Option<(Option<SystemTime>, Vec<u8>)>> {
         // Check if the path exists
         let path = self.cache_dir.join(file_name);
@@ -52,7 +52,7 @@ impl Cache {
     }
 
     /// Write provided data to cache file.
-    #[instrument(skip_all, err)]
+    #[instrument(skip(self, data), err)]
     pub(crate) fn write(&self, file_name: &str, data: &[u8]) -> Result<()> {
         let path = self.cache_dir.join(file_name);
         let mut file = fs::File::create(path)?;
