@@ -193,7 +193,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
 }
 
 /// Check web assets are present, to make sure the web app has been built.
-#[instrument(skip_all, err)]
+#[instrument(err)]
 fn check_web_assets() -> Result<()> {
     debug!("checking web assets are present");
 
@@ -424,7 +424,7 @@ fn generate_projects_files(landscape_data: &LandscapeData, output_dir: &Path) ->
 }
 
 /// Generate QR code and copy it to output directory.
-#[instrument(skip_all, err)]
+#[instrument(skip(output_dir), err)]
 fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
     debug!("generating qr code");
 
@@ -445,7 +445,7 @@ fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
 }
 
 /// Prepare guide and copy it to the output directory.
-#[instrument(skip_all, err)]
+#[instrument(skip(output_dir), err)]
 async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<LandscapeGuide>> {
     debug!("preparing guide");
 
@@ -532,7 +532,7 @@ async fn prepare_items_logos(
 }
 
 /// Prepare landscape screenshot (in PNG and PDF formats).
-#[instrument(skip_all, err)]
+#[instrument(skip(output_dir), err)]
 #[allow(clippy::cast_precision_loss, clippy::items_after_statements)]
 async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     debug!("preparing screenshot");
@@ -679,7 +679,7 @@ struct Index<'a> {
 }
 
 /// Render index file and write it to the output directory.
-#[instrument(skip_all, err)]
+#[instrument(skip(datasets, output_dir), err)]
 fn render_index(
     analytics: &Option<Analytics>,
     datasets: &Datasets,
@@ -701,7 +701,7 @@ fn render_index(
 
 /// Setup output directory, creating it as well as any of the other required
 /// paths inside it when needed.
-#[instrument(fields(?output_dir), skip_all, err)]
+#[instrument(err)]
 fn setup_output_dir(output_dir: &Path) -> Result<()> {
     debug!("setting up output directory");
 

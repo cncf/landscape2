@@ -35,7 +35,7 @@ pub(crate) struct LandscapeData {
 
 impl LandscapeData {
     /// Create a new landscape data instance from the source provided.
-    #[instrument(skip_all, err)]
+    #[instrument(err)]
     pub(crate) async fn new(src: &DataSource) -> Result<Self> {
         // Try from file
         if let Some(file) = &src.data_file {

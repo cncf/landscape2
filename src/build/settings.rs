@@ -69,7 +69,7 @@ pub(crate) struct LandscapeSettings {
 
 impl LandscapeSettings {
     /// Create a new landscape settings instance from the source provided.
-    #[instrument(skip_all, err)]
+    #[instrument(err)]
     pub(crate) async fn new(src: &SettingsSource) -> Result<Self> {
         // Try from file
         if let Some(file) = &src.settings_file {
