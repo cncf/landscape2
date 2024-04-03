@@ -77,7 +77,7 @@ struct BuildArgs {
 }
 
 /// Landscape data location.
-#[derive(Args, Debug)]
+#[derive(Args)]
 #[group(required = true, multiple = false)]
 struct DataSource {
     /// Landscape data file local path.
@@ -90,7 +90,7 @@ struct DataSource {
 }
 
 /// Landscape guide location.
-#[derive(Args, Debug)]
+#[derive(Args)]
 #[group(required = false, multiple = false)]
 struct GuideSource {
     /// Landscape guide file local path.
@@ -116,7 +116,7 @@ struct LogosSource {
 }
 
 /// Landscape settings location.
-#[derive(Args, Debug)]
+#[derive(Args)]
 #[group(required = true, multiple = false)]
 struct SettingsSource {
     /// Landscape settings file local path.

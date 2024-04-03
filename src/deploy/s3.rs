@@ -2,7 +2,7 @@
 //! AWS S3 provider.
 
 use crate::S3Args;
-use anyhow::{format_err, Context, Result};
+use anyhow::{bail, format_err, Context, Result};
 use aws_sdk_s3::primitives::ByteStream;
 use futures::stream::{self, StreamExt};
 use md5::{Digest, Md5};
@@ -74,7 +74,7 @@ fn check_env_vars() -> Result<()> {
     for var in required_env_vars {
         let result = env::var(var);
         if result.is_err() || result.expect("var to be set").is_empty() {
-            return Err(format_err!("required environment variable {var} not provided"));
+            bail!("required environment variable {var} not provided");
         }
     }
 
@@ -200,7 +200,7 @@ async fn upload_objects(
         }
     }
     if errors_found {
-        return Err(format_err!("{errors}"));
+        bail!("{errors}");
     }
 
     Ok(())

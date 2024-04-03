@@ -14,7 +14,7 @@ use crate::{
     build::api::{Api, ApiSources},
     serve, BuildArgs, GuideSource, LogosSource, ServeArgs,
 };
-use anyhow::{format_err, Context, Result};
+use anyhow::{bail, Context, Result};
 use askama::Template;
 use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
 pub(crate) use data::LandscapeData;
@@ -198,9 +198,7 @@ fn check_web_assets() -> Result<()> {
     debug!("checking web assets are present");
 
     if !WebAssets::iter().any(|path| path.starts_with("assets/")) {
-        return Err(format_err!(
-            "web assets not found, please make sure they have been built"
-        ));
+        bail!("web assets not found, please make sure they have been built");
     }
 
     Ok(())
@@ -445,7 +443,7 @@ fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
 }
 
 /// Prepare guide and copy it to the output directory.
-#[instrument(skip(output_dir), err)]
+#[instrument(skip_all, err)]
 async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<LandscapeGuide>> {
     debug!("preparing guide");
 
@@ -545,7 +543,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 
     // Launch server to serve landscape just built
     let Some(port) = find_available_port() else {
-        return Err(format_err!("could not find an available port to listen on"));
+        bail!("could not find an available port to listen on");
     };
     let svr_addr = format!("127.0.0.1:{port}");
     let svr_addr_copy = svr_addr.clone();
@@ -631,17 +629,14 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
         // Fetch image from url
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status ({}) code getting logo {url}",
-                resp.status()
-            ));
+            bail!("unexpected status ({}) code getting logo {url}", resp.status());
         }
         let img = resp.bytes().await?.to_vec();
 
         // Write image to output dir
         let url = Url::parse(url).context("invalid image url")?;
         let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
-            return Err(format_err!("invalid image url: {url}"));
+            bail!("invalid image url: {url}");
         };
         let img_path = Path::new(IMAGES_PATH).join(file_name);
         File::create(output_dir.join(&img_path))?.write_all(&img)?;
@@ -679,7 +674,7 @@ struct Index<'a> {
 }
 
 /// Render index file and write it to the output directory.
-#[instrument(skip(datasets, output_dir), err)]
+#[instrument(skip_all, err)]
 fn render_index(
     analytics: &Option<Analytics>,
     datasets: &Datasets,

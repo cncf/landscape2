@@ -36,7 +36,7 @@ impl Datasets {
             base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
             embed: Embed::new(i.landscape_data),
             full: Full::new(i.crunchbase_data, i.github_data, i.landscape_data),
-            stats: Stats::new(i.landscape_data, i.settings),
+            stats: Stats::new(i.landscape_data, i.settings, i.crunchbase_data),
         };
 
         Ok(datasets)
