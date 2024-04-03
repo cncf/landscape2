@@ -3,7 +3,7 @@
 
 use super::cache::Cache;
 use crate::LogosSource;
-use anyhow::{format_err, Result};
+use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use regex::bytes::Regex;
 use reqwest::StatusCode;
@@ -95,15 +95,12 @@ async fn get_svg(
         let logo_url = format!("{logos_url}/{file_name}");
         let resp = http_client.get(logo_url).send().await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status code getting logo: {}",
-                resp.status()
-            ));
+            bail!("unexpected status code getting logo: {}", resp.status());
         }
         return Ok(resp.bytes().await?.to_vec());
     };
 
-    Err(format_err!("logos path or url not provided"))
+    bail!("logos path or url not provided");
 }
 
 /// Get SVG bounding box (smallest rectangle in which the object fits).

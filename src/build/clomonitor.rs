@@ -2,7 +2,7 @@
 //! summaries from CLOMonitor (https://clomonitor.io).
 
 use super::cache::Cache;
-use anyhow::{format_err, Result};
+use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
 
@@ -44,9 +44,9 @@ pub(crate) async fn fetch_report_summary(
             Ok(Some(report_summary))
         }
         StatusCode::NOT_FOUND => Ok(None),
-        _ => Err(format_err!(
+        _ => bail!(
             "unexpected status code getting clomonitor report summary: {}",
             resp.status()
-        )),
+        ),
     }
 }
