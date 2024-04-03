@@ -349,6 +349,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.incubating_at = extra.incubating;
                         item.latest_annual_review_at = extra.annual_review_date;
                         item.latest_annual_review_url = extra.annual_review_url;
+                        item.linkedin_url = extra.linkedin_url;
                         item.mailing_list_url = extra.mailing_list_url;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
@@ -509,6 +510,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub joined_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub linkedin_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
@@ -854,6 +858,7 @@ mod legacy {
         pub gitter_url: Option<String>,
         pub graduated: Option<NaiveDate>,
         pub incubating: Option<NaiveDate>,
+        pub linkedin_url: Option<String>,
         pub mailing_list_url: Option<String>,
         pub slack_url: Option<String>,
         pub specification: Option<bool>,
@@ -905,6 +910,7 @@ mod legacy {
                 ("discord", &extra.discord_url),
                 ("docker", &extra.docker_url),
                 ("github_discussions", &extra.github_discussions_url),
+                ("linkedin", &extra.linkedin_url),
                 ("mailing_list", &extra.mailing_list_url),
                 ("slack", &extra.slack_url),
                 ("stack_overflow", &extra.stack_overflow_url),
