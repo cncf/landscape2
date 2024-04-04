@@ -1,7 +1,6 @@
 //! This module provides some helper functions to prepare logos to be displayed
 //! on the landscape web application.
 
-use super::cache::Cache;
 use crate::LogosSource;
 use anyhow::{bail, Result};
 use lazy_static::lazy_static;
@@ -29,7 +28,6 @@ pub(crate) struct Logo {
 
 /// Get SVG logo from the source provided and apply some modifications to it.
 pub(crate) async fn prepare_logo(
-    cache: &Cache,
     http_client: reqwest::Client,
     logos_source: &LogosSource,
     file_name: &str,
@@ -40,21 +38,6 @@ pub(crate) async fn prepare_logo(
     // Remove title if present (some identical logos are using a different
     // title, so we do this before computing the digest)
     svg_data = SVG_TITLE.replace(&svg_data, b"").into_owned();
-
-    // Calculate digest
-    let digest = hex::encode(Sha256::digest(&svg_data));
-
-    // Read cached SVG data (if available). Getting the SVG bounding box (next
-    // step, which we do before updating the viewbox) is a bit expensive in
-    // terms of CPU usage, so once we've done it once for a given logo we cache
-    // it and try to reuse it).
-    let logo_cache_file = format!("logo_{digest}.svg");
-    if let Ok(Some((_, cached_svg_data))) = cache.read(&logo_cache_file) {
-        return Ok(Logo {
-            svg_data: cached_svg_data,
-            digest,
-        });
-    }
 
     // Update viewbox to the smallest rectangle in which the object fits
     if let Ok(Some(bounding_box)) = get_svg_bounding_box(&svg_data) {
@@ -71,8 +54,8 @@ pub(crate) async fn prepare_logo(
         }
     }
 
-    // Write SVG data to cache
-    cache.write(&logo_cache_file, &svg_data)?;
+    // Calculate digest
+    let digest = hex::encode(Sha256::digest(&svg_data));
 
     Ok(Logo { svg_data, digest })
 }
