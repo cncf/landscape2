@@ -240,7 +240,7 @@ async fn collect_clomonitor_reports(
 
             // Copy report summary to the output dir
             let file_name = format!("clomonitor_{foundation}_{project_name}.svg");
-            let mut file = match fs::File::create(output_dir.join(IMAGES_PATH).join(&file_name)) {
+            let mut file = match File::create(output_dir.join(IMAGES_PATH).join(&file_name)) {
                 Ok(file) => file,
                 Err(err) => {
                     error!(?err, ?file_name, "error creating report summary file");
@@ -496,7 +496,7 @@ async fn prepare_items_logos(
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);
-            let mut file = match fs::File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
+            let mut file = match File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
                 Ok(file) => file,
                 Err(err) => {
                     error!(?err, ?file_name, "error creating logo file in output dir");
