@@ -127,7 +127,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
 
     // Prepare items logos and copy them to the output directory
-    prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
+    prepare_items_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect CLOMonitor reports summaries and copy them to the output directory
     collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
@@ -460,7 +460,6 @@ async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<
 /// logo reference on each landscape item.
 #[instrument(skip_all, err)]
 async fn prepare_items_logos(
-    cache: &Cache,
     logos_source: &LogosSource,
     landscape_data: &mut LandscapeData,
     output_dir: &Path,
@@ -477,25 +476,23 @@ async fn prepare_items_logos(
     let logos: HashMap<String, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
             // Prepare logo
-            let cache = cache.clone();
             let http_client = http_client.clone();
             let logos_source = logos_source.clone();
             let file_name = item.logo.clone();
-            let logo = match tokio::spawn(async move {
-                prepare_logo(&cache, http_client, &logos_source, &file_name).await
-            })
-            .await
-            {
-                Ok(Ok(logo)) => logo,
-                Ok(Err(err)) => {
-                    error!(?err, ?item.logo, "error preparing logo");
-                    return (item.id.clone(), None);
-                }
-                Err(err) => {
-                    error!(?err, ?item.logo, "error executing prepare_logo task");
-                    return (item.id.clone(), None);
-                }
-            };
+            let logo =
+                match tokio::spawn(async move { prepare_logo(http_client, &logos_source, &file_name).await })
+                    .await
+                {
+                    Ok(Ok(logo)) => logo,
+                    Ok(Err(err)) => {
+                        error!(?err, ?item.logo, "error preparing logo");
+                        return (item.id.clone(), None);
+                    }
+                    Err(err) => {
+                        error!(?err, ?item.logo, "error executing prepare_logo task");
+                        return (item.id.clone(), None);
+                    }
+                };
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);
