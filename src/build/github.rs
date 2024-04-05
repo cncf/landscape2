@@ -14,7 +14,7 @@ use mockall::automock;
 use octorust::auth::Credentials;
 use octorust::types::{FullRepository, ParticipationStats};
 use regex::Regex;
-use reqwest::header;
+use reqwest::header::{self, HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::env;
@@ -286,18 +286,18 @@ impl GHApi {
 
         // Setup HTTP client ready to make requests to the GitHub API
         // (for some operations that cannot be done with the octorust client)
-        let mut headers = header::HeaderMap::new();
+        let mut headers = HeaderMap::new();
         headers.insert(
             header::ACCEPT,
-            header::HeaderValue::from_str("application/vnd.github+json").unwrap(),
+            HeaderValue::from_str("application/vnd.github+json").unwrap(),
         );
         headers.insert(
             header::AUTHORIZATION,
-            header::HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
+            HeaderValue::from_str(&format!("Bearer {token}")).unwrap(),
         );
         headers.insert(
             "X-GitHub-Api-Version",
-            header::HeaderValue::from_str("2022-11-28").unwrap(),
+            HeaderValue::from_str("2022-11-28").unwrap(),
         );
         let http_client =
             reqwest::Client::builder().user_agent(user_agent).default_headers(headers).build()?;
@@ -314,42 +314,28 @@ impl GH for GHApi {
     /// [GH::get_contributors_count]
     #[instrument(skip(self), err)]
     async fn get_contributors_count(&self, owner: &str, repo: &str) -> Result<usize> {
-        let mut count = 1;
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/contributors?per_page=1&anon=true");
         let response = self.http_client.head(url).send().await?;
-        if let Some(link_header) = response.headers().get("link") {
-            let rels = parse_link_header::parse_with_rel(link_header.to_str()?)?;
-            if let Some(last_page_url) = rels.get("last") {
-                if let Some(value) = last_page_url.queries.get("page") {
-                    count = value.parse()?;
-                }
-            }
-        }
+        let count = get_last_page(response.headers())?.unwrap_or(1);
         Ok(count)
     }
 
     /// [GH::get_first_commit]
     #[instrument(skip(self), err)]
+    #[allow(clippy::cast_possible_wrap)]
     async fn get_first_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Option<Commit>> {
         // Get last commits page
-        let mut last_page = 1;
         let url = format!("{GITHUB_API_URL}/repos/{owner}/{repo}/commits?sha={ref_}&per_page=1");
         let response = self.http_client.head(url).send().await?;
-        if let Some(link_header) = response.headers().get("link") {
-            let rels = parse_link_header::parse_with_rel(link_header.to_str()?)?;
-            if let Some(last_page_url) = rels.get("last") {
-                if let Some(value) = last_page_url.queries.get("page") {
-                    last_page = value.parse()?;
-                }
-            }
-        }
+        let last_page = get_last_page(response.headers())?.unwrap_or(1);
 
         // Get first repository commit and return it if found
         if let Some(commit) = self
             .gh_client
             .repos()
-            .list_commits(owner, repo, ref_, "", "", None, None, 1, last_page)
+            .list_commits(owner, repo, ref_, "", "", None, None, 1, last_page as i64)
             .await?
+            .body
             .pop()
         {
             return Ok(Some(Commit::from(commit)));
@@ -368,20 +354,20 @@ impl GH for GHApi {
     /// [GH::get_latest_commit]
     #[instrument(skip(self), err)]
     async fn get_latest_commit(&self, owner: &str, repo: &str, ref_: &str) -> Result<Commit> {
-        let commit: Commit = self.gh_client.repos().get_commit(owner, repo, 1, 1, ref_).await?.into();
-        Ok(commit)
+        let response = self.gh_client.repos().get_commit(owner, repo, 1, 1, ref_).await?;
+        Ok(response.body.into())
     }
 
     /// [GH::get_latest_release]
     #[instrument(skip(self), err)]
     async fn get_latest_release(&self, owner: &str, repo: &str) -> Result<Option<Release>> {
         match self.gh_client.repos().get_latest_release(owner, repo).await {
-            Ok(release) => Ok(Some(release.into())),
+            Ok(response) => Ok(Some(response.body.into())),
             Err(err) => {
                 if err.to_string().to_lowercase().contains("not found") {
                     return Ok(None);
                 }
-                Err(err)
+                Err(err.into())
             }
         }
     }
@@ -389,13 +375,15 @@ impl GH for GHApi {
     /// [GH::get_participation_stats]
     #[instrument(skip(self), err)]
     async fn get_participation_stats(&self, owner: &str, repo: &str) -> Result<ParticipationStats> {
-        self.gh_client.repos().get_participation_stats(owner, repo).await
+        let response = self.gh_client.repos().get_participation_stats(owner, repo).await?;
+        Ok(response.body)
     }
 
     /// [GH::get_repository]
     #[instrument(skip(self), err)]
     async fn get_repository(&self, owner: &str, repo: &str) -> Result<FullRepository> {
-        self.gh_client.repos().get(owner, repo).await
+        let response = self.gh_client.repos().get(owner, repo).await?;
+        Ok(response.body)
     }
 }
 
@@ -404,6 +392,19 @@ lazy_static! {
     pub(crate) static ref GITHUB_REPO_URL: Regex =
         Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
             .expect("exprs in GITHUB_REPO_URL to be valid");
+}
+
+/// Return the last page of results available from the headers provided.
+fn get_last_page(headers: &HeaderMap) -> Result<Option<usize>> {
+    if let Some(link_header) = headers.get("link") {
+        let rels = parse_link_header::parse_with_rel(link_header.to_str()?)?;
+        if let Some(last_page_url) = rels.get("last") {
+            if let Some(last_page) = last_page_url.queries.get("page") {
+                return Ok(Some(last_page.parse()?));
+            }
+        }
+    }
+    Ok(None)
 }
 
 /// Extract the owner and repository from the repository url provided.

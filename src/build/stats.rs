@@ -453,7 +453,7 @@ const EXCLUDED_LANGUAGES: [&str; 7] = [
 /// Helper function to increment the value of an entry in a map by the value
 /// provided if the entry exists, or insert a new entry with that value if it
 /// doesn't.
-fn increment<T: std::cmp::Ord>(map: &mut BTreeMap<T, u64>, key: &T, increment: u64)
+fn increment<T: Ord>(map: &mut BTreeMap<T, u64>, key: &T, increment: u64)
 where
     T: std::hash::Hash + Eq + Clone,
 {
