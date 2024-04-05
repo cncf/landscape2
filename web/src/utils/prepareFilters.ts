@@ -1,7 +1,7 @@
 import { REGEX_DASH } from '../data';
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
-import { GroupData } from './prepareData';
+import { GroupData } from './itemsDataGetter';
 
 const cleanValue = (t: string): string => {
   // return encodeURIComponent(t);
@@ -51,7 +51,8 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
   const countries: string[] = [];
   const companyTypes: string[] = [];
   const extraTypes: string[] = [];
-  let categories: string[] = [];
+  const categories: string[] = [];
+  let industry: string[] = [];
 
   items.forEach((i: Item) => {
     if (i.maturity) {
@@ -66,6 +67,10 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       extraTypes.push('specification');
     }
 
+    if (i.category) {
+      categories.push(i.category);
+    }
+
     if (i.crunchbase_data) {
       if (i.crunchbase_data.name) {
         organizations.push(i.crunchbase_data.name);
@@ -76,7 +81,7 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       }
 
       if (i.crunchbase_data.categories) {
-        categories = [...categories, ...i.crunchbase_data.categories];
+        industry = [...industry, ...i.crunchbase_data.categories];
       }
 
       if (i.crunchbase_data.company_type) {
@@ -126,6 +131,22 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     });
   }
 
+  if (categories.length > 0) {
+    const cleanCategories = [...new Set(categories)].sort();
+
+    // Add categories filter only if there are more than one category
+    if (cleanCategories.length > 1) {
+      filters.push({
+        value: FilterCategory.Category,
+        title: 'Category',
+        options: [...new Set(categories)].sort().map((cat: string) => ({
+          value: cleanValue(cat),
+          name: cat,
+        })),
+      });
+    }
+  }
+
   if (licenses.length > 0) {
     filters.push({
       value: FilterCategory.License,
@@ -148,13 +169,13 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
     });
   }
 
-  if (categories.length > 0) {
+  if (industry.length > 0) {
     filters.push({
       value: FilterCategory.Industry,
       title: 'Industry',
-      options: [...new Set(categories)].sort().map((category: string) => ({
-        value: cleanValue(category),
-        name: category,
+      options: [...new Set(industry)].sort().map((i: string) => ({
+        value: cleanValue(i),
+        name: i,
       })),
     });
 

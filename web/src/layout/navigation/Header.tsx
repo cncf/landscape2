@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
+import { ALL_OPTION } from '../../data';
 import { SVGIconKind, ViewMode } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
@@ -25,6 +26,12 @@ const Header = () => {
     return path === location.pathname;
   };
 
+  const resetDefaultExploreValues = () => {
+    const groups = window.baseDS.groups;
+    setViewMode(ViewMode.Grid);
+    setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : ALL_OPTION);
+  };
+
   return (
     <header class={`d-none d-lg-flex navbar navbar-expand mb-2 border-bottom shadow-sm top-0 ${styles.navbar}`}>
       <div class="container-fluid d-flex flex-row align-items-center px-3 px-lg-4 mainPadding">
@@ -33,9 +40,7 @@ const Header = () => {
             <button
               class="btn btn-link p-0 pe-3 me-2 me-xl-5"
               onClick={() => {
-                const groups = window.baseDS.groups;
-                setViewMode(ViewMode.Grid);
-                setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : 'default');
+                resetDefaultExploreValues();
                 navigate('/', {
                   state: { from: 'logo-header' },
                 });
@@ -77,6 +82,7 @@ const Header = () => {
                 if (isActive('/')) {
                   scrollToTop(false);
                 } else {
+                  resetDefaultExploreValues();
                   navigate('/', {
                     state: { from: 'header' },
                   });

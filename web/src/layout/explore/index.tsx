@@ -1,33 +1,47 @@
-import { useLocation, useNavigate } from '@solidjs/router';
+import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
 import uniq from 'lodash/uniq';
-import { createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
+import { batch, createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
-import { GROUP_PARAM, SMALL_DEVICES_BREAKPOINTS, VIEW_MODE_PARAM, ZOOM_LEVELS } from '../../data';
+import {
+  ALL_OPTION,
+  CLASSIFIED_PARAM,
+  DEFAULT_CLASSIFIED,
+  DEFAULT_SORT,
+  DEFAULT_SORT_DIRECTION,
+  GROUP_PARAM,
+  SMALL_DEVICES_BREAKPOINTS,
+  SORT_BY_PARAM,
+  SORT_DIRECTION_PARAM,
+  SORT_OPTION_LABEL,
+  VIEW_MODE_PARAM,
+  ZOOM_LEVELS,
+} from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import {
   ActiveFilters,
   BaseData,
-  BaseItem,
+  CardMenu,
+  ClassifiedOption,
   FilterCategory,
   Group,
   Item,
+  SortDirection,
+  SortOption,
   StateContent,
   SVGIconKind,
   ViewMode,
 } from '../../types';
-import countVisibleItems from '../../utils/countVisibleItems';
-import filterData from '../../utils/filterData';
+import getClassifyAndSortOptions, { ClassifyAndSortOptions } from '../../utils/getClassifyAndSortOptions';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
-import itemsDataGetter from '../../utils/itemsDataGetter';
-import prepareData, { GroupData } from '../../utils/prepareData';
+import getNormalizedName from '../../utils/getNormalizedName';
+import itemsDataGetter, { GroupData } from '../../utils/itemsDataGetter';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
-import Loading from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
@@ -37,6 +51,7 @@ import { useGroupActive, useSetGroupActive } from '../stores/groupActive';
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import { useSetViewMode, useViewMode } from '../stores/viewMode';
 import { useSetZoomLevel, useZoomLevel } from '../stores/zoom';
+import CardCategory from './card';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
@@ -46,17 +61,15 @@ interface Props {
   initialData: BaseData;
 }
 
-export type LoadedContent = {
-  [key in ViewMode]: string[];
-};
-
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
+const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 435 - 101; // + Classified/Sort - Zoom
 const EXTRA_FILTERS = ['specification'];
 
 const Explore = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { point } = useBreakpointDetect();
   const state = () => location.state || {};
   const from = () => (state() as StateContent).from || undefined;
@@ -75,17 +88,30 @@ const Explore = (props: Props) => {
   const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
   const [landscapeData, setLandscapeData] = createSignal<Item[]>();
-  const [visibleItems, setVisibleItems] = createSignal<(BaseItem | Item)[]>(props.initialData.items);
-  const [groupsData, setGroupsData] = createSignal<GroupData>(prepareData(props.initialData, props.initialData.items));
+  const [groupsData, setGroupsData] = createSignal<GroupData>();
+  const [cardData, setCardData] = createSignal<{ [key: string]: unknown }>();
+  const [cardMenu, setCardMenu] = createSignal<{ [key: string]: CardMenu | undefined }>();
   const [numVisibleItems, setNumVisibleItems] = createSignal<number>();
-  const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
   const [visibleSelectForGroups, setVisibleSelectForGroups] = createSignal<boolean>(false);
-  const [loaded, setLoaded] = createSignal<LoadedContent>({ grid: [], card: [] });
+  const [classified, setClassified] = createSignal<ClassifiedOption>(
+    searchParams[CLASSIFIED_PARAM] ? (searchParams[CLASSIFIED_PARAM] as ClassifiedOption) : DEFAULT_CLASSIFIED
+  );
+  const [sorted, setSorted] = createSignal<SortOption>(
+    searchParams[SORT_BY_PARAM] ? (searchParams[SORT_BY_PARAM] as SortOption) : DEFAULT_SORT
+  );
+  const [sortDirection, setSortDirection] = createSignal<SortDirection>(
+    searchParams[SORT_DIRECTION_PARAM] ? (searchParams[SORT_DIRECTION_PARAM] as SortDirection) : DEFAULT_SORT_DIRECTION
+  );
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
-  const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
+  const [classifyAndSortOptions, setClassifyAndSortOptions] = createSignal<{
+    [key: string]: ClassifyAndSortOptions;
+  }>({});
+  const [classifyOptions, setClassifyOptions] = createSignal<ClassifiedOption[]>(Object.values(ClassifiedOption));
+  const [sortOptions, setSortOptions] = createSignal<SortOption[]>(Object.values(SortOption));
+  const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
 
   const checkIfFullDataRequired = (): boolean => {
     const activeFiltersKeys = Object.keys(activeFilters());
@@ -105,6 +131,11 @@ const Explore = (props: Props) => {
   const getMaturityOptions = () => {
     const maturity = props.initialData.items.map((i: Item) => i.maturity);
     return uniq(compact(maturity)) || [];
+  };
+
+  const checkVisibleItemsNumber = (numItemsPerGroup: { [key: string]: number }) => {
+    setNumItems(numItemsPerGroup);
+    setNumVisibleItems(numItemsPerGroup[selectedGroup() || ALL_OPTION]);
   };
 
   const maturityOptions = getMaturityOptions();
@@ -135,36 +166,42 @@ const Explore = (props: Props) => {
         }
       }
     }
-    setVisibleItems(filterData(landscapeData() || props.initialData.items, currentFilters));
+
+    batch(() => {
+      const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classified()!);
+      checkVisibleItemsNumber(data.numItems);
+      setGroupsData(data.grid);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+    });
+
     return currentFilters;
   };
 
   // eslint-disable-next-line solid/reactivity
   const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>(getActiveFiltersFromUrl());
 
-  const checkIfVisibleLoading = (viewMode?: ViewMode, groupName?: string) => {
-    // Not for small devices
-    if (!onSmallDevice) {
-      if (viewMode) {
-        const group = groupName || selectedGroup() || 'default';
-        if (!loaded()[viewMode].includes(groupName || 'default')) {
-          setVisibleLoading(true);
-
-          setLoaded({
-            ...loaded(),
-            [viewMode]: [...loaded()[viewMode], group],
-          });
-        } else {
-          setVisibleLoading(false);
+  const getHash = (): string | undefined => {
+    let hash: string = '';
+    if (viewMode() === ViewMode.Card && !isUndefined(cardMenu()) && !isEmpty(cardMenu())) {
+      const selectedGroupMenu = cardMenu()![selectedGroup() || ALL_OPTION];
+      if (selectedGroupMenu && !isEmpty(selectedGroupMenu)) {
+        const title = Object.keys(selectedGroupMenu)[0];
+        if (title) {
+          const subtitle = selectedGroupMenu[title][0];
+          hash = `#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`;
         }
-      } else {
-        setVisibleLoading(false);
       }
     }
+    return hash;
   };
 
-  const finishLoading = () => {
-    setVisibleLoading(false);
+  const checkIfAvaibleClassificationInGroup = (group: string): boolean => {
+    return classifyAndSortOptions()[group].classify.includes(classified());
+  };
+
+  const checkIfAvaibleSortOptionInGroup = (group: string): boolean => {
+    return classifyAndSortOptions()[group].sort.includes(sorted());
   };
 
   const closeMenuStatus = () => {
@@ -174,12 +211,70 @@ const Explore = (props: Props) => {
 
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(location.search);
-    updatedSearchParams.set(param, value);
-    if (location.search === '' && param === 'group') {
-      updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
+    const currentGroup = param === GROUP_PARAM ? value : selectedGroup() || ALL_OPTION;
+    const classifyOption = checkIfAvaibleClassificationInGroup(currentGroup) ? classified() : DEFAULT_CLASSIFIED;
+    const sortOption = checkIfAvaibleSortOptionInGroup(currentGroup) ? sorted() : DEFAULT_SORT;
+    const sortDirectionOpt = checkIfAvaibleSortOptionInGroup(currentGroup) ? sortDirection() : DEFAULT_SORT_DIRECTION;
+
+    // Reset classified and sort when view mode or group changes
+    if ([VIEW_MODE_PARAM, GROUP_PARAM].includes(param)) {
+      // Remove all filters from current searchparams
+      Object.values(FilterCategory).forEach((f: string) => {
+        updatedSearchParams.delete(f);
+      });
+      EXTRA_FILTERS.forEach((f: string) => {
+        updatedSearchParams.delete(f);
+      });
+
+      batch(() => {
+        setClassified(classifyOption);
+        setSorted(sortOption);
+        setSortDirection(sortDirectionOpt);
+
+        if (param === GROUP_PARAM) {
+          setClassifyOptions(classifyAndSortOptions()[value].classify);
+          setSortOptions(classifyAndSortOptions()[value].sort);
+          // Reset filters when group changes
+          resetFilters();
+          scrollToTop(false);
+        }
+      });
     }
 
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
+    if (param === 'sort') {
+      const sortOpt = value.split('_');
+      updatedSearchParams.set(SORT_BY_PARAM, sortOpt[0]);
+      updatedSearchParams.set(SORT_DIRECTION_PARAM, sortOpt[1]);
+    } else {
+      updatedSearchParams.set(param, value);
+    }
+    if (param === GROUP_PARAM && viewMode() === ViewMode.Card) {
+      updatedSearchParams.set(CLASSIFIED_PARAM, classifyOption);
+      updatedSearchParams.set(SORT_BY_PARAM, sortOption);
+      updatedSearchParams.set(SORT_DIRECTION_PARAM, sortDirectionOpt);
+
+      if (location.search === '') {
+        updatedSearchParams.set(VIEW_MODE_PARAM, viewMode());
+      }
+    }
+    if (param === VIEW_MODE_PARAM) {
+      if (value === ViewMode.Grid) {
+        updatedSearchParams.delete(CLASSIFIED_PARAM);
+        updatedSearchParams.delete(SORT_BY_PARAM);
+        updatedSearchParams.delete(SORT_DIRECTION_PARAM);
+        if (selectedGroup() === ALL_OPTION && !isUndefined(window.baseDS.groups)) {
+          const firstGroup = props.initialData.groups![0].normalized_name;
+          updatedSearchParams.set(GROUP_PARAM, firstGroup);
+          setSelectedGroup(firstGroup);
+        }
+      } else {
+        updatedSearchParams.set(CLASSIFIED_PARAM, classifyOption);
+        updatedSearchParams.set(SORT_BY_PARAM, sortOption);
+        updatedSearchParams.set(SORT_DIRECTION_PARAM, DEFAULT_SORT_DIRECTION);
+      }
+    }
+
+    navigate(`${location.pathname}?${updatedSearchParams.toString()}${getHash()}`, {
       state: location.state,
       replace: true,
       scroll: true, // default
@@ -211,6 +306,7 @@ const Explore = (props: Props) => {
 
   const updateFiltersQueryString = (filters: ActiveFilters) => {
     const params = new URLSearchParams(location.search);
+    // Remove all filters from current searchparams
     Object.values(FilterCategory).forEach((f: string) => {
       params.delete(f);
     });
@@ -221,6 +317,12 @@ const Explore = (props: Props) => {
     if (params.toString() === '') {
       params.set(GROUP_PARAM, selectedGroup()!);
       params.set(VIEW_MODE_PARAM, viewMode());
+
+      if (viewMode() === ViewMode.Card) {
+        params.set(CLASSIFIED_PARAM, classified());
+        params.set(SORT_BY_PARAM, sorted());
+        params.set(SORT_DIRECTION_PARAM, sortDirection());
+      }
     }
 
     const filtersParams = getFiltersQuery(filters);
@@ -234,22 +336,10 @@ const Explore = (props: Props) => {
 
     const query = params.toString();
 
-    // Keep hash if exists
-    navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${location.hash !== '' ? location.hash : ''}`, {
+    navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${getHash()}`, {
       state: location.state,
       replace: true,
       scroll: true, // default
-    });
-  };
-
-  const updateHash = (hash?: string) => {
-    const params = new URLSearchParams(location.search);
-    params.set(GROUP_PARAM, selectedGroup() || 'default');
-    params.set(VIEW_MODE_PARAM, ViewMode.Card);
-
-    navigate(`${location.pathname}?${params.toString()}${!isUndefined(hash) ? `#${hash}` : ''}`, {
-      replace: true,
-      scroll: false,
     });
   };
 
@@ -257,12 +347,31 @@ const Explore = (props: Props) => {
     try {
       const fullData = await itemsDataGetter.getAll();
       setLandscapeData(fullData);
+      const options = getClassifyAndSortOptions();
+      setClassifyAndSortOptions(options);
+      setClassifyOptions(options[selectedGroup() || ALL_OPTION].classify);
+      setSortOptions(options[selectedGroup() || ALL_OPTION].sort);
       // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
-        setVisibleItems(filterData(fullData, activeFilters()));
-        setFullDataApplied(true);
-        setReadyData(true);
+        batch(() => {
+          const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+          checkVisibleItemsNumber(data.numItems);
+          setGroupsData(data.grid);
+          setCardData(data.card);
+          setCardMenu(data.menu);
+
+          setFullDataApplied(true);
+          setReadyData(true);
+        });
+
+        if (viewMode() === ViewMode.Card) {
+          navigate(`${location.pathname}${location.search}${location.hash !== '' ? location.hash : getHash()}`, {
+            state: location.state,
+            replace: true,
+            scroll: true, // default
+          });
+        }
       }
     } catch {
       setLandscapeData(undefined);
@@ -278,25 +387,20 @@ const Explore = (props: Props) => {
   );
 
   createEffect(
-    on(visibleItems, () => {
-      const newData = prepareData(props.initialData, visibleItems());
-
-      const currentNumber = countVisibleItems(newData[selectedGroup() || 'default']);
-      if (currentNumber === 0) {
-        finishLoading();
+    on(selectedGroup, () => {
+      if (groupsData()) {
+        setNumVisibleItems(numItems()[selectedGroup() || ALL_OPTION]);
       }
-      setNumVisibleItems(currentNumber);
-      setGroupsData(newData);
     })
   );
 
   createEffect(
-    on(selectedGroup, () => {
-      const currentNumber = countVisibleItems(groupsData()[selectedGroup() || 'default']);
-      if (currentNumber === 0) {
-        finishLoading();
-      }
-      setNumVisibleItems(currentNumber);
+    on(classified, () => {
+      batch(() => {
+        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+        setCardData(data.card);
+        setCardMenu(data.menu);
+      });
     })
   );
 
@@ -306,7 +410,13 @@ const Explore = (props: Props) => {
         if (!isEmpty(activeFilters())) {
           applyFilters(activeFilters());
         } else {
-          setVisibleItems(landscapeData()!);
+          batch(() => {
+            const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classified()!);
+            checkVisibleItemsNumber(data.numItems);
+            setGroupsData(data.grid);
+            setCardData(data.card);
+            setCardMenu(data.menu);
+          });
         }
       }
     })
@@ -349,12 +459,20 @@ const Explore = (props: Props) => {
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
-    setActiveFilters(newFilters);
-    setVisibleItems(filterData(landscapeData() || props.initialData.items, newFilters));
+    batch(() => {
+      setActiveFilters(newFilters);
+      const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classified()!);
+      checkVisibleItemsNumber(data.numItems);
+      setGroupsData(data.grid);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+    });
+
+    updateFiltersQueryString(newFilters);
+
     if (!isUndefined(landscapeData())) {
       setFullDataApplied(true);
     }
-    updateFiltersQueryString(newFilters);
   };
 
   const handler = () => {
@@ -367,17 +485,18 @@ const Explore = (props: Props) => {
 
       // Avoid groups section with multiline
       if (!SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
+        const controls = viewMode() === ViewMode.Card ? CONTROLS_CARD_WIDTH : CONTROLS_WIDTH;
         if (!isUndefined(controlsGroupWrapper())) {
           if (controlsGroupWrapperWidth() === 0) {
             const controlsGWidth = controlsGroupWrapper()!.clientWidth;
-            if (controlsGWidth + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+            if (controlsGWidth + controls > containerRef()!.clientWidth) {
               setVisibleSelectForGroups(true);
             } else {
               setVisibleSelectForGroups(false);
             }
             setControlsGroupWrapperWidth(controlsGWidth);
           } else {
-            if (controlsGroupWrapperWidth() + CONTROLS_WIDTH > containerRef()!.clientWidth) {
+            if (controlsGroupWrapperWidth() + controls > containerRef()!.clientWidth) {
               setVisibleSelectForGroups(true);
             } else {
               setVisibleSelectForGroups(false);
@@ -415,8 +534,6 @@ const Explore = (props: Props) => {
     if (fullDataReady()) {
       fetchItems();
     }
-
-    checkIfVisibleLoading(viewMode(), selectedGroup());
   });
 
   onCleanup(() => {
@@ -433,6 +550,7 @@ const Explore = (props: Props) => {
                 title="Index"
                 class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-1 me-lg-4 btnIconMobile ${styles.mobileToCBtn}`}
                 onClick={() => setOpenMenuStatus(true)}
+                disabled={numVisibleItems() === 0}
               >
                 <SVGIcon kind={SVGIconKind.ToC} />
               </button>
@@ -444,6 +562,15 @@ const Explore = (props: Props) => {
               initialSelectedGroup={selectedGroup}
               initialActiveFilters={activeFilters}
               applyFilters={applyFilters}
+              classified={classified()}
+              sorted={sorted()}
+              sortDirection={sortDirection()}
+              updateQueryString={updateQueryString}
+              setClassified={setClassified}
+              setSorted={setSorted}
+              setSortDirection={setSortDirection}
+              classifyOptions={classifyOptions()}
+              sortOptions={sortOptions()}
             />
 
             <div class="d-none d-lg-flex align-items-center">
@@ -467,9 +594,8 @@ const Explore = (props: Props) => {
                                 !isUndefined(selectedGroup()) && group.normalized_name === selectedGroup(),
                             }}
                             onClick={() => {
-                              checkIfVisibleLoading(viewMode(), group.normalized_name);
-                              updateQueryString(GROUP_PARAM, group.normalized_name);
                               setSelectedGroup(group.normalized_name);
+                              updateQueryString(GROUP_PARAM, group.normalized_name);
                             }}
                           >
                             {group.name}
@@ -477,6 +603,22 @@ const Explore = (props: Props) => {
                         );
                       }}
                     </For>
+                    <Show when={viewMode() === ViewMode.Card}>
+                      <button
+                        title="All"
+                        class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
+                        classList={{
+                          [`active text-white ${styles.active}`]:
+                            !isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup(),
+                        }}
+                        onClick={() => {
+                          setSelectedGroup(ALL_OPTION);
+                          updateQueryString(GROUP_PARAM, ALL_OPTION);
+                        }}
+                      >
+                        All
+                      </button>
+                    </Show>
                   </div>
                 </div>
                 {/* Only visible when btn grouped for groups overflows wrapper */}
@@ -488,8 +630,8 @@ const Explore = (props: Props) => {
                     aria-label="Group"
                     onChange={(e) => {
                       const group = e.currentTarget.value;
-                      updateQueryString(GROUP_PARAM, group);
                       setSelectedGroup(group);
+                      updateQueryString(GROUP_PARAM, group);
                     }}
                   >
                     <For each={props.initialData.groups}>
@@ -497,6 +639,9 @@ const Explore = (props: Props) => {
                         return <option value={group.normalized_name}>{group.name}</option>;
                       }}
                     </For>
+                    <Show when={viewMode() === ViewMode.Card}>
+                      <option value={ALL_OPTION}>All</option>
+                    </Show>
                   </select>
                 </div>
               </Show>
@@ -524,9 +669,8 @@ const Explore = (props: Props) => {
                       }}
                       onClick={() => {
                         if (!(value === viewMode())) {
-                          checkIfVisibleLoading(value, selectedGroup());
-                          updateQueryString(VIEW_MODE_PARAM, value);
                           setViewMode(value);
+                          updateQueryString(VIEW_MODE_PARAM, value);
                         }
                       }}
                     >
@@ -537,35 +681,95 @@ const Explore = (props: Props) => {
               </For>
             </div>
             <div class="d-none d-lg-flex align-items-center">
-              <Show when={viewMode() === ViewMode.Grid}>
-                <div class={styles.btnGroupLegend}>
-                  <small class="text-muted me-2">ZOOM:</small>
-                </div>
-                <div class="d-flex flex-row">
-                  <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
-                    <button
-                      title="Increase zoom level"
-                      class="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoom() === 0}
-                      onClick={() => {
-                        updateZoom(zoom() - 1);
-                      }}
-                    >
-                      <div class={styles.btnSymbol}>-</div>
-                    </button>
-                    <button
-                      title="Decrease zoom level"
-                      class="btn btn-outline-primary rounded-0 fw-semibold"
-                      disabled={zoom() === 10}
-                      onClick={() => {
-                        updateZoom(zoom() + 1);
-                      }}
-                    >
-                      <div class={styles.btnSymbol}>+</div>
-                    </button>
+              <Switch>
+                <Match when={viewMode() === ViewMode.Grid}>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted me-2">ZOOM:</small>
                   </div>
-                </div>
-              </Show>
+                  <div class="d-flex flex-row">
+                    <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                      <button
+                        title="Increase zoom level"
+                        class="btn btn-outline-primary rounded-0 fw-semibold"
+                        disabled={zoom() === 0}
+                        onClick={() => {
+                          updateZoom(zoom() - 1);
+                        }}
+                      >
+                        <div class={styles.btnSymbol}>-</div>
+                      </button>
+                      <button
+                        title="Decrease zoom level"
+                        class="btn btn-outline-primary rounded-0 fw-semibold"
+                        disabled={zoom() === 10}
+                        onClick={() => {
+                          updateZoom(zoom() + 1);
+                        }}
+                      >
+                        <div class={styles.btnSymbol}>+</div>
+                      </button>
+                    </div>
+                  </div>
+                </Match>
+                <Match when={viewMode() === ViewMode.Card}>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted text-uppercase me-2">Classify:</small>
+                  </div>
+                  <select
+                    id="classified"
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
+                    value={classified()}
+                    aria-label="Classify"
+                    onChange={(e) => {
+                      const classifiedOpt = e.currentTarget.value as ClassifiedOption;
+                      setClassified(classifiedOpt);
+                      updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
+                    }}
+                  >
+                    <For each={classifyOptions()}>
+                      {(opt: ClassifiedOption) => {
+                        const label = Object.keys(ClassifiedOption)[Object.values(ClassifiedOption).indexOf(opt)];
+                        return <option value={opt}>{label}</option>;
+                      }}
+                    </For>
+                  </select>
+                  <div class={styles.btnGroupLegend}>
+                    <small class="text-muted text-uppercase me-2">Sort:</small>
+                  </div>
+                  <select
+                    id="sorted"
+                    class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.midSelect}`}
+                    value={`${sorted()}_${sortDirection()}`}
+                    aria-label="Sort"
+                    onChange={(e) => {
+                      const sortValue = e.currentTarget.value;
+                      const sortOpt = sortValue.split('_');
+
+                      batch(() => {
+                        setSorted(sortOpt[0] as SortOption);
+                        setSortDirection(sortOpt[1] as SortDirection);
+                      });
+                      updateQueryString('sort', sortValue);
+                    }}
+                  >
+                    <For each={sortOptions()}>
+                      {(opt: SortOption) => {
+                        return (
+                          <For each={Object.values(SortDirection)}>
+                            {(direction: string) => {
+                              return (
+                                <option value={`${opt}_${direction}`}>
+                                  {SORT_OPTION_LABEL[opt]} ({direction})
+                                </option>
+                              );
+                            }}
+                          </For>
+                        );
+                      }}
+                    </For>
+                  </select>
+                </Match>
+              </Switch>
             </div>
           </div>
           <Show when={!isUndefined(props.initialData.groups)}>
@@ -580,10 +784,11 @@ const Explore = (props: Props) => {
                 aria-label="Group"
                 onChange={(e) => {
                   const group = e.currentTarget.value;
-                  updateQueryString(GROUP_PARAM, group);
                   setSelectedGroup(group);
+                  updateQueryString(GROUP_PARAM, group);
                 }}
               >
+                {/* Do not display All option for mobile */}
                 <For each={props.initialData.groups}>
                   {(group: Group) => {
                     return <option value={group.normalized_name}>{group.name}</option>;
@@ -629,14 +834,18 @@ const Explore = (props: Props) => {
         <Show when={!isUndefined(point())}>
           <Switch>
             <Match when={SMALL_DEVICES_BREAKPOINTS.includes(point()!)}>
-              <Show when={readyData()}>
+              <Show when={readyData() && !isUndefined(groupsData())}>
                 <div ref={setContainerRef}>
                   <ExploreMobileIndex
                     openMenuStatus={openMenuStatus()}
                     closeMenuStatus={closeMenuStatus}
-                    data={{ ...groupsData() }[selectedGroup() || 'default']}
+                    data={{ ...groupsData() }[selectedGroup() || ALL_OPTION]}
+                    cardData={{ ...cardData() }[selectedGroup() || ALL_OPTION]}
+                    menu={!isUndefined(cardMenu()) ? cardMenu()![selectedGroup() || ALL_OPTION] : undefined}
                     categories_overridden={props.initialData.categories_overridden}
-                    finishLoading={finishLoading}
+                    classified={classified()}
+                    sorted={sorted()}
+                    direction={sortDirection()}
                   />
                 </div>
               </Show>
@@ -650,24 +859,35 @@ const Explore = (props: Props) => {
                     '--card-size-height': `${ZOOM_LEVELS[zoom()][1]}px`,
                   }}
                   class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()}`}
-                  classList={{ [styles.loadingContent]: visibleLoading() }}
                 >
-                  {(visibleLoading() || !readyData()) && (
-                    <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />
-                  )}
-
                   <Show when={readyData()}>
                     <Show
                       when={!isUndefined(props.initialData.groups)}
                       fallback={
                         <Content
-                          data={{ ...groupsData() }.default}
+                          data={{ ...groupsData() }[ALL_OPTION]}
+                          cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
+                          menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
                           categories_overridden={props.initialData.categories_overridden}
-                          updateHash={updateHash}
-                          finishLoading={finishLoading}
+                          classified={classified()}
+                          sorted={sorted()}
+                          direction={sortDirection()}
                         />
                       }
                     >
+                      <div
+                        class={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION ? 'd-block' : 'd-none'}
+                      >
+                        <CardCategory
+                          initialIsVisible={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION}
+                          data={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
+                          menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
+                          group={ALL_OPTION}
+                          classified={classified()}
+                          sorted={sorted()}
+                          direction={sortDirection()}
+                        />
+                      </div>
                       <For each={props.initialData.groups}>
                         {(group: Group) => {
                           return (
@@ -675,9 +895,12 @@ const Explore = (props: Props) => {
                               group={group.normalized_name}
                               initialSelectedGroup={selectedGroup()}
                               data={{ ...groupsData() }[group.normalized_name]}
+                              cardData={!isUndefined(cardData()) ? cardData()![group.normalized_name] : undefined}
+                              menu={!isUndefined(cardMenu()) ? cardMenu()![group.normalized_name] : undefined}
                               categories_overridden={props.initialData.categories_overridden}
-                              updateHash={updateHash}
-                              finishLoading={finishLoading}
+                              classified={classified()}
+                              sorted={sorted()}
+                              direction={sortDirection()}
                             />
                           );
                         }}

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'solid-js';
 
+import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import Loading from '../common/Loading';
 import Footer from '../navigation/Footer';
 import styles from './Stats.module.css';
@@ -18,6 +19,7 @@ const StatsIndex = () => {
           }
         >
           <Content />
+          <ButtonToTopScroll />
         </Suspense>
       </main>
       <Footer />

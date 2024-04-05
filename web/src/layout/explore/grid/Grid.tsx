@@ -14,8 +14,8 @@ import getGridCategoryLayout, {
   SubcategoryDetails,
 } from '../../../utils/gridCategoryLayout';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
+import { CategoryData } from '../../../utils/itemsDataGetter';
 import ItemIterator from '../../../utils/itemsIterator';
-import { CategoryData } from '../../../utils/prepareData';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import SVGIcon from '../../common/SVGIcon';
 import { useGridWidth } from '../../stores/gridWidth';
@@ -98,6 +98,7 @@ const Grid = (props: Props) => {
   const data = () => props.initialCategoryData;
 
   createEffect(() => {
+    if (gridWidth() === 0) return;
     setGrid((prev) => {
       const newGrid = getGridCategoryLayout({
         containerWidth: gridWidth(),
@@ -148,8 +149,8 @@ const Grid = (props: Props) => {
                           <div>
                             <A
                               href={`/guide#${getNormalizedName({
-                                cat: props.categoryName,
-                                subcat: subcat.subcategoryName,
+                                title: props.categoryName,
+                                subtitle: subcat.subcategoryName,
                                 grouped: true,
                               })}`}
                               state={{ from: 'explore' }}

@@ -1,6 +1,4 @@
-import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import sortBy from 'lodash/sortBy';
 import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
 
 import { Item, Repository, SVGIconKind } from '../../../types';
@@ -28,7 +26,6 @@ const Card = (props: Props) => {
   const [stars, setStars] = createSignal<number>();
   const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
-  const [lastSecurityAudit, setLastSecurityAudit] = createSignal<string>();
 
   onMount(() => {
     setDescription(getItemDescription(props.item));
@@ -54,13 +51,6 @@ const Card = (props: Props) => {
     if (isUndefined(websiteUrl) || websiteUrl() === mainRepoUrl()) {
       if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
         setWebsiteUrl(props.item.crunchbase_data.homepage_url);
-      }
-    }
-
-    if (!isUndefined(props.item.audits) && !isEmpty(props.item.audits)) {
-      const lastAudit = sortBy(props.item.audits, 'date').reverse()[0];
-      if (lastAudit) {
-        setLastSecurityAudit(lastAudit.date);
       }
     }
   });
@@ -133,26 +123,31 @@ const Card = (props: Props) => {
               </ExternalLink>
             </Show>
 
-            <Show when={!isUndefined(props.item.accepted_at)}>
-              <div
-                title={`Accepted at ${props.item.accepted_at}`}
-                class="d-flex flex-row align-items-center accepted-date"
-              >
-                <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
-                <div>
-                  <small>{props.item.accepted_at!.split('-')[0]}</small>
+            <Switch>
+              <Match when={!isUndefined(props.item.accepted_at)}>
+                <div
+                  title={`Accepted at ${props.item.accepted_at}`}
+                  class="d-flex flex-row align-items-center accepted-date"
+                >
+                  <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
+                  <div>
+                    <small>{props.item.accepted_at!.split('-')[0]}</small>
+                  </div>
                 </div>
-              </div>
-            </Show>
+              </Match>
 
-            <Show when={!isUndefined(props.item.joined_at)}>
-              <div title={`Joined at ${props.item.joined_at}`} class="d-flex flex-row align-items-center accepted-date">
-                <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
-                <div>
-                  <small>{props.item.joined_at!.split('-')[0]}</small>
+              <Match when={!isUndefined(props.item.joined_at)}>
+                <div
+                  title={`Joined at ${props.item.joined_at}`}
+                  class="d-flex flex-row align-items-center accepted-date"
+                >
+                  <SVGIcon kind={SVGIconKind.Calendar} class="me-1 text-muted" />
+                  <div>
+                    <small>{props.item.joined_at!.split('-')[0]}</small>
+                  </div>
                 </div>
-              </div>
-            </Show>
+              </Match>
+            </Switch>
           </div>
         </div>
       </div>
@@ -162,9 +157,11 @@ const Card = (props: Props) => {
       >
         <div class="d-flex flex-row align-items-center text-nowrap">
           <Switch>
-            <Match when={!isUndefined(lastSecurityAudit())}>
-              <small class="me-1 text-black-50">Last audit:</small>
-              <div class="fw-semibold">{lastSecurityAudit()}</div>
+            <Match when={!isUndefined(stars())}>
+              <div class="d-flex flex-row align-items-baseline">
+                <small class="me-1 text-black-50">GitHub stars:</small>
+                <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
+              </div>
             </Match>
             <Match
               when={
@@ -176,12 +173,6 @@ const Card = (props: Props) => {
             >
               <small class="me-1 text-black-50">Funding:</small>
               <div class="fw-semibold">{prettifyNumber(props.item.crunchbase_data!.funding!)}</div>
-            </Match>
-            <Match when={!isUndefined(stars())}>
-              <div class="d-flex flex-row align-items-baseline">
-                <small class="me-1 text-black-50">GitHub stars:</small>
-                <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
-              </div>
             </Match>
           </Switch>
         </div>
