@@ -4,11 +4,11 @@ import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
 import { Accessor, batch, createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { ALL_OPTION, CLASSIFIED_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, SORT_OPTION_LABEL } from '../../../data';
+import { ALL_OPTION, CLASSIFY_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, SORT_OPTION_LABEL } from '../../../data';
 import {
   ActiveFilters,
   BaseData,
-  ClassifiedOption,
+  ClassifyOption,
   FilterCategory,
   FilterOption,
   FilterSection,
@@ -38,12 +38,12 @@ interface Props {
   initialActiveFilters: Accessor<ActiveFilters>;
   sorted: SortOption;
   sortDirection: SortDirection;
-  classified: ClassifiedOption;
+  classify: ClassifyOption;
   updateQueryString: (param: string, value: string) => void;
-  setClassified: (classified: ClassifiedOption) => void;
+  setClassify: (classify: ClassifyOption) => void;
   setSorted: (sorted: SortOption) => void;
   setSortDirection: (direction: SortDirection) => void;
-  classifyOptions: ClassifiedOption[];
+  classifyOptions: ClassifyOption[];
   sortOptions: SortOption[];
 }
 
@@ -242,19 +242,19 @@ const Filters = (props: Props) => {
                       <small class={`fw-semibold ${styles.selectTitle}`}>Classify:</small>
                     </div>
                     <select
-                      id="classified"
+                      id="classify"
                       class={`form-select form-select-sm text-muted rounded-0 me-4 ${styles.miniSelect}`}
-                      value={props.classified}
-                      aria-label="Classified"
+                      value={props.classify}
+                      aria-label="Classify"
                       onChange={(e) => {
-                        const classifiedOpt = e.currentTarget.value as ClassifiedOption;
-                        props.setClassified(classifiedOpt);
-                        props.updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
+                        const classifyOpt = e.currentTarget.value as ClassifyOption;
+                        props.setClassify(classifyOpt);
+                        props.updateQueryString(CLASSIFY_PARAM, classifyOpt);
                       }}
                     >
                       <For each={props.classifyOptions}>
-                        {(opt: ClassifiedOption) => {
-                          const label = Object.keys(ClassifiedOption)[Object.values(ClassifiedOption).indexOf(opt)];
+                        {(opt: ClassifyOption) => {
+                          const label = Object.keys(ClassifyOption)[Object.values(ClassifyOption).indexOf(opt)];
                           return <option value={opt}>{label}</option>;
                         }}
                       </For>

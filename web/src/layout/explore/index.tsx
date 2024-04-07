@@ -9,8 +9,8 @@ import { batch, createEffect, createSignal, For, Match, on, onCleanup, onMount, 
 
 import {
   ALL_OPTION,
-  CLASSIFIED_PARAM,
-  DEFAULT_CLASSIFIED,
+  CLASSIFY_PARAM,
+  DEFAULT_CLASSIFY,
   DEFAULT_SORT,
   DEFAULT_SORT_DIRECTION,
   GROUP_PARAM,
@@ -26,7 +26,7 @@ import {
   ActiveFilters,
   BaseData,
   CardMenu,
-  ClassifiedOption,
+  ClassifyOption,
   FilterCategory,
   Group,
   Item,
@@ -63,7 +63,7 @@ interface Props {
 
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
-const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 435 - 101; // + Classified/Sort - Zoom
+const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 435 - 101; // + Classify/Sort - Zoom
 const EXTRA_FILTERS = ['specification'];
 
 const Explore = (props: Props) => {
@@ -95,8 +95,8 @@ const Explore = (props: Props) => {
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
   const [visibleSelectForGroups, setVisibleSelectForGroups] = createSignal<boolean>(false);
-  const [classified, setClassified] = createSignal<ClassifiedOption>(
-    searchParams[CLASSIFIED_PARAM] ? (searchParams[CLASSIFIED_PARAM] as ClassifiedOption) : DEFAULT_CLASSIFIED
+  const [classify, setClassify] = createSignal<ClassifyOption>(
+    searchParams[CLASSIFY_PARAM] ? (searchParams[CLASSIFY_PARAM] as ClassifyOption) : DEFAULT_CLASSIFY
   );
   const [sorted, setSorted] = createSignal<SortOption>(
     searchParams[SORT_BY_PARAM] ? (searchParams[SORT_BY_PARAM] as SortOption) : DEFAULT_SORT
@@ -109,7 +109,7 @@ const Explore = (props: Props) => {
   const [classifyAndSortOptions, setClassifyAndSortOptions] = createSignal<{
     [key: string]: ClassifyAndSortOptions;
   }>({});
-  const [classifyOptions, setClassifyOptions] = createSignal<ClassifiedOption[]>(Object.values(ClassifiedOption));
+  const [classifyOptions, setClassifyOptions] = createSignal<ClassifyOption[]>(Object.values(ClassifyOption));
   const [sortOptions, setSortOptions] = createSignal<SortOption[]>(Object.values(SortOption));
   const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
 
@@ -168,7 +168,7 @@ const Explore = (props: Props) => {
     }
 
     batch(() => {
-      const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classified()!);
+      const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classify()!);
       checkVisibleItemsNumber(data.numItems);
       setGroupsData(data.grid);
       setCardData(data.card);
@@ -197,7 +197,7 @@ const Explore = (props: Props) => {
   };
 
   const checkIfAvaibleClassificationInGroup = (group: string): boolean => {
-    return classifyAndSortOptions()[group].classify.includes(classified());
+    return classifyAndSortOptions()[group].classify.includes(classify());
   };
 
   const checkIfAvaibleSortOptionInGroup = (group: string): boolean => {
@@ -212,11 +212,11 @@ const Explore = (props: Props) => {
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(location.search);
     const currentGroup = param === GROUP_PARAM ? value : selectedGroup() || ALL_OPTION;
-    const classifyOption = checkIfAvaibleClassificationInGroup(currentGroup) ? classified() : DEFAULT_CLASSIFIED;
+    const classifyOption = checkIfAvaibleClassificationInGroup(currentGroup) ? classify() : DEFAULT_CLASSIFY;
     const sortOption = checkIfAvaibleSortOptionInGroup(currentGroup) ? sorted() : DEFAULT_SORT;
     const sortDirectionOpt = checkIfAvaibleSortOptionInGroup(currentGroup) ? sortDirection() : DEFAULT_SORT_DIRECTION;
 
-    // Reset classified and sort when view mode or group changes
+    // Reset classify and sort when view mode or group changes
     if ([VIEW_MODE_PARAM, GROUP_PARAM].includes(param)) {
       // Remove all filters from current searchparams
       Object.values(FilterCategory).forEach((f: string) => {
@@ -227,7 +227,7 @@ const Explore = (props: Props) => {
       });
 
       batch(() => {
-        setClassified(classifyOption);
+        setClassify(classifyOption);
         setSorted(sortOption);
         setSortDirection(sortDirectionOpt);
 
@@ -249,7 +249,7 @@ const Explore = (props: Props) => {
       updatedSearchParams.set(param, value);
     }
     if (param === GROUP_PARAM && viewMode() === ViewMode.Card) {
-      updatedSearchParams.set(CLASSIFIED_PARAM, classifyOption);
+      updatedSearchParams.set(CLASSIFY_PARAM, classifyOption);
       updatedSearchParams.set(SORT_BY_PARAM, sortOption);
       updatedSearchParams.set(SORT_DIRECTION_PARAM, sortDirectionOpt);
 
@@ -259,7 +259,7 @@ const Explore = (props: Props) => {
     }
     if (param === VIEW_MODE_PARAM) {
       if (value === ViewMode.Grid) {
-        updatedSearchParams.delete(CLASSIFIED_PARAM);
+        updatedSearchParams.delete(CLASSIFY_PARAM);
         updatedSearchParams.delete(SORT_BY_PARAM);
         updatedSearchParams.delete(SORT_DIRECTION_PARAM);
         if (selectedGroup() === ALL_OPTION && !isUndefined(window.baseDS.groups)) {
@@ -268,7 +268,7 @@ const Explore = (props: Props) => {
           setSelectedGroup(firstGroup);
         }
       } else {
-        updatedSearchParams.set(CLASSIFIED_PARAM, classifyOption);
+        updatedSearchParams.set(CLASSIFY_PARAM, classifyOption);
         updatedSearchParams.set(SORT_BY_PARAM, sortOption);
         updatedSearchParams.set(SORT_DIRECTION_PARAM, DEFAULT_SORT_DIRECTION);
       }
@@ -319,7 +319,7 @@ const Explore = (props: Props) => {
       params.set(VIEW_MODE_PARAM, viewMode());
 
       if (viewMode() === ViewMode.Card) {
-        params.set(CLASSIFIED_PARAM, classified());
+        params.set(CLASSIFY_PARAM, classify());
         params.set(SORT_BY_PARAM, sorted());
         params.set(SORT_DIRECTION_PARAM, sortDirection());
       }
@@ -355,7 +355,7 @@ const Explore = (props: Props) => {
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
         batch(() => {
-          const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+          const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classify()!);
           checkVisibleItemsNumber(data.numItems);
           setGroupsData(data.grid);
           setCardData(data.card);
@@ -395,9 +395,9 @@ const Explore = (props: Props) => {
   );
 
   createEffect(
-    on(classified, () => {
+    on(classify, () => {
       batch(() => {
-        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classified()!);
+        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classify()!);
         setCardData(data.card);
         setCardMenu(data.menu);
       });
@@ -411,7 +411,7 @@ const Explore = (props: Props) => {
           applyFilters(activeFilters());
         } else {
           batch(() => {
-            const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classified()!);
+            const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classify()!);
             checkVisibleItemsNumber(data.numItems);
             setGroupsData(data.grid);
             setCardData(data.card);
@@ -461,7 +461,7 @@ const Explore = (props: Props) => {
   const applyFilters = (newFilters: ActiveFilters) => {
     batch(() => {
       setActiveFilters(newFilters);
-      const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classified()!);
+      const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classify()!);
       checkVisibleItemsNumber(data.numItems);
       setGroupsData(data.grid);
       setCardData(data.card);
@@ -562,11 +562,11 @@ const Explore = (props: Props) => {
               initialSelectedGroup={selectedGroup}
               initialActiveFilters={activeFilters}
               applyFilters={applyFilters}
-              classified={classified()}
+              classify={classify()}
               sorted={sorted()}
               sortDirection={sortDirection()}
               updateQueryString={updateQueryString}
-              setClassified={setClassified}
+              setClassify={setClassify}
               setSorted={setSorted}
               setSortDirection={setSortDirection}
               classifyOptions={classifyOptions()}
@@ -716,19 +716,19 @@ const Explore = (props: Props) => {
                     <small class="text-muted text-uppercase me-2">Classify:</small>
                   </div>
                   <select
-                    id="classified"
+                    id="classify"
                     class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
-                    value={classified()}
+                    value={classify()}
                     aria-label="Classify"
                     onChange={(e) => {
-                      const classifiedOpt = e.currentTarget.value as ClassifiedOption;
-                      setClassified(classifiedOpt);
-                      updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
+                      const classifyOpt = e.currentTarget.value as ClassifyOption;
+                      setClassify(classifyOpt);
+                      updateQueryString(CLASSIFY_PARAM, classifyOpt);
                     }}
                   >
                     <For each={classifyOptions()}>
-                      {(opt: ClassifiedOption) => {
-                        const label = Object.keys(ClassifiedOption)[Object.values(ClassifiedOption).indexOf(opt)];
+                      {(opt: ClassifyOption) => {
+                        const label = Object.keys(ClassifyOption)[Object.values(ClassifyOption).indexOf(opt)];
                         return <option value={opt}>{label}</option>;
                       }}
                     </For>
@@ -843,7 +843,7 @@ const Explore = (props: Props) => {
                     cardData={{ ...cardData() }[selectedGroup() || ALL_OPTION]}
                     menu={!isUndefined(cardMenu()) ? cardMenu()![selectedGroup() || ALL_OPTION] : undefined}
                     categories_overridden={props.initialData.categories_overridden}
-                    classified={classified()}
+                    classify={classify()}
                     sorted={sorted()}
                     direction={sortDirection()}
                   />
@@ -869,7 +869,7 @@ const Explore = (props: Props) => {
                           cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
                           menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
                           categories_overridden={props.initialData.categories_overridden}
-                          classified={classified()}
+                          classify={classify()}
                           sorted={sorted()}
                           direction={sortDirection()}
                         />
@@ -883,7 +883,7 @@ const Explore = (props: Props) => {
                           data={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
                           menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
                           group={ALL_OPTION}
-                          classified={classified()}
+                          classify={classify()}
                           sorted={sorted()}
                           direction={sortDirection()}
                         />
@@ -898,7 +898,7 @@ const Explore = (props: Props) => {
                               cardData={!isUndefined(cardData()) ? cardData()![group.normalized_name] : undefined}
                               menu={!isUndefined(cardMenu()) ? cardMenu()![group.normalized_name] : undefined}
                               categories_overridden={props.initialData.categories_overridden}
-                              classified={classified()}
+                              classify={classify()}
                               sorted={sorted()}
                               direction={sortDirection()}
                             />

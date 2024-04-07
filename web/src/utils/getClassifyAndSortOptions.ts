@@ -1,23 +1,23 @@
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
 
-import { BaseItem, ClassifiedOption, Item, SortOption } from '../types';
+import { BaseItem, ClassifyOption, Item, SortOption } from '../types';
 import itemsDataGetter from './itemsDataGetter';
 
 export interface ClassifyAndSortOptions {
-  classify: ClassifiedOption[];
+  classify: ClassifyOption[];
   sort: SortOption[];
 }
 
 const getOptions = (items: (BaseItem | Item)[]): ClassifyAndSortOptions => {
-  const classify: ClassifiedOption[] = [ClassifiedOption.None, ClassifiedOption.Category];
+  const classify: ClassifyOption[] = [ClassifyOption.None, ClassifyOption.Category];
   const sort: SortOption[] = [SortOption.Name];
 
   if (some(items, (i: Item) => !isUndefined(i.maturity))) {
-    classify.push(ClassifiedOption.Maturity);
+    classify.push(ClassifyOption.Maturity);
   }
   if (some(items, (i: Item) => !isUndefined(i.tag))) {
-    classify.push(ClassifiedOption.Tag);
+    classify.push(ClassifyOption.Tag);
   }
 
   if (some(items, (i: Item) => !isUndefined(i.repositories))) {

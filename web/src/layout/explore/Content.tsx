@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 
 import { ALL_OPTION } from '../../data';
-import { CardMenu, ClassifiedOption, SortDirection, SortOption, ViewMode } from '../../types';
+import { CardMenu, ClassifyOption, SortDirection, SortOption, ViewMode } from '../../types';
 import { CategoriesData } from '../../utils/itemsDataGetter';
 import { useViewMode } from '../stores/viewMode';
 import CardCategory from './card';
@@ -13,7 +13,7 @@ interface Props {
   data: CategoriesData;
   cardData: unknown;
   categories_overridden?: string[];
-  classified: ClassifiedOption;
+  classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
   menu?: CardMenu;
@@ -31,7 +31,7 @@ const Content = (props: Props) => {
           group={props.group || ALL_OPTION}
           data={props.cardData}
           menu={props.menu}
-          classified={props.classified}
+          classify={props.classify}
           sorted={props.sorted}
           direction={props.direction}
         />

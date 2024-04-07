@@ -492,7 +492,7 @@ export enum FilterTitle {
   Organization = 'Organization',
 }
 
-export enum ClassifiedOption {
+export enum ClassifyOption {
   None = 'none',
   Category = 'category',
   Maturity = 'maturity',

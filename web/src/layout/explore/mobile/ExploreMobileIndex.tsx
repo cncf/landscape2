@@ -3,7 +3,7 @@ import isUndefined from 'lodash/isUndefined';
 import { For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS } from '../../../data';
-import { CardMenu, ClassifiedOption, Item, SortDirection, SortOption, ViewMode } from '../../../types';
+import { CardMenu, ClassifyOption, Item, SortDirection, SortOption, ViewMode } from '../../../types';
 import getGroupName from '../../../utils/getGroupName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import { CategoriesData } from '../../../utils/itemsDataGetter';
@@ -27,7 +27,7 @@ interface Props {
   cardData: unknown;
   menu?: CardMenu;
   categories_overridden?: string[];
-  classified: ClassifiedOption;
+  classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
 }
@@ -134,7 +134,7 @@ const ExploreMobileIndex = (props: Props) => {
         </Match>
         <Match when={selectedViewMode() === ViewMode.Card}>
           <Switch>
-            <Match when={props.classified === ClassifiedOption.Category}>
+            <Match when={props.classify === ClassifyOption.Category}>
               <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
                 <For each={Object.keys(menu()!)}>
                   {(title) => {
@@ -181,7 +181,7 @@ const ExploreMobileIndex = (props: Props) => {
                 </For>
               </Show>
             </Match>
-            <Match when={props.classified === ClassifiedOption.Maturity}>
+            <Match when={props.classify === ClassifyOption.Maturity}>
               <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
                 <For each={Object.keys(menu()!)}>
                   {(title) => {
@@ -193,7 +193,7 @@ const ExploreMobileIndex = (props: Props) => {
                           if (items().length === 0) return null;
 
                           const id = getNormalizedName({
-                            title: ClassifiedOption.Maturity,
+                            title: ClassifyOption.Maturity,
                             subtitle: subtitle,
                             grouped: true,
                           });
@@ -218,7 +218,7 @@ const ExploreMobileIndex = (props: Props) => {
                 </For>
               </Show>
             </Match>
-            <Match when={props.classified === ClassifiedOption.None}>
+            <Match when={props.classify === ClassifyOption.None}>
               <CardsList items={cardData() as Item[]} sorted={props.sorted} direction={props.direction} />
             </Match>
           </Switch>
