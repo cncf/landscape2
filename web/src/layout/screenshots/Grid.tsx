@@ -10,8 +10,8 @@ import getGridCategoryLayout, {
   LayoutColumn,
   SubcategoryDetails,
 } from '../../utils/gridCategoryLayout';
+import { CategoryData } from '../../utils/itemsDataGetter';
 import ItemIterator from '../../utils/itemsIterator';
-import { CategoryData } from '../../utils/prepareData';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
 import GridItem from '../explore/grid/GridItem';
 import styles from './Grid.module.css';

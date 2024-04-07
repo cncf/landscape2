@@ -26,7 +26,7 @@ const ItemModal = () => {
   createEffect(() => {
     async function fetchItemInfo() {
       try {
-        const itemTmp = await itemsDataGetter.findById(visibleItemId()! as string);
+        const itemTmp = await itemsDataGetter.getItemById(visibleItemId()! as string);
         setItemInfo(itemTmp);
       } catch {
         setItemInfo(null);

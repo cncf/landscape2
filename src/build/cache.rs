@@ -1,6 +1,6 @@
 //! This module defines the cache used to cache files across builds.
 
-use anyhow::{format_err, Result};
+use anyhow::{bail, Result};
 use std::{fs, io::Write, path::PathBuf, time::SystemTime};
 use tracing::instrument;
 
@@ -30,9 +30,9 @@ impl Cache {
             return Ok(Self { cache_dir });
         }
 
-        Err(format_err!(
+        bail!(
             "error setting up cache: no cache directory provided and user's cache directory could not be found"
-        ))
+        );
     }
 
     /// Read data from the cache file provided if available.

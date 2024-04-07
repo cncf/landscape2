@@ -13,7 +13,7 @@ use super::{
     settings::{self, LandscapeSettings},
 };
 use crate::DataSource;
-use anyhow::{format_err, Result};
+use anyhow::{bail, Result};
 use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -35,7 +35,7 @@ pub(crate) struct LandscapeData {
 
 impl LandscapeData {
     /// Create a new landscape data instance from the source provided.
-    #[instrument(err)]
+    #[instrument(skip_all, err)]
     pub(crate) async fn new(src: &DataSource) -> Result<Self> {
         // Try from file
         if let Some(file) = &src.data_file {
@@ -49,7 +49,7 @@ impl LandscapeData {
             return LandscapeData::new_from_url(url).await;
         };
 
-        Err(format_err!("data file or url not provided"))
+        bail!("data file or url not provided");
     }
 
     /// Create a new landscape data instance from the file provided.
@@ -65,10 +65,10 @@ impl LandscapeData {
     async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
+            bail!(
                 "unexpected status code getting landscape data file: {}",
                 resp.status()
-            ));
+            );
         }
         let raw_data = resp.text().await?;
         let legacy_data: legacy::LandscapeData = serde_yaml::from_str(&raw_data)?;
@@ -349,6 +349,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.incubating_at = extra.incubating;
                         item.latest_annual_review_at = extra.annual_review_date;
                         item.latest_annual_review_url = extra.annual_review_url;
+                        item.linkedin_url = extra.linkedin_url;
                         item.mailing_list_url = extra.mailing_list_url;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
@@ -509,6 +510,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub joined_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub linkedin_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
@@ -706,7 +710,7 @@ mod legacy {
     //! legacy format and convert it to the new one.
 
     use super::{validate_url, ItemAudit};
-    use anyhow::{format_err, Context, Result};
+    use anyhow::{bail, format_err, Context, Result};
     use chrono::NaiveDate;
     use lazy_static::lazy_static;
     use regex::Regex;
@@ -724,7 +728,7 @@ mod legacy {
             for (category_index, category) in self.landscape.iter().enumerate() {
                 // Check category name
                 if category.name.is_empty() {
-                    return Err(format_err!("category [{category_index}] name is required"));
+                    bail!("category [{category_index}] name is required");
                 }
 
                 for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
@@ -733,10 +737,10 @@ mod legacy {
 
                     // Check subcategory name
                     if subcategory.name.is_empty() {
-                        return Err(format_err!(
+                        bail!(
                             "subcategory [{subcategory_index}] name is required (category: [{}]) ",
                             category.name
-                        ));
+                        );
                     }
 
                     for (item_index, item) in subcategory.items.iter().enumerate() {
@@ -854,6 +858,7 @@ mod legacy {
         pub gitter_url: Option<String>,
         pub graduated: Option<NaiveDate>,
         pub incubating: Option<NaiveDate>,
+        pub linkedin_url: Option<String>,
         pub mailing_list_url: Option<String>,
         pub slack_url: Option<String>,
         pub specification: Option<bool>,
@@ -905,6 +910,7 @@ mod legacy {
                 ("discord", &extra.discord_url),
                 ("docker", &extra.docker_url),
                 ("github_discussions", &extra.github_discussions_url),
+                ("linkedin", &extra.linkedin_url),
                 ("mailing_list", &extra.mailing_list_url),
                 ("slack", &extra.slack_url),
                 ("stack_overflow", &extra.stack_overflow_url),
@@ -935,7 +941,7 @@ mod legacy {
 /// Validate the url provided.
 pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
     if let Some(url) = url {
-        let invalid_url = |reason: &str| Err(format_err!("invalid {kind} url: {reason}"));
+        let invalid_url = |reason: &str| bail!("invalid {kind} url: {reason}");
 
         // Parse url
         let url = match Url::parse(url) {

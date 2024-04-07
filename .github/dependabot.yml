@@ -6,7 +6,7 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "markdown"
-      - dependency-name: "octorust"
+      - dependency-name: "usvg"
     groups:
       cli:
         patterns:

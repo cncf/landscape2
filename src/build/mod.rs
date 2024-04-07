@@ -14,7 +14,7 @@ use crate::{
     build::api::{Api, ApiSources},
     serve, BuildArgs, GuideSource, LogosSource, ServeArgs,
 };
-use anyhow::{format_err, Context, Result};
+use anyhow::{bail, Context, Result};
 use askama::Template;
 use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
 pub(crate) use data::LandscapeData;
@@ -127,7 +127,7 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
 
     // Prepare items logos and copy them to the output directory
-    prepare_items_logos(&cache, &args.logos_source, &mut landscape_data, &args.output_dir).await?;
+    prepare_items_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
 
     // Collect CLOMonitor reports summaries and copy them to the output directory
     collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
@@ -198,9 +198,7 @@ fn check_web_assets() -> Result<()> {
     debug!("checking web assets are present");
 
     if !WebAssets::iter().any(|path| path.starts_with("assets/")) {
-        return Err(format_err!(
-            "web assets not found, please make sure they have been built"
-        ));
+        bail!("web assets not found, please make sure they have been built");
     }
 
     Ok(())
@@ -242,7 +240,7 @@ async fn collect_clomonitor_reports(
 
             // Copy report summary to the output dir
             let file_name = format!("clomonitor_{foundation}_{project_name}.svg");
-            let mut file = match fs::File::create(output_dir.join(IMAGES_PATH).join(&file_name)) {
+            let mut file = match File::create(output_dir.join(IMAGES_PATH).join(&file_name)) {
                 Ok(file) => file,
                 Err(err) => {
                     error!(?err, ?file_name, "error creating report summary file");
@@ -445,7 +443,7 @@ fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
 }
 
 /// Prepare guide and copy it to the output directory.
-#[instrument(skip(output_dir), err)]
+#[instrument(skip_all, err)]
 async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<Option<LandscapeGuide>> {
     debug!("preparing guide");
 
@@ -462,7 +460,6 @@ async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<
 /// logo reference on each landscape item.
 #[instrument(skip_all, err)]
 async fn prepare_items_logos(
-    cache: &Cache,
     logos_source: &LogosSource,
     landscape_data: &mut LandscapeData,
     output_dir: &Path,
@@ -479,29 +476,27 @@ async fn prepare_items_logos(
     let logos: HashMap<String, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
             // Prepare logo
-            let cache = cache.clone();
             let http_client = http_client.clone();
             let logos_source = logos_source.clone();
             let file_name = item.logo.clone();
-            let logo = match tokio::spawn(async move {
-                prepare_logo(&cache, http_client, &logos_source, &file_name).await
-            })
-            .await
-            {
-                Ok(Ok(logo)) => logo,
-                Ok(Err(err)) => {
-                    error!(?err, ?item.logo, "error preparing logo");
-                    return (item.id.clone(), None);
-                }
-                Err(err) => {
-                    error!(?err, ?item.logo, "error executing prepare_logo task");
-                    return (item.id.clone(), None);
-                }
-            };
+            let logo =
+                match tokio::spawn(async move { prepare_logo(http_client, &logos_source, &file_name).await })
+                    .await
+                {
+                    Ok(Ok(logo)) => logo,
+                    Ok(Err(err)) => {
+                        error!(?err, ?item.logo, "error preparing logo");
+                        return (item.id.clone(), None);
+                    }
+                    Err(err) => {
+                        error!(?err, ?item.logo, "error executing prepare_logo task");
+                        return (item.id.clone(), None);
+                    }
+                };
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);
-            let mut file = match fs::File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
+            let mut file = match File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
                 Ok(file) => file,
                 Err(err) => {
                     error!(?err, ?file_name, "error creating logo file in output dir");
@@ -545,7 +540,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 
     // Launch server to serve landscape just built
     let Some(port) = find_available_port() else {
-        return Err(format_err!("could not find an available port to listen on"));
+        bail!("could not find an available port to listen on");
     };
     let svr_addr = format!("127.0.0.1:{port}");
     let svr_addr_copy = svr_addr.clone();
@@ -631,17 +626,14 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
         // Fetch image from url
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
-                "unexpected status ({}) code getting logo {url}",
-                resp.status()
-            ));
+            bail!("unexpected status ({}) code getting logo {url}", resp.status());
         }
         let img = resp.bytes().await?.to_vec();
 
         // Write image to output dir
         let url = Url::parse(url).context("invalid image url")?;
         let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
-            return Err(format_err!("invalid image url: {url}"));
+            bail!("invalid image url: {url}");
         };
         let img_path = Path::new(IMAGES_PATH).join(file_name);
         File::create(output_dir.join(&img_path))?.write_all(&img)?;
@@ -679,7 +671,7 @@ struct Index<'a> {
 }
 
 /// Render index file and write it to the output directory.
-#[instrument(skip(datasets, output_dir), err)]
+#[instrument(skip_all, err)]
 fn render_index(
     analytics: &Option<Analytics>,
     datasets: &Datasets,

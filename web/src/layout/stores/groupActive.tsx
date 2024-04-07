@@ -3,7 +3,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
 
-import { GROUP_PARAM } from '../../data';
+import { ALL_OPTION, GROUP_PARAM } from '../../data';
 import { Group } from '../../types';
 
 const getInitialGroupName = (groupParam: string | null): string | undefined => {
@@ -19,7 +19,7 @@ const getInitialGroupName = (groupParam: string | null): string | undefined => {
       return firstGroup;
     } else {
       const selectedGroup = window.baseDS.groups.find((group: Group) => group.normalized_name === groupParam);
-      if (!isUndefined(selectedGroup)) {
+      if (!isUndefined(selectedGroup) || groupParam === ALL_OPTION) {
         return groupParam;
       } else {
         if (isExplore()) {

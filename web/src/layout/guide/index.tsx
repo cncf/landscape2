@@ -9,6 +9,7 @@ import getNormalizedName from '../../utils/getNormalizedName';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
 import scrollToTop from '../../utils/scrollToTop';
+import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import Loading from '../common/Loading';
 import { Sidebar } from '../common/Sidebar';
 import SVGIcon from '../common/SVGIcon';
@@ -45,14 +46,14 @@ const GuideIndex = () => {
         cat.subcategories.forEach((subcat: SubcategoryGuide) => {
           subcategories.push({
             title: subcat.subcategory,
-            id: getNormalizedName({ cat: cat.category, subcat: subcat.subcategory, grouped: true }),
+            id: getNormalizedName({ title: cat.category, subtitle: subcat.subcategory, grouped: true }),
           });
         });
       }
 
       content.push({
         title: cat.category,
-        id: getNormalizedName({ cat: cat.category }),
+        id: getNormalizedName({ title: cat.category }),
         options: subcategories,
       });
     });
@@ -201,7 +202,7 @@ const GuideIndex = () => {
               <div class={`position-relative ${styles.guide}`}>
                 <For each={guide()!.categories}>
                   {(cat, index) => {
-                    const id = getNormalizedName({ cat: cat.category });
+                    const id = getNormalizedName({ title: cat.category });
                     const hasSubcategories = !isUndefined(cat.subcategories) && cat.subcategories.length > 0;
 
                     return (
@@ -222,8 +223,8 @@ const GuideIndex = () => {
                           <For each={cat.subcategories}>
                             {(subcat, index) => {
                               const id = getNormalizedName({
-                                cat: cat.category,
-                                subcat: subcat.subcategory,
+                                title: cat.category,
+                                subtitle: subcat.subcategory,
                                 grouped: true,
                               });
 
@@ -255,6 +256,7 @@ const GuideIndex = () => {
             </div>
           </Show>
         </div>
+        <ButtonToTopScroll />
       </main>
       <Show when={!isUndefined(guide())}>
         <Footer />

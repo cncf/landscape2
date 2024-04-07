@@ -3,7 +3,7 @@
 //! as the functionality used to collect that information.
 
 use super::{cache::Cache, LandscapeData};
-use anyhow::{format_err, Result};
+use anyhow::{bail, format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
@@ -377,7 +377,7 @@ impl CB for CBApi {
         );
         let response = self.http_client.get(url).send().await?;
         if response.status() != StatusCode::OK {
-            return Err(format_err!("unexpected status code: {:?}", response.status()));
+            bail!("unexpected status code: {:?}", response.status());
         }
         let org_entity: CBOrganizationEntity = response.json().await?;
         Ok(org_entity)
