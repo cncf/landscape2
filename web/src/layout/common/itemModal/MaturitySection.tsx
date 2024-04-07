@@ -21,7 +21,7 @@ const MaturitySection = (props: Props) => {
       }
     >
       <div class={`position-relative border ${props.class}`}>
-        <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Maturity</div>
+        <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>成熟度</div>
 
         <div class="position-relative mt-2">
           <div class="d-flex flex-row justify-content-between">

@@ -576,7 +576,7 @@ const Explore = (props: Props) => {
             <div class="d-none d-lg-flex align-items-center">
               <Show when={!isUndefined(props.initialData.groups)}>
                 <div class={styles.btnGroupLegend}>
-                  <small class="text-muted me-2">GROUP:</small>
+                  <small class="text-muted me-2">类别:</small>
                 </div>
                 <div
                   ref={setControlsGroupWrapper}
@@ -647,7 +647,7 @@ const Explore = (props: Props) => {
               </Show>
             </div>
             <div class={`d-none d-md-block ms-0 ms-md-auto ms-lg-0 ${styles.btnGroupLegend}`}>
-              <small class="text-muted text-nowrap me-2">VIEW MODE:</small>
+              <small class="text-muted text-nowrap me-2">视图模式:</small>
             </div>
             <div
               class={`btn-group btn-group-sm me-0 me-lg-4 ms-auto ms-md-0 ${styles.btnGroup}`}
@@ -658,6 +658,20 @@ const Explore = (props: Props) => {
                 {(mode) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const value = (ViewMode as any)[mode];
+
+                  // 根据不同的模式设置按钮名称
+                  let buttonText;
+                  switch (mode) {
+                    case 'Grid':
+                      buttonText = '网格';
+                      break;
+                    case 'Card':
+                      buttonText = '卡片';
+                      break;
+                    // 添加更多模式的处理
+                    default:
+                      buttonText = mode;
+                  }
 
                   return (
                     <button
@@ -674,108 +688,48 @@ const Explore = (props: Props) => {
                         }
                       }}
                     >
-                      {mode}
+                      {buttonText}
                     </button>
                   );
                 }}
               </For>
             </div>
             <div class="d-none d-lg-flex align-items-center">
-              <Switch>
-                <Match when={viewMode() === ViewMode.Grid}>
-                  <div class={styles.btnGroupLegend}>
-                    <small class="text-muted me-2">ZOOM:</small>
-                  </div>
-                  <div class="d-flex flex-row">
-                    <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
-                      <button
-                        title="Increase zoom level"
-                        class="btn btn-outline-primary rounded-0 fw-semibold"
-                        disabled={zoom() === 0}
-                        onClick={() => {
-                          updateZoom(zoom() - 1);
-                        }}
-                      >
-                        <div class={styles.btnSymbol}>-</div>
-                      </button>
-                      <button
-                        title="Decrease zoom level"
-                        class="btn btn-outline-primary rounded-0 fw-semibold"
-                        disabled={zoom() === 10}
-                        onClick={() => {
-                          updateZoom(zoom() + 1);
-                        }}
-                      >
-                        <div class={styles.btnSymbol}>+</div>
-                      </button>
-                    </div>
-                  </div>
-                </Match>
-                <Match when={viewMode() === ViewMode.Card}>
-                  <div class={styles.btnGroupLegend}>
-                    <small class="text-muted text-uppercase me-2">Classify:</small>
-                  </div>
-                  <select
-                    id="classified"
-                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect} ${styles.miniSelect}`}
-                    value={classified()}
-                    aria-label="Classify"
-                    onChange={(e) => {
-                      const classifiedOpt = e.currentTarget.value as ClassifiedOption;
-                      setClassified(classifiedOpt);
-                      updateQueryString(CLASSIFIED_PARAM, classifiedOpt);
-                    }}
-                  >
-                    <For each={classifyOptions()}>
-                      {(opt: ClassifiedOption) => {
-                        const label = Object.keys(ClassifiedOption)[Object.values(ClassifiedOption).indexOf(opt)];
-                        return <option value={opt}>{label}</option>;
+              <Show when={viewMode() === ViewMode.Grid}>
+                <div class={styles.btnGroupLegend}>
+                  <small class="text-muted me-2">缩放:</small>
+                </div>
+                <div class="d-flex flex-row">
+                  <div class={`btn-group btn-group-sm ${styles.btnGroup}`}>
+                    <button
+                      title="Increase zoom level"
+                      class="btn btn-outline-primary rounded-0 fw-semibold"
+                      disabled={zoom() === 0}
+                      onClick={() => {
+                        updateZoom(zoom() - 1);
                       }}
-                    </For>
-                  </select>
-                  <div class={styles.btnGroupLegend}>
-                    <small class="text-muted text-uppercase me-2">Sort:</small>
-                  </div>
-                  <select
-                    id="sorted"
-                    class={`form-select form-select-sm border-primary text-primary rounded-0 ${styles.desktopSelect} ${styles.midSelect}`}
-                    value={`${sorted()}_${sortDirection()}`}
-                    aria-label="Sort"
-                    onChange={(e) => {
-                      const sortValue = e.currentTarget.value;
-                      const sortOpt = sortValue.split('_');
-
-                      batch(() => {
-                        setSorted(sortOpt[0] as SortOption);
-                        setSortDirection(sortOpt[1] as SortDirection);
-                      });
-                      updateQueryString('sort', sortValue);
-                    }}
-                  >
-                    <For each={sortOptions()}>
-                      {(opt: SortOption) => {
-                        return (
-                          <For each={Object.values(SortDirection)}>
-                            {(direction: string) => {
-                              return (
-                                <option value={`${opt}_${direction}`}>
-                                  {SORT_OPTION_LABEL[opt]} ({direction})
-                                </option>
-                              );
-                            }}
-                          </For>
-                        );
+                    >
+                      <div class={styles.btnSymbol}>-</div>
+                    </button>
+                    <button
+                      title="Decrease zoom level"
+                      class="btn btn-outline-primary rounded-0 fw-semibold"
+                      disabled={zoom() === 10}
+                      onClick={() => {
+                        updateZoom(zoom() + 1);
                       }}
-                    </For>
-                  </select>
-                </Match>
-              </Switch>
+                    >
+                      <div class={styles.btnSymbol}>+</div>
+                    </button>
+                  </div>
+                </div>
+              </Show>
             </div>
           </div>
           <Show when={!isUndefined(props.initialData.groups)}>
             <div class="d-flex d-lg-none align-items-center mt-3 mt-md-4 mt-lg-0 mb-2 mb-md-3 mb-lg-0">
               <div class={`d-none d-md-block ${styles.btnGroupLegend}`}>
-                <small class="text-muted me-2">GROUP:</small>
+                <small class="text-muted me-2">类别:</small>
               </div>
               <select
                 id="mobile-group"
@@ -813,18 +767,17 @@ const Explore = (props: Props) => {
           <div class="pt-5">
             <NoData>
               <>
-                <div class="fs-4">We couldn't find any items that match the criteria selected.</div>
+                <div class="fs-4">我们找不到任何符合所选条件的项目。</div>
                 <p class="h6 my-4 lh-base">
-                  You can update them and try again or{' '}
+                  您可以更新筛选条件，然后再试一次。{' '}
                   <button
                     type="button"
                     class="btn btn-link lh-1 p-0 text-reset align-baseline"
                     onClick={resetFilters}
                     aria-label="Reset filters"
                   >
-                    reset all
-                  </button>{' '}
-                  the filters.
+                    全部重置
+                  </button>
                 </p>
               </>
             </NoData>

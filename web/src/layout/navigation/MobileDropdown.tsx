@@ -47,7 +47,7 @@ const MobileDropdown = (props: Props) => {
             onClick={closeDropdown}
             end
           >
-            Explore
+            探索
           </A>
         </div>
         <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
@@ -59,7 +59,7 @@ const MobileDropdown = (props: Props) => {
               state={{ from: 'mobileHeader' }}
               onClick={closeDropdown}
             >
-              Guide
+              指南
             </A>
           </div>
         </Show>
@@ -70,7 +70,7 @@ const MobileDropdown = (props: Props) => {
             href="/stats"
             onClick={closeDropdown}
           >
-            Stats
+            统计数据
           </A>
         </div>
         <Show

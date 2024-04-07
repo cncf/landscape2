@@ -286,7 +286,7 @@ const Content = (props: Props) => {
         {/* Repositories */}
         <Show when={!isUndefined(itemInfo()!.repositories)}>
           <div class={`position-relative border ${styles.fieldset}`}>
-            <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
+            <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>代码仓库</div>
             <Show when={!isUndefined(mainRepo())}>
               <div class={`fw-bold text-uppercase mt-2 mb-3 ${styles.titleInSection}`}>Primary repository</div>
               <div class="d-flex flex-row align-items-center my-2">
@@ -404,7 +404,7 @@ const Content = (props: Props) => {
         {/* Security audits */}
         <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
           <div class={`position-relative border ${styles.fieldset}`}>
-            <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Security audits</div>
+            <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>安全审计</div>
             <div class="w-100">
               <table class={`table table-sm table-striped table-bordered mt-3 ${styles.tableLayout}`}>
                 <thead class={`text-uppercase text-muted ${styles.thead}`}>

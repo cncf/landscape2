@@ -90,7 +90,7 @@ const Header = () => {
                 }
               }}
             >
-              Explore
+              探索
             </button>
 
             <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
@@ -108,7 +108,7 @@ const Header = () => {
                   }
                 }}
               >
-                Guide
+                指南
               </button>
             </Show>
 
@@ -126,7 +126,7 @@ const Header = () => {
                 }
               }}
             >
-              Stats
+              统计数据
             </button>
           </div>
 

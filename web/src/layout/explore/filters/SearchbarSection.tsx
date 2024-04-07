@@ -193,7 +193,7 @@ const SearchbarSection = (props: Props) => {
                   when={visibleOptions().length > 0}
                   fallback={
                     <div class="py-4 text-center">
-                      We can't seem to find any result that match your search for <span class="fw-bold">{value()}</span>
+                      我们似乎找不到任何符合你搜索的结果 <span class="fw-bold">{value()}</span>
                     </div>
                   }
                 >

@@ -171,7 +171,7 @@ const Filters = (props: Props) => {
         >
           <div class="d-flex flex-row align-items-center">
             <SVGIcon kind={SVGIconKind.Filters} />
-            <div class="d-none d-lg-block fw-semibold ps-2">Filters</div>
+            <div class="d-none d-lg-block fw-semibold ps-2">筛选</div>
           </div>
         </button>
         <Show when={!isEmpty(props.initialActiveFilters())}>
@@ -184,7 +184,7 @@ const Filters = (props: Props) => {
         modalDialogClass={styles.modal}
         header={
           <div class="d-flex flex-row align-items-baseline">
-            <div>Filters</div>
+            <div>筛选</div>
             <button
               type="button"
               title="Reset filters"
@@ -195,7 +195,7 @@ const Filters = (props: Props) => {
               }}
               aria-label="Reset filters"
             >
-              (reset all)
+              (全部重置)
             </button>
           </div>
         }
@@ -216,7 +216,7 @@ const Filters = (props: Props) => {
                 }}
                 aria-label="Apply filters"
               >
-                Apply
+                应用
               </button>
             </div>
           </div>
@@ -300,7 +300,7 @@ const Filters = (props: Props) => {
               </Show>
             </div>
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
-              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
+              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>项目</div>
 
               <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <Section
@@ -348,7 +348,7 @@ const Filters = (props: Props) => {
             </Show>
 
             <Show when={visibleTitles().includes(FilterTitle.Organization)}>
-              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Organization}</div>
+              <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>组织</div>
 
               <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <SearchbarSection

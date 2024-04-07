@@ -202,7 +202,7 @@ const Searchbar = (props: Props) => {
           autocorrect="off"
           autocapitalize="none"
           spellcheck={false}
-          placeholder="Search items"
+          placeholder="搜索"
           onKeyDown={onKeyDown}
           onInput={(e) => setValue(e.target.value)}
         />
@@ -239,7 +239,7 @@ const Searchbar = (props: Props) => {
             when={itemsList()!.length > 0}
             fallback={
               <div class="p-4 text-center fst-italic text-muted">
-                <small>We couldn't find any items that match that criteria.</small>
+                <small>我们找不到任何符合条件的内容。</small>
               </div>
             }
           >
