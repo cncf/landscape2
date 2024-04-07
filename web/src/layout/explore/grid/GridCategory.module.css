@@ -1,6 +1,6 @@
 .catTitle {
   writing-mode: vertical-rl;
-  text-orientation: mixed;
+  text-orientation: sideways;
   transform: rotate(180deg);
   width: 3rem;
   font-size: 0.7rem;

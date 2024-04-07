@@ -14,7 +14,7 @@ const MaturitySection = (props: Props) => {
     <Show
       when={
         !isUndefined(props.item.maturity) &&
-        ['sandbox', 'incubating', 'graduated'].includes(props.item.maturity) &&
+        ['experimental', 'incubating', 'stable'].includes(props.item.maturity) &&
         (!isUndefined(props.item.accepted_at) ||
           !isUndefined(props.item.incubating_at) ||
           !isUndefined(props.item.graduated_at))
@@ -36,14 +36,14 @@ const MaturitySection = (props: Props) => {
                   </>
                 </Show>
               </div>
-              <small class={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Sandbox</small>
+              <small class={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Experimental</small>
             </div>
 
             <div class="d-flex flex-column align-items-center">
               <div
                 class={`badge rounded-0 p-2 ${styles.maturityBadge}`}
                 classList={{
-                  [styles.activeMaturityBadge]: ['incubating', 'graduated', 'archived'].includes(props.item.maturity!),
+                  [styles.activeMaturityBadge]: ['incubating', 'stable', 'archived'].includes(props.item.maturity!),
                 }}
               >
                 {props.item.incubating_at || '-'}
@@ -55,12 +55,12 @@ const MaturitySection = (props: Props) => {
               <div
                 class={`badge rounded-0 p-2 ${styles.maturityBadge}`}
                 classList={{
-                  [styles.activeMaturityBadge]: ['graduated', 'archived'].includes(props.item.maturity!),
+                  [styles.activeMaturityBadge]: ['stable', 'archived'].includes(props.item.maturity!),
                 }}
               >
                 {props.item.graduated_at || '-'}
               </div>
-              <small class={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Graduated</small>
+              <small class={`text-uppercase fw-semibold text-muted mt-2 ${styles.statusLegend}`}>Stable</small>
             </div>
           </div>
           <div class={`${styles.line} ${props.item.maturity}Line`} />

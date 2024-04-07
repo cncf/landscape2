@@ -142,7 +142,7 @@ const GridItem = (props: Props) => {
                   class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                   style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
                 >
-                  {props.item.featured!.label}
+                  {props.item.name}
                 </div>
               </Show>
             </div>
@@ -223,7 +223,7 @@ const GridItem = (props: Props) => {
                 class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                 style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
               >
-                {props.item.featured!.label}
+                {props.item.name}
               </div>
             </Show>
           </button>

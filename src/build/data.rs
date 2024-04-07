@@ -676,8 +676,8 @@ pub(crate) struct Repository {
 }
 
 lazy_static! {
-    static ref VALID_CHARS: Regex = Regex::new(r"[a-z0-9\-\ \+]").expect("exprs in VALID_CHARS to be valid");
-    static ref MULTIPLE_HYPHENS: Regex = Regex::new(r"-{2,}").expect("exprs in MULTIPLE_HYPHENS to be valid");
+    static ref VALID_CHARS: Regex = Regex::new(r"[\p{L}\p{N}-]").expect("exprs in VALID_CHARS to be valid");
+    static ref MULTIPLE_HYPHENS: Regex = Regex::new(r"-+").expect("exprs in MULTIPLE_HYPHENS to be valid");
 }
 
 /// Normalize category, subcategory and item name.
