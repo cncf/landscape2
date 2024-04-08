@@ -4,7 +4,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, onMount, Show } from 'solid-js';
 
-import { CardMenu, ClassifiedOption, SortDirection, SortOption } from '../../../types';
+import { CardMenu, ClassifyOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
@@ -18,7 +18,7 @@ import Menu from './Menu';
 interface Props {
   initialIsVisible: boolean;
   group: string;
-  classified: ClassifiedOption;
+  classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
   data: unknown;
@@ -38,14 +38,14 @@ const CardCategory = (props: Props) => {
 
   const isAvailableSelectedSection = (): boolean => {
     const selection = location.hash.replace('#', '');
-    if (props.classified === ClassifiedOption.Maturity) {
+    if (props.classify === ClassifyOption.Maturity) {
       const status = selection.split('--')[1];
       if (!isUndefined(menu()) && !isUndefined(menu()!.Maturity) && menu()!.Maturity.includes(status)) {
         return true;
       } else {
         return false;
       }
-    } else if (props.classified === ClassifiedOption.Tag) {
+    } else if (props.classify === ClassifyOption.Tag) {
       const tagOpt = selection.split('--')[1];
       if (!isUndefined(menu()) && !isUndefined(menu()!.Tag) && menu()!.Tag.includes(tagOpt)) {
         return true;
@@ -130,12 +130,12 @@ const CardCategory = (props: Props) => {
         </Show>
         <div
           class={`d-flex flex-column ${styles.content}`}
-          classList={{ 'w-100': props.classified === ClassifiedOption.None }}
+          classList={{ 'w-100': props.classify === ClassifyOption.None }}
         >
           <Show when={fullDataReady() && !isUndefined(data())}>
             <Content
               data={data!}
-              classified={props.classified}
+              classify={props.classify}
               isVisible={props.initialIsVisible}
               sorted={props.sorted}
               direction={props.direction}

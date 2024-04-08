@@ -7,7 +7,7 @@ import { COLORS } from '../../../data';
 import {
   BaseItem,
   Category,
-  ClassifiedOption,
+  ClassifyOption,
   Item,
   SortDirection,
   SortOption,
@@ -26,7 +26,7 @@ import styles from './Content.module.css';
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: Accessor<any>;
-  classified: ClassifiedOption;
+  classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
   isVisible: boolean;
@@ -79,7 +79,7 @@ const Content = (props: Props) => {
   const getSubtitles = (content: { [key: string]: unknown }, title: string): string[] => {
     let subtitles = Object.keys(content).sort();
     if (
-      props.classified === ClassifiedOption.Category &&
+      props.classify === ClassifyOption.Category &&
       window.baseDS.categories_overridden &&
       window.baseDS.categories_overridden.includes(title)
     ) {
@@ -105,7 +105,7 @@ const Content = (props: Props) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const content = () => (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];
               let numItems: number = 0;
-              if (props.classified === ClassifiedOption.Category) {
+              if (props.classify === ClassifyOption.Category) {
                 Object.keys(content()).forEach((subtitle: string) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   numItems += (content() as any)[subtitle].length;
@@ -177,7 +177,7 @@ const Content = (props: Props) => {
                       </For>
                     </Match>
                     <Match when={Array.isArray(content())}>
-                      <div id={`card_${props.classified}--${title}`} class="mb-3">
+                      <div id={`card_${props.classify}--${title}`} class="mb-3">
                         <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                           <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                             <div class="flex-grow-1 text-truncate text-capitalize">

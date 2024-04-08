@@ -1,6 +1,6 @@
 import {
   Breakpoint,
-  ClassifiedOption,
+  ClassifyOption,
   FilterCategoriesPerTitle,
   FilterCategory,
   FilterSection,
@@ -24,7 +24,7 @@ export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 export const PAGE_PARAM = 'page';
 export const FINANCES_KIND_PARAM = 'kind';
-export const CLASSIFIED_PARAM = 'classified';
+export const CLASSIFY_PARAM = 'classify';
 export const SORT_BY_PARAM = 'sort-by';
 export const SORT_DIRECTION_PARAM = 'sort-direction';
 
@@ -50,7 +50,7 @@ export const DEFAULT_TAB = Tab.Explore;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 export const DEFAULT_FINANCES_KIND = FinancesKind.Funding;
-export const DEFAULT_CLASSIFIED = ClassifiedOption.Category;
+export const DEFAULT_CLASSIFY = ClassifyOption.Category;
 export const DEFAULT_SORT = SortOption.Name;
 export const DEFAULT_SORT_DIRECTION = SortDirection.Asc;
 export const ALL_OPTION = 'all';

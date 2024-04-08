@@ -9,7 +9,7 @@ import {
   BaseItem,
   CardMenu,
   Category,
-  ClassifiedOption,
+  ClassifyOption,
   CrunchbaseData,
   FilterOption,
   GithubData,
@@ -171,15 +171,15 @@ export class ItemsDataGetter {
   }
 
   // Classify items
-  public classifyItems(items: (BaseItem | Item)[], classified: ClassifiedOption): unknown | undefined {
-    switch (classified) {
-      case ClassifiedOption.None:
+  public classifyItems(items: (BaseItem | Item)[], classify: ClassifyOption): unknown | undefined {
+    switch (classify) {
+      case ClassifyOption.None:
         return items;
-      case ClassifiedOption.Category:
+      case ClassifyOption.Category:
         return nestArray(items, ['category', 'subcategory']);
-      case ClassifiedOption.Maturity:
+      case ClassifyOption.Maturity:
         return groupBy(items, 'maturity');
-      case ClassifiedOption.Tag:
+      case ClassifyOption.Tag:
         return groupBy(items, 'tag');
     }
   }
@@ -238,29 +238,29 @@ export class ItemsDataGetter {
     const items = this.ready ? this.getAll() : window.baseDS.items;
     const groupedItemsList = this.groupData(items);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifiedFullCardData: any = {};
+    const classifyFullCardData: any = {};
     const menuFullData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
     Object.keys(groupedItemsList).forEach((group: string) => {
-      const classifiedGroup = this.classifyItems(groupedItemsList[group], ClassifiedOption.Category);
-      classifiedFullCardData[group] = classifiedGroup;
-      menuFullData[group] = this.getMenuOptions(classifiedGroup, ClassifiedOption.Category);
+      const classifyGroup = this.classifyItems(groupedItemsList[group], ClassifyOption.Category);
+      classifyFullCardData[group] = classifyGroup;
+      menuFullData[group] = this.getMenuOptions(classifyGroup, ClassifyOption.Category);
       numItems[group as string] = groupedItemsList[group].length;
     });
 
     const fullGridData = this.prepareGridData(groupedItemsList);
-    const fullQuery = { grid: fullGridData, card: classifiedFullCardData, menu: menuFullData, numItems: numItems };
+    const fullQuery = { grid: fullGridData, card: classifyFullCardData, menu: menuFullData, numItems: numItems };
     this.initialQuery = fullQuery;
   }
 
   // Prepare menu options
-  private getMenuOptions = (data: unknown, classified: ClassifiedOption) => {
+  private getMenuOptions = (data: unknown, classify: ClassifyOption) => {
     const menu: CardMenu = {};
     let options: string[] = [];
-    switch (classified) {
-      case ClassifiedOption.None:
+    switch (classify) {
+      case ClassifyOption.None:
         return;
-      case ClassifiedOption.Category:
+      case ClassifyOption.Category:
         Object.keys(data as never)
           .sort()
           .forEach((category: string) => {
@@ -278,38 +278,38 @@ export class ItemsDataGetter {
             menu[category] = tmpSubcategories;
           });
         return menu;
-      case ClassifiedOption.Maturity:
+      case ClassifyOption.Maturity:
         options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
         return options.length > 0 ? { Maturity: options } : {};
-      case ClassifiedOption.Tag:
+      case ClassifyOption.Tag:
         options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
         return options.length > 0 ? { Tag: options } : {};
     }
   };
 
   // Query items
-  public queryItems(input: ActiveFilters, group: string, classified: ClassifiedOption) {
+  public queryItems(input: ActiveFilters, group: string, classify: ClassifyOption) {
     const items = this.ready ? this.getAll() : window.baseDS.items;
     const filteredItems = filterData(items, input);
     const groupedItems = this.groupData(filteredItems);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifiedCardData: any = {};
+    const classifyCardData: any = {};
     const menuData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
     Object.keys(groupedItems).forEach((group: string) => {
-      const classifiedGroup = this.classifyItems(groupedItems[group], classified);
-      classifiedCardData[group] = classifiedGroup;
-      menuData[group] = this.getMenuOptions(classifiedGroup, classified);
+      const classifyGroup = this.classifyItems(groupedItems[group], classify);
+      classifyCardData[group] = classifyGroup;
+      menuData[group] = this.getMenuOptions(classifyGroup, classify);
       numItems[group] = groupedItems[group].length;
     });
 
     const gridData = this.prepareGridData(groupedItems);
-    let currentQuery = { grid: gridData, card: classifiedCardData, menu: menuData, numItems: numItems };
+    let currentQuery = { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
 
     if (!isUndefined(this.initialQuery)) {
       currentQuery = {
         grid: { ...this.initialQuery.grid, [group]: gridData[group] },
-        card: { ...this.initialQuery.card, [group]: classifiedCardData[group] },
+        card: { ...this.initialQuery.card, [group]: classifyCardData[group] },
         menu: { ...this.initialQuery.menu, [group]: menuData[group] },
         numItems: { ...this.initialQuery.numItems, [group]: numItems[group] },
       };
