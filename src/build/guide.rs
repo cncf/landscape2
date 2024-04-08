@@ -2,7 +2,7 @@
 //! that must be provided from a YAML file (guide.yml).
 
 use crate::GuideSource;
-use anyhow::{format_err, Context, Result};
+use anyhow::{bail, format_err, Context, Result};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::{fs, path::Path};
@@ -46,10 +46,10 @@ impl LandscapeGuide {
     async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
+            bail!(
                 "unexpected status code getting landscape guide file: {}",
                 resp.status()
-            ));
+            );
         }
         let raw_data = resp.text().await?;
         let guide = LandscapeGuide::new_from_yaml(&raw_data)?;

@@ -1,27 +1,32 @@
-import { intersection } from 'lodash';
+import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
-import { Accessor, createEffect, createSignal, on, Show } from 'solid-js';
+import { Accessor, batch, createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { FILTER_CATEGORIES_PER_TITLE, FILTERS } from '../../../data';
+import { ALL_OPTION, CLASSIFY_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, SORT_OPTION_LABEL } from '../../../data';
 import {
   ActiveFilters,
   BaseData,
+  ClassifyOption,
   FilterCategory,
   FilterOption,
   FilterSection,
   FilterTitle,
   Item,
+  SortDirection,
+  SortOption,
   SVGIconKind,
+  ViewMode,
 } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
-import prepareData from '../../../utils/prepareData';
+import itemsDataGetter from '../../../utils/itemsDataGetter';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
 import Section from '../../common/Section';
 import SVGIcon from '../../common/SVGIcon';
+import { useViewMode } from '../../stores/viewMode';
 import styles from './Filters.module.css';
 import SearchbarSection from './SearchbarSection';
 
@@ -31,9 +36,19 @@ interface Props {
   initialSelectedGroup: Accessor<string | undefined>;
   applyFilters: (newFilters: ActiveFilters) => void;
   initialActiveFilters: Accessor<ActiveFilters>;
+  sorted: SortOption;
+  sortDirection: SortDirection;
+  classify: ClassifyOption;
+  updateQueryString: (param: string, value: string) => void;
+  setClassify: (classify: ClassifyOption) => void;
+  setSorted: (sorted: SortOption) => void;
+  setSortDirection: (direction: SortDirection) => void;
+  classifyOptions: ClassifyOption[];
+  sortOptions: SortOption[];
 }
 
 const Filters = (props: Props) => {
+  const viewMode = useViewMode();
   const [disabledBtn, setDisabledBtn] = createSignal<boolean>(true);
   const [visibleFiltersModal, setVisibleFiltersModal] = createSignal<boolean>(false);
   const [tmpActiveFilters, setTmpActiveFilters] = createSignal<ActiveFilters>(props.initialActiveFilters());
@@ -63,10 +78,10 @@ const Filters = (props: Props) => {
     on(visibleFiltersModal, () => {
       if (visibleFiltersModal()) {
         if (filters().length === 0) {
-          const f = getFiltersPerGroup(prepareData(props.data, props.initialLandscapeData()!));
+          const f = getFiltersPerGroup(itemsDataGetter.getGridData(true));
           if (!isEmpty(f)) {
             setFiltersFromData(f);
-            setFilters(f[props.initialSelectedGroup() || 'default']);
+            setFilters(f[props.initialSelectedGroup() || ALL_OPTION]);
           }
         }
         setTmpActiveFilters(cleanInitialActiveFilters());
@@ -85,7 +100,7 @@ const Filters = (props: Props) => {
   createEffect(
     on(props.initialSelectedGroup, () => {
       if (!isUndefined(filtersFromData())) {
-        setFilters(filtersFromData()![props.initialSelectedGroup() || 'default']);
+        setFilters(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION]);
       }
     })
   );
@@ -238,7 +253,71 @@ const Filters = (props: Props) => {
                 resetFilter={resetFilter}
               />
             </div>
-
+            <div class="d-flex d-lg-none">
+              <Show when={viewMode() === ViewMode.Card}>
+                <div class="d-flex flex-row mb-4">
+                  <div class="d-flex flex-column align-items-start">
+                    <div class="mb-1">
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Classify:</small>
+                    </div>
+                    <select
+                      id="classify"
+                      class={`form-select form-select-sm text-muted rounded-0 me-4 ${styles.miniSelect}`}
+                      value={props.classify}
+                      aria-label="Classify"
+                      onChange={(e) => {
+                        const classifyOpt = e.currentTarget.value as ClassifyOption;
+                        props.setClassify(classifyOpt);
+                        props.updateQueryString(CLASSIFY_PARAM, classifyOpt);
+                      }}
+                    >
+                      <For each={props.classifyOptions}>
+                        {(opt: ClassifyOption) => {
+                          const label = Object.keys(ClassifyOption)[Object.values(ClassifyOption).indexOf(opt)];
+                          return <option value={opt}>{label}</option>;
+                        }}
+                      </For>
+                    </select>
+                  </div>
+                  <div class="d-flex flex-column align-items-start ms-2">
+                    <div class="mb-1">
+                      <small class={`fw-semibold ${styles.selectTitle}`}>Sort:</small>
+                    </div>
+                    <select
+                      id="sorted"
+                      class={`form-select form-select-sm text-muted rounded-0 ${styles.miniSelect}`}
+                      value={`${props.sorted}_${props.sortDirection}`}
+                      aria-label="Sort"
+                      onChange={(e) => {
+                        const sortValue = e.currentTarget.value;
+                        const sortOpt = sortValue.split('_');
+                        batch(() => {
+                          props.setSorted(sortOpt[0] as SortOption);
+                          props.setSortDirection(sortOpt[1] as SortDirection);
+                        });
+                        props.updateQueryString('sort', sortValue);
+                      }}
+                    >
+                      <For each={props.sortOptions}>
+                        {(opt: SortOption) => {
+                          return (
+                            <For each={Object.values(SortDirection)}>
+                              {(direction: string) => {
+                                return (
+                                  <option value={`${opt}_${direction}`}>
+                                    {SORT_OPTION_LABEL[opt]} ({direction})
+                                  </option>
+                                );
+                              }}
+                            </For>
+                          );
+                        }}
+                      </For>
+                    </select>
+                  </div>
+                </div>
+              </Show>
+            </div>
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
               <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
@@ -251,7 +330,6 @@ const Filters = (props: Props) => {
                   resetFilter={resetFilter}
                   sectionClass={styles.section}
                 />
-
                 <Section
                   title="TAG"
                   section={getSection(FilterCategory.TAG)}
@@ -260,7 +338,6 @@ const Filters = (props: Props) => {
                   resetFilter={resetFilter}
                   sectionClass={styles.section}
                 />
-
                 <SearchbarSection
                   title="License"
                   placeholder="Search license"
@@ -269,7 +346,14 @@ const Filters = (props: Props) => {
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                 />
-
+                <Section
+                  title="Category"
+                  section={getSection(FilterCategory.Category)}
+                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Category]}
+                  updateActiveFilters={updateActiveFilters}
+                  resetFilter={resetFilter}
+                  sectionClass={styles.section}
+                />
                 <Section
                   title="Extra"
                   section={getSection(FilterCategory.Extra)}

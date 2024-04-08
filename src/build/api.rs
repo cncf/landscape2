@@ -14,7 +14,7 @@ use chrono::NaiveDate;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 /// Sources of information used to generate the landscape API data.
 #[derive(Debug, Clone)]
@@ -365,7 +365,7 @@ pub(crate) struct Repository {
     pub branch: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub languages: Option<HashMap<String, i64>>,
+    pub languages: Option<BTreeMap<String, i64>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub primary: Option<bool>,

@@ -2,7 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 
 import { CardMenu } from '../types';
 import { SubcategoryDetails } from './gridCategoryLayout';
-import { CategoriesData } from './prepareData';
+import { CategoriesData } from './itemsDataGetter';
 
 const prepareMenu = (d: CategoriesData, overridenCategories?: string[]): CardMenu => {
   const menuTmp: CardMenu = {};

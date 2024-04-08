@@ -18,6 +18,10 @@
   min-height: 28px;
 }
 
+.navLink {
+  min-width: 50px !important;
+}
+
 .btnSymbol {
   position: relative;
   font-size: 1.25rem;
@@ -52,6 +56,14 @@
   font-weight: 700;
 }
 
+.miniSelect {
+  width: 125px;
+}
+
+.midSelect {
+  width: 175px;
+}
+
 .select {
   max-width: 400px;
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
@@ -64,6 +76,17 @@
 
 .mobileToCBtn svg {
   margin-top: -2px;
+}
+
+@media (max-width: 1199.98px) {
+  .desktopSelect {
+    width: 210px;
+  }
+
+  .miniSelect,
+  .midSelect {
+    width: 125px;
+  }
 }
 
 @media (max-width: 991.98px) {

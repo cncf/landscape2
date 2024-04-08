@@ -16,6 +16,15 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         }
       }
 
+      // Filter Category
+      if (activeFilters[FilterCategory.Category]) {
+        if (isUndefined(item.category)) {
+          return false;
+        } else if (!activeFilters[FilterCategory.Category].includes(item.category)) {
+          return false;
+        }
+      }
+
       // Filter Organization
       if (activeFilters[FilterCategory.Organization]) {
         if (isUndefined(item.crunchbase_data) || isUndefined(item.crunchbase_data.name)) {

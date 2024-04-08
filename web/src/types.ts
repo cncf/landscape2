@@ -356,6 +356,7 @@ export enum FilterCategory {
   Tags = 'tags',
   Membership = 'membership',
   InvestmentType = 'investment-type',
+  Category = 'category',
   Extra = 'extra',
 }
 
@@ -521,6 +522,28 @@ export enum Tab {
 export enum FilterTitle {
   Project = 'Project',
   Organization = 'Organization',
+}
+
+export enum ClassifyOption {
+  None = 'none',
+  Category = 'category',
+  Maturity = 'maturity',
+  Tag = 'tag',
+}
+
+export enum SortOption {
+  Name = 'name',
+  Stars = 'stars',
+  DateAdded = 'date-added',
+  Contributors = 'contributors',
+  FirstCommit = 'first-commit',
+  LatestCommit = 'latest-commit',
+  Funding = 'funding',
+}
+
+export enum SortDirection {
+  Asc = 'asc',
+  Desc = 'desc',
 }
 
 export type FilterCategoriesPerTitle = {

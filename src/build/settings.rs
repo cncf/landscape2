@@ -9,13 +9,13 @@
 
 use super::data::{normalize_name, validate_url, CategoryName, SubCategoryName};
 use crate::SettingsSource;
-use anyhow::{format_err, Context, Result};
+use anyhow::{bail, format_err, Context, Result};
 use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::BTreeMap, fs, path::Path};
 use tracing::{debug, instrument};
 
 /// Landscape settings.
@@ -61,7 +61,7 @@ pub(crate) struct LandscapeSettings {
     pub screenshot_width: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<HashMap<TagName, Vec<TagRule>>>,
+    pub tags: Option<BTreeMap<TagName, Vec<TagRule>>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upcoming_event: Option<UpcomingEvent>,
@@ -94,7 +94,7 @@ impl LandscapeSettings {
             return LandscapeSettings::new_from_url(url).await;
         };
 
-        Err(format_err!("settings file or url not provided"))
+        bail!("settings file or url not provided");
     }
 
     /// Create a new landscape settings instance from the file provided.
@@ -109,10 +109,10 @@ impl LandscapeSettings {
     async fn new_from_url(url: &str) -> Result<Self> {
         let resp = reqwest::get(url).await?;
         if resp.status() != StatusCode::OK {
-            return Err(format_err!(
+            bail!(
                 "unexpected status code getting landscape settings file: {}",
                 resp.status()
-            ));
+            );
         }
         let raw_data = resp.text().await?;
         let settings = LandscapeSettings::new_from_raw_data(&raw_data)?;
@@ -155,7 +155,7 @@ impl LandscapeSettings {
     fn validate(&self) -> Result<()> {
         // Check foundation is not empty
         if self.foundation.is_empty() {
-            return Err(format_err!("foundation cannot be empty"));
+            bail!("foundation cannot be empty");
         }
 
         // Check url is valid
@@ -188,15 +188,13 @@ impl LandscapeSettings {
 
                 // Name
                 if category.name.is_empty() {
-                    return Err(format_err!("category [{category_id}] name cannot be empty"));
+                    bail!("category [{category_id}] name cannot be empty");
                 }
 
                 // Subcategories
                 for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
                     if subcategory.is_empty() {
-                        return Err(format_err!(
-                            "category [{category_id}]: subcategory [{subcategory_index}] cannot be empty"
-                        ));
+                        bail!("category [{category_id}]: subcategory [{subcategory_index}] cannot be empty");
                     }
                 }
             }
@@ -219,9 +217,7 @@ impl LandscapeSettings {
 
             for (name, value) in colors {
                 if !RGBA.is_match(value) {
-                    return Err(format_err!(
-                        r#"{name} is not valid (expected format: "rgba(0, 107, 204, 1)")"#
-                    ));
+                    bail!(r#"{name} is not valid (expected format: "rgba(0, 107, 204, 1)")"#);
                 }
             }
         }
@@ -298,7 +294,7 @@ impl LandscapeSettings {
         // Text
         if let Some(text) = &footer.text {
             if text.is_empty() {
-                return Err(format_err!("footer text cannot be empty"));
+                bail!("footer text cannot be empty");
             }
         }
 
@@ -317,15 +313,13 @@ impl LandscapeSettings {
 
                 // Name
                 if group.name.is_empty() {
-                    return Err(format_err!("group [{group_id}] name cannot be empty"));
+                    bail!("group [{group_id}] name cannot be empty");
                 }
 
                 // Categories
                 for (category_index, category) in group.categories.iter().enumerate() {
                     if category.is_empty() {
-                        return Err(format_err!(
-                            "group [{group_id}]: category [{category_index}] cannot be empty"
-                        ));
+                        bail!("group [{group_id}]: category [{category_index}] cannot be empty");
                     }
                 }
             }
@@ -372,7 +366,7 @@ impl LandscapeSettings {
 
         // Check members category is not empty
         if members_category.is_empty() {
-            return Err(format_err!("members category cannot be empty"));
+            bail!("members category cannot be empty");
         }
 
         Ok(())
@@ -384,10 +378,10 @@ impl LandscapeSettings {
 
         // Check customer id and customer configuration id are not empty
         if osano.customer_id.is_empty() {
-            return Err(format_err!("osano customer id cannot be empty"));
+            bail!("osano customer id cannot be empty");
         }
         if osano.customer_configuration_id.is_empty() {
-            return Err(format_err!("osano customer configuration id cannot be empty"));
+            bail!("osano customer configuration id cannot be empty");
         }
 
         Ok(())
@@ -400,7 +394,7 @@ impl LandscapeSettings {
         };
 
         if *screenshot_width <= 1000 {
-            return Err(format_err!("screenshot width must be greater than 1000"));
+            bail!("screenshot width must be greater than 1000");
         }
 
         Ok(())
@@ -413,13 +407,13 @@ impl LandscapeSettings {
                 for rule in tag_rules {
                     // Category
                     if rule.category.is_empty() {
-                        return Err(format_err!("tag [{i}] category cannot be empty"));
+                        bail!("tag [{i}] category cannot be empty");
                     }
 
                     // Subcategories
                     if let Some(subcategories) = &rule.subcategories {
                         if subcategories.is_empty() {
-                            return Err(format_err!("tag [{i}] subcategories cannot be empty"));
+                            bail!("tag [{i}] subcategories cannot be empty");
                         }
                     }
                 }

@@ -2,6 +2,7 @@
 //! as well as the functionality used to prepare them.
 
 use super::{
+    crunchbase::CrunchbaseData,
     data::{CategoryName, SubCategoryName},
     github::GithubOrgData,
     settings::{LandscapeSettings, TagName},
@@ -10,7 +11,7 @@ use super::{
 use chrono::{Datelike, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 /// Format used to represent a date as year-month.
 pub const YEAR_MONTH_FORMAT: &str = "%Y-%m";
@@ -47,11 +48,12 @@ impl Stats {
     pub(crate) fn new(
         landscape_data: &LandscapeData,
         settings: &LandscapeSettings,
+        crunchbase_data: &CrunchbaseData,
         github_org_data: &GithubOrgData,
     ) -> Self {
         Self {
             members: MembersStats::new(landscape_data, settings),
-            organizations: OrganizationsStats::new(landscape_data),
+            organizations: OrganizationsStats::new(crunchbase_data),
             projects: ProjectsStats::new(landscape_data),
             repositories: RepositoriesStats::new(landscape_data, github_org_data),
         }
@@ -62,19 +64,19 @@ impl Stats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct MembersStats {
     /// Number of members joined per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    joined_at: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    joined_at: BTreeMap<YearMonth, u64>,
 
     /// Running total of number of members joined per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    joined_at_rt: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    joined_at_rt: BTreeMap<YearMonth, u64>,
 
     /// Total number of members.
     members: u64,
 
     /// Number of members per subcategory.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    subcategories: HashMap<String, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    subcategories: BTreeMap<String, u64>,
 }
 
 impl MembersStats {
@@ -115,41 +117,32 @@ impl MembersStats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct OrganizationsStats {
     /// Total number of acquisitions per year across all organizations.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    acquisitions: HashMap<Year, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    acquisitions: BTreeMap<Year, u64>,
 
     /// Total acquisitions price per year across all organizations.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    acquisitions_price: HashMap<Year, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    acquisitions_price: BTreeMap<Year, u64>,
 
     /// Total number of funding rounds per year across all organizations.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    funding_rounds: HashMap<Year, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    funding_rounds: BTreeMap<Year, u64>,
 
     /// Total money raised on funding rounds per year across all organizations.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    funding_rounds_money_raised: HashMap<Year, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    funding_rounds_money_raised: BTreeMap<Year, u64>,
 }
 
 impl OrganizationsStats {
     /// Create a new OrganizationsStats instance from the information available
     /// in the landscape.
-    fn new(landscape_data: &LandscapeData) -> Option<Self> {
+    fn new(crunchbase_data: &CrunchbaseData) -> Option<Self> {
         let mut stats = OrganizationsStats::default();
-        let mut crunchbase_data_processed = HashSet::new();
 
         // Collect stats from landscape items
-        for item in &landscape_data.items {
-            // Check if this crunchbase data has already been processed
-            if let Some(url) = item.crunchbase_url.as_ref() {
-                if crunchbase_data_processed.contains(url) {
-                    continue;
-                }
-                crunchbase_data_processed.insert(url);
-            }
-
+        for org in crunchbase_data.values() {
             // Acquisitions
-            if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
+            if let Some(acquisitions) = org.acquisitions.as_ref() {
                 for acq in acquisitions {
                     if let Some(announced_on) = acq.announced_on {
                         let year = announced_on.format("%Y").to_string();
@@ -164,9 +157,7 @@ impl OrganizationsStats {
             }
 
             // Funding rounds
-            if let Some(funding_rounds) =
-                item.crunchbase_data.as_ref().and_then(|d| d.funding_rounds.as_ref())
-            {
+            if let Some(funding_rounds) = org.funding_rounds.as_ref() {
                 for fr in funding_rounds {
                     if let Some(announced_on) = fr.announced_on {
                         // Only funding rounds in the last 5 years
@@ -198,43 +189,43 @@ impl OrganizationsStats {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct ProjectsStats {
     /// Number of projects accepted per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    accepted_at: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    accepted_at: BTreeMap<YearMonth, u64>,
 
     /// Running total of number of projects accepted per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    accepted_at_rt: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    accepted_at_rt: BTreeMap<YearMonth, u64>,
 
     /// Number of security audits per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    audits: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    audits: BTreeMap<YearMonth, u64>,
 
     /// Running total of number of security audits per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    audits_rt: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    audits_rt: BTreeMap<YearMonth, u64>,
 
     /// Number of projects per category and subcategory.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    category: HashMap<CategoryName, CategoryProjectsStats>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    category: BTreeMap<CategoryName, CategoryProjectsStats>,
 
     /// Promotions from incubating to graduated per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    incubating_to_graduated: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    incubating_to_graduated: BTreeMap<YearMonth, u64>,
 
     /// Number of projects per maturity.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    maturity: HashMap<String, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    maturity: BTreeMap<String, u64>,
 
     /// Total number of projects.
     projects: u64,
 
     /// Promotions from sandbox to incubating per year-month.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    sandbox_to_incubating: HashMap<YearMonth, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    sandbox_to_incubating: BTreeMap<YearMonth, u64>,
 
     /// Number of projects per TAG.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    tag: HashMap<TagName, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    tag: BTreeMap<TagName, u64>,
 }
 
 impl ProjectsStats {
@@ -280,7 +271,7 @@ impl ProjectsStats {
                         item.category.clone(),
                         CategoryProjectsStats {
                             projects: 1,
-                            subcategories: HashMap::from([(item.subcategory.clone(), 1)]),
+                            subcategories: BTreeMap::from([(item.subcategory.clone(), 1)]),
                         },
                     );
                 }
@@ -328,8 +319,8 @@ pub(crate) struct CategoryProjectsStats {
     projects: u64,
 
     /// Number of projects per subcategory.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    subcategories: HashMap<SubCategoryName, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    subcategories: BTreeMap<SubCategoryName, u64>,
 }
 
 /// Some stats about the repositories listed in the landscape.
@@ -342,16 +333,16 @@ pub(crate) struct RepositoriesStats {
     contributors: u64,
 
     /// Number of repositories where each language is used.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    languages: HashMap<String, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    languages: BTreeMap<String, u64>,
 
     /// Source code bytes written on each language.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    languages_bytes: HashMap<String, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    languages_bytes: BTreeMap<String, u64>,
 
     /// Number of repositories where each license is used.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    licenses: HashMap<String, u64>,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    licenses: BTreeMap<String, u64>,
 
     /// Number of commits per week over the last year.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -489,7 +480,7 @@ const EXCLUDED_LANGUAGES: [&str; 7] = [
 /// Helper function to increment the value of an entry in a map by the value
 /// provided if the entry exists, or insert a new entry with that value if it
 /// doesn't.
-fn increment<T>(map: &mut HashMap<T, u64>, key: &T, increment: u64)
+fn increment<T: Ord>(map: &mut BTreeMap<T, u64>, key: &T, increment: u64)
 where
     T: std::hash::Hash + Eq + Clone,
 {
@@ -501,8 +492,8 @@ where
 }
 
 /// Calculate the running total of the values provided.
-fn calculate_running_total(map: &HashMap<YearMonth, u64>) -> HashMap<YearMonth, u64> {
-    let mut rt = HashMap::new();
+fn calculate_running_total(map: &BTreeMap<YearMonth, u64>) -> BTreeMap<YearMonth, u64> {
+    let mut rt = BTreeMap::new();
     let mut acc = 0u64;
 
     for (k, v) in map.iter().sorted_by(|a, b| Ord::cmp(&a.0, &b.0)) {

@@ -1,11 +1,14 @@
 import {
   Breakpoint,
+  ClassifyOption,
   FilterCategoriesPerTitle,
   FilterCategory,
   FilterSection,
   FilterTitle,
   FinancesKind,
   GridItemsSize,
+  SortDirection,
+  SortOption,
   Tab,
   ViewMode,
   ZoomLevelsPerSize,
@@ -21,6 +24,7 @@ export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 export const PAGE_PARAM = 'page';
 export const FINANCES_KIND_PARAM = 'kind';
+export const CLASSIFY_PARAM = 'classify';
 export const SORT_BY_PARAM = 'sort-by';
 export const SORT_DIRECTION_PARAM = 'sort-direction';
 
@@ -46,6 +50,10 @@ export const DEFAULT_TAB = Tab.Explore;
 export const DEFAULT_VIEW_MODE = ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 export const DEFAULT_FINANCES_KIND = FinancesKind.Funding;
+export const DEFAULT_CLASSIFY = ClassifyOption.Category;
+export const DEFAULT_SORT = SortOption.Name;
+export const DEFAULT_SORT_DIRECTION = SortDirection.Asc;
+export const ALL_OPTION = 'all';
 
 const FOUNDATION = window.baseDS.foundation;
 const GRID_SIZE = window.baseDS.grid_items_size || DEFAULT_GRID_ITEMS_SIZE;
@@ -148,3 +156,13 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
 };
 
 export const BANNER_ID = 'banner-event';
+
+export const SORT_OPTION_LABEL = {
+  [SortOption.Name]: 'Name',
+  [SortOption.Stars]: 'Stars',
+  [SortOption.DateAdded]: 'Date added',
+  [SortOption.Contributors]: 'Contributors',
+  [SortOption.FirstCommit]: 'First commit',
+  [SortOption.LatestCommit]: 'Latest commit',
+  [SortOption.Funding]: 'Funding',
+};

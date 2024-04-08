@@ -2,9 +2,10 @@
 //! AWS S3 provider.
 
 use crate::S3Args;
-use anyhow::{format_err, Context, Result};
-use aws_sdk_s3::primitives::{ByteStream, DateTime};
+use anyhow::{bail, format_err, Context, Result};
+use aws_sdk_s3::primitives::ByteStream;
 use futures::stream::{self, StreamExt};
+use md5::{Digest, Md5};
 use mime_guess::mime;
 use std::{
     collections::HashMap,
@@ -22,13 +23,16 @@ const INDEX_DOCUMENT: &str = "index.html";
 const LOGOS_PREFIX: &str = "logos/";
 
 /// Number of files to upload concurrently.
-const UPLOAD_FILES_CONCURRENCY: usize = 20;
+const UPLOAD_FILES_CONCURRENCY: usize = 50;
 
-/// Type alias to represent an object key.
+/// Type alias to represent an object's checksum.
+type Checksum = String;
+
+/// Type alias to represent an object's key.
 type Key = String;
 
 /// Deploy landscape website to AWS S3.
-#[instrument(skip_all)]
+#[instrument(skip_all, err)]
 pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
     info!("deploying landscape website..");
     let start = Instant::now();
@@ -44,10 +48,17 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
     let deployed_objects = get_deployed_objects(&s3_client, &args.bucket).await?;
 
     // Upload landscape website files (except index document)
-    upload_files(&s3_client, &args.bucket, &args.landscape_dir, &deployed_objects).await?;
+    upload_objects(&s3_client, &args.bucket, &args.landscape_dir, &deployed_objects).await?;
 
     // Upload index document if all the other files were uploaded successfully
-    upload_index_document(&s3_client, &args.bucket, &args.landscape_dir, &deployed_objects).await?;
+    let index_remote_checksum = deployed_objects.get(INDEX_DOCUMENT).and_then(|checksum| checksum.as_ref());
+    upload_index_document(
+        &s3_client,
+        &args.bucket,
+        &args.landscape_dir,
+        index_remote_checksum,
+    )
+    .await?;
 
     let duration = start.elapsed().as_secs_f64();
     info!("landscape website deployed! (took: {:.3}s)", duration);
@@ -56,31 +67,28 @@ pub(crate) async fn deploy(args: &S3Args) -> Result<()> {
 }
 
 /// Check that the required environment variables have been provided.
-#[instrument(skip_all, err)]
+#[instrument(err)]
 fn check_env_vars() -> Result<()> {
     let required_env_vars = ["AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"];
 
     for var in required_env_vars {
         let result = env::var(var);
         if result.is_err() || result.expect("var to be set").is_empty() {
-            return Err(format_err!("required environment variable {var} not provided"));
+            bail!("required environment variable {var} not provided");
         }
     }
 
     Ok(())
 }
 
-/// Get objects already deployed, returning their key and the creation date of
-/// the object.
+/// Get deployed objects returning their key and checksum.
 #[instrument(skip_all, err)]
 async fn get_deployed_objects(
     s3_client: &aws_sdk_s3::Client,
     bucket: &str,
-) -> Result<HashMap<Key, DateTime>> {
+) -> Result<HashMap<Key, Option<Checksum>>> {
     let mut deployed_objects = HashMap::new();
 
-    // List all objects in the bucket provided, collecting their key and
-    // creation timestamp
     let mut continuation_token = None;
     loop {
         let mut request = s3_client.list_objects_v2().bucket(bucket);
@@ -91,10 +99,8 @@ async fn get_deployed_objects(
         if let Some(objects) = output.contents {
             for object in objects {
                 let Some(key) = object.key else { continue };
-                let Some(created_at) = object.last_modified else {
-                    continue;
-                };
-                deployed_objects.insert(key, created_at);
+                let checksum = object.e_tag.map(|etag| etag.trim_matches('"').to_string());
+                deployed_objects.insert(key, checksum);
             }
         }
         if !output.is_truncated.unwrap_or(false) {
@@ -106,14 +112,13 @@ async fn get_deployed_objects(
     Ok(deployed_objects)
 }
 
-/// Upload landscape website files to S3 bucket. Given that logos filenames are
-/// based on their content, we don't need to upload again existing ones.
+/// Upload landscape website files to S3 bucket.
 #[instrument(skip_all, err)]
-async fn upload_files(
+async fn upload_objects(
     s3_client: &aws_sdk_s3::Client,
     bucket: &str,
     landscape_dir: &PathBuf,
-    deployed_objects: &HashMap<Key, DateTime>,
+    deployed_objects: &HashMap<Key, Option<Checksum>>,
 ) -> Result<()> {
     // Upload files in the landscape directory to the bucket provided
     let results: Vec<Result<()>> = stream::iter(WalkDir::new(landscape_dir))
@@ -125,8 +130,8 @@ async fn upload_files(
             }
 
             // Prepare object key
-            let file_name = entry.path();
-            let key = file_name
+            let file = entry.path();
+            let key = file
                 .display()
                 .to_string()
                 .trim_start_matches(landscape_dir.display().to_string().as_str())
@@ -147,21 +152,22 @@ async fn upload_files(
             // Skip objects that don't need to be uploaded again
             if deployed_objects.contains_key(&key) {
                 // Skip already deployed logos (logos filenames are based on
-                // their content, we don't need to upload again existing ones)
+                // their content, we don't need to upload again existing ones).
                 if key.starts_with(LOGOS_PREFIX) {
                     return Ok(());
                 }
 
-                // Skip objects when the remote copy is up to date
-                let local_ts = DateTime::from(fs::metadata(file_name)?.modified()?);
-                let remote_ts = deployed_objects.get(&key).expect("object to exist");
-                if remote_ts >= &local_ts {
-                    return Ok(());
+                // Skip any other objects that haven't changed
+                let checksum = md5sum(file)?;
+                if let Some(remote_checksum) = deployed_objects.get(&key).expect("object to be present") {
+                    if checksum == *remote_checksum {
+                        return Ok(());
+                    }
                 }
             }
 
             // Prepare object's body and content type
-            let body = ByteStream::from_path(file_name).await?;
+            let body = ByteStream::from_path(file).await?;
             let content_type = mime_guess::from_path(&key)
                 .first()
                 .ok_or(format_err!("cannot detect content type of key: {})", &key))?;
@@ -194,7 +200,7 @@ async fn upload_files(
         }
     }
     if errors_found {
-        return Err(format_err!("{errors}"));
+        bail!("{errors}");
     }
 
     Ok(())
@@ -206,19 +212,18 @@ async fn upload_index_document(
     s3_client: &aws_sdk_s3::Client,
     bucket: &str,
     landscape_dir: &Path,
-    deployed_objects: &HashMap<Key, DateTime>,
+    remote_checksum: Option<&Checksum>,
 ) -> Result<()> {
-    // Prepare object's key, body and content type
-    let file_name = landscape_dir.join(INDEX_DOCUMENT);
+    // Prepare object's checksum, key, body and content type
+    let file = landscape_dir.join(INDEX_DOCUMENT);
+    let checksum = md5sum(&file)?;
     let key = INDEX_DOCUMENT.to_string();
-    let body = ByteStream::from_path(&file_name).await?;
+    let body = ByteStream::from_path(&file).await?;
     let content_type = mime::TEXT_HTML.essence_str();
 
     // Check if the remote copy is up to date
-    if deployed_objects.contains_key(&key) {
-        let local_ts = DateTime::from(fs::metadata(&file_name)?.modified()?);
-        let remote_ts = deployed_objects.get(&key).expect("object to exist");
-        if remote_ts >= &local_ts {
+    if let Some(remote_checksum) = remote_checksum {
+        if checksum == *remote_checksum {
             return Ok(());
         }
     }
@@ -236,4 +241,13 @@ async fn upload_index_document(
 
     debug!("index document uploaded");
     Ok(())
+}
+
+/// Calculate the MD5 digest of a file.
+fn md5sum(path: &Path) -> Result<String> {
+    let mut hasher = Md5::new();
+    hasher.update(fs::read(path)?);
+    let result = hasher.finalize();
+
+    Ok(format!("{result:x}"))
 }

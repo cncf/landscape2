@@ -5,6 +5,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 *(ordered alphabetically)*
 
 - [Academy Software Foundation](https://aswf.landscape2.io)
+- [CAMARA Project](https://camara.landscape2.io)
 - [Cloud Native Computing Foundation](https://landscape.cncf.io)
 - [Continuous Delivery Foundation](https://cdf.landscape2.io)
 - [GraphQL](https://graphql.landscape2.io)
@@ -13,7 +14,8 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [LF Energy](https://lfenergy.landscape2.io)
 - [LF Networking](https://lfnetworking.landscape2.io)
 - [Open Mainframe Project](https://omp.landscape2.io)
-- [Open Source Program Offices](https://ospo.landscape2.io)
+- [Open Neuroscience Foundation](https://neuroscience-landscape.com)
+- [Open Source Program Offices](https://landscape.todogroup.org)
 - [OpenSSF](https://openssf.landscape2.io)
 - [Presto](https://presto.landscape2.io)
 - [RISC-V](https://riscv.landscape2.io)

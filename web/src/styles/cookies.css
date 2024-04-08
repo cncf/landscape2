@@ -2,6 +2,11 @@
   display: none;
 }
 
+/* Hide osano in screenshot url */
+body.screenshot .osano-cm-window {
+  display: none;
+}
+
 .osano-cm-info {
   font-family: var(--bs-font-sans-serif);
   background: var(--bs-white);

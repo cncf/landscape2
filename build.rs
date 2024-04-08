@@ -1,4 +1,4 @@
-use anyhow::{format_err, Result};
+use anyhow::{bail, Result};
 use std::process::Command;
 use which::which;
 
@@ -12,9 +12,7 @@ fn main() -> Result<()> {
 
     // Check if required external tools are available
     if which("yarn").is_err() {
-        return Err(format_err!(
-            "yarn not found in PATH (it is required to build the web application)"
-        ));
+        bail!("yarn not found in PATH (it is required to build the web application)");
     }
 
     // Build embeddable views
@@ -43,11 +41,11 @@ fn yarn(args: &[&str]) -> Result<()> {
     // Run command and check output
     let output = cmd.output()?;
     if !output.status.success() {
-        return Err(format_err!(
+        bail!(
             "\n\n> {cmd:?} (stderr)\n{}\n> {cmd:?} (stdout)\n{}\n",
             String::from_utf8(output.stderr)?,
             String::from_utf8(output.stdout)?
-        ));
+        );
     }
     Ok(())
 }

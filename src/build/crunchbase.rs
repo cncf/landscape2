@@ -3,7 +3,7 @@
 //! as the functionality used to collect that information.
 
 use super::{cache::Cache, LandscapeData};
-use anyhow::{format_err, Result};
+use anyhow::{bail, format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
@@ -14,7 +14,7 @@ use mockall::automock;
 use regex::Regex;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, sync::Arc, time::Duration};
+use std::{collections::BTreeMap, env, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
 
 /// File used to cache data collected from Crunchbase.
@@ -109,7 +109,7 @@ pub(crate) async fn collect_crunchbase_data(
             }
         })
         .buffer_unordered(1)
-        .collect::<HashMap<String, Result<Organization>>>()
+        .collect::<BTreeMap<String, Result<Organization>>>()
         .await
         .into_iter()
         .filter_map(|(url, result)| {
@@ -132,7 +132,7 @@ pub(crate) async fn collect_crunchbase_data(
 }
 
 /// Type alias to represent some organizations' Crunchbase data.
-pub(crate) type CrunchbaseData = HashMap<CrunchbaseUrl, Organization>;
+pub(crate) type CrunchbaseData = BTreeMap<CrunchbaseUrl, Organization>;
 
 /// Type alias to represent a crunchbase url.
 type CrunchbaseUrl = String;
@@ -361,7 +361,7 @@ impl CBApi {
 #[async_trait]
 impl CB for CBApi {
     /// [CB::get_organization]
-    #[instrument(fields(?permalink), skip_all, err)]
+    #[instrument(skip(self), err)]
     async fn get_organization(&self, permalink: &str) -> Result<CBOrganizationEntity> {
         let cards = &[
             "acquiree_acquisitions",
@@ -388,7 +388,7 @@ impl CB for CBApi {
         );
         let response = self.http_client.get(url).send().await?;
         if response.status() != StatusCode::OK {
-            return Err(format_err!("unexpected status code: {:?}", response.status()));
+            bail!("unexpected status code: {:?}", response.status());
         }
         let org_entity: CBOrganizationEntity = response.json().await?;
         Ok(org_entity)

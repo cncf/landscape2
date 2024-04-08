@@ -41,14 +41,14 @@ const Logos = () => {
       switch (selectedGroup()) {
         case LogosPreviewOptions.Maturity:
           if (!isUndefined(selectedOptionValue())) {
-            list = itemsDataGetter.filterItemsByMaturity(selectedOptionValue()!) || [];
+            list = itemsDataGetter.getItemsByMaturity(selectedOptionValue()!) || [];
           }
           break;
 
         case LogosPreviewOptions.Categories:
           if (!isUndefined(selectedOptionValue()) && !isUndefined(selectedSuboptionValue())) {
             list =
-              itemsDataGetter.filterItemsBySection({
+              itemsDataGetter.getItemsBySection({
                 category: selectedOptionValue()!,
                 subcategory: selectedSuboptionValue()!,
               }) || [];
@@ -59,7 +59,7 @@ const Logos = () => {
           if (!isUndefined(selectedOptionValue())) {
             switch (selectedOptionValue()) {
               case 'enduser':
-                list = itemsDataGetter.filterItemsByEndUser() || [];
+                list = itemsDataGetter.getItemsByEndUser() || [];
                 break;
 
               default:

@@ -5,7 +5,7 @@ import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
-import { CategoriesData, CategoryData } from '../../../utils/prepareData';
+import { CategoriesData, CategoryData } from '../../../utils/itemsDataGetter';
 import Grid from './Grid';
 import styles from './GridCategory.module.css';
 
@@ -13,7 +13,6 @@ interface Props {
   data: CategoriesData;
   categories_overridden?: string[];
   initialIsVisible: boolean;
-  finishLoading: () => void;
 }
 
 interface CatProps {
@@ -89,7 +88,6 @@ const GridCategory = (props: Props) => {
       setIsVisible(props.initialIsVisible);
       if (props.initialIsVisible && !firstLoad()) {
         setFirstLoad(true);
-        props.finishLoading();
       }
     }
   });
