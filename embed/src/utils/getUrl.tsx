@@ -1,6 +1,9 @@
+import { BASE_PATH_PARAM } from '../types';
+
 const getUrl = (): string => {
-  const url = new URL(document.location.href);
-  return url.origin;
+  const urlParams = new URLSearchParams(location.search);
+  const basePathParam = urlParams.get(BASE_PATH_PARAM);
+  return `${location.origin}${basePathParam || ''}`;
 };
 
 export default getUrl;

@@ -28,6 +28,9 @@ pub(crate) struct LandscapeSettings {
     pub analytics: Option<Analytics>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_path: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<Category>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -112,8 +115,10 @@ impl LandscapeSettings {
     /// Create a new landscape settings instance from the raw data provided.
     fn new_from_raw_data(raw_data: &str) -> Result<Self> {
         let mut settings: LandscapeSettings = serde_yaml::from_str(raw_data)?;
+
         settings.validate().context("the landscape settings file provided is not valid")?;
         settings.footer_text_to_html().context("error converting footer md text to html")?;
+        settings.remove_base_path_trailing_slash();
         settings.set_groups_normalized_name();
 
         Ok(settings)
@@ -129,6 +134,15 @@ impl LandscapeSettings {
         }
 
         Ok(())
+    }
+
+    /// Remove base_path trailing slash if present.
+    fn remove_base_path_trailing_slash(&mut self) {
+        if let Some(base_path) = &mut self.base_path {
+            if let Some(base_path_updated) = base_path.strip_suffix('/') {
+                *base_path = base_path_updated.to_string();
+            }
+        }
     }
 
     /// Set the normalized name field of the provided groups.
@@ -150,6 +164,7 @@ impl LandscapeSettings {
         // Check url is valid
         validate_url("landscape", &Some(self.url.clone()))?;
 
+        self.validate_base_path()?;
         self.validate_categories()?;
         self.validate_colors()?;
         self.validate_featured_items()?;
@@ -161,6 +176,25 @@ impl LandscapeSettings {
         self.validate_osano()?;
         self.validate_screenshot_width()?;
         self.validate_tags()?;
+
+        Ok(())
+    }
+
+    /// Check base path is valid.
+    fn validate_base_path(&self) -> Result<()> {
+        let Some(base_path) = &self.base_path else {
+            return Ok(());
+        };
+
+        // Check base path is not empty
+        if base_path.is_empty() {
+            bail!("base_path cannot be empty");
+        }
+
+        // Check base path starts with a slash
+        if !base_path.starts_with('/') {
+            bail!("base_path must start with a slash");
+        }
 
         Ok(())
     }

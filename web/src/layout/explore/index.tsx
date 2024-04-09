@@ -9,6 +9,7 @@ import { batch, createEffect, createSignal, For, Match, on, onCleanup, onMount, 
 
 import {
   ALL_OPTION,
+  BASE_PATH,
   CLASSIFY_PARAM,
   DEFAULT_CLASSIFY,
   DEFAULT_SORT,
@@ -274,7 +275,7 @@ const Explore = (props: Props) => {
       }
     }
 
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}${getHash()}`, {
+    navigate(`${BASE_PATH}/?${updatedSearchParams.toString()}${getHash()}`, {
       state: location.state,
       replace: true,
       scroll: true, // default
@@ -336,7 +337,7 @@ const Explore = (props: Props) => {
 
     const query = params.toString();
 
-    navigate(`${location.pathname}${query === '' ? '' : `?${query}`}${getHash()}`, {
+    navigate(`${BASE_PATH}/${query === '' ? '' : `?${query}`}${getHash()}`, {
       state: location.state,
       replace: true,
       scroll: true, // default
@@ -366,7 +367,7 @@ const Explore = (props: Props) => {
         });
 
         if (viewMode() === ViewMode.Card) {
-          navigate(`${location.pathname}${location.search}${location.hash !== '' ? location.hash : getHash()}`, {
+          navigate(`${BASE_PATH}/${location.search}${location.hash !== '' ? location.hash : getHash()}`, {
             state: location.state,
             replace: true,
             scroll: true, // default

@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
-import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { CategoryGuide, Guide, StateContent, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
 import getNormalizedName from '../../utils/getNormalizedName';
@@ -133,7 +133,7 @@ const GuideIndex = () => {
   );
 
   const updateRoute = (title: string) => {
-    navigate(`${location.pathname}${location.search}#${title}`, {
+    navigate(`${GUIDE_PATH}${location.search}#${title}`, {
       replace: true,
       scroll: false,
       state: { fromMenu: true },

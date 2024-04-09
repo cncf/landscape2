@@ -3,6 +3,15 @@ import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
 import { createSignal, onMount } from 'solid-js';
 
+import {
+  EMBED_SETUP_PATH,
+  EXPLORE_PATH,
+  FINANCES_PATH,
+  GUIDE_PATH,
+  LOGOS_PREVIEW_PATH,
+  SCREENSHOTS_PATH,
+  STATS_PATH,
+} from './data';
 import Layout from './layout';
 import Explore from './layout/explore';
 import Finances from './layout/finances';
@@ -69,13 +78,13 @@ const App = () => {
 
   return (
     <Router root={Layout}>
-      <Route path={['/', '/embed-setup']} component={() => <Explore initialData={data()} />} />
-      <Route path="/guide" component={Guide} />
-      <Route path="/stats" component={Stats} />
-      <Route path="/finances" component={Finances} />
-      <Route path="/screenshot" component={() => <Screenshots initialData={data()} />} />
-      <Route path="/logos-preview" component={Logos} />
+      <Route path={[EXPLORE_PATH, EMBED_SETUP_PATH]} component={() => <Explore initialData={data()} />} />
+      <Route path={GUIDE_PATH} component={Guide} />
+      <Route path={STATS_PATH} component={Stats} />
+      <Route path={FINANCES_PATH} component={Finances} />
+      <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
       <Route path="*" component={NotFound} />
+      <Route path={SCREENSHOTS_PATH} component={() => <Screenshots initialData={data()} />} />
     </Router>
   );
 };

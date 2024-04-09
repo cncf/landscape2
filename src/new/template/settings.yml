@@ -28,9 +28,17 @@ url: http://127.0.0.1:8000
 #   gtm:                            # Google Tag Manager configuration
 #     container_id: <CONTAINER_ID>  # Landscape web application container ID
 
+# Base path (optional)
+#
+# Base path where the landscape will be hosted. By default the generated
+# landscape is prepared to be hosted at the root of the domain. However, if the
+# landscape will be hosted in a subpath, this value must be set accordingly.
+#
+# base_path: /<BASE_PATH>
+
 # Categories (optional)
 #
-# Categories information is read from the `landscape.yml` data file. The way
+# Categories information is read from the `landscape.yml` data file. The way
 # categories are displayed in the web application is computed dynamically based
 # on the number of categories and subcategories, as well as the number of items
 # on each. Sometimes, however, we may want subcategories to be displayed in a
@@ -56,11 +64,11 @@ url: http://127.0.0.1:8000
 #
 # colors:
 #   color1: <COLOR1>  # Buttons, groups, links
-#   color2: <COLOR2>  # Some highlighted items like filters button, search icon
-#   color3: <COLOR3>  # Participation stats bars, spinners, modal titles
-#   color4: <COLOR4>  # Categories titles in filters, fieldset in filters modal
-#   color4: <COLOR5>  # Categories and subcategories frames (odd)
-#   color5: <COLOR6>  # Categories and subcategories frames (even)
+#   color2: <COLOR2>  # Some highlighted items like filters button, search icon
+#   color3: <COLOR3>  # Participation stats bars, spinners, modal titles
+#   color4: <COLOR4>  # Categories titles in filters, fieldset in filters modal
+#   color4: <COLOR5>  # Categories and subcategories frames (odd)
+#   color5: <COLOR6>  # Categories and subcategories frames (even)
 #
 colors:
   color1: "rgba(0, 107, 204, 1)"
@@ -138,7 +146,7 @@ footer:
 #
 # Defines the preferred size of the landscape items in the grid mode. When the
 # landscape contains many items, it is recommended to use the `small` size.
-# However, if there aren't many items, choosing `medium` or `large` may make
+# However, if there aren't many items, choosing `medium` or `large` may make
 # the landscape look nicer. Users will still be able to adjust the items size
 # from the UI using the zoom controls.
 #
@@ -185,7 +193,7 @@ header:
 
 # Images (optional)
 #
-# Urls of some images used in the landscape UI.
+# Urls of some images used in the landscape UI.
 #
 # images:
 #   favicon: <FAVICON_URL>
@@ -199,7 +207,7 @@ header:
 # but it is important that we define it here as there are some special
 # operations that depend on it.
 #
-# members_category: <CATEGORY_NAME>
+# members_category: <CATEGORY_NAME>
 #
 
 # Osano (optional)
@@ -233,7 +241,7 @@ screenshot_width: 1500
 # (by using the `tag` field in the `extra` item's section). However, sometimes
 # this information is not available at the item level. This configuration
 # section provides a mechanism to automatically asign a TAG to projects items
-# based on the categories and subcategories they belong to.
+# based on the categories and subcategories they belong to.
 #
 # For example, we can define that all projects in the category <CATEGORY1> are
 # owned by <TAG1>. When the items are processed, the corresponding TAG will be
@@ -265,4 +273,4 @@ screenshot_width: 1500
 #   start: <START_DATE>  # Start date: (required, format: YYYY-MM-DD)
 #   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
 #   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
-#   details_url: <URL>   # Event details URL (required)
+#   details_url: <URL>   # Event details URL (required)

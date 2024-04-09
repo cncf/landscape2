@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
-import { Show } from 'solid-js';
+import { createMemo, Show } from 'solid-js';
 
-import { ALL_OPTION } from '../../data';
+import { ALL_OPTION, EXPLORE_PATH, GUIDE_PATH, SCREENSHOTS_PATH, STATS_PATH } from '../../data';
 import { SVGIconKind, ViewMode } from '../../types';
+import isExploreSection from '../../utils/isExploreSection';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
 import ExternalLink from '../common/ExternalLink';
@@ -21,6 +22,7 @@ const Header = () => {
   const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
   const setViewMode = useSetViewMode();
   const setSelectedGroup = useSetGroupActive();
+  const isExploreActive = createMemo(() => isExploreSection(location.pathname));
 
   const isActive = (path: string) => {
     return path === location.pathname;
@@ -41,7 +43,7 @@ const Header = () => {
               class="btn btn-link p-0 pe-3 me-2 me-xl-5"
               onClick={() => {
                 resetDefaultExploreValues();
-                navigate('/', {
+                navigate(EXPLORE_PATH, {
                   state: { from: 'logo-header' },
                 });
                 scrollToTop(false);
@@ -59,7 +61,7 @@ const Header = () => {
         </Show>
 
         <Show
-          when={location.pathname !== '/screenshot'}
+          when={location.pathname !== SCREENSHOTS_PATH}
           fallback={
             <Show when={!isUndefined(window.baseDS.qr_code)}>
               <img
@@ -77,13 +79,13 @@ const Header = () => {
           <div class="d-flex align-items-center">
             <button
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              classList={{ activeLink: isActive('/') }}
+              classList={{ activeLink: isExploreActive() }}
               onClick={() => {
-                if (isActive('/')) {
+                if (isExploreActive()) {
                   scrollToTop(false);
                 } else {
                   resetDefaultExploreValues();
-                  navigate('/', {
+                  navigate(EXPLORE_PATH, {
                     state: { from: 'header' },
                   });
                   scrollToTop(false);
@@ -96,12 +98,12 @@ const Header = () => {
             <Show when={!isUndefined(window.baseDS.guide_summary) && !isEmpty(window.baseDS.guide_summary)}>
               <button
                 class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-                classList={{ activeLink: isActive('/guide') }}
+                classList={{ activeLink: isActive(GUIDE_PATH) }}
                 onClick={() => {
-                  if (isActive('/guide')) {
+                  if (isActive(GUIDE_PATH)) {
                     scrollToTop(false);
                   } else {
-                    navigate('/guide', {
+                    navigate(GUIDE_PATH, {
                       state: { from: 'header' },
                     });
                     scrollToTop(false);
@@ -114,12 +116,12 @@ const Header = () => {
 
             <button
               class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              classList={{ activeLink: isActive('/stats') }}
+              classList={{ activeLink: isActive(STATS_PATH) }}
               onClick={() => {
-                if (isActive('/stats')) {
+                if (isActive(STATS_PATH)) {
                   scrollToTop(false);
                 } else {
-                  navigate('/stats', {
+                  navigate(STATS_PATH, {
                     state: { from: 'header' },
                   });
                   scrollToTop(false);

@@ -1,4 +1,5 @@
 export interface BaseData {
+  base_path?: string;
   finances_available: boolean;
   foundation: string;
   guide_summary?: GuideSummary;

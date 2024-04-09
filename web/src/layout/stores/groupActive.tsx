@@ -1,15 +1,14 @@
-import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { useNavigate, useSearchParams } from '@solidjs/router';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
 
-import { ALL_OPTION, GROUP_PARAM } from '../../data';
+import { ALL_OPTION, BASE_PATH, GROUP_PARAM } from '../../data';
 import { Group } from '../../types';
+import isExploreSection from '../../utils/isExploreSection';
 
 const getInitialGroupName = (groupParam: string | null): string | undefined => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const isExplore = () => location.pathname === '/';
 
   if (isUndefined(window.baseDS.groups)) {
     return undefined;
@@ -22,8 +21,8 @@ const getInitialGroupName = (groupParam: string | null): string | undefined => {
       if (!isUndefined(selectedGroup) || groupParam === ALL_OPTION) {
         return groupParam;
       } else {
-        if (isExplore()) {
-          navigate(`${location.pathname}?group=${firstGroup}`, {
+        if (isExploreSection(location.pathname)) {
+          navigate(`${BASE_PATH}/?group=${firstGroup}`, {
             replace: true,
           });
         }
