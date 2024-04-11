@@ -1,11 +1,15 @@
+import { isEmpty } from 'lodash';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
+import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
+import uniqWith from 'lodash/uniqWith';
 
 import { ALL_OPTION } from '../data';
 import {
   ActiveFilters,
   ActiveSection,
+  AdditionalCategory,
   BaseItem,
   CardMenu,
   Category,
@@ -20,8 +24,8 @@ import {
   Subcategory,
 } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
+import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
-import nestArray from './nestArray';
 import sortMenuOptions from './sortMenuOptions';
 
 export interface ItemsDataStatus {
@@ -152,31 +156,98 @@ export class ItemsDataGetter {
   // Group items
   private groupData(items: (BaseItem | Item)[]): { [key: string]: (Item | BaseItem)[] } {
     const gData = groupBy(items, 'category');
-    const groups: Group[] = window.baseDS.groups || [];
+    const additionalItems: { [key: string]: (Item | BaseItem)[] } = {};
+    const itemsWithAdditionalCategories = items.filter((i: BaseItem | Item) => !isUndefined(i.additional_categories));
+    itemsWithAdditionalCategories.forEach((item: BaseItem | Item) => {
+      if (item.additional_categories) {
+        item.additional_categories.forEach((x: AdditionalCategory) => {
+          if (additionalItems[x.category]) {
+            additionalItems[x.category].push(item);
+          } else {
+            additionalItems[x.category] = [item];
+          }
+        });
+      }
+    });
 
+    const groups: Group[] = window.baseDS.groups || [];
     const groupedItems: { [key: string]: (BaseItem | Item)[] } = {};
 
     for (const group of groups) {
-      groupedItems[group.normalized_name] = [];
+      const itemsTmp: (BaseItem | Item)[] = [];
       group.categories.forEach((c: string) => {
         const groupData = gData[c];
+        const additionalData = additionalItems[c];
         if (groupData) {
-          groupedItems[group.normalized_name].push(...groupData);
+          itemsTmp.push(...groupData);
+        }
+        if (additionalData) {
+          itemsTmp.push(...additionalData);
         }
       });
+      // Clean duplicates due to additional categories
+      groupedItems[group.normalized_name] = uniqWith(itemsTmp, isEqual);
     }
     groupedItems[ALL_OPTION] = [...items];
 
     return groupedItems;
   }
 
+  private classifyItemsByCatAndSub(
+    items: (BaseItem | Item)[],
+    group: string,
+    activeCategoryFilters?: string[]
+  ): { [key: string]: { [key: string]: (BaseItem | Item)[] } } {
+    const groupedItems: { [key: string]: { [key: string]: (BaseItem | Item)[] } } = {};
+
+    const addItem = (category: string, subcategory: string, item: BaseItem | Item) => {
+      if (groupedItems[category]) {
+        if (groupedItems[category][subcategory]) {
+          groupedItems[category][subcategory].push(item);
+        } else {
+          groupedItems[category][subcategory] = [item];
+        }
+      } else {
+        groupedItems[category] = { [subcategory]: [item] };
+      }
+    };
+
+    const validateCategory = (category: string): boolean => {
+      if (!checkIfCategoryInGroup(category, group)) return false;
+      if (activeCategoryFilters && activeCategoryFilters.length > 0) {
+        return activeCategoryFilters.includes(category);
+      }
+      return true;
+    };
+
+    for (const item of items) {
+      if (validateCategory(item.category)) {
+        addItem(item.category, item.subcategory, item);
+      }
+      if (item.additional_categories) {
+        item.additional_categories.forEach((ad: AdditionalCategory) => {
+          if (validateCategory(ad.category)) {
+            addItem(ad.category, ad.subcategory, item);
+          }
+        });
+      }
+    }
+
+    return groupedItems;
+  }
+
   // Classify items
-  public classifyItems(items: (BaseItem | Item)[], classify: ClassifyOption): unknown | undefined {
+  public classifyItems(
+    items: (BaseItem | Item)[],
+    classify: ClassifyOption,
+    group: string,
+    activeCategoryFilters?: string[]
+  ): unknown | undefined {
     switch (classify) {
       case ClassifyOption.None:
         return items;
       case ClassifyOption.Category:
-        return nestArray(items, ['category', 'subcategory']);
+        return this.classifyItemsByCatAndSub(items, group, activeCategoryFilters);
       case ClassifyOption.Maturity:
         return groupBy(items, 'maturity');
       case ClassifyOption.Tag:
@@ -185,7 +256,11 @@ export class ItemsDataGetter {
   }
 
   // Prepare grid data
-  private prepareGridData(grouped: { [key: string]: (Item | BaseItem)[] }, withAllOption = true) {
+  private prepareGridData(
+    grouped: { [key: string]: (Item | BaseItem)[] },
+    withAllOption: boolean,
+    activeCategoryFilters?: string[]
+  ) {
     const data: GroupData = {};
     if (!isUndefined(grouped)) {
       const groupedItems = { ...grouped };
@@ -193,32 +268,53 @@ export class ItemsDataGetter {
         delete groupedItems[ALL_OPTION];
       }
 
+      const addItem = (group: string, category: string, subcategory: string, item: Item | BaseItem) => {
+        if (data[group][category]) {
+          if (data[group][category][subcategory]) {
+            data[group][category][subcategory].items.push(item);
+            data[group][category][subcategory].itemsCount++;
+            if (item.featured) {
+              data[group][category][subcategory].itemsFeaturedCount++;
+            }
+          } else {
+            data[group][category][subcategory] = {
+              items: [item],
+              itemsCount: 1,
+              itemsFeaturedCount: item.featured ? 1 : 0,
+            };
+          }
+        } else {
+          data[group][category] = {
+            [subcategory]: {
+              items: [item],
+              itemsCount: 1,
+              itemsFeaturedCount: item.featured ? 1 : 0,
+            },
+          };
+        }
+      };
+
+      const validateCategory = (category: string, group: string): boolean => {
+        if (!checkIfCategoryInGroup(category, group)) return false;
+        if (activeCategoryFilters && activeCategoryFilters.length > 0) {
+          return activeCategoryFilters.includes(category);
+        }
+        return true;
+      };
+
       Object.keys(groupedItems).forEach((group: string) => {
         data[group] = {};
         const items = groupedItems![group];
         items.forEach((item: BaseItem | Item) => {
-          if (data[group][item.category]) {
-            if (data[group][item.category][item.subcategory]) {
-              data[group][item.category][item.subcategory].items.push(item);
-              data[group][item.category][item.subcategory].itemsCount++;
-              if (item.featured) {
-                data[group][item.category][item.subcategory].itemsFeaturedCount++;
+          if (validateCategory(item.category, group)) {
+            addItem(group, item.category, item.subcategory, item);
+          }
+          if (item.additional_categories) {
+            for (const ac of item.additional_categories) {
+              if (validateCategory(ac.category, group)) {
+                addItem(group, ac.category, ac.subcategory, item);
               }
-            } else {
-              data[group][item.category][item.subcategory] = {
-                items: [item],
-                itemsCount: 1,
-                itemsFeaturedCount: item.featured ? 1 : 0,
-              };
             }
-          } else {
-            data[group][item.category] = {
-              [item.subcategory]: {
-                items: [item],
-                itemsCount: 1,
-                itemsFeaturedCount: item.featured ? 1 : 0,
-              },
-            };
           }
         });
       });
@@ -242,13 +338,13 @@ export class ItemsDataGetter {
     const menuFullData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
     Object.keys(groupedItemsList).forEach((group: string) => {
-      const classifyGroup = this.classifyItems(groupedItemsList[group], ClassifyOption.Category);
+      const classifyGroup = this.classifyItems(groupedItemsList[group], ClassifyOption.Category, group);
       classifyFullCardData[group] = classifyGroup;
       menuFullData[group] = this.getMenuOptions(classifyGroup, ClassifyOption.Category);
       numItems[group as string] = groupedItemsList[group].length;
     });
 
-    const fullGridData = this.prepareGridData(groupedItemsList);
+    const fullGridData = this.prepareGridData(groupedItemsList, true);
     const fullQuery = { grid: fullGridData, card: classifyFullCardData, menu: menuFullData, numItems: numItems };
     this.initialQuery = fullQuery;
   }
@@ -292,18 +388,23 @@ export class ItemsDataGetter {
     const items = this.ready ? this.getAll() : window.baseDS.items;
     const filteredItems = filterData(items, input);
     const groupedItems = this.groupData(filteredItems);
+    let activeCategoryFilters: string[] | undefined;
+    if (classify === ClassifyOption.Category && !isUndefined(input.category) && !isEmpty(input.category)) {
+      activeCategoryFilters = input.category;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const classifyCardData: any = {};
     const menuData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
     Object.keys(groupedItems).forEach((group: string) => {
-      const classifyGroup = this.classifyItems(groupedItems[group], classify);
+      const classifyGroup = this.classifyItems(groupedItems[group], classify, group, activeCategoryFilters);
       classifyCardData[group] = classifyGroup;
       menuData[group] = this.getMenuOptions(classifyGroup, classify);
       numItems[group] = groupedItems[group].length;
     });
 
-    const gridData = this.prepareGridData(groupedItems);
+    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
     let currentQuery = { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
 
     if (!isUndefined(this.initialQuery)) {
