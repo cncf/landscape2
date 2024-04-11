@@ -14,7 +14,7 @@
         const resizer = urlParams.get('iframe-resizer');
         if (typeof resizer !== null && resizer === 'true') {
           const script = document.createElement('script');
-          script.setAttribute('src', './embed/assets/iframeResizer.contentWindow-v4.3.9.min.js');
+          script.setAttribute('src', './assets/iframeResizer.contentWindow-v4.3.9.min.js');
           document.body.appendChild(script);
         }
       })();
