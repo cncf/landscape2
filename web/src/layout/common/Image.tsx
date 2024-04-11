@@ -22,7 +22,7 @@ const Image = (props: Props) => {
         <img
           alt={`${props.name} logo`}
           class={props.class}
-          src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `${props.logo}`}
+          src={import.meta.env.MODE === 'development' ? `../../static/${props.logo}` : `./${props.logo}`}
           onError={() => setError(true)}
           loading={!isUndefined(props.enableLazyLoad) && props.enableLazyLoad ? 'lazy' : undefined}
           width="auto"

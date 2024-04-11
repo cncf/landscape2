@@ -69,10 +69,14 @@ mod base {
 
     /// Base dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[allow(clippy::struct_field_names)]
     pub(crate) struct Base {
         pub finances_available: bool,
         pub foundation: String,
         pub qr_code: String,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub base_path: Option<String>,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
@@ -123,7 +127,7 @@ mod base {
                 finances_available: false,
                 foundation: settings.foundation.clone(),
                 qr_code: qr_code.to_string(),
-                images: settings.images.clone(),
+                base_path: settings.base_path.clone(),
                 categories: landscape_data.categories.clone(),
                 categories_overridden: vec![],
                 colors: settings.colors.clone(),
@@ -132,6 +136,7 @@ mod base {
                 groups: settings.groups.clone().unwrap_or_default(),
                 guide_summary: BTreeMap::new(),
                 header: settings.header.clone(),
+                images: settings.images.clone(),
                 items: vec![],
                 members_category: settings.members_category.clone(),
                 upcoming_event: settings.upcoming_event.clone(),

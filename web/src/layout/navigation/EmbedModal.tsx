@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import { batch, createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import {
   Alignment,
@@ -40,10 +40,11 @@ import {
   TITLE_SIZE_PARAM,
   UPPERCASE_TITLE_PARAM,
 } from '../../../../embed/src/types';
-import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import { BASE_PATH, EMBED_SETUP_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Category, Subcategory, SVGIconKind } from '../../types';
 import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
+import isExploreSection from '../../utils/isExploreSection';
 import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
 import CodeBlock from '../common/CodeBlock';
@@ -91,8 +92,8 @@ const EmbedModal = () => {
       ? rgba2hex(window.baseDS.colors.color5)
       : DEFAULT_TITLE_BG_COLOR;
   // Icon is only visible when Explore section is loaded
-  const isVisible = () => ['/', '/embed-setup'].includes(location.pathname);
-  const isEmbedSetupActive = () => location.pathname === '/embed-setup';
+  const isVisible = createMemo(() => isExploreSection(location.pathname));
+  const isEmbedSetupActive = () => location.pathname === EMBED_SETUP_PATH;
   const [visibleModal, setVisibleModal] = createSignal<boolean>(isEmbedSetupActive());
   const categoriesList = () => sortBy(window.baseDS.categories, ['name']);
   const [subcategoriesList, setSubcategoriesList] = createSignal<Subcategory[]>(
@@ -127,10 +128,10 @@ const EmbedModal = () => {
   const [prevHash, setPrevHash] = createSignal<string>('');
   const [prevSearch, setPrevSearch] = createSignal<string>('');
 
-  const getUrl = () => {
+  const getIFrameUrl = () => {
     return `${
       import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
-    }/embed/embed.html?${KEY_PARAM}=${key() || categoriesList()[0].normalized_name}&${DISPLAY_HEADER_PARAM}=${
+    }${BASE_PATH}/embed/embed.html?${KEY_PARAM}=${key() || categoriesList()[0].normalized_name}&${DISPLAY_HEADER_PARAM}=${
       displayHeader() ? 'true' : 'false'
     }&${DISPLAY_HEADER_CATEGORY_PARAM}=${
       displayCategoryTitle() ? 'true' : 'false'
@@ -144,7 +145,7 @@ const EmbedModal = () => {
       itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())
         ? `&${ITEMS_SPACING_PARAM}=${itemsSpacing()}`
         : ''
-    }&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(bgColor())}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}`;
+    }&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(bgColor())}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${!isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''}`;
   };
 
   const onUpdateSpacingType = (type: SpacingType) => {
@@ -224,7 +225,7 @@ const EmbedModal = () => {
   };
 
   const onClose = () => {
-    navigate(`/${prevSearch() !== '' ? prevSearch() : ''}${prevHash()}`, {
+    navigate(`${BASE_PATH}/${prevSearch() !== '' ? prevSearch() : ''}${prevHash()}`, {
       replace: true,
     });
     setVisibleModal(false);
@@ -256,11 +257,11 @@ const EmbedModal = () => {
   };
 
   onMount(() => {
-    setUrl(getUrl());
+    setUrl(getIFrameUrl());
   });
 
   createEffect(() => {
-    setUrl(getUrl());
+    setUrl(getIFrameUrl());
   });
 
   createEffect(
@@ -276,7 +277,7 @@ const EmbedModal = () => {
       if (visibleModal()) {
         setPrevSearch(location.search);
         setPrevHash(location.hash);
-        setUrl(getUrl());
+        setUrl(getIFrameUrl());
       }
     })
   );
@@ -291,7 +292,7 @@ const EmbedModal = () => {
             e.preventDefault();
             e.stopPropagation();
             setVisibleModal(true);
-            navigate('embed-setup', {
+            navigate(EMBED_SETUP_PATH, {
               replace: true,
             });
           }}

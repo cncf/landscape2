@@ -14,6 +14,7 @@ export const ITEMS_ALIGNMENT_PARAM = 'items-alignment';
 export const ITEMS_SPACING_PARAM = 'items-spacing';
 export const TITLE_BGCOLOR_PARAM = 'bg-color';
 export const TITLE_FGCOLOR_PARAM = 'fg-color';
+export const BASE_PATH_PARAM = 'base-path';
 
 export interface Data {
   category: Category;

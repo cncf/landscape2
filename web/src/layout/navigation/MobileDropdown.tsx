@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
+import { EXPLORE_PATH, GUIDE_PATH, STATS_PATH } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
@@ -43,7 +44,7 @@ const MobileDropdown = (props: Props) => {
           <A
             class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
             activeClass="activeLink"
-            href="/"
+            href={EXPLORE_PATH}
             onClick={closeDropdown}
             end
           >
@@ -54,7 +55,7 @@ const MobileDropdown = (props: Props) => {
           <div class="dropdown-item mb-2">
             <A
               class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
-              href="/guide"
+              href={GUIDE_PATH}
               activeClass="activeLink"
               state={{ from: 'mobileHeader' }}
               onClick={closeDropdown}
@@ -67,7 +68,7 @@ const MobileDropdown = (props: Props) => {
           <A
             class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
             activeClass="activeLink"
-            href="/stats"
+            href={STATS_PATH}
             onClick={closeDropdown}
           >
             Stats

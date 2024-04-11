@@ -3,7 +3,7 @@ import { A, useLocation } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
-import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import { EXPLORE_PATH, SCREENSHOTS_PATH, SMALL_DEVICES_BREAKPOINTS, STATS_PATH } from '../../data';
 import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { SVGIconKind } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
@@ -41,7 +41,7 @@ const MobileHeader = () => {
         classList={{ 'opacity-0': !sticky(), [styles.isSticky]: sticky() }}
       >
         <div class="d-flex flex-row align-items-center">
-          <Show when={location.pathname !== '/stats'}>
+          <Show when={location.pathname !== STATS_PATH}>
             <button
               title="Index"
               class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 p-0 ${styles.mobileBtn}`}
@@ -72,7 +72,7 @@ const MobileHeader = () => {
         <div class="container-fluid d-flex flex-column flex-lg-row align-items-center p-3 p-lg-4 mainPadding">
           <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
             <Show when={!isUndefined(logo())}>
-              <A href="/" class="me-4 me-xl-5">
+              <A href={EXPLORE_PATH} class="me-4 me-xl-5">
                 <img
                   class={styles.logo}
                   src={import.meta.env.MODE === 'development' ? `../../static/${logo()}` : `${logo()}`}
@@ -88,7 +88,7 @@ const MobileHeader = () => {
           </div>
 
           <Show
-            when={location.pathname !== '/screenshot'}
+            when={location.pathname !== SCREENSHOTS_PATH}
             fallback={
               <Show when={!isUndefined(window.baseDS.qr_code)}>
                 <img

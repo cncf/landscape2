@@ -13,7 +13,17 @@ import {
   ViewMode,
   ZoomLevelsPerSize,
 } from './types';
+import getBasePath from './utils/getBasePath';
 import getFoundationNameLabel from './utils/getFoundationNameLabel';
+
+export const BASE_PATH = getBasePath();
+export const EXPLORE_PATH = BASE_PATH === '' ? '/' : `${BASE_PATH}/`;
+export const EMBED_SETUP_PATH = `${BASE_PATH}/embed-setup`;
+export const STATS_PATH = `${BASE_PATH}/stats`;
+export const GUIDE_PATH = `${BASE_PATH}/guide`;
+export const FINANCES_PATH = `${BASE_PATH}/finances`;
+export const LOGOS_PREVIEW_PATH = `${BASE_PATH}/logos-preview`;
+export const SCREENSHOTS_PATH = '/screenshot';
 
 export const TAB_PARAM = 'tab';
 export const VIEW_MODE_PARAM = 'view-mode';

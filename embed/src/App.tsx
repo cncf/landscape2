@@ -7,6 +7,7 @@ import NoData from './common/NoData';
 import StyleView from './common/StyleView';
 import {
   Alignment,
+  BASE_PATH_PARAM,
   BaseItem,
   Data,
   DEFAULT_DISPLAY_CATEGORY_HEADER,
@@ -116,6 +117,7 @@ const SubcategoryTitle = styled('div')`
 `;
 
 const App = () => {
+  const [basePath, setBasePath] = createSignal<string>('');
   const [key, setKey] = createSignal<string>();
   const [data, setData] = createSignal<Data | null>();
   const [displayHeader, setDisplayHeader] = createSignal<boolean>(DEFAULT_DISPLAY_HEADER);
@@ -139,6 +141,7 @@ const App = () => {
 
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const basePathParam = urlParams.get(BASE_PATH_PARAM);
     const keyParam = urlParams.get(KEY_PARAM);
     const displayHeaderParam = urlParams.get(DISPLAY_HEADER_PARAM);
     const styleParam = urlParams.get(ITEMS_STYLE_PARAM);
@@ -223,6 +226,7 @@ const App = () => {
         }
         // When size and style are not valid, we don´t save the key
         if (isValidSize && isValidStyle) {
+          setBasePath(basePathParam || '');
           setKey(keyParam);
         } else {
           setData(null);
@@ -240,7 +244,7 @@ const App = () => {
           fetch(
             import.meta.env.MODE === 'development'
               ? `http://localhost:8000/data/embed_${key()}.json`
-              : `../data/embed_${key()}.json`
+              : `${basePath()}/data/embed_${key()}.json`
           )
             .then((res) => {
               if (res.ok) {
