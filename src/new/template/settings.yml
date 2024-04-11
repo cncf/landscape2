@@ -27,6 +27,7 @@ url: http://127.0.0.1:8000
 # analytics:
 #   gtm:                            # Google Tag Manager configuration
 #     container_id: <CONTAINER_ID>  # Landscape web application container ID
+#
 
 # Base path (optional)
 #
@@ -35,6 +36,7 @@ url: http://127.0.0.1:8000
 # landscape will be hosted in a subpath, this value must be set accordingly.
 #
 # base_path: /<BASE_PATH>
+#
 
 # Categories (optional)
 #
@@ -169,7 +171,7 @@ grid_items_size: large
 #       - <CATEGORY2_NAME>
 #
 groups:
-  - name: All categories
+  - name: Some categories
     categories:
       - Category 1
       - Category 2
@@ -274,3 +276,4 @@ screenshot_width: 1500
 #   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
 #   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
 #   details_url: <URL>   # Event details URL (required)
+#
