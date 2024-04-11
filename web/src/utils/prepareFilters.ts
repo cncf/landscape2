@@ -1,7 +1,8 @@
 import { REGEX_DASH } from '../data';
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
-import { GroupData } from './itemsDataGetter';
+import checkIfCategoryInGroup from './checkIfCategoryInGroup';
+import itemsDataGetter from './itemsDataGetter';
 
 const cleanValue = (t: string): string => {
   // return encodeURIComponent(t);
@@ -23,25 +24,18 @@ export interface FiltersPerGroup {
   [key: string]: FilterSection[];
 }
 
-const getFiltersPerGroup = (groupedData: GroupData) => {
+const getFiltersPerGroup = () => {
   const groups: FiltersPerGroup = {};
 
-  Object.keys(groupedData).forEach((g: string) => {
-    const items: Item[] = [];
-
-    Object.keys(groupedData[g]).forEach((cat: string) => {
-      Object.keys(groupedData[g][cat]).forEach((subcat: string) => {
-        items.push(...groupedData[g][cat][subcat].items);
-      });
-    });
-
-    groups[g] = prepareFilters(items);
+  const groupedItems = itemsDataGetter.getGroupedData();
+  Object.keys(groupedItems).forEach((group: string) => {
+    groups[group] = prepareFilters(groupedItems[group], group);
   });
 
   return groups;
 };
 
-const prepareFilters = (items: Item[]): FilterSection[] => {
+const prepareFilters = (items: Item[], group: string): FilterSection[] => {
   const filters: FilterSection[] = [];
 
   const maturityTypes: string[] = [];
@@ -67,8 +61,16 @@ const prepareFilters = (items: Item[]): FilterSection[] => {
       extraTypes.push('specification');
     }
 
-    if (i.category) {
+    if (i.category && checkIfCategoryInGroup(i.category, group)) {
       categories.push(i.category);
+    }
+
+    if (i.additional_categories) {
+      i.additional_categories.forEach((ac) => {
+        if (checkIfCategoryInGroup(ac.category, group)) {
+          categories.push(ac.category);
+        }
+      });
     }
 
     if (i.crunchbase_data) {

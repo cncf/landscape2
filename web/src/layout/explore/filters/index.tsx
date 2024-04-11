@@ -20,7 +20,6 @@ import {
   ViewMode,
 } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
-import itemsDataGetter from '../../../utils/itemsDataGetter';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
@@ -78,7 +77,7 @@ const Filters = (props: Props) => {
     on(visibleFiltersModal, () => {
       if (visibleFiltersModal()) {
         if (filters().length === 0) {
-          const f = getFiltersPerGroup(itemsDataGetter.getGridData(true));
+          const f = getFiltersPerGroup();
           if (!isEmpty(f)) {
             setFiltersFromData(f);
             setFilters(f[props.initialSelectedGroup() || ALL_OPTION]);
