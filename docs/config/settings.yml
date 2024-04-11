@@ -27,6 +27,7 @@ url: https://landscape.cncf.io
 # analytics:
 #   gtm:                            # Google Tag Manager configuration
 #     container_id: <CONTAINER_ID>  # Landscape web application container ID
+#
 
 # Base path (optional)
 #
@@ -35,6 +36,7 @@ url: https://landscape.cncf.io
 # landscape will be hosted in a subpath, this value must be set accordingly.
 #
 # base_path: /<BASE_PATH>
+#
 
 # Categories (optional)
 #
@@ -373,6 +375,7 @@ tags:
 #   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
 #   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
 #   details_url: <URL>   # Event details URL (required)
+#
 upcoming_event:
   name: "KubeCon + CloudNativeCon EU 2024"
   start: "2024-03-19"
