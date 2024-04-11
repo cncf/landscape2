@@ -114,6 +114,7 @@ export interface Item extends BaseItem {
   twitter_url?: string;
   unnamed_organization?: boolean;
   youtube_url?: string;
+  linkedin_url?: string;
   audits?: SecurityAudit[];
 }
 
