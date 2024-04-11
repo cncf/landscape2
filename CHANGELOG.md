@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-04-11
+
+### Added
+
+- Ability to classify cards by maturity, tag, or even not classify at all (#552)
+- Allow sorting cards by multiple criteria (#552)
+- New virtual group named `all`, that includes the cards from all groups (#552)
+- Categories / subcategories headers now show how many items are on each (#552)
+- Button to jump to the top of the page (#552)
+- Category filter (#552)
+- Display LinkedIn link in item details view (#548, #563)
+- Allow setting web application base path (#557)
+
+### Fixed
+
+- Issue processing additional categories (#562)
+
+### Changed
+
+- Do not cache logos during build (#549)
+- Minor refactoring and some improvements to instrumentation (#543, #547)
+- Upgrade CLI dependencies (#550)
+
 ## [0.7.0] - 2024-03-19
 
 ### Added
