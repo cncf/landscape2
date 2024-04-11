@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { ZOOM_LEVELS } from '../../../data';
+import { GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item, SVGIconKind } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import getNormalizedName from '../../../utils/getNormalizedName';
@@ -148,7 +148,7 @@ const Grid = (props: Props) => {
                         <Show when={isSectionInGuide(props.categoryName, subcat.subcategoryName)}>
                           <div>
                             <A
-                              href={`/guide#${getNormalizedName({
+                              href={`${GUIDE_PATH}#${getNormalizedName({
                                 title: props.categoryName,
                                 subtitle: subcat.subcategoryName,
                                 grouped: true,

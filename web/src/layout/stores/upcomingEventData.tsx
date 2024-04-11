@@ -2,9 +2,10 @@ import { useLocation } from '@solidjs/router';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import moment from 'moment';
-import { createContext, createEffect, createSignal, on, ParentComponent, useContext } from 'solid-js';
+import { createContext, createEffect, createMemo, createSignal, on, ParentComponent, useContext } from 'solid-js';
 
 import { Event } from '../../types';
+import isExploreSection from '../../utils/isExploreSection';
 
 const validateEvent = (): Event | null => {
   let validEvent: Event | null = null;
@@ -27,11 +28,11 @@ function useUpcomingEventProvider() {
   const [hiddenEvent, setHiddenEvent] = createSignal<boolean>(isNull(validEvent()));
   const location = useLocation();
   // Upcoming event is only visible on EXPLORE section
-  const inExploreSection = () => ['/', '/embed-setup'].includes(location.pathname);
+  const isExploreActive = createMemo(() => isExploreSection(location.pathname));
 
   createEffect(
-    on(inExploreSection, () => {
-      if (inExploreSection()) {
+    on(isExploreActive, () => {
+      if (isExploreActive()) {
         setEventVisible(true);
       } else {
         setEventVisible(false);
