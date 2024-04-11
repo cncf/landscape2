@@ -3,7 +3,7 @@ import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, For, Match, Show, Switch } from 'solid-js';
 
-import { COLORS } from '../../../data';
+import { COLORS, GUIDE_PATH } from '../../../data';
 import {
   BaseItem,
   Category,
@@ -134,7 +134,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title)}>
                                     <div>
                                       <A
-                                        href={`/guide#${getNormalizedName({ title: title })}`}
+                                        href={`${GUIDE_PATH}#${getNormalizedName({ title: title })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
                                       >
@@ -152,7 +152,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title, subtitle)}>
                                     <div>
                                       <A
-                                        href={`/guide#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`}
+                                        href={`${GUIDE_PATH}#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
                                       >

@@ -1,3 +1,4 @@
+import { BASE_PATH } from '../../../data';
 import { SVGIconKind } from '../../../types';
 import CodeBlock from '../CodeBlock';
 import Modal from '../Modal';
@@ -16,8 +17,8 @@ const BadgeModal = (props: Props) => {
   const origin = window.location.origin;
   const foundation = window.baseDS.foundation;
   const badgeImage = `https://img.shields.io/badge/${foundation}%20Landscape-5699C6`;
-  const markdownLink = () => `[![${foundation} Landscape](${badgeImage})](${origin}/?item=${itemId()})`;
-  const asciiLink = () => `${origin}/?item=${itemId()}[image:${badgeImage}[${foundation} LANDSCAPE]]`;
+  const markdownLink = () => `[![${foundation} Landscape](${badgeImage})](${origin}${BASE_PATH}/?item=${itemId()})`;
+  const asciiLink = () => `${origin}${BASE_PATH}/?item=${itemId()}[image:${badgeImage}[${foundation} LANDSCAPE]]`;
 
   return (
     <Modal
