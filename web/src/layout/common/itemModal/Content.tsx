@@ -80,6 +80,19 @@ const Content = (props: Props) => {
     })
   );
 
+  const getLinkedInUrl = (): string | null => {
+    if (itemInfo()) {
+      if (itemInfo()!.linkedin_url) {
+        return itemInfo()!.linkedin_url!;
+      } else {
+        if (itemInfo()!.crunchbase_data && itemInfo()!.crunchbase_data!.linkedin_url) {
+          return itemInfo()!.crunchbase_data!.linkedin_url!;
+        }
+      }
+    }
+    return null;
+  };
+
   return (
     <>
       <ItemDropdown itemId={itemInfo()!.id} />
@@ -181,6 +194,12 @@ const Content = (props: Props) => {
                   <Show when={!isUndefined(itemInfo()!.youtube_url)}>
                     <ExternalLink title="Youtube" class={`ms-3 ${styles.link}`} href={itemInfo()!.youtube_url!}>
                       <SVGIcon kind={SVGIconKind.Youtube} />
+                    </ExternalLink>
+                  </Show>
+
+                  <Show when={!isNull(getLinkedInUrl())}>
+                    <ExternalLink title="LinkedIn" class={`ms-3 ${styles.link}`} href={getLinkedInUrl()!}>
+                      <SVGIcon kind={SVGIconKind.LinkedIn} />
                     </ExternalLink>
                   </Show>
 
