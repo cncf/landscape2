@@ -4,7 +4,7 @@ import { createSignal, onMount, Show } from 'solid-js';
 import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Image from '../Image';
-import styles from './ProjectParent.module.css';
+import styles from './ParentProject.module.css';
 
 interface Props {
   parent?: string;
@@ -18,13 +18,13 @@ const ParentProject = (props: Props) => {
 
   const content = () => (
     <>
-      <div class="d-flex flex-row align-items-center">
-        <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
+      <div class="d-flex flex-row align-items-start">
+        <div class={`d-flex justify-content-center ${styles.logoWrapper}`}>
           <Image name={parentInfo()!.name} class={`m-auto ${styles.logo}`} logo={parentInfo()!.logo} />
         </div>
         <div class={`ms-3 ${styles.content}`}>
-          <div class={`fw-semibold ${styles.parentTitle}`}>{parentInfo()!.name}</div>
-          <div class="text-truncate">
+          <div class={`fw-semibold text-truncate ${styles.parentTitle}`}>{parentInfo()!.name}</div>
+          <div class={styles.legend}>
             <small class="text-muted">
               {props.projectName} is a subproject of {parentInfo()!.name}
               <Show when={!isUndefined(parentInfo()!.maturity)} fallback={<>.</>}>

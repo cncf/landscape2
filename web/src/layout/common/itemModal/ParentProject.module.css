@@ -26,3 +26,22 @@
 .content {
   width: calc(100% - 40px - 1rem);
 }
+
+.legend {
+  overflow: hidden;
+  text-overflow: unset;
+  white-space: inherit;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-wrap: normal;
+  max-height: 38px;
+  line-height: 1.15rem;
+}
+
+@media only screen and (max-width: 991.98px) {
+  .legend {
+    -webkit-line-clamp: 3;
+    max-height: 57px;
+  }
+}
