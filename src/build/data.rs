@@ -351,6 +351,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.latest_annual_review_url = extra.annual_review_url;
                         item.linkedin_url = extra.linkedin_url;
                         item.mailing_list_url = extra.mailing_list_url;
+                        item.parent_project = extra.parent_project;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
@@ -534,6 +535,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub oss: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_project: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,
@@ -860,6 +864,7 @@ mod legacy {
         pub incubating: Option<NaiveDate>,
         pub linkedin_url: Option<String>,
         pub mailing_list_url: Option<String>,
+        pub parent_project: Option<String>,
         pub slack_url: Option<String>,
         pub specification: Option<bool>,
         pub stack_overflow_url: Option<String>,
