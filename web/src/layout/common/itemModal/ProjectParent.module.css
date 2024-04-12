@@ -1,0 +1,28 @@
+.fieldsetTitle {
+  font-size: 0.8rem;
+  line-height: 0.8rem;
+  color: var(--color4);
+  top: -0.35rem;
+  left: 1rem;
+}
+
+.logoWrapper {
+  height: 50px;
+  width: 40px;
+  min-width: 40px;
+}
+
+.logo {
+  font-size: 3rem;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.parentTitle {
+  font-size: 1.15rem;
+}
+
+.content {
+  width: calc(100% - 40px - 1rem);
+}

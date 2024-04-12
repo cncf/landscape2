@@ -24,6 +24,7 @@ import FundingRoundsTable from './FundingRoundsTable';
 import LanguagesStats from './LanguagesStats';
 import styles from './MobileContent.module.css';
 import MobileMaturitySection from './MobileMaturitySection';
+import ParentProject from './ParentProject';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
@@ -153,6 +154,14 @@ const MobileContent = (props: Props) => {
             </For>
           </div>
         </Show>
+
+        {/* Parent project */}
+        <ParentProject
+          parent={itemInfo()!.parent_project}
+          projectName={itemInfo()!.name}
+          class={styles.sectionTitle}
+          mobileVersion
+        />
 
         {/* Maturity */}
         <MobileMaturitySection item={itemInfo()!} titleClass={styles.sectionTitle} />

@@ -116,6 +116,7 @@ export interface Item extends BaseItem {
   youtube_url?: string;
   linkedin_url?: string;
   audits?: SecurityAudit[];
+  parent_project?: string;
 }
 
 export interface SecurityAudit {
