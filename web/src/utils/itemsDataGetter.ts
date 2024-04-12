@@ -425,6 +425,13 @@ export class ItemsDataGetter {
     }
   }
 
+  // Get item by name
+  public getItemByName(name: string): Item | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      return this.landscapeData.items.find((i: Item) => name === i.name);
+    }
+  }
+
   // Get items by section
   public getItemsBySection(activeSection: ActiveSection): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {

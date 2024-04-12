@@ -27,6 +27,7 @@ import FundingRoundsTable from './FundingRoundsTable';
 import ItemDropdown from './ItemDropdown';
 import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
+import ParentProject from './ParentProject';
 import ParticipationStats from './ParticipationStats';
 
 interface Props {
@@ -300,6 +301,13 @@ const Content = (props: Props) => {
             </For>
           </div>
         </Show>
+        {/* Parent project */}
+        <ParentProject
+          parent={itemInfo()!.parent_project}
+          projectName={itemInfo()!.name}
+          class={styles.fieldset}
+          mobileVersion={false}
+        />
         {/* Maturity */}
         <MaturitySection item={itemInfo()!} class={styles.fieldset} />
         {/* Repositories */}
