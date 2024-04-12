@@ -25,9 +25,7 @@ const ActiveFiltersList = (props: Props) => {
 
   const onResetFilters = () => {
     setShowLoading(true);
-    setTimeout(() => {
-      props.resetFilters();
-    }, 200);
+    props.resetFilters();
   };
 
   createEffect(
