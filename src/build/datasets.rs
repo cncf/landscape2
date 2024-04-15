@@ -62,7 +62,9 @@ mod base {
     use crate::build::{
         data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
         guide::LandscapeGuide,
-        settings::{Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent},
+        settings::{
+            Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent, ViewMode,
+        },
     };
     use serde::{Deserialize, Serialize};
     use std::collections::BTreeMap;
@@ -113,6 +115,9 @@ mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub upcoming_event: Option<UpcomingEvent>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub view_mode: Option<ViewMode>,
     }
 
     impl Base {
@@ -140,6 +145,7 @@ mod base {
                 items: vec![],
                 members_category: settings.members_category.clone(),
                 upcoming_event: settings.upcoming_event.clone(),
+                view_mode: settings.view_mode.clone(),
             };
 
             // Update categories overridden in settings

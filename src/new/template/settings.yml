@@ -277,3 +277,12 @@ screenshot_width: 1500
 #   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
 #   details_url: <URL>   # Event details URL (required)
 #
+
+# View mode (optional)
+#
+# This section allows customizing the default view mode of the landscape web
+# application. The view mode can be set to either `grid` or `card`. When
+# omitted, the default view mode is `grid`.
+#
+# view_mode: <grid|card>
+#
