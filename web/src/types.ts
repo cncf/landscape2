@@ -14,6 +14,7 @@ export interface BaseData {
   members_category?: string;
   qr_code?: string;
   upcoming_event?: Event;
+  view_mode?: ViewMode;
   header?: HeaderContent;
   footer?: FooterContent;
 }
