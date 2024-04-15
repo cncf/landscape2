@@ -3,8 +3,8 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createMemo, Show } from 'solid-js';
 
-import { ALL_OPTION, EXPLORE_PATH, GUIDE_PATH, SCREENSHOTS_PATH, STATS_PATH } from '../../data';
-import { SVGIconKind, ViewMode } from '../../types';
+import { ALL_OPTION, DEFAULT_VIEW_MODE, EXPLORE_PATH, GUIDE_PATH, SCREENSHOTS_PATH, STATS_PATH } from '../../data';
+import { SVGIconKind } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
@@ -30,7 +30,7 @@ const Header = () => {
 
   const resetDefaultExploreValues = () => {
     const groups = window.baseDS.groups;
-    setViewMode(ViewMode.Grid);
+    setViewMode(DEFAULT_VIEW_MODE);
     setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : ALL_OPTION);
   };
 
