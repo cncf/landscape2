@@ -382,3 +382,12 @@ upcoming_event:
   end: "2024-03-22"
   banner_url: "https://www.cncf.io/wp-content/uploads/2024/01/kceu24_promo_2400x300.png"
   details_url: "https://events.linuxfoundation.org/kubecon-cloudnativecon-europe/register/?utm_source=landscape&utm_medium=all&utm_campaign=kubeconeu24&utm_content=slim-banner"
+
+# View mode (optional)
+#
+# This section allows customizing the default view mode of the landscape web
+# application. The view mode can be set to either `grid` or `card`. When
+# omitted, the default view mode is `grid`.
+#
+# view_mode: <grid|card>
+#

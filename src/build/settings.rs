@@ -68,6 +68,9 @@ pub(crate) struct LandscapeSettings {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub upcoming_event: Option<UpcomingEvent>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub view_mode: Option<ViewMode>,
 }
 
 impl LandscapeSettings {
@@ -629,4 +632,12 @@ pub(crate) struct UpcomingEvent {
     pub end: NaiveDate,
     pub banner_url: String,
     pub details_url: String,
+}
+
+/// Default view mode used in the web application.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum ViewMode {
+    Grid,
+    Card,
 }
