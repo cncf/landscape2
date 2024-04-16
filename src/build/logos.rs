@@ -11,6 +11,8 @@ use sha2::{Digest, Sha256};
 use std::fs;
 use usvg::{NodeExt, Rect, TreeParsing};
 
+use super::settings::LogosViewbox;
+
 lazy_static! {
     /// Regular expression used to remove the SVG logos' title.
     static ref SVG_TITLE: Regex = Regex::new("<title>.*</title>",).expect("exprs in SVG_TITLE to be valid");
@@ -30,6 +32,7 @@ pub(crate) struct Logo {
 pub(crate) async fn prepare_logo(
     http_client: reqwest::Client,
     logos_source: &LogosSource,
+    logos_viewbox: &LogosViewbox,
     file_name: &str,
 ) -> Result<Logo> {
     // Get SVG logo from the source provided
@@ -40,17 +43,19 @@ pub(crate) async fn prepare_logo(
     svg_data = SVG_TITLE.replace(&svg_data, b"").into_owned();
 
     // Update viewbox to the smallest rectangle in which the object fits
-    if let Ok(Some(bounding_box)) = get_svg_bounding_box(&svg_data) {
-        if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
-            let new_viewbox_bounds = format!(
-                "{} {} {} {}",
-                bounding_box.left(),
-                bounding_box.top(),
-                bounding_box.right() - bounding_box.left(),
-                bounding_box.bottom() - bounding_box.top()
-            );
-            let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
-            svg_data = SVG_VIEWBOX.replace(&svg_data, new_viewbox.as_bytes()).into_owned();
+    if logos_viewbox.adjust && !logos_viewbox.exclude.contains(&file_name.to_string()) {
+        if let Ok(Some(bounding_box)) = get_svg_bounding_box(&svg_data) {
+            if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
+                let new_viewbox_bounds = format!(
+                    "{} {} {} {}",
+                    bounding_box.left(),
+                    bounding_box.top(),
+                    bounding_box.right() - bounding_box.left(),
+                    bounding_box.bottom() - bounding_box.top()
+                );
+                let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
+                svg_data = SVG_VIEWBOX.replace(&svg_data, new_viewbox.as_bytes()).into_owned();
+            }
         }
     }
 

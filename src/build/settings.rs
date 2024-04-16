@@ -54,6 +54,9 @@ pub(crate) struct LandscapeSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub images: Option<Images>,
 
+    #[serde(default)]
+    pub logos_viewbox: LogosViewbox,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub osano: Option<Osano>,
 
@@ -603,6 +606,22 @@ pub(crate) struct Images {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_graph: Option<String>,
+}
+
+/// Logos viewbox configuration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub(crate) struct LogosViewbox {
+    pub adjust: bool,
+    pub exclude: Vec<String>,
+}
+
+impl Default for LogosViewbox {
+    fn default() -> Self {
+        LogosViewbox {
+            adjust: true,
+            exclude: vec![],
+        }
+    }
 }
 
 /// Osano configuration.

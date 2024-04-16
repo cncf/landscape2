@@ -8,7 +8,7 @@ use self::{
     github::collect_github_data,
     logos::prepare_logo,
     projects::{generate_projects_csv, Project, ProjectsMd},
-    settings::{Analytics, Osano},
+    settings::{Analytics, LogosViewbox, Osano},
 };
 use crate::{
     build::api::{Api, ApiSources},
@@ -127,7 +127,13 @@ pub(crate) async fn build(args: &BuildArgs) -> Result<()> {
     let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
 
     // Prepare items logos and copy them to the output directory
-    prepare_items_logos(&args.logos_source, &mut landscape_data, &args.output_dir).await?;
+    prepare_items_logos(
+        &args.logos_source,
+        &settings.logos_viewbox,
+        &mut landscape_data,
+        &args.output_dir,
+    )
+    .await?;
 
     // Collect CLOMonitor reports summaries and copy them to the output directory
     collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
@@ -461,6 +467,7 @@ async fn prepare_guide(guide_source: &GuideSource, output_dir: &Path) -> Result<
 #[instrument(skip_all, err)]
 async fn prepare_items_logos(
     logos_source: &LogosSource,
+    logos_viewbox: &LogosViewbox,
     landscape_data: &mut LandscapeData,
     output_dir: &Path,
 ) -> Result<()> {
@@ -473,26 +480,29 @@ async fn prepare_items_logos(
     }
     let http_client = reqwest::Client::new();
     let logos_source = Arc::new(logos_source.clone());
+    let logos_viewbox = Arc::new(logos_viewbox.clone());
     let logos: HashMap<String, Option<String>> = stream::iter(landscape_data.items.iter())
         .map(|item| async {
             // Prepare logo
             let http_client = http_client.clone();
             let logos_source = logos_source.clone();
+            let logos_viewbox = logos_viewbox.clone();
             let file_name = item.logo.clone();
-            let logo =
-                match tokio::spawn(async move { prepare_logo(http_client, &logos_source, &file_name).await })
-                    .await
-                {
-                    Ok(Ok(logo)) => logo,
-                    Ok(Err(err)) => {
-                        error!(?err, ?item.logo, "error preparing logo");
-                        return (item.id.clone(), None);
-                    }
-                    Err(err) => {
-                        error!(?err, ?item.logo, "error executing prepare_logo task");
-                        return (item.id.clone(), None);
-                    }
-                };
+            let logo = match tokio::spawn(async move {
+                prepare_logo(http_client, &logos_source, &logos_viewbox, &file_name).await
+            })
+            .await
+            {
+                Ok(Ok(logo)) => logo,
+                Ok(Err(err)) => {
+                    error!(?err, ?item.logo, "error preparing logo");
+                    return (item.id.clone(), None);
+                }
+                Err(err) => {
+                    error!(?err, ?item.logo, "error executing prepare_logo task");
+                    return (item.id.clone(), None);
+                }
+            };
 
             // Copy logo to output dir using the digest(+.svg) as filename
             let file_name = format!("{}.svg", logo.digest);
