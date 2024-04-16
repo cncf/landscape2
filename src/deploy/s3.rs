@@ -19,9 +19,6 @@ use walkdir::WalkDir;
 /// File name of the index document.
 const INDEX_DOCUMENT: &str = "index.html";
 
-/// Prefix used in the logos objects keys in S3.
-const LOGOS_PREFIX: &str = "logos/";
-
 /// Number of files to upload concurrently.
 const UPLOAD_FILES_CONCURRENCY: usize = 50;
 
@@ -151,12 +148,6 @@ async fn upload_objects(
 
             // Skip objects that don't need to be uploaded again
             if deployed_objects.contains_key(&key) {
-                // Skip already deployed logos (logos filenames are based on
-                // their content, we don't need to upload again existing ones).
-                if key.starts_with(LOGOS_PREFIX) {
-                    return Ok(());
-                }
-
                 // Skip any other objects that haven't changed
                 let checksum = md5sum(file)?;
                 if let Some(remote_checksum) = deployed_objects.get(&key).expect("object to be present") {
