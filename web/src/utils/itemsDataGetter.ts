@@ -1,11 +1,12 @@
-import { isEmpty } from 'lodash';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
+import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
+import some from 'lodash/some';
 import uniqWith from 'lodash/uniqWith';
 
-import { ALL_OPTION } from '../data';
+import { ALL_OPTION, DEFAULT_CLASSIFY } from '../data';
 import {
   ActiveFilters,
   ActiveSection,
@@ -21,6 +22,7 @@ import {
   Item,
   LandscapeData,
   Repository,
+  SortOption,
   Subcategory,
 } from '../types';
 import capitalizeFirstLetter from './capitalizeFirstLetter';
@@ -66,17 +68,17 @@ interface CategoryOpt {
   [key: string]: string[];
 }
 
+export interface ClassifyAndSortOptions {
+  classify: ClassifyOption[];
+  sort: SortOption[];
+}
+
 export class ItemsDataGetter {
   private updateStatus?: ItemsDataStatus;
   private ready = false;
   private landscapeData?: LandscapeData;
-  private initialQuery?: {
-    grid: GroupData;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    card: any;
-    menu: { [key: string]: CardMenu | undefined };
-    numItems: { [key: string]: number };
-  };
+  private classifyAndSortOptions: { [key: string]: ClassifyAndSortOptions } | undefined;
+  private allDataGrouped: { [key: string]: (Item | BaseItem)[] } | undefined;
 
   // Subscribe to the updateStatus
   public subscribe(updateStatus: ItemsDataStatus) {
@@ -98,7 +100,7 @@ export class ItemsDataGetter {
           if (this.updateStatus) {
             this.updateStatus.updateStatus(true);
           }
-          this.saveInitialData();
+          this.saveData();
         });
     }
   }
@@ -191,6 +193,52 @@ export class ItemsDataGetter {
     groupedItems[ALL_OPTION] = [...items];
 
     return groupedItems;
+  }
+
+  private getClassifyAndSortOptionsPerGroup = (items: (BaseItem | Item)[]): ClassifyAndSortOptions => {
+    const classify: ClassifyOption[] = [ClassifyOption.None, ClassifyOption.Category];
+    const sort: SortOption[] = [SortOption.Name];
+
+    if (some(items, (i: Item) => !isUndefined(i.maturity))) {
+      classify.push(ClassifyOption.Maturity);
+    }
+    if (some(items, (i: Item) => !isUndefined(i.tag))) {
+      classify.push(ClassifyOption.Tag);
+    }
+
+    if (some(items, (i: Item) => !isUndefined(i.repositories))) {
+      sort.push(SortOption.Stars);
+      sort.push(SortOption.FirstCommit);
+      sort.push(SortOption.LatestCommit);
+      sort.push(SortOption.Contributors);
+    }
+
+    if (some(items, (i: Item) => !isUndefined(i.accepted_at) || !isUndefined(i.joined_at))) {
+      sort.push(SortOption.DateAdded);
+    }
+
+    if (some(items, (i: Item) => !isUndefined(i.crunchbase_data))) {
+      sort.push(SortOption.Funding);
+    }
+
+    return {
+      classify,
+      sort,
+    };
+  };
+
+  private prepareClassifyAndSortOptions(groupedItems: { [key: string]: (Item | BaseItem)[] }): void {
+    const options: { [key: string]: ClassifyAndSortOptions } = {};
+
+    Object.keys(groupedItems).forEach((group: string) => {
+      options[group] = this.getClassifyAndSortOptionsPerGroup(groupedItems[group]);
+    });
+
+    this.classifyAndSortOptions = options;
+  }
+
+  public getClassifyAndSortOptions(): { [key: string]: ClassifyAndSortOptions } {
+    return this.classifyAndSortOptions || {};
   }
 
   private classifyItemsByCatAndSub(
@@ -327,26 +375,20 @@ export class ItemsDataGetter {
   }
 
   public getGroupedData(): { [key: string]: (Item | BaseItem)[] } {
-    return this.groupData(this.ready ? this.getAll() : window.baseDS.items);
+    if (this.allDataGrouped) {
+      return this.allDataGrouped;
+    } else {
+      const grouped = this.groupData(this.ready ? this.getAll() : window.baseDS.items);
+      if (this.ready) {
+        this.allDataGrouped = grouped;
+      }
+      return grouped;
+    }
   }
 
-  private saveInitialData() {
-    const items = this.ready ? this.getAll() : window.baseDS.items;
-    const groupedItemsList = this.groupData(items);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifyFullCardData: any = {};
-    const menuFullData: { [key: string]: CardMenu | undefined } = {};
-    const numItems: { [key: string]: number } = {};
-    Object.keys(groupedItemsList).forEach((group: string) => {
-      const classifyGroup = this.classifyItems(groupedItemsList[group], ClassifyOption.Category, group);
-      classifyFullCardData[group] = classifyGroup;
-      menuFullData[group] = this.getMenuOptions(classifyGroup, ClassifyOption.Category);
-      numItems[group as string] = groupedItemsList[group].length;
-    });
-
-    const fullGridData = this.prepareGridData(groupedItemsList, true);
-    const fullQuery = { grid: fullGridData, card: classifyFullCardData, menu: menuFullData, numItems: numItems };
-    this.initialQuery = fullQuery;
+  private saveData() {
+    const groupedItemsList = this.getGroupedData();
+    this.prepareClassifyAndSortOptions(groupedItemsList);
   }
 
   // Prepare menu options
@@ -384,38 +426,50 @@ export class ItemsDataGetter {
   };
 
   // Query items
-  public queryItems(input: ActiveFilters, group: string, classify: ClassifyOption) {
-    const items = this.ready ? this.getAll() : window.baseDS.items;
-    const filteredItems = filterData(items, input);
-    const groupedItems = this.groupData(filteredItems);
+  public queryItems(input: ActiveFilters, activeGroup: string, classify: ClassifyOption) {
+    const allGroupedItems = this.getGroupedData();
+    // Filter only the active group
+    const filteredItems = !isEmpty(input)
+      ? filterData(allGroupedItems[activeGroup], input)
+      : allGroupedItems[activeGroup];
+    const groupedItems = { ...allGroupedItems, [activeGroup]: filteredItems };
+
     let activeCategoryFilters: string[] | undefined;
     if (classify === ClassifyOption.Category && !isUndefined(input.category) && !isEmpty(input.category)) {
       activeCategoryFilters = input.category;
     }
 
+    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const classifyCardData: any = {};
     const menuData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
+
     Object.keys(groupedItems).forEach((group: string) => {
-      const classifyGroup = this.classifyItems(groupedItems[group], classify, group, activeCategoryFilters);
-      classifyCardData[group] = classifyGroup;
-      menuData[group] = this.getMenuOptions(classifyGroup, classify);
-      numItems[group] = groupedItems[group].length;
+      if (group === activeGroup) {
+        // Update group active data
+        const classifyGroup = this.classifyItems(
+          groupedItems[activeGroup],
+          classify,
+          activeGroup,
+          activeCategoryFilters
+        );
+        classifyCardData[activeGroup] = classifyGroup;
+        menuData[activeGroup] = this.getMenuOptions(classifyGroup, classify);
+        numItems[activeGroup] = groupedItems[activeGroup].length;
+      } else {
+        const classifiedOption =
+          !isUndefined(this.classifyAndSortOptions) && this.classifyAndSortOptions[group].classify.includes(classify)
+            ? classify
+            : DEFAULT_CLASSIFY;
+        const classifiedGroup = this.classifyItems(allGroupedItems[group], classifiedOption, group);
+        classifyCardData[group] = classifiedGroup;
+        menuData[group] = this.getMenuOptions(classifiedGroup, classifiedOption);
+      }
     });
 
-    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
-    let currentQuery = { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
-
-    if (!isUndefined(this.initialQuery)) {
-      currentQuery = {
-        grid: { ...this.initialQuery.grid, [group]: gridData[group] },
-        card: { ...this.initialQuery.card, [group]: classifyCardData[group] },
-        menu: { ...this.initialQuery.menu, [group]: menuData[group] },
-        numItems: { ...this.initialQuery.numItems, [group]: numItems[group] },
-      };
-    }
-    return currentQuery;
+    return { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
   }
 
   // Get item by id

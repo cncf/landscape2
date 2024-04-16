@@ -1,7 +1,7 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import startCase from 'lodash/startCase';
-import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
+import { For, Match, Show, Switch } from 'solid-js';
 
 import { REGEX_UNDERSCORE } from '../../data';
 import { ActiveFilters, FilterCategory, SVGIconKind } from '../../types';
@@ -21,20 +21,10 @@ interface Props {
 
 const ActiveFiltersList = (props: Props) => {
   const activeFilters = () => props.activeFilters;
-  const [showLoading, setShowLoading] = createSignal<boolean>(false);
 
   const onResetFilters = () => {
-    setShowLoading(true);
     props.resetFilters();
   };
-
-  createEffect(
-    on(activeFilters, () => {
-      if (showLoading() && isEmpty(activeFilters())) {
-        setShowLoading(false);
-      }
-    })
-  );
 
   return (
     <Show when={Object.keys(activeFilters()).length > 0}>
@@ -163,11 +153,6 @@ const ActiveFiltersList = (props: Props) => {
             }}
           </For>
         </div>
-        <Show when={showLoading()}>
-          <div class="spinner-border spinner-border-sm text-secondary mt-2" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </Show>
       </div>
     </Show>
   );

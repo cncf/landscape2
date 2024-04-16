@@ -93,6 +93,15 @@ const Content = (props: Props) => {
     return subtitles;
   };
 
+  const countItems = (content: { [key: string]: unknown }): number => {
+    let numItems: number = 0;
+    Object.keys(content).forEach((subtitle: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      numItems += (content as any)[subtitle].length;
+    });
+    return numItems;
+  };
+
   return (
     <Show when={!isUndefined(data())}>
       <Switch>
@@ -104,13 +113,7 @@ const Content = (props: Props) => {
             {(title: string) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const content = () => (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];
-              let numItems: number = 0;
-              if (props.classify === ClassifyOption.Category) {
-                Object.keys(content()).forEach((subtitle: string) => {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  numItems += (content() as any)[subtitle].length;
-                });
-              }
+              const numItems = () => countItems(content() as { [key: string]: unknown });
 
               return (
                 <div>
@@ -143,7 +146,7 @@ const Content = (props: Props) => {
                                     </div>
                                   </Show>
                                   <div class="text-white text-nowrap text-truncate">
-                                    {title} ({numItems})
+                                    {title} ({numItems()})
                                   </div>
                                 </div>
                                 <div

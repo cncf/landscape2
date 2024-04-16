@@ -22,6 +22,10 @@
   min-width: 50px !important;
 }
 
+.active {
+  color: var(--bs-white) !important;
+}
+
 .btnSymbol {
   position: relative;
   font-size: 1.25rem;
@@ -76,6 +80,13 @@
 
 .mobileToCBtn svg {
   margin-top: -2px;
+}
+
+.spinner {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  top: -2px;
+  position: relative;
 }
 
 @media (max-width: 1199.98px) {
