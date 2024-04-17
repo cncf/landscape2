@@ -630,9 +630,9 @@ const Explore = (props: Props) => {
                             }}
                             onClick={() => {
                               setVisibleLoading(true);
-                              setSelectedGroup(group.normalized_name);
 
                               setTimeout(() => {
+                                setSelectedGroup(group.normalized_name);
                                 updateQueryString(GROUP_PARAM, group.normalized_name);
                               }, DELAY_ACTIONS);
                             }}
@@ -651,9 +651,9 @@ const Explore = (props: Props) => {
                         }}
                         onClick={() => {
                           setVisibleLoading(true);
-                          setSelectedGroup(ALL_OPTION);
 
                           setTimeout(() => {
+                            setSelectedGroup(ALL_OPTION);
                             updateQueryString(GROUP_PARAM, ALL_OPTION);
                           }, DELAY_ACTIONS);
                         }}
@@ -673,9 +673,9 @@ const Explore = (props: Props) => {
                     onChange={(e) => {
                       setVisibleLoading(true);
                       const group = e.currentTarget.value;
-                      setSelectedGroup(group);
 
                       setTimeout(() => {
+                        setSelectedGroup(group);
                         updateQueryString(GROUP_PARAM, group);
                       }, DELAY_ACTIONS);
                     }}
@@ -849,9 +849,9 @@ const Explore = (props: Props) => {
                 onChange={(e) => {
                   setVisibleLoading(true);
                   const group = e.currentTarget.value;
-                  setSelectedGroup(group);
 
                   setTimeout(() => {
+                    setSelectedGroup(group);
                     updateQueryString(GROUP_PARAM, group);
                   }, DELAY_ACTIONS);
                 }}
