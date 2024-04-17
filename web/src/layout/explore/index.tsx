@@ -37,12 +37,12 @@ import {
   SVGIconKind,
   ViewMode,
 } from '../../types';
-import getClassifyAndSortOptions, { ClassifyAndSortOptions } from '../../utils/getClassifyAndSortOptions';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
 import getNormalizedName from '../../utils/getNormalizedName';
-import itemsDataGetter, { GroupData } from '../../utils/itemsDataGetter';
+import itemsDataGetter, { ClassifyAndSortOptions, GroupData } from '../../utils/itemsDataGetter';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
+import Loading from '../common/Loading';
 import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
@@ -63,9 +63,10 @@ interface Props {
 }
 
 const TITLE_GAP = 40;
-const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24; // Filters + Group legend + View Mode + Zoom + Right margin
+const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24 + 32; // Filters + Group legend + View Mode + Zoom + Right margin + Loading
 const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 435 - 101; // + Classify/Sort - Zoom
 const EXTRA_FILTERS = ['specification'];
+const DELAY_ACTIONS = 40;
 
 const Explore = (props: Props) => {
   const navigate = useNavigate();
@@ -85,6 +86,7 @@ const Explore = (props: Props) => {
   const updateContainerGridWidth = useSetGridWidth();
 
   const [readyData, setReadyData] = createSignal<boolean>(true);
+  const [visibleLoading, setVisibleLoading] = createSignal<boolean>(false);
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
@@ -115,18 +117,22 @@ const Explore = (props: Props) => {
   const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
 
   const checkIfFullDataRequired = (): boolean => {
-    const activeFiltersKeys = Object.keys(activeFilters());
-    if (!isEmpty(activeFilters())) {
-      const filtersInBase = [FilterCategory.Maturity, FilterCategory.TAG];
-      // If base data is enough for active filters
-      if (activeFiltersKeys.every((f) => filtersInBase.includes(f as FilterCategory))) {
-        return false;
-      } else {
-        return true;
+    if (viewMode() === ViewMode.Card) {
+      return true;
+    } else {
+      const activeFiltersKeys = Object.keys(activeFilters());
+      if (!isEmpty(activeFilters())) {
+        const filtersInBase = [FilterCategory.Maturity, FilterCategory.TAG];
+        // If base data is enough for active filters
+        if (activeFiltersKeys.every((f) => filtersInBase.includes(f as FilterCategory))) {
+          return false;
+        } else {
+          return true;
+        }
       }
-    }
 
-    return false;
+      return false;
+    }
   };
 
   const getMaturityOptions = () => {
@@ -210,6 +216,12 @@ const Explore = (props: Props) => {
     setMenuTOCFromHeader(false);
   };
 
+  const hideVisibleLoading = () => {
+    setTimeout(() => {
+      setVisibleLoading(false);
+    });
+  };
+
   const updateQueryString = (param: string, value: string) => {
     const updatedSearchParams = new URLSearchParams(location.search);
     const currentGroup = param === GROUP_PARAM ? value : selectedGroup() || ALL_OPTION;
@@ -227,6 +239,10 @@ const Explore = (props: Props) => {
         updatedSearchParams.delete(f);
       });
 
+      if (param === GROUP_PARAM) {
+        setActiveFilters({});
+      }
+
       batch(() => {
         setClassify(classifyOption);
         setSorted(sortOption);
@@ -239,7 +255,11 @@ const Explore = (props: Props) => {
           resetFilters();
           scrollToTop(false);
         }
+
+        hideVisibleLoading();
       });
+    } else {
+      hideVisibleLoading();
     }
 
     if (param === 'sort') {
@@ -342,13 +362,15 @@ const Explore = (props: Props) => {
       replace: true,
       scroll: true, // default
     });
+
+    hideVisibleLoading();
   };
 
   async function fetchItems() {
     try {
       const fullData = await itemsDataGetter.getAll();
       setLandscapeData(fullData);
-      const options = getClassifyAndSortOptions();
+      const options = itemsDataGetter.getClassifyAndSortOptions();
       setClassifyAndSortOptions(options);
       setClassifyOptions(options[selectedGroup() || ALL_OPTION].classify);
       setSortOptions(options[selectedGroup() || ALL_OPTION].sort);
@@ -460,20 +482,24 @@ const Explore = (props: Props) => {
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
-    batch(() => {
-      setActiveFilters(newFilters);
-      const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classify()!);
-      checkVisibleItemsNumber(data.numItems);
-      setGroupsData(data.grid);
-      setCardData(data.card);
-      setCardMenu(data.menu);
-    });
+    setVisibleLoading(true);
 
-    updateFiltersQueryString(newFilters);
+    setTimeout(() => {
+      batch(() => {
+        setActiveFilters(newFilters);
+        const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classify()!);
+        checkVisibleItemsNumber(data.numItems);
+        setGroupsData(data.grid);
+        setCardData(data.card);
+        setCardMenu(data.menu);
+      });
 
-    if (!isUndefined(landscapeData())) {
-      setFullDataApplied(true);
-    }
+      updateFiltersQueryString(newFilters);
+
+      if (!isUndefined(landscapeData())) {
+        setFullDataApplied(true);
+      }
+    }, DELAY_ACTIONS);
   };
 
   const handler = () => {
@@ -545,7 +571,7 @@ const Explore = (props: Props) => {
     <Show when={!isUndefined(groupsData())}>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
         <div class="d-flex flex-column flex-lg-row my-2 my-md-3 py-1">
-          <div class="d-flex flex-row align-items-center mb-1 mb-md-0">
+          <div class="d-flex flex-row align-items-center mb-1 mb-md-0 w-100">
             <div class="d-block d-lg-none ms-0 ms-lg-4">
               <button
                 title="Index"
@@ -574,6 +600,14 @@ const Explore = (props: Props) => {
               sortOptions={sortOptions()}
             />
 
+            <Show when={visibleLoading()}>
+              <div class="d-flex d-lg-none ms-3">
+                <div class={`spinner-border text-secondary ms-3 mt-1 ${styles.spinner}`} role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </Show>
+
             <div class="d-none d-lg-flex align-items-center">
               <Show when={!isUndefined(props.initialData.groups)}>
                 <div class={styles.btnGroupLegend}>
@@ -591,12 +625,16 @@ const Explore = (props: Props) => {
                             title={`Group: ${group.name}`}
                             class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
                             classList={{
-                              [`active text-white ${styles.active}`]:
+                              [`active ${styles.active}`]:
                                 !isUndefined(selectedGroup()) && group.normalized_name === selectedGroup(),
                             }}
                             onClick={() => {
+                              setVisibleLoading(true);
                               setSelectedGroup(group.normalized_name);
-                              updateQueryString(GROUP_PARAM, group.normalized_name);
+
+                              setTimeout(() => {
+                                updateQueryString(GROUP_PARAM, group.normalized_name);
+                              }, DELAY_ACTIONS);
                             }}
                           >
                             {group.name}
@@ -609,12 +647,15 @@ const Explore = (props: Props) => {
                         title="All"
                         class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
                         classList={{
-                          [`active text-white ${styles.active}`]:
-                            !isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup(),
+                          [`active ${styles.active}`]: !isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup(),
                         }}
                         onClick={() => {
+                          setVisibleLoading(true);
                           setSelectedGroup(ALL_OPTION);
-                          updateQueryString(GROUP_PARAM, ALL_OPTION);
+
+                          setTimeout(() => {
+                            updateQueryString(GROUP_PARAM, ALL_OPTION);
+                          }, DELAY_ACTIONS);
                         }}
                       >
                         All
@@ -630,9 +671,13 @@ const Explore = (props: Props) => {
                     value={selectedGroup() || props.initialData.groups![0].normalized_name}
                     aria-label="Group"
                     onChange={(e) => {
+                      setVisibleLoading(true);
                       const group = e.currentTarget.value;
                       setSelectedGroup(group);
-                      updateQueryString(GROUP_PARAM, group);
+
+                      setTimeout(() => {
+                        updateQueryString(GROUP_PARAM, group);
+                      }, DELAY_ACTIONS);
                     }}
                   >
                     <For each={props.initialData.groups}>
@@ -666,12 +711,16 @@ const Explore = (props: Props) => {
                       type="button"
                       class="btn btn-outline-primary rounded-0 fw-semibold"
                       classList={{
-                        'active text-white': value === viewMode(),
+                        [`active ${styles.active}`]: value === viewMode(),
                       }}
                       onClick={() => {
                         if (!(value === viewMode())) {
-                          setViewMode(value);
-                          updateQueryString(VIEW_MODE_PARAM, value);
+                          setVisibleLoading(true);
+
+                          setTimeout(() => {
+                            setViewMode(value);
+                            updateQueryString(VIEW_MODE_PARAM, value);
+                          }, DELAY_ACTIONS);
                         }
                       }}
                     >
@@ -722,9 +771,13 @@ const Explore = (props: Props) => {
                     value={classify()}
                     aria-label="Classify"
                     onChange={(e) => {
+                      setVisibleLoading(true);
                       const classifyOpt = e.currentTarget.value as ClassifyOption;
-                      setClassify(classifyOpt);
-                      updateQueryString(CLASSIFY_PARAM, classifyOpt);
+
+                      setTimeout(() => {
+                        setClassify(classifyOpt);
+                        updateQueryString(CLASSIFY_PARAM, classifyOpt);
+                      }, DELAY_ACTIONS);
                     }}
                   >
                     <For each={classifyOptions()}>
@@ -743,14 +796,17 @@ const Explore = (props: Props) => {
                     value={`${sorted()}_${sortDirection()}`}
                     aria-label="Sort"
                     onChange={(e) => {
+                      setVisibleLoading(true);
                       const sortValue = e.currentTarget.value;
                       const sortOpt = sortValue.split('_');
 
-                      batch(() => {
-                        setSorted(sortOpt[0] as SortOption);
-                        setSortDirection(sortOpt[1] as SortDirection);
-                      });
-                      updateQueryString('sort', sortValue);
+                      setTimeout(() => {
+                        batch(() => {
+                          setSorted(sortOpt[0] as SortOption);
+                          setSortDirection(sortOpt[1] as SortDirection);
+                        });
+                        updateQueryString('sort', sortValue);
+                      }, DELAY_ACTIONS);
                     }}
                   >
                     <For each={sortOptions()}>
@@ -772,6 +828,13 @@ const Explore = (props: Props) => {
                 </Match>
               </Switch>
             </div>
+            <Show when={visibleLoading()}>
+              <div class="d-none d-lg-flex ms-auto">
+                <div class={`spinner-border text-secondary ms-3 mt-1 ${styles.spinner}`} role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </Show>
           </div>
           <Show when={!isUndefined(props.initialData.groups)}>
             <div class="d-flex d-lg-none align-items-center mt-3 mt-md-4 mt-lg-0 mb-2 mb-md-3 mb-lg-0">
@@ -784,9 +847,13 @@ const Explore = (props: Props) => {
                 value={selectedGroup() || props.initialData.groups![0].normalized_name}
                 aria-label="Group"
                 onChange={(e) => {
+                  setVisibleLoading(true);
                   const group = e.currentTarget.value;
                   setSelectedGroup(group);
-                  updateQueryString(GROUP_PARAM, group);
+
+                  setTimeout(() => {
+                    updateQueryString(GROUP_PARAM, group);
+                  }, DELAY_ACTIONS);
                 }}
               >
                 {/* Do not display All option for mobile */}
@@ -809,6 +876,10 @@ const Explore = (props: Props) => {
             removeFilter={removeFilter}
           />
         </div>
+
+        <Show when={!readyData()}>
+          <Loading spinnerClass="position-fixed top-50 start-50" transparentBg />
+        </Show>
 
         <Show when={numVisibleItems() === 0 && readyData()}>
           <div class="pt-5">

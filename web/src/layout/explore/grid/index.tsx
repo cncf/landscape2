@@ -1,5 +1,5 @@
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
+import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
@@ -94,13 +94,10 @@ const GridCategory = (props: Props) => {
 
   createEffect(
     on(data, () => {
+      setColorsList(generateColorsArray(Object.keys(data()).length));
       setCatWithItems(getCategoriesWithItems(data()));
     })
   );
-
-  onMount(() => {
-    setColorsList(generateColorsArray(Object.keys(data()).length));
-  });
 
   return (
     <Show when={firstLoad()}>
