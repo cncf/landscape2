@@ -27,9 +27,9 @@ const ExternalLink = (props: Props) => {
     return (
       <>
         {!isUndefined(props.visibleExternalIcon) && props.visibleExternalIcon ? (
-          <div class="d-flex flex-row align-items-baseline">
+          <div class="d-flex flex-row align-items-center">
             {props.children}
-            <SVGIcon kind={SVGIconKind.Link} class={`ms-2 icon ${props.externalIconClassName}`} />
+            <SVGIcon kind={SVGIconKind.ExternalLink} class={`ms-2 icon ${props.externalIconClassName}`} />
           </div>
         ) : (
           <>{props.children}</>
