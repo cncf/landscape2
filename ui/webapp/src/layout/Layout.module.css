@@ -1,0 +1,7 @@
+.container {
+  min-height: 100vh;
+}
+
+:global(.overlay-active) .container {
+  margin-top: var(--overlay-alert-height);
+}

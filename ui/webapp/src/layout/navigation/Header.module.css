@@ -1,0 +1,93 @@
+.navbar {
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1040;
+  height: 72px;
+  min-height: 72px;
+  position: sticky;
+  top: 0;
+}
+
+:global(.overlay-active) .navbar {
+  top: var(--overlay-alert-height);
+}
+
+.logo {
+  height: 34px;
+  max-width: 250px;
+}
+
+.qr {
+  height: 60px;
+}
+
+.searchIcon {
+  left: 0.75rem;
+  top: 0.25rem;
+}
+
+.search {
+  padding-left: 2.5rem;
+}
+
+.searchBar {
+  height: 30px;
+}
+
+.link {
+  color: var(--color1) !important;
+  letter-spacing: 2px;
+  border-bottom: 6px solid transparent;
+  margin-right: 2rem;
+}
+
+.link:global(.activeLink) {
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+}
+
+.icons {
+  margin-top: -4px;
+}
+
+.githubIcon {
+  margin-top: 1px;
+}
+
+.link:hover:before {
+  background-color: var(--color1);
+  content: '';
+  height: 3px;
+  left: 0;
+  opacity: 0.5;
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+}
+
+.link:global(.activeLink):before {
+  background-color: var(--color1);
+  content: '';
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  bottom: -4px;
+}
+
+.link:global(.activeLink):hover:before {
+  opacity: 1;
+}
+
+.btnLink {
+  font-size: 1.25rem;
+}
+
+.btnLink:hover .githubIcon {
+  color: var(--color2);
+}
+
+@media only screen and (max-width: 1199.98px) {
+  .link {
+    margin-right: 1.5rem;
+  }
+}

@@ -16,7 +16,7 @@ updates:
           - "patch"
 
   - package-ecosystem: "npm"
-    directory: "/web"
+    directory: "/ui"
     schedule:
       interval: "weekly"
     groups:
