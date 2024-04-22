@@ -3,7 +3,6 @@ import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import moment from 'moment';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
@@ -21,11 +20,10 @@ import SVGIcon from '../SVGIcon';
 import AcquisitionsTable from './AcquisitionsTable';
 import Box from './Box';
 import FundingRoundsTable from './FundingRoundsTable';
-import LanguagesStats from './LanguagesStats';
 import styles from './MobileContent.module.css';
 import MobileMaturitySection from './MobileMaturitySection';
 import ParentProject from './ParentProject';
-import ParticipationStats from './ParticipationStats';
+import RepositoriesSection from './RepositoriesSection';
 
 interface Props {
   item?: Item | null;
@@ -35,13 +33,7 @@ const MobileContent = (props: Props) => {
   const itemInfo = () => props.item;
   const updateActiveItemId = useUpdateActiveItemId();
   const [description, setDescription] = createSignal<string>();
-  const [mainRepo, setMainRepo] = createSignal<Repository>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
-  const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
-
-  const formatDate = (date: string): string => {
-    return moment(date).format("MMM 'YY");
-  };
 
   createEffect(
     on(itemInfo, () => {
@@ -56,11 +48,6 @@ const MobileContent = (props: Props) => {
               mainRepoTmp = repo;
             }
           });
-
-          if (mainRepoTmp) {
-            setMainRepo(mainRepoTmp);
-            setMainRepoUrl(new URL(mainRepoTmp.url).pathname);
-          }
         }
 
         // If homepage_url is undefined or is equal to main repository url
@@ -72,7 +59,6 @@ const MobileContent = (props: Props) => {
           }
         }
       } else {
-        setMainRepo(undefined);
         setDescription(undefined);
         setWebsiteUrl(undefined);
         updateActiveItemId(); // Close modal
@@ -167,81 +153,11 @@ const MobileContent = (props: Props) => {
         <MobileMaturitySection item={itemInfo()!} titleClass={styles.sectionTitle} />
 
         {/* Repositories */}
-        <Show when={!isUndefined(itemInfo()!.repositories)}>
-          <div class={`text-uppercase mt-3 fw-semibold border-bottom ${styles.sectionTitle}`}>Repositories</div>
-          <Show when={!isUndefined(mainRepo())}>
-            <div class={`fw-bold text-uppercase my-2 ${styles.titleInSection}`}>Primary repository</div>
-
-            <ExternalLink
-              class={`p-0 align-baseline fw-semibold text-truncate my-2 ${styles.text}`}
-              href={mainRepo()!.url}
-            >
-              <div class="d-flex flex-row align-items-center">
-                <SVGIcon kind={SVGIconKind.GitHub} class="me-1" />
-                <div class="text-truncate">{mainRepoUrl()!.slice(1)}</div>
-              </div>
-            </ExternalLink>
-            <Show when={!isUndefined(mainRepo()!.github_data)}>
-              <div class="mb-2">
-                <div class={`badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
-                  {mainRepo()!.github_data!.license}
-                </div>
-              </div>
-            </Show>
-
-            <Show when={!isUndefined(mainRepo()!.github_data)}>
-              <div class="row g-4 my-0 mx-1 mb-2 justify-content-center">
-                <Box class="col-6" value={prettifyNumber(mainRepo()!.github_data!.stars, 1)} legend="Stars" />
-
-                <Box
-                  class="col-6"
-                  value={prettifyNumber(mainRepo()!.github_data!.contributors.count)}
-                  legend="Contributors"
-                />
-
-                <Box class="col-6" value={formatDate(mainRepo()!.github_data!.first_commit.ts)} legend="First commit" />
-
-                <Box
-                  class="col-6"
-                  value={formatDate(mainRepo()!.github_data!.latest_commit.ts)}
-                  legend="Latest commit"
-                />
-
-                <Box
-                  class="col-6"
-                  value={
-                    !isUndefined(mainRepo()!.github_data!.latest_release)
-                      ? formatDate(mainRepo()!.github_data!.latest_release!.ts)
-                      : '-'
-                  }
-                  legend="Latest release"
-                />
-              </div>
-
-              <Show when={!isUndefined(mainRepo()!.github_data!.participation_stats)}>
-                <div class="mt-4">
-                  <div class={`fw-semibold ${styles.subtitleInSection}`}>Participation stats</div>
-                  <div class="mx-2">
-                    <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
-                  </div>
-                </div>
-              </Show>
-
-              <Show
-                when={!isUndefined(mainRepo()!.github_data!.languages) && !isEmpty(mainRepo()!.github_data!.languages)}
-              >
-                <div class="mt-4">
-                  <div class={`fw-semibold ${styles.subtitleInSection}`}>Languages</div>
-                  <LanguagesStats
-                    initialLanguages={mainRepo()!.github_data!.languages!}
-                    boxClass="col-6"
-                    class="mx-1"
-                  />
-                </div>
-              </Show>
-            </Show>
-          </Show>
-        </Show>
+        <RepositoriesSection
+          repositories={itemInfo()!.repositories}
+          titleClass={`text-uppercase mt-3 mb-4 fw-semibold border-bottom ${styles.sectionTitle}`}
+          boxClass="col-6"
+        />
 
         {/* Security audits */}
         <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>

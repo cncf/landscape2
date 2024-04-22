@@ -3,7 +3,6 @@ import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import moment from 'moment';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
@@ -11,7 +10,6 @@ import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import { formatTAGName } from '../../../utils/prepareFilters';
 import prettifyNumber from '../../../utils/prettifyNumber';
-import sortObjectByValue from '../../../utils/sortObjectByValue';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import Badge from '../Badge';
 import CollapsableText from '../CollapsableText';
@@ -25,10 +23,9 @@ import Box from './Box';
 import styles from './Content.module.css';
 import FundingRoundsTable from './FundingRoundsTable';
 import ItemDropdown from './ItemDropdown';
-import LanguagesStats from './LanguagesStats';
 import MaturitySection from './MaturitySection';
 import ParentProject from './ParentProject';
-import ParticipationStats from './ParticipationStats';
+import RepositoriesSection from './RepositoriesSection';
 
 interface Props {
   item?: Item | null;
@@ -40,10 +37,6 @@ const Content = (props: Props) => {
   const [description, setDescription] = createSignal<string>();
   const [mainRepo, setMainRepo] = createSignal<Repository>();
   const [websiteUrl, setWebsiteUrl] = createSignal<string>();
-
-  const formatDate = (date: string): string => {
-    return moment(date).format("MMM 'YY");
-  };
 
   createEffect(
     on(itemInfo, () => {
@@ -311,123 +304,11 @@ const Content = (props: Props) => {
         {/* Maturity */}
         <MaturitySection item={itemInfo()!} class={styles.fieldset} />
         {/* Repositories */}
-        <Show when={!isUndefined(itemInfo()!.repositories)}>
-          <div class={`position-relative border ${styles.fieldset}`}>
-            <div class={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}>Repositories</div>
-            <Show when={!isUndefined(mainRepo())}>
-              <div class={`fw-bold text-uppercase mt-2 mb-3 ${styles.titleInSection}`}>Primary repository</div>
-              <div class="d-flex flex-row align-items-center my-2">
-                <ExternalLink class="text-reset p-0 align-baseline fw-semibold" href={mainRepo()!.url}>
-                  {mainRepo()!.url}
-                </ExternalLink>
-                <Show when={!isUndefined(mainRepo()!.github_data)}>
-                  <div class={`ms-3 badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
-                    {mainRepo()!.github_data!.license}
-                  </div>
-                </Show>
-              </div>
-              <Show when={!isUndefined(mainRepo()!.github_data)}>
-                <div class="row g-4 my-0 mb-2">
-                  <Box value={prettifyNumber(mainRepo()!.github_data!.stars, 1)} legend="Stars" />
-
-                  <Box value={prettifyNumber(mainRepo()!.github_data!.contributors.count)} legend="Contributors" />
-
-                  <Box value={formatDate(mainRepo()!.github_data!.first_commit.ts)} legend="First commit" />
-
-                  <Box value={formatDate(mainRepo()!.github_data!.latest_commit.ts)} legend="Latest commit" />
-
-                  <Box
-                    value={
-                      !isUndefined(mainRepo()!.github_data!.latest_release)
-                        ? formatDate(mainRepo()!.github_data!.latest_release!.ts)
-                        : '-'
-                    }
-                    legend="Latest release"
-                  />
-                </div>
-
-                <Show when={!isUndefined(mainRepo()!.github_data!.participation_stats)}>
-                  <div class="mt-4">
-                    <div class={`fw-semibold ${styles.subtitleInSection}`}>Participation stats</div>
-                    <ParticipationStats initialStats={mainRepo()!.github_data!.participation_stats} />
-                  </div>
-                </Show>
-
-                <Show
-                  when={
-                    !isUndefined(mainRepo()!.github_data!.languages) && !isEmpty(mainRepo()!.github_data!.languages)
-                  }
-                >
-                  <div class="mt-4">
-                    <div class={`fw-semibold ${styles.subtitleInSection}`}>Languages</div>
-                    <LanguagesStats initialLanguages={mainRepo()!.github_data!.languages!} />
-                  </div>
-                </Show>
-              </Show>
-            </Show>
-            <Show when={!isUndefined(itemInfo()!.repositories) && itemInfo()!.repositories!.length > 1}>
-              <div class="mt-4">
-                <div class={`fw-bold text-uppercase ${styles.titleInSection}`}>Other repositories</div>
-                <table class={`table table-sm table-striped table-bordered mt-3 ${styles.tableLayout}`}>
-                  <thead class={`text-uppercase text-muted ${styles.thead}`}>
-                    <tr>
-                      <th class="text-center" scope="col">
-                        URL
-                      </th>
-                      <th class={`text-center ${styles.reposCol}`} scope="col">
-                        Language
-                      </th>
-                      <th class={`text-center text-nowrap ${styles.reposCol}`} scope="col">
-                        Latest commit
-                      </th>
-                      <th class={`text-center ${styles.reposCol}`} scope="col">
-                        Stars
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <For each={itemInfo()!.repositories}>
-                      {(repo: Repository) => {
-                        const languages =
-                          repo.github_data && repo.github_data.languages
-                            ? sortObjectByValue(repo.github_data.languages)
-                            : undefined;
-
-                        return (
-                          <Show when={!repo.primary}>
-                            <tr class={styles.tableContent}>
-                              <td class="px-3">
-                                <ExternalLink
-                                  class={`text-muted text-truncate d-block ${styles.tableLink}`}
-                                  href={repo.url}
-                                >
-                                  {repo.url}
-                                </ExternalLink>
-                              </td>
-                              <td class="px-3 text-center text-nowrap">
-                                {!isUndefined(languages) && languages.length > 0 ? languages[0] : '-'}
-                              </td>
-                              <td class="px-3 text-center text-nowrap">
-                                {repo.github_data && repo.github_data.latest_commit
-                                  ? formatDate(repo.github_data!.latest_commit!.ts)
-                                  : '-'}
-                              </td>
-                              <td class="px-3 text-center text-nowrap">
-                                {repo.github_data && repo.github_data.stars
-                                  ? prettifyNumber(repo.github_data.stars)
-                                  : '-'}
-                              </td>
-                            </tr>
-                          </Show>
-                        );
-                      }}
-                    </For>
-                  </tbody>
-                </table>
-              </div>
-            </Show>
-          </div>
-        </Show>
+        <RepositoriesSection
+          repositories={itemInfo()!.repositories}
+          class={`border ${styles.fieldset}`}
+          titleClass={`position-absolute px-2 bg-white fw-semibold ${styles.fieldsetTitle}`}
+        />
         {/* Security audits */}
         <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
           <div class={`position-relative border ${styles.fieldset}`}>

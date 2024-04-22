@@ -601,8 +601,8 @@ const Explore = (props: Props) => {
             />
 
             <Show when={visibleLoading()}>
-              <div class="d-flex d-lg-none ms-3">
-                <div class={`spinner-border text-secondary ms-3 mt-1 ${styles.spinner}`} role="status">
+              <div class="d-flex d-lg-none ms-2">
+                <div class={`spinner-border text-secondary mt-1 ${styles.spinner}`} role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
               </div>

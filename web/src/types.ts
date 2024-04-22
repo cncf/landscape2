@@ -420,6 +420,7 @@ export enum SVGIconKind {
   Documentation,
   Download,
   Embed,
+  ExternalLink,
   Facebook,
   Filters,
   Flickr,
