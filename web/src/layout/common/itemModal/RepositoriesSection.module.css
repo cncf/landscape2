@@ -56,11 +56,10 @@
 }
 
 .goodFirstBadge {
-  height: 19px;
+  height: 20px;
 }
 
 .goodFirstBadge img {
-  border: 1px solid var(--bs-gray-700);
   max-height: 100%;
 }
 
