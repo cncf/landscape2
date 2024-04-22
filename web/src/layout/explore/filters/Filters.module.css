@@ -41,6 +41,11 @@
   color: var(--color4);
 }
 
+.section {
+  max-height: 235px;
+  overscroll-behavior: contain;
+}
+
 @media (max-width: 1199.98px) {
   .modal {
     width: 90%;

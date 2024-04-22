@@ -67,6 +67,9 @@ const Filters = (props: Props) => {
         if (filter === FilterCategory.Maturity) {
           opts.push(`non-${getFoundationNameLabel()}`);
         }
+        if (filter === FilterCategory.License) {
+          opts.push('non-oss');
+        }
         cleanFilters[filter] = intersection(opts, props.initialActiveFilters()[filter]);
       }
     });
@@ -305,11 +308,11 @@ const Filters = (props: Props) => {
                 <Section
                   title="Status"
                   section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
-                  extraMaturity={getSection(FilterCategory.Maturity)}
+                  extraOptions={{ [getFoundationNameLabel()]: getSection(FilterCategory.Maturity) }}
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
-                  sectionClass={styles.section}
+                  sectionClass={`overflow-auto visibleScroll ${styles.section}`}
                 />
                 <Section
                   title="TAG"
@@ -317,23 +320,26 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.TAG]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
-                  sectionClass={styles.section}
+                  sectionClass={`overflow-auto visibleScroll ${styles.section}`}
                 />
-                <SearchbarSection
-                  title="License"
-                  placeholder="Search license"
-                  section={getSection(FilterCategory.License)}
-                  initialActiveFilters={tmpActiveFilters}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilter={resetFilter}
-                />
+                <Show when={!isUndefined(getSection(FilterCategory.License))}>
+                  <Section
+                    title="License"
+                    section={getSectionInPredefinedFilters(FilterCategory.License)}
+                    extraOptions={{ oss: getSection(FilterCategory.License)! }}
+                    activeFilters={{ ...tmpActiveFilters() }[FilterCategory.License]}
+                    updateActiveFilters={updateActiveFilters}
+                    resetFilter={resetFilter}
+                    sectionClass={`overflow-auto visibleScroll ${styles.section}`}
+                  />
+                </Show>
                 <Section
                   title="Category"
                   section={getSection(FilterCategory.Category)}
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Category]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
-                  sectionClass={styles.section}
+                  sectionClass={`overflow-auto visibleScroll ${styles.section}`}
                 />
                 <Section
                   title="Extra"
@@ -341,7 +347,7 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Extra]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
-                  sectionClass={styles.section}
+                  sectionClass={`overflow-auto visibleScroll ${styles.section}`}
                 />
               </div>
             </Show>
@@ -373,7 +379,7 @@ const Filters = (props: Props) => {
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.OrgType]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
-                  sectionClass={styles.section}
+                  sectionClass={`overflow-auto visibleScroll ${styles.section}`}
                 />
 
                 <SearchbarSection
