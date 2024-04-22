@@ -56,7 +56,7 @@ const RepositoryInfo = (props: RepoProps) => {
             </div>
           </ExternalLink>
           <Show when={props.repository.primary || !isUndefined(props.repository.github_data)}>
-            <div class="d-flex align-items-center mt-2 mt-md-0">
+            <div class={`d-flex align-items-center flex-wrap flex-md-nowrap mt-2 mt-md-0 ${styles.badges}`}>
               <Show when={props.repository.primary}>
                 <div
                   class={`me-2 badge border rounded-0 text-uppercase ${styles.badgeOutlineDark} ${styles.miniBadge}`}
@@ -65,10 +65,20 @@ const RepositoryInfo = (props: RepoProps) => {
                 </div>
               </Show>
               <Show when={!isUndefined(props.repository.github_data)}>
-                <div class={`badge border rounded-0 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
+                <div class={`badge border rounded-0 me-2 ${styles.badgeOutlineDark} ${styles.miniBadge}`}>
                   {props.repository.github_data!.license}
                 </div>
               </Show>
+              <div class="d-none d-md-flex">
+                <ExternalLink
+                  class={styles.goodFirstBadge}
+                  href={`https://github.com/${formatRepoUrl(props.repository.url)}/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"`}
+                >
+                  <img
+                    src={`https://img.shields.io/github/issues/${formatRepoUrl(props.repository.url)}/good%20first%20issue.svg?style=flat-square`}
+                  />
+                </ExternalLink>
+              </div>
             </div>
           </Show>
         </div>
