@@ -54,3 +54,11 @@
 .linkContentWrapper {
   max-width: calc(100% - 1.5rem);
 }
+
+.goodFirstBadge img {
+  margin-top: -3px;
+}
+
+.badges {
+  row-gap: 0.5rem;
+}
