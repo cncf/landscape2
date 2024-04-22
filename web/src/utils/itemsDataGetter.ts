@@ -1,9 +1,11 @@
+import compact from 'lodash/compact';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
+import uniq from 'lodash/uniq';
 import uniqWith from 'lodash/uniqWith';
 
 import { ALL_OPTION, DEFAULT_CLASSIFY } from '../data';
@@ -507,6 +509,31 @@ export class ItemsDataGetter {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.enduser && window.baseDS.members_category === i.category);
     }
+  }
+
+  // Get maturity options
+  public getMaturityOptions(): string[] {
+    const maturity = window.baseDS.items.map((i: Item) => i.maturity);
+    return uniq(compact(maturity)) || [];
+  }
+
+  // Get license options
+  public getLicenseOptionsPerGroup(group: string): string[] {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      const allGroupedItems = this.getGroupedData();
+      const options: string[] = [];
+      allGroupedItems[group].forEach((i: Item) => {
+        if (i.repositories) {
+          i.repositories.forEach((r: Repository) => {
+            if (r.github_data) {
+              options.push(r.github_data!.license);
+            }
+          });
+        }
+      });
+      return uniq(compact(options));
+    }
+    return [];
   }
 
   // Prepare logos options

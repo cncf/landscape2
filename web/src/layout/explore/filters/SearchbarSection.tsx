@@ -12,6 +12,7 @@ export interface Props {
   title?: string;
   placeholder?: string;
   section?: FilterSection;
+  extraOptions?: { [key: string]: FilterSection };
   initialActiveFilters: Accessor<ActiveFilters>;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
   resetFilter: (value: FilterCategory) => void;
@@ -200,15 +201,34 @@ const SearchbarSection = (props: Props) => {
                   <For each={visibleOptions()}>
                     {(opt: FilterOption) => {
                       return (
-                        <CheckBox
-                          name={props.section?.value as string}
-                          value={opt.value}
-                          labelClass={`mw-100 text-muted ${styles.label}`}
-                          class="my-1"
-                          label={opt.name}
-                          checked={activeFilters().includes(opt.value)}
-                          onChange={(value: string, checked: boolean) => onChange(value, checked)}
-                        />
+                        <>
+                          <CheckBox
+                            name={props.section?.value as string}
+                            value={opt.value}
+                            labelClass={`mw-100 text-muted ${styles.label}`}
+                            class="my-1"
+                            label={opt.name}
+                            checked={activeFilters().includes(opt.value)}
+                            onChange={(value: string, checked: boolean) => onChange(value, checked)}
+                          />
+                          <Show when={!isUndefined(props.extraOptions) && props.extraOptions[opt.value]}>
+                            <div class="ms-3">
+                              <For each={props.extraOptions![opt.value].options}>
+                                {(subOpt: FilterOption) => (
+                                  <CheckBox
+                                    name={props.extraOptions![opt.value].value}
+                                    value={subOpt.value}
+                                    labelClass={`mw-100 text-muted ${styles.label}`}
+                                    class="my-1"
+                                    label={subOpt.name}
+                                    checked={activeFilters().includes(subOpt.value)}
+                                    onChange={(value: string, checked: boolean) => onChange(value, checked)}
+                                  />
+                                )}
+                              </For>
+                            </div>
+                          </Show>
+                        </>
                       );
                     }}
                   </For>

@@ -56,17 +56,23 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // License License
       if (activeFilters[FilterCategory.License]) {
-        if (isUndefined(item.repositories)) {
+        if (isUndefined(item.oss) && !activeFilters[FilterCategory.License].includes('non-oss')) {
           return false;
         } else {
-          const licenses: string[] = [];
-          item.repositories.forEach((repo: Repository) => {
-            if (repo.github_data && repo.github_data.license) {
-              licenses.push(repo.github_data.license);
+          if (!isUndefined(item.oss)) {
+            if (isUndefined(item.repositories)) {
+              return false;
+            } else {
+              const licenses: string[] = [];
+              item.repositories.forEach((repo: Repository) => {
+                if (repo.github_data && repo.github_data.license) {
+                  licenses.push(repo.github_data.license);
+                }
+              });
+              if (!licenses.some((l: string) => activeFilters[FilterCategory.License]?.includes(l))) {
+                return false;
+              }
             }
-          });
-          if (!licenses.some((l: string) => activeFilters[FilterCategory.License]?.includes(l))) {
-            return false;
           }
         }
       }
@@ -97,8 +103,10 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         ) {
           return false;
         } else {
-          if (!isUndefined(item.maturity) && !activeFilters[FilterCategory.Maturity].includes(item.maturity)) {
-            return false;
+          if (!isUndefined(item.maturity)) {
+            if (!activeFilters[FilterCategory.Maturity].includes(item.maturity)) {
+              return false;
+            }
           }
         }
       }

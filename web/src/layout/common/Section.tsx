@@ -3,13 +3,12 @@ import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
 import { FilterCategory, FilterOption, FilterSection } from '../../types';
-import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
 import CheckBox from './Checkbox';
 import styles from './Section.module.css';
 
 interface Props {
   section?: FilterSection;
-  extraMaturity?: FilterSection;
+  extraOptions?: { [key: string]: FilterSection | undefined };
   activeFilters?: string[];
   colClass?: string;
   title?: string;
@@ -45,7 +44,7 @@ const Section = (props: Props) => {
     if (isUndefined(props.section)) {
       return false;
     }
-    if (props.section.value === FilterCategory.Maturity && isUndefined(props.extraMaturity)) {
+    if (props.section.value === FilterCategory.Maturity && isUndefined(props.extraOptions)) {
       return false;
     }
     return true;
@@ -56,13 +55,9 @@ const Section = (props: Props) => {
       {(opt: FilterOption) => {
         let subOpts: string[] | undefined;
         let suboptions = opt.suboptions;
-        if (
-          opt.value === getFoundationNameLabel() &&
-          props.section?.value === FilterCategory.Maturity &&
-          !isUndefined(props.extraMaturity)
-        ) {
-          suboptions = props.extraMaturity.options;
-          subOpts = props.extraMaturity.options.map((subOpt: FilterOption) => subOpt.value);
+        if (!isUndefined(props.extraOptions) && !isUndefined(props.extraOptions[opt.value])) {
+          suboptions = props.extraOptions[opt.value]!.options;
+          subOpts = props.extraOptions[opt.value]!.options.map((subOpt: FilterOption) => subOpt.value);
         } else if (opt.suboptions) {
           subOpts = opt.suboptions.map((subOpt: FilterOption) => subOpt.value);
         }

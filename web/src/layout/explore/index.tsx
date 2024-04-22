@@ -1,10 +1,8 @@
 import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
-import compact from 'lodash/compact';
+import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import throttle from 'lodash/throttle';
-import uniq from 'lodash/uniq';
 import { batch, createEffect, createSignal, For, Match, on, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import {
@@ -115,6 +113,7 @@ const Explore = (props: Props) => {
   const [classifyOptions, setClassifyOptions] = createSignal<ClassifyOption[]>(Object.values(ClassifyOption));
   const [sortOptions, setSortOptions] = createSignal<SortOption[]>(Object.values(SortOption));
   const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
+  const [licenseOptions, setLicenseOptions] = createSignal<string[]>([]);
 
   const checkIfFullDataRequired = (): boolean => {
     if (viewMode() === ViewMode.Card) {
@@ -135,17 +134,12 @@ const Explore = (props: Props) => {
     }
   };
 
-  const getMaturityOptions = () => {
-    const maturity = props.initialData.items.map((i: Item) => i.maturity);
-    return uniq(compact(maturity)) || [];
-  };
-
   const checkVisibleItemsNumber = (numItemsPerGroup: { [key: string]: number }) => {
     setNumItems(numItemsPerGroup);
     setNumVisibleItems(numItemsPerGroup[selectedGroup() || ALL_OPTION]);
   };
 
-  const maturityOptions = getMaturityOptions();
+  const maturityOptions = itemsDataGetter.getMaturityOptions();
 
   const getActiveFiltersFromUrl = (): ActiveFilters => {
     const currentFilters: ActiveFilters = {};
@@ -156,6 +150,8 @@ const Explore = (props: Props) => {
       if (Object.values(FilterCategory).includes(f)) {
         if (f === FilterCategory.Maturity && value === getFoundationNameLabel()) {
           currentFilters[f] = maturityOptions;
+        } else if (f === FilterCategory.License && value === 'oss') {
+          currentFilters[f] = licenseOptions();
         } else {
           if (currentFilters[f]) {
             currentFilters[f] = [...currentFilters[f]!, value];
@@ -231,15 +227,15 @@ const Explore = (props: Props) => {
 
     // Reset classify and sort when view mode or group changes
     if ([VIEW_MODE_PARAM, GROUP_PARAM].includes(param)) {
-      // Remove all filters from current searchparams
-      Object.values(FilterCategory).forEach((f: string) => {
-        updatedSearchParams.delete(f);
-      });
-      EXTRA_FILTERS.forEach((f: string) => {
-        updatedSearchParams.delete(f);
-      });
-
       if (param === GROUP_PARAM) {
+        // Remove all filters from current searchparams
+        Object.values(FilterCategory).forEach((f: string) => {
+          updatedSearchParams.delete(f);
+        });
+        EXTRA_FILTERS.forEach((f: string) => {
+          updatedSearchParams.delete(f);
+        });
+
         setActiveFilters({});
       }
 
@@ -313,6 +309,11 @@ const Explore = (props: Props) => {
           maturityOptions.every((element) => f![filterId as FilterCategory]!.includes(element))
         ) {
           return params.append(filterId as string, foundation);
+        } else if (
+          filterId === FilterCategory.License &&
+          licenseOptions().every((element) => f![filterId as FilterCategory]!.includes(element))
+        ) {
+          return params.append(filterId, 'oss');
         } else {
           return f![filterId as FilterCategory]!.forEach((id: string) => {
             if (id.toString() !== foundation) {
@@ -374,6 +375,8 @@ const Explore = (props: Props) => {
       setClassifyAndSortOptions(options);
       setClassifyOptions(options[selectedGroup() || ALL_OPTION].classify);
       setSortOptions(options[selectedGroup() || ALL_OPTION].sort);
+      setLicenseOptions(itemsDataGetter.getLicenseOptionsPerGroup(selectedGroup() || ALL_OPTION));
+
       // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
@@ -383,6 +386,7 @@ const Explore = (props: Props) => {
           setGroupsData(data.grid);
           setCardData(data.card);
           setCardMenu(data.menu);
+          setActiveFilters(getActiveFiltersFromUrl());
 
           setFullDataApplied(true);
           setReadyData(true);
@@ -413,6 +417,7 @@ const Explore = (props: Props) => {
     on(selectedGroup, () => {
       if (groupsData()) {
         setNumVisibleItems(numItems()[selectedGroup() || ALL_OPTION]);
+        setLicenseOptions(itemsDataGetter.getLicenseOptionsPerGroup(selectedGroup() || ALL_OPTION));
       }
     })
   );
@@ -455,10 +460,10 @@ const Explore = (props: Props) => {
 
   const removeFilter = (name: FilterCategory, value: string) => {
     let tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
-    if (name === FilterCategory.Maturity) {
-      if (isEqual(tmpActiveFilters, [window.baseDS.foundation.toLowerCase()])) {
-        tmpActiveFilters = [];
-      }
+    if (name === FilterCategory.Maturity && value === getFoundationNameLabel()) {
+      tmpActiveFilters = difference(tmpActiveFilters, maturityOptions);
+    } else if (name === FilterCategory.License && value === 'oss') {
+      tmpActiveFilters = difference(tmpActiveFilters, licenseOptions());
     }
     updateActiveFilters(name, tmpActiveFilters);
   };
@@ -475,10 +480,6 @@ const Explore = (props: Props) => {
 
   const resetFilters = () => {
     applyFilters({});
-  };
-
-  const resetFilter = (name: FilterCategory) => {
-    updateActiveFilters(name, []);
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
@@ -871,7 +872,7 @@ const Explore = (props: Props) => {
           <ActiveFiltersList
             activeFilters={activeFilters()}
             maturityOptions={maturityOptions}
-            resetFilter={resetFilter}
+            licenseOptions={licenseOptions()}
             resetFilters={resetFilters}
             removeFilter={removeFilter}
           />

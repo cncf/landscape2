@@ -126,7 +126,22 @@ export const FILTERS: FilterSection[] = [
       },
       {
         value: `non-${getFoundationNameLabel()}`,
-        name: `Non ${FOUNDATION} Projects`,
+        name: `Not ${FOUNDATION} Projects`,
+      },
+    ],
+  },
+  {
+    value: FilterCategory.License,
+    title: 'License',
+    options: [
+      {
+        value: 'non-oss',
+        name: 'Not Open Source',
+      },
+      {
+        value: 'oss',
+        name: 'Open Source',
+        suboptions: [],
       },
     ],
   },
@@ -140,7 +155,7 @@ export const FILTERS: FilterSection[] = [
       },
       {
         value: 'non_profit',
-        name: 'Non profit',
+        name: 'Not profit',
       },
     ],
   },
