@@ -73,7 +73,7 @@ The landscape2 CLI tool is also distributed in a [container image](https://galle
 
 ### Building from source
 
-You can build **landscape2** from the source by using [Cargo](https://rustup.rs), the Rust package manager. [yarn](https://classic.yarnpkg.com/lang/en/docs/install/) is required during the installation process to build the web application, which will be embedded into the `landscape2` binary as part of the build process.
+You can build **landscape2** from the source by using [Cargo](https://rustup.rs), the Rust package manager. [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/) is required to build the wasm modules. [yarn](https://classic.yarnpkg.com/lang/en/docs/install/) is also required during the installation process to build the web application, which will be embedded into the `landscape2` binary as part of the build process.
 
 ```text
 cargo install --git https://github.com/cncf/landscape2

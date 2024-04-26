@@ -1,0 +1,49 @@
+.alertWrapper {
+  z-index: 1040;
+}
+
+.alert {
+  font-size: 0.8rem;
+  border: 0;
+  border: 1px solid var(--bs-warning-border-subtle);
+  border-width: 1px 0 1px 0;
+  height: var(--overlay-alert-height);
+  cursor: none;
+}
+
+.legend {
+  font-size: 2.5rem;
+  margin-top: 2rem !important;
+}
+
+.errorAlert {
+  width: 800px;
+  max-width: 90%;
+  max-height: 80%;
+  height: 500px;
+  margin-top: var(--overlay-alert-height);
+}
+
+.errorAlertHeading {
+  font-size: 1.5rem;
+}
+
+.preWrapper {
+  margin-top: 2.5rem;
+  max-height: calc(100% - 9rem);
+}
+
+.pre {
+  background-color: rgba(0, 0, 0, 0.85);
+  font-size: 0.8rem;
+}
+
+@media only screen and (max-width: 767.98px) {
+  .errorAlertHeading {
+    font-size: 1.2rem;
+  }
+
+  .legend {
+    font-size: 1.5rem;
+  }
+}

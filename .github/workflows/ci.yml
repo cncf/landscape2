@@ -16,8 +16,10 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.76.0
+          toolchain: 1.77.0
           components: clippy, rustfmt
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- --deny warnings
       - name: Run rustfmt
@@ -36,16 +38,16 @@ jobs:
       - name: Cache node modules
         uses: actions/cache@v4
         with:
-          path: ./web/node_modules
+          path: ./ui/webapp/node_modules
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Install dependencies
-        working-directory: ./web
+        working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
       - name: Run prettier
-        working-directory: ./web
+        working-directory: ./ui/webapp
         run: yarn format:diff
       - name: Run eslint
-        working-directory: ./web
+        working-directory: ./ui/webapp
         run: yarn lint

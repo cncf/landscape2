@@ -1,0 +1,114 @@
+.logo {
+  height: 35px;
+  max-width: 210px;
+}
+
+.logoWrapper,
+.searchWrapper {
+  width: calc(100% - 0.4rem);
+}
+
+.searchWrapper {
+  margin: 0 0.15rem;
+  margin-bottom: 0.3rem;
+}
+
+.qr {
+  height: 60px;
+}
+
+.searchIcon {
+  left: 0.75rem;
+  top: 0.25rem;
+}
+
+.search {
+  padding-left: 2.5rem;
+}
+
+.link {
+  color: var(--color1) !important;
+  letter-spacing: 2px;
+  border-bottom: 6px solid transparent;
+  margin-left: 2rem;
+  font-size: 0.9rem;
+}
+
+.link:global(.activeLink) {
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+}
+
+.githubIcon {
+  margin-top: -0.25rem;
+}
+
+.link:hover:before {
+  background-color: var(--color1);
+  content: '';
+  height: 4px;
+  left: 0;
+  opacity: 0.5;
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+}
+
+.link:global(.activeLink):before {
+  background-color: var(--color1);
+  content: '';
+  height: 4px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+}
+
+.link:global(.activeLink):hover:before {
+  opacity: 1;
+}
+
+/* Sticky nav */
+.stickyNav {
+  position: sticky;
+  background-color: rgba(255, 255, 255, 0.9);
+  min-height: 49px;
+  z-index: 1050;
+  margin-top: -55px;
+  top: -55px;
+  transition: none;
+}
+
+.stickyNav > div {
+  min-width: 28px;
+}
+
+.stickyLogo {
+  height: 35px;
+  max-width: 210px;
+}
+
+.isSticky {
+  transition: top linear 0.25s;
+  top: 0px;
+}
+
+:global(.overlay-active) .isSticky {
+  top: var(--overlay-alert-height);
+}
+
+.mobileBtn {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 1rem;
+}
+
+.mobileBtn svg {
+  margin-top: -2px;
+}
+
+@media only screen and (min-width: 992px) {
+  .link {
+    margin-left: 1.5rem;
+  }
+}

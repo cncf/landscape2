@@ -1,15 +1,20 @@
-[package]
-name = "landscape2"
-description = "Landscape2 CLI tool"
+[workspace]
+resolver = "2"
+members = [
+    "crates/cli",
+    "crates/core",
+    "crates/wasm/overlay"
+]
+
+[workspace.package]
 version = "0.8.1"
 license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.70"
-repository = "https://github.com/cncf/landscape2"
-readme = "README.md"
+rust-version = "1.77"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
+homepage = "https://github.com/cncf/landscape2"
 
-[dependencies]
+[workspace.dependencies]
 anyhow = "1.0.81"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
@@ -33,6 +38,7 @@ leaky-bucket = "1.0.1"
 markdown = "1.0.0-alpha.16"
 md-5 = "0.10.6"
 mime_guess = "2.0.4"
+mockall = "0.12.1"
 num_cpus = "1.16.0"
 octorust = "0.7.0"
 parse_link_header = "0.3.3"
@@ -42,6 +48,7 @@ reqwest = { version = "0.12.2", features = ["json", "native-tls-vendored"] }
 rust-embed = "8.3.0"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
+serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.10.8"
 tokio = { version = "1.37.0", features = [
@@ -58,13 +65,13 @@ tower-http = { version = "0.5.2", features = ["fs", "set-header"] }
 url = "2.5.0"
 usvg = "0.37.0"
 walkdir = "2.5.0"
-
-[dev-dependencies]
-mockall = "0.12.1"
-
-[build-dependencies]
-anyhow = "1.0.81"
+wasm-bindgen = "0.2.92"
+wasm-bindgen-futures = "0.4.42"
+web-sys = { version = "0.3.69", features = ["console"] }
 which = "6.0.1"
+
+[profile.release]
+lto = true
 
 # The profile that 'cargo dist' will build with
 [profile.dist]
@@ -74,7 +81,7 @@ lto = "thin"
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.12.2"
+cargo-dist-version = "0.13.3"
 # CI backends to support
 ci = ["github"]
 # The installers to generate for each app
