@@ -5,7 +5,7 @@ use super::{
     data::{CategoryName, SubCategoryName},
     settings::{LandscapeSettings, TagName},
 };
-use crate::data::{CrunchbaseData, LandscapeData};
+use crate::data::LandscapeData;
 use chrono::{Datelike, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -44,14 +44,10 @@ impl Stats {
     /// Create a new Stats instance from the information available in the
     /// landscape.
     #[must_use]
-    pub fn new(
-        landscape_data: &LandscapeData,
-        settings: &LandscapeSettings,
-        crunchbase_data: &CrunchbaseData,
-    ) -> Self {
+    pub fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
         Self {
             members: MembersStats::new(landscape_data, settings),
-            organizations: OrganizationsStats::new(crunchbase_data),
+            organizations: OrganizationsStats::new(landscape_data),
             projects: ProjectsStats::new(landscape_data),
             repositories: RepositoriesStats::new(landscape_data),
         }
@@ -134,13 +130,22 @@ pub struct OrganizationsStats {
 impl OrganizationsStats {
     /// Create a new OrganizationsStats instance from the information available
     /// in the landscape.
-    fn new(crunchbase_data: &CrunchbaseData) -> Option<Self> {
+    fn new(landscape_data: &LandscapeData) -> Option<Self> {
         let mut stats = OrganizationsStats::default();
+        let mut crunchbase_data_processed = HashSet::new();
 
         // Collect stats from landscape items
-        for org in crunchbase_data.values() {
+        for item in &landscape_data.items {
+            // Check if this crunchbase data has already been processed
+            if let Some(url) = item.crunchbase_url.as_ref() {
+                if crunchbase_data_processed.contains(url) {
+                    continue;
+                }
+                crunchbase_data_processed.insert(url);
+            }
+
             // Acquisitions
-            if let Some(acquisitions) = org.acquisitions.as_ref() {
+            if let Some(acquisitions) = item.crunchbase_data.as_ref().and_then(|d| d.acquisitions.as_ref()) {
                 for acq in acquisitions {
                     if let Some(announced_on) = acq.announced_on {
                         let year = announced_on.format("%Y").to_string();
@@ -155,7 +160,9 @@ impl OrganizationsStats {
             }
 
             // Funding rounds
-            if let Some(funding_rounds) = org.funding_rounds.as_ref() {
+            if let Some(funding_rounds) =
+                item.crunchbase_data.as_ref().and_then(|d| d.funding_rounds.as_ref())
+            {
                 for fr in funding_rounds {
                     if let Some(announced_on) = fr.announced_on {
                         // Only funding rounds in the last 5 years

@@ -101,7 +101,7 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
     let datasets = Datasets {
         base: Base::new(&landscape_data, &settings, &guide, &qr_code),
         full: Full::new(&landscape_data, &crunchbase_data, &github_data),
-        stats: Stats::new(&landscape_data, &settings, &crunchbase_data),
+        stats: Stats::new(&landscape_data, &settings),
     };
 
     // Prepare overlay data and return it
