@@ -37,7 +37,7 @@ impl Datasets {
         Datasets {
             base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
             embed: Embed::new(i.landscape_data),
-            full: Full::new(i.crunchbase_data, i.github_data, i.landscape_data),
+            full: Full::new(i.landscape_data, i.crunchbase_data, i.github_data),
             stats: Stats::new(i.landscape_data, i.settings, i.crunchbase_data),
         }
     }
@@ -333,10 +333,10 @@ pub mod full {
     /// Full dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub struct Full {
-        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
         pub crunchbase_data: CrunchbaseData,
 
-        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
         pub github_data: GithubData,
 
         #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -347,9 +347,9 @@ pub mod full {
         /// Create a new Full instance from the landscape data provided.
         #[must_use]
         pub fn new(
+            landscape_data: &LandscapeData,
             crunchbase_data: &CrunchbaseData,
             github_data: &GithubData,
-            landscape_data: &LandscapeData,
         ) -> Self {
             Full {
                 crunchbase_data: crunchbase_data.clone(),
