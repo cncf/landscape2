@@ -11,6 +11,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [GraphQL](https://graphql.landscape2.io)
 - [Hyperledger Foundation](https://dlt.landscape2.io)
 - [JSON Schema](https://landscape.json-schema.org)
+
 - [LF AI & DATA](https://lfai.landscape2.io)
 - [LF Energy](https://lfenergy.landscape2.io)
 - [LF Networking](https://lfnetworking.landscape2.io)
