@@ -151,6 +151,7 @@ pub(super) struct ItemExtra {
     pub incubating: Option<NaiveDate>,
     pub linkedin_url: Option<String>,
     pub mailing_list_url: Option<String>,
+    pub package_manager_url: Option<String>,
     pub parent_project: Option<String>,
     pub slack_url: Option<String>,
     pub specification: Option<bool>,
