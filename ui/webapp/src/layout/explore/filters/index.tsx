@@ -23,6 +23,7 @@ import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
 import Loading from '../../common/Loading';
 import Modal from '../../common/Modal';
+import NoData from '../../common/NoData';
 import Section from '../../common/Section';
 import SVGIcon from '../../common/SVGIcon';
 import { useViewMode } from '../../stores/viewMode';
@@ -142,7 +143,14 @@ const Filters = (props: Props) => {
 
   const getSectionInPredefinedFilters = (id: FilterCategory): FilterSection | undefined => {
     const section = FILTERS.find((sec: FilterSection) => sec.value === id);
-    if (section) {
+    let availableExtraOptions: boolean = true;
+    if ([FilterCategory.Maturity, FilterCategory.OrgType, FilterCategory.License].includes(id)) {
+      const activeOpts = getSection(id);
+      if (isUndefined(activeOpts)) {
+        availableExtraOptions = false;
+      }
+    }
+    if (section && availableExtraOptions) {
       return section;
     }
     return;
@@ -301,6 +309,9 @@ const Filters = (props: Props) => {
                 </div>
               </Show>
             </div>
+            <Show when={isEmpty(visibleTitles())}>
+              <NoData>There are no filters available that can be applied to the current set of items</NoData>
+            </Show>
             <Show when={visibleTitles().includes(FilterTitle.Project)}>
               <div class={`border-bottom text-uppercase fw-semibold ${styles.title}`}>{FilterTitle.Project}</div>
 
