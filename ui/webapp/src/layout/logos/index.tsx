@@ -18,6 +18,7 @@ const Logos = () => {
   const [selectedSuboptionValue, setSelectedSuboptionValue] = createSignal<string>();
   const [suboptions, setSuboptions] = createSignal<Option[]>();
   const [items, setItems] = createSignal<Item[]>();
+  const [hiddenNonPublicOrgs, setHiddenNonPublicOrgs] = createSignal<boolean>(false);
 
   const cleanDuplicatedItems = (itemsList: Item[]): Item[] => {
     const result: Item[] = [];
@@ -31,6 +32,18 @@ const Logos = () => {
         images.push(i.logo);
       }
     });
+
+    return result;
+  };
+
+  const cleanItems = (itemsList: Item[]): Item[] => {
+    let result = cleanDuplicatedItems(itemsList);
+
+    const items = cleanDuplicatedItems(itemsList);
+    if (hiddenNonPublicOrgs()) {
+      const nonPublicOrgs = items.filter((item) => !item.name.startsWith('Non-Public Organization'));
+      result = nonPublicOrgs;
+    }
 
     return result;
   };
@@ -62,6 +75,10 @@ const Logos = () => {
                 list = itemsDataGetter.getItemsByEndUser() || [];
                 break;
 
+              case 'allenduser':
+                list = itemsDataGetter.getAllEndUserItems() || [];
+                break;
+
               default:
                 break;
             }
@@ -72,7 +89,7 @@ const Logos = () => {
           break;
       }
     }
-    setItems(cleanDuplicatedItems(list));
+    setItems(cleanItems(list));
   };
 
   const getOptions = (): FilterOption[] => {
@@ -107,6 +124,14 @@ const Logos = () => {
     })
   );
 
+  createEffect(
+    on(hiddenNonPublicOrgs, () => {
+      if (!isUndefined(items())) {
+        filterItems();
+      }
+    })
+  );
+
   return (
     <>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
@@ -116,6 +141,10 @@ const Logos = () => {
           <div class="position-relative mt-3">
             <Show when={!isUndefined(options())} fallback={<Loading />}>
               <div class="d-flex flex-column">
+                <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
+                  Select items to display
+                </div>
+
                 <div class="d-flex flex-row">
                   <For each={options()}>
                     {(option) => (
@@ -208,6 +237,21 @@ const Logos = () => {
                     </Show>
                   </div>
                 </Show>
+                <div class="mt-4">
+                  <div class="form-check form-switch">
+                    <input
+                      onInput={() => setHiddenNonPublicOrgs(!hiddenNonPublicOrgs())}
+                      checked={hiddenNonPublicOrgs()}
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      id="visibleNonPublicOrgs"
+                    />
+                    <label class="form-check-label" for="visibleNonPublicOrgs">
+                      Hide non-public organizations
+                    </label>
+                  </div>
+                </div>
                 <div class="position-relative mt-5">
                   <Show when={!isUndefined(items())}>
                     <div class={styles.grid}>
