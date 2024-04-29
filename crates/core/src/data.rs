@@ -843,6 +843,8 @@ pub struct RepositoryGithubData {
     pub latest_commit: Commit,
     pub participation_stats: Vec<i64>,
     pub stars: i64,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub topics: Vec<String>,
     pub url: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
