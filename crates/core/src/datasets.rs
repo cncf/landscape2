@@ -80,10 +80,10 @@ pub mod base {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub base_path: Option<String>,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub categories: Vec<Category>,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub categories_overridden: Vec<CategoryName>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,10 +95,10 @@ pub mod base {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub grid_items_size: Option<GridItemsSize>,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub groups: Vec<Group>,
 
-        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
         pub guide_summary: GuideSummary,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -107,7 +107,7 @@ pub mod base {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub images: Option<Images>,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -260,7 +260,7 @@ pub mod embed {
     /// Embed dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
     pub struct Embed {
-        #[serde(flatten, skip_serializing_if = "HashMap::is_empty")]
+        #[serde(default, flatten, skip_serializing_if = "HashMap::is_empty")]
         pub views: HashMap<EmbedKey, EmbedView>,
     }
 
@@ -315,7 +315,7 @@ pub mod embed {
     pub struct EmbedView {
         pub category: Category,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
 }
@@ -339,7 +339,7 @@ pub mod full {
         #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
         pub github_data: GithubData,
 
-        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
     }
 
