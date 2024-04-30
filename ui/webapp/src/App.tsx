@@ -103,6 +103,7 @@ const App = () => {
   onMount(() => {
     const isOverlayActive = overlayData.checkIfOverlayInQuery();
     if (!isOverlayActive) {
+      itemsDataGetter.prepareGroups();
       setData(window.baseDS);
     } else {
       setLoadingOverlay(true);

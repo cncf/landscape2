@@ -4,22 +4,23 @@ import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
 
 import { ALL_OPTION, BASE_PATH, GROUP_PARAM } from '../../data';
-import { Group } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
+import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 
 const getInitialGroupName = (groupParam: string | null): string | undefined => {
   const navigate = useNavigate();
+  const groups = itemsDataGetter.getGroups();
 
-  if (isUndefined(window.baseDS.groups)) {
+  if (isUndefined(groups)) {
     return undefined;
   } else {
-    const firstGroup = window.baseDS.groups[0].normalized_name;
+    const firstGroup = groups[0];
     if (isNull(groupParam)) {
       return firstGroup;
     } else {
-      const selectedGroup = window.baseDS.groups.find((group: Group) => group.normalized_name === groupParam);
-      if (!isUndefined(selectedGroup) || groupParam === ALL_OPTION) {
+      const isValidGroup = groups.includes(groupParam);
+      if (isValidGroup || groupParam === ALL_OPTION) {
         return groupParam;
       } else {
         if (isExploreSection(location.pathname)) {
@@ -57,7 +58,7 @@ export function useGroupA() {
 }
 
 export function useGroupActive() {
-  return useGroupA().group || 'default';
+  return useGroupA().group || ALL_OPTION;
 }
 
 export function useSetGroupActive() {

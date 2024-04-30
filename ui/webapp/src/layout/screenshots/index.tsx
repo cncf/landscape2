@@ -38,13 +38,15 @@ const Screenshots = (props: Props) => {
         <Show when={!isUndefined(groupsData())}>
           <For each={groups()}>
             {(group) => {
+              const activeGroups = itemsDataGetter.getGroups();
+              if (activeGroups && !activeGroups.includes(group.normalized_name)) return null;
               const colorsList = () => generateColorsArray(group.categories.length);
               const groupData = groupsData()![group.normalized_name];
               const categories = getCategoriesWithItems(groupData);
 
               return (
                 <div class={styles.group}>
-                  <Show when={!isUndefined(props.initialData.groups)}>
+                  <Show when={!isUndefined(activeGroups)}>
                     <div class={`fw-bold text-uppercase ${styles.title}`}>{group.name}</div>
                   </Show>
                   <For each={categories}>
