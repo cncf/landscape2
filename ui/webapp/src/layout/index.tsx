@@ -1,4 +1,5 @@
-import { JSXElement } from 'solid-js';
+import isEmpty from 'lodash/isEmpty';
+import { createSignal, JSXElement, onMount } from 'solid-js';
 
 import ItemModal from './common/itemModal';
 import ZoomModal from './common/zoomModal';
@@ -23,6 +24,15 @@ interface Props {
 }
 
 const Layout = (props: Props) => {
+  const [statsVisible, setStatsVisible] = createSignal<boolean>(true);
+
+  onMount(() => {
+    // Check if statsDS is empty, if so, hide the stats link
+    if (isEmpty(window.statsDS)) {
+      setStatsVisible(false);
+    }
+  });
+
   return (
     <FullDataProvider>
       <ActiveItemProvider>
@@ -36,8 +46,8 @@ const Layout = (props: Props) => {
                       <FinancesDataProvider>
                         <EventsProvider>
                           <div class={`d-flex flex-column ${styles.container}`}>
-                            <MobileHeader />
-                            <Header />
+                            <MobileHeader statsVisible={statsVisible()} />
+                            <Header statsVisible={statsVisible()} />
                             <div class="d-flex flex-column flex-grow-1">{props.children}</div>
                           </div>
                           <ItemModal />
