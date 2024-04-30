@@ -114,6 +114,7 @@ const Explore = (props: Props) => {
   const [sortOptions, setSortOptions] = createSignal<SortOption[]>(Object.values(SortOption));
   const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
   const [licenseOptions, setLicenseOptions] = createSignal<string[]>([]);
+  const activeGroups = () => itemsDataGetter.getGroups();
 
   const checkIfFullDataRequired = (): boolean => {
     if (viewMode() === ViewMode.Card) {
@@ -279,8 +280,8 @@ const Explore = (props: Props) => {
         updatedSearchParams.delete(CLASSIFY_PARAM);
         updatedSearchParams.delete(SORT_BY_PARAM);
         updatedSearchParams.delete(SORT_DIRECTION_PARAM);
-        if (selectedGroup() === ALL_OPTION && !isUndefined(window.baseDS.groups)) {
-          const firstGroup = props.initialData.groups![0].normalized_name;
+        if (selectedGroup() === ALL_OPTION && !isUndefined(activeGroups())) {
+          const firstGroup = activeGroups()![0];
           updatedSearchParams.set(GROUP_PARAM, firstGroup);
           setSelectedGroup(firstGroup);
         }
@@ -610,7 +611,7 @@ const Explore = (props: Props) => {
             </Show>
 
             <div class="d-none d-lg-flex align-items-center">
-              <Show when={!isUndefined(props.initialData.groups)}>
+              <Show when={props.initialData.groups}>
                 <div class={styles.btnGroupLegend}>
                   <small class="text-muted me-2">GROUP:</small>
                 </div>
@@ -621,6 +622,8 @@ const Explore = (props: Props) => {
                   <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
                     <For each={props.initialData.groups}>
                       {(group: Group) => {
+                        if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name))
+                          return null;
                         return (
                           <button
                             title={`Group: ${group.name}`}
@@ -669,7 +672,7 @@ const Explore = (props: Props) => {
                   <select
                     id="desktop-group"
                     class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect}`}
-                    value={selectedGroup() || props.initialData.groups![0].normalized_name}
+                    value={selectedGroup()}
                     aria-label="Group"
                     onChange={(e) => {
                       setVisibleLoading(true);
@@ -683,6 +686,8 @@ const Explore = (props: Props) => {
                   >
                     <For each={props.initialData.groups}>
                       {(group: Group) => {
+                        if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name))
+                          return null;
                         return <option value={group.normalized_name}>{group.name}</option>;
                       }}
                     </For>
@@ -860,6 +865,8 @@ const Explore = (props: Props) => {
                 {/* Do not display All option for mobile */}
                 <For each={props.initialData.groups}>
                   {(group: Group) => {
+                    if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name)) return null;
+
                     return <option value={group.normalized_name}>{group.name}</option>;
                   }}
                 </For>

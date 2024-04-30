@@ -6,6 +6,7 @@ import { createMemo, Show } from 'solid-js';
 import { ALL_OPTION, DEFAULT_VIEW_MODE, EXPLORE_PATH, GUIDE_PATH, SCREENSHOTS_PATH, STATS_PATH } from '../../data';
 import { SVGIconKind } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
+import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
@@ -31,9 +32,9 @@ const Header = () => {
   };
 
   const resetDefaultExploreValues = () => {
-    const groups = window.baseDS.groups;
+    const groups = itemsDataGetter.getGroups();
     setViewMode(DEFAULT_VIEW_MODE);
-    setSelectedGroup(!isUndefined(groups) ? groups[0].normalized_name : ALL_OPTION);
+    setSelectedGroup(!isUndefined(groups) ? groups[0] : ALL_OPTION);
   };
 
   return (
