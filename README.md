@@ -219,7 +219,7 @@ Some examples of it in action (live demos!):
 
 To achieve this, the overlay redoes part of the landscape build process in the browser, reusing the same codebase packed as a WASM module.
 
-The overlay can be enabled by providing any of the following query parameters to the landscape url:
+The overlay can be enabled by providing any of the following query parameters to the landscape url (they can be combined if needed):
 
 - `overlay-data`: *data file url*
 - `overlay-settings`: *settings file url*
