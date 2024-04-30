@@ -19,7 +19,11 @@ import { useSetViewMode } from '../stores/viewMode';
 import EmbedModal from './EmbedModal';
 import styles from './Header.module.css';
 
-const Header = () => {
+interface Props {
+  statsVisible: boolean;
+}
+
+const Header = (props: Props) => {
   const location = useLocation();
   const navigate = useNavigate();
   const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
@@ -103,22 +107,24 @@ const Header = () => {
               </button>
             </Show>
 
-            <button
-              class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
-              classList={{ activeLink: isActive(STATS_PATH) }}
-              onClick={() => {
-                if (isActive(STATS_PATH)) {
-                  scrollToTop(false);
-                } else {
-                  navigate(prepareLink(STATS_PATH), {
-                    state: { from: 'header' },
-                  });
-                  scrollToTop(false);
-                }
-              }}
-            >
-              Stats
-            </button>
+            <Show when={props.statsVisible}>
+              <button
+                class={`btn btn-link position-relative text-uppercase fw-bold text-decoration-none p-0 ${styles.link}`}
+                classList={{ activeLink: isActive(STATS_PATH) }}
+                onClick={() => {
+                  if (isActive(STATS_PATH)) {
+                    scrollToTop(false);
+                  } else {
+                    navigate(prepareLink(STATS_PATH), {
+                      state: { from: 'header' },
+                    });
+                    scrollToTop(false);
+                  }
+                }}
+              >
+                Stats
+              </button>
+            </Show>
           </div>
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>

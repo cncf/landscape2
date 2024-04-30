@@ -18,7 +18,11 @@ import styles from './MobileHeader.module.css';
 
 const NAV_HEIGHT = 121;
 
-const MobileHeader = () => {
+interface Props {
+  statsVisible: boolean;
+}
+
+const MobileHeader = (props: Props) => {
   const location = useLocation();
   const openMenu = useSetMobileTOCStatus();
   const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
@@ -60,7 +64,7 @@ const MobileHeader = () => {
           </Show>
         </div>
         <div>
-          <MobileDropdown inSticky />
+          <MobileDropdown statsVisible={props.statsVisible} inSticky />
         </div>
       </div>
       <header class="d-block d-lg-none navbar navbar-expand p-0 mb-2 border-bottom shadow-sm">
@@ -72,7 +76,7 @@ const MobileHeader = () => {
               </A>
             </Show>
             <div class="ms-auto d-flex d-lg-none">
-              <MobileDropdown />
+              <MobileDropdown statsVisible={props.statsVisible} />
             </div>
           </div>
 
