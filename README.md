@@ -208,6 +208,27 @@ Some operations like collecting data from external sources or processing a lot o
 > [!NOTE]
 > In addition to the customization options available in the embed setup view, it's also possible to embed views using [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer). This feature can be enabled by adding `iframe-resizer=true` to the embed url ([demo](https://codepen.io/cynthiasg/pen/WNmQjje)).
 
+### Overlay
+
+**Landscape2** supports applying one or more data source files to an existing landscape at runtime. Any of those files can -and often will- be different than the ones used originally to build the landscape. This feature aims to be the building blocks of a preview system.
+
+Some examples of it in action (live demos!):
+
+- [Preview some changes in the settings file (like a Christmas edition theme)](https://landscape.cncf.io/?overlay-settings=https://raw.githubusercontent.com/tegioz/landscape2-overlay-tests/main/settings-christmas.yml)
+- [Check out how the CNCF landscape would look like using a 5 years old `landscape.yml` file (Helm was still in incubating!)](https://landscape.cncf.io/?overlay-data=https://raw.githubusercontent.com/cncf/landscape/6ff062c72b7229bbe60fee3aca5f8999624459f2/landscape.yml&overlay-logos=https://raw.githubusercontent.com/cncf/landscape/6ff062c72b7229bbe60fee3aca5f8999624459f2/hosted_logos&overlay-settings=https://raw.githubusercontent.com/tegioz/landscape2-overlay-tests/main/settings-5-years-ago.yml)
+
+To achieve this, the overlay redoes part of the landscape build process in the browser, reusing the same codebase packed as a WASM module.
+
+The overlay can be enabled by providing any of the following query parameters to the landscape url:
+
+- `overlay-data`: *data file url*
+- `overlay-settings`: *settings file url*
+- `overlay-guide`: *guide file url*
+- `overlay-logos`: *logos base url*
+
+> [!WARNING]
+> The overlay feature is still experimental and may not work as expected in all cases. Please report any issues you find!
+
 ## Adopters
 
 A list of landscapes built using **landscape2** is available at [ADOPTERS.md](./ADOPTERS.md). Please consider adding yours!
