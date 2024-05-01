@@ -104,6 +104,7 @@ export interface Item extends BaseItem {
   incubating_at?: string;
   joined_at?: string;
   mailing_list_url?: string;
+  package_manager_url?: string;
   latest_annual_review_at?: string;
   latest_annual_review_url?: string;
   openssf_best_practices_url?: string;
@@ -411,6 +412,7 @@ export enum SVGIconKind {
   Clear,
   ClearCircle,
   Close,
+  Cocoapods,
   Copy,
   Crunchbase,
   CSV,
@@ -420,10 +422,12 @@ export enum SVGIconKind {
   Documentation,
   Download,
   Embed,
+  Erlang,
   ExternalLink,
   Facebook,
   Filters,
   Flickr,
+  Flutter,
   GitHub,
   GitHubCircle,
   Guide,
@@ -432,12 +436,21 @@ export enum SVGIconKind {
   LinkedIn,
   MagnifyingGlass,
   MailingList,
+  MavenApache,
   Menu,
   NotImage,
+  NPM,
+  Nuget,
   OpenssfBestPractices,
   OsanoCookie,
+  PackageManager,
+  Packagist,
   PDF,
+  Perl,
   PNG,
+  PyPi,
+  RubyGems,
+  Rust,
   Search,
   Security,
   Slack,
