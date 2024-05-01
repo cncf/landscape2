@@ -32,6 +32,38 @@ interface Props {
   item?: Item | null;
 }
 
+const getPackageManagerIcon = (url: string): SVGIconKind => {
+  const icon = SVGIconKind.PackageManager;
+  const pkgManagerUrl = new URL(url);
+  const pkgManagerHostname = pkgManagerUrl.hostname;
+
+  if (pkgManagerHostname.includes('npmjs.com')) {
+    return SVGIconKind.NPM;
+  } else if (pkgManagerHostname.includes('pypi.org')) {
+    return SVGIconKind.PyPi;
+  } else if (pkgManagerHostname.includes('crates.io')) {
+    return SVGIconKind.Rust;
+  } else if (pkgManagerHostname.includes('cpan.org')) {
+    return SVGIconKind.Perl;
+  } else if (pkgManagerHostname.includes('rubygems.org')) {
+    return SVGIconKind.RubyGems;
+  } else if (pkgManagerHostname.includes('maven.apache.org')) {
+    return SVGIconKind.MavenApache;
+  } else if (pkgManagerHostname.includes('packagist.org')) {
+    return SVGIconKind.Packagist;
+  } else if (pkgManagerHostname.includes('cocoapods.org')) {
+    return SVGIconKind.Cocoapods;
+  } else if (pkgManagerHostname.includes('nuget.org')) {
+    return SVGIconKind.Nuget;
+  } else if (pkgManagerHostname.includes('pub.dev')) {
+    return SVGIconKind.Flutter;
+  } else if (pkgManagerHostname.includes('hex.pm')) {
+    return SVGIconKind.Erlang;
+  }
+
+  return icon;
+};
+
 const Content = (props: Props) => {
   const itemInfo = () => props.item;
   const updateActiveItemId = useUpdateActiveItemId();
@@ -271,6 +303,16 @@ const Content = (props: Props) => {
                       href={itemInfo()!.github_discussions_url!}
                     >
                       <SVGIcon kind={SVGIconKind.Discussions} />
+                    </ExternalLink>
+                  </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.package_manager_url)}>
+                    <ExternalLink
+                      title="Package manager"
+                      class={`ms-3 ${styles.link}`}
+                      href={itemInfo()!.package_manager_url!}
+                    >
+                      <SVGIcon kind={getPackageManagerIcon(itemInfo()!.package_manager_url!)} />
                     </ExternalLink>
                   </Show>
                 </div>
