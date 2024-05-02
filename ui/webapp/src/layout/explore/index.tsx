@@ -182,7 +182,7 @@ const Explore = (props: Props) => {
     return currentFilters;
   };
 
-  // eslint-disable-next-line solid/reactivity
+  {/* prettier-ignore */}
   const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>(getActiveFiltersFromUrl());
 
   const getHash = (): string | undefined => {
