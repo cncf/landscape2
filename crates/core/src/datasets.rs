@@ -14,8 +14,19 @@ use crate::{
     stats::Stats,
 };
 
-/// Datasets collection.
+/// Input used to create a new Datasets instance.
 #[derive(Debug, Clone)]
+pub struct NewDatasetsInput<'a> {
+    pub crunchbase_data: &'a CrunchbaseData,
+    pub github_data: &'a GithubData,
+    pub guide: &'a Option<LandscapeGuide>,
+    pub landscape_data: &'a LandscapeData,
+    pub qr_code: &'a String,
+    pub settings: &'a LandscapeSettings,
+}
+
+/// Datasets collection.
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Datasets {
     /// #[base]
     pub base: Base,
@@ -41,17 +52,6 @@ impl Datasets {
             stats: Stats::new(i.landscape_data, i.settings),
         }
     }
-}
-
-/// Input used to create a new Datasets instance.
-#[derive(Debug, Clone)]
-pub struct NewDatasetsInput<'a> {
-    pub crunchbase_data: &'a CrunchbaseData,
-    pub github_data: &'a GithubData,
-    pub guide: &'a Option<LandscapeGuide>,
-    pub landscape_data: &'a LandscapeData,
-    pub qr_code: &'a String,
-    pub settings: &'a LandscapeSettings,
 }
 
 /// Base dataset.
@@ -357,5 +357,287 @@ pub mod full {
                 items: landscape_data.items.clone(),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        data::{self, *},
+        datasets::base,
+        guide::{self, LandscapeGuide},
+        settings::{self, *},
+    };
+    use chrono::{NaiveDate, Utc};
+    use tests::embed::EmbedView;
+
+    #[test]
+    fn datasets_new() {
+        let input = NewDatasetsInput {
+            crunchbase_data: &CrunchbaseData::default(),
+            github_data: &GithubData::default(),
+            guide: &None,
+            landscape_data: &LandscapeData::default(),
+            qr_code: &String::default(),
+            settings: &LandscapeSettings::default(),
+        };
+
+        let datasets = Datasets::new(&input);
+        assert_eq!(datasets, Datasets::default());
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn base_new() {
+        // Landscape data
+        let item = data::Item {
+            category: "Category 1".to_string(),
+            crunchbase_data: Some(Organization {
+                generated_at: Utc::now(),
+                acquisitions: Some(vec![]),
+                funding_rounds: Some(vec![FundingRound {
+                    amount: Some(1000),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            }),
+            homepage_url: "https://homepage.url".to_string(),
+            id: "id".to_string(),
+            logo: "logo.svg".to_string(),
+            name: "Item".to_string(),
+            subcategory: "Subcategory 1".to_string(),
+            ..Default::default()
+        };
+        let landscape_data = LandscapeData {
+            categories: vec![data::Category {
+                name: "Category 1".to_string(),
+                normalized_name: "category-1".to_string(),
+                subcategories: vec![
+                    Subcategory {
+                        name: "Subcategory 1".to_string(),
+                        normalized_name: "subcategory-1".to_string(),
+                    },
+                    Subcategory {
+                        name: "Subcategory 2".to_string(),
+                        normalized_name: "subcategory-2".to_string(),
+                    },
+                ],
+            }],
+            items: vec![item.clone()],
+        };
+
+        // Settings
+        let colors = Some(Colors {
+            color1: "rgb(100, 100, 100)".to_string(),
+            ..Default::default()
+        });
+        let footer = Some(Footer {
+            text: Some("Footer text".to_string()),
+            ..Default::default()
+        });
+        let groups = vec![Group {
+            name: "Group 1".to_string(),
+            normalized_name: Some("group-1".to_string()),
+            categories: vec!["Category 1".to_string()],
+        }];
+        let header = Some(Header {
+            logo: Some("https://logo.url".to_string()),
+            ..Default::default()
+        });
+        let images = Some(Images {
+            favicon: Some("https://favicon.url".to_string()),
+            ..Default::default()
+        });
+        let upcoming_event = UpcomingEvent {
+            name: "Event".to_string(),
+            start: NaiveDate::from_ymd_opt(2024, 5, 2).unwrap(),
+            end: NaiveDate::from_ymd_opt(2024, 5, 3).unwrap(),
+            banner_url: "https://banner.url".to_string(),
+            details_url: "https://details.url".to_string(),
+        };
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            base_path: Some("/base/path".to_string()),
+            categories: Some(vec![settings::Category {
+                name: "Category 1".to_string(),
+                subcategories: vec!["Subcategory 1".to_string()],
+            }]),
+            colors: colors.clone(),
+            footer: footer.clone(),
+            grid_items_size: Some(GridItemsSize::Small),
+            groups: Some(groups.clone()),
+            header: header.clone(),
+            images: images.clone(),
+            members_category: Some("Members".to_string()),
+            upcoming_event: Some(upcoming_event.clone()),
+            view_mode: Some(ViewMode::Grid),
+            ..Default::default()
+        };
+
+        // Guide
+        let guide = LandscapeGuide {
+            categories: Some(vec![guide::Category {
+                category: "Category 1".to_string(),
+                subcategories: Some(vec![guide::Subcategory {
+                    subcategory: "Subcategory 1".to_string(),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            }]),
+        };
+
+        // QR code
+        let qr_code = "QR_CODE".to_string();
+
+        let base = Base::new(&landscape_data, &settings, &Some(guide), &qr_code);
+        let expected_base = Base {
+            finances_available: true,
+            foundation: "Foundation".to_string(),
+            qr_code: "QR_CODE".to_string(),
+            base_path: Some("/base/path".to_string()),
+            categories: vec![data::Category {
+                name: "Category 1".to_string(),
+                normalized_name: "category-1".to_string(),
+                subcategories: vec![Subcategory {
+                    name: "Subcategory 1".to_string(),
+                    normalized_name: "subcategory-1".to_string(),
+                }],
+            }],
+            categories_overridden: vec!["Category 1".to_string()],
+            colors,
+            footer,
+            grid_items_size: Some(GridItemsSize::Small),
+            groups,
+            guide_summary: vec![("Category 1".to_string(), vec!["Subcategory 1".to_string()])]
+                .into_iter()
+                .collect(),
+            header,
+            images,
+            items: vec![(&item).into()],
+            members_category: Some("Members".to_string()),
+            upcoming_event: Some(upcoming_event),
+            view_mode: Some(ViewMode::Grid),
+        };
+        pretty_assertions::assert_eq!(base, expected_base);
+    }
+
+    #[test]
+    fn base_item_from_data_item() {
+        let data_item = data::Item {
+            additional_categories: Some(vec![AdditionalCategory {
+                category: "Category 2".to_string(),
+                subcategory: "Subcategory 3".to_string(),
+            }]),
+            category: "Category 1".to_string(),
+            featured: Some(ItemFeatured {
+                label: Some("label".to_string()),
+                order: Some(1),
+            }),
+            id: "id".to_string(),
+            logo: "logo.svg".to_string(),
+            maturity: Some("graduated".to_string()),
+            name: "Item".to_string(),
+            oss: Some(true),
+            subcategory: "Subcategory 1".to_string(),
+            tag: Some("tag1".to_string()),
+            ..Default::default()
+        };
+
+        let item = base::Item::from(&data_item);
+        let expected_item = base::Item {
+            additional_categories: Some(vec![AdditionalCategory {
+                category: "Category 2".to_string(),
+                subcategory: "Subcategory 3".to_string(),
+            }]),
+            category: "Category 1".to_string(),
+            featured: Some(ItemFeatured {
+                label: Some("label".to_string()),
+                order: Some(1),
+            }),
+            id: "id".to_string(),
+            logo: "logo.svg".to_string(),
+            maturity: Some("graduated".to_string()),
+            name: "Item".to_string(),
+            oss: Some(true),
+            subcategory: "Subcategory 1".to_string(),
+            tag: Some("tag1".to_string()),
+        };
+        pretty_assertions::assert_eq!(item, expected_item);
+    }
+
+    #[test]
+    fn embed_new() {
+        let item = data::Item {
+            category: "Category 1".to_string(),
+            homepage_url: "https://homepage.url".to_string(),
+            id: "id".to_string(),
+            logo: "logo.svg".to_string(),
+            name: "Item".to_string(),
+            subcategory: "Subcategory 1".to_string(),
+            ..Default::default()
+        };
+        let landscape_data = LandscapeData {
+            categories: vec![data::Category {
+                name: "Category 1".to_string(),
+                normalized_name: "category-1".to_string(),
+                subcategories: vec![Subcategory {
+                    name: "Subcategory 1".to_string(),
+                    normalized_name: "subcategory-1".to_string(),
+                }],
+            }],
+            items: vec![item.clone()],
+        };
+
+        let embed = Embed::new(&landscape_data);
+        let expected_embed_view = EmbedView {
+            category: data::Category {
+                name: "Category 1".to_string(),
+                normalized_name: "category-1".to_string(),
+                subcategories: vec![Subcategory {
+                    name: "Subcategory 1".to_string(),
+                    normalized_name: "subcategory-1".to_string(),
+                }],
+            },
+            items: vec![(&item).into()],
+        };
+        let expected_embed = embed::Embed {
+            views: vec![
+                ("category-1".to_string(), expected_embed_view.clone()),
+                ("category-1--subcategory-1".to_string(), expected_embed_view),
+            ]
+            .into_iter()
+            .collect(),
+        };
+        pretty_assertions::assert_eq!(embed, expected_embed);
+    }
+
+    #[test]
+    fn full_new() {
+        let item = data::Item {
+            category: "Category 1".to_string(),
+            homepage_url: "https://homepage.url".to_string(),
+            id: "id".to_string(),
+            logo: "logo.svg".to_string(),
+            name: "Item".to_string(),
+            subcategory: "Subcategory 1".to_string(),
+            ..Default::default()
+        };
+        let landscape_data = LandscapeData {
+            categories: vec![],
+            items: vec![item.clone()],
+        };
+        let mut crunchbase_data = CrunchbaseData::default();
+        crunchbase_data.insert("https:://crunchbase.url".to_string(), Organization::default());
+        let mut github_data = GithubData::default();
+        github_data.insert("https:://github.url".to_string(), RepositoryGithubData::default());
+
+        let full = Full::new(&landscape_data, &crunchbase_data, &github_data);
+        let expected_full = Full {
+            crunchbase_data,
+            github_data,
+            items: vec![item],
+        };
+        pretty_assertions::assert_eq!(full, expected_full);
     }
 }

@@ -12,7 +12,7 @@ use std::{
 use tracing::{debug, instrument};
 
 /// Landscape guide source.
-#[derive(Args, Default)]
+#[derive(Args, Default, Debug, Clone, PartialEq)]
 #[group(required = false, multiple = false)]
 pub struct GuideSource {
     /// Landscape guide file local path.
@@ -207,4 +207,202 @@ pub struct Subcategory {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn guidesource_new_from_url() {
+        let url = "https://example.url/guide.yml";
+        let src = GuideSource::new_from_url(url.to_string());
+        assert_eq!(
+            src,
+            GuideSource {
+                guide_file: None,
+                guide_url: Some(url.to_string()),
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn guide_new_using_file() {
+        let src = GuideSource {
+            guide_file: Some(PathBuf::from("src/testdata/guide.yml")),
+            guide_url: None,
+        };
+        let _ = LandscapeGuide::new(&src).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn guide_new_using_url() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("GET", "/guide.yml")
+            .with_status(200)
+            .with_body_from_file("src/testdata/guide.yml")
+            .create_async()
+            .await;
+
+        let src = GuideSource::new_from_url(format!("{}/guide.yml", server.url()));
+        let _ = LandscapeGuide::new(&src).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn guide_new_no_file_or_url_provided() {
+        let src = GuideSource::default();
+        assert!(LandscapeGuide::new(&src).await.unwrap().is_none());
+    }
+
+    #[test]
+    fn guide_new_from_file() {
+        let file = Path::new("src/testdata/guide.yml");
+        let _ = LandscapeGuide::new_from_file(file).unwrap();
+    }
+
+    #[tokio::test]
+    async fn guide_new_from_url() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("GET", "/guide.yml")
+            .with_status(200)
+            .with_body_from_file("src/testdata/guide.yml")
+            .create_async()
+            .await;
+
+        let url = format!("{}/guide.yml", server.url());
+        let _ = LandscapeGuide::new_from_url(&url).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "unexpected status code getting landscape guide file: 404")]
+    async fn guide_new_from_url_not_found() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server.mock("GET", "/guide.yml").with_status(404).create_async().await;
+
+        let url = format!("{}/guide.yml", server.url());
+        let _ = LandscapeGuide::new_from_url(&url).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[test]
+    fn guide_new_from_yaml() {
+        let raw_data = fs::read_to_string("src/testdata/guide.yml").unwrap();
+        let _ = LandscapeGuide::new_from_yaml(&raw_data).unwrap();
+    }
+
+    #[test]
+    fn guide_validate_success() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                content: Some("content".to_string()),
+                keywords: Some(vec!["keyword".to_string()]),
+                subcategories: Some(vec![Subcategory {
+                    subcategory: "subcategory".to_string(),
+                    content: "content".to_string(),
+                    keywords: Some(vec!["keyword".to_string()]),
+                }]),
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "category cannot be empty")]
+    fn guide_validate_empty_category() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: String::new(),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "content cannot be empty")]
+    fn guide_validate_empty_category_content() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                content: Some(String::new()),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "keywords cannot be empty")]
+    fn guide_validate_empty_category_keywords() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                keywords: Some(vec![String::new()]),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "subcategory cannot be empty")]
+    fn guide_validate_empty_subcategory() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                subcategories: Some(vec![Subcategory {
+                    subcategory: String::new(),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "content cannot be empty")]
+    fn guide_validate_empty_subcategory_content() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                subcategories: Some(vec![Subcategory {
+                    subcategory: "subcategory".to_string(),
+                    content: String::new(),
+                    ..Default::default()
+                }]),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "keywords cannot be empty")]
+    fn guide_validate_empty_subcategory_keywords() {
+        let guide = LandscapeGuide {
+            categories: Some(vec![Category {
+                category: "category".to_string(),
+                subcategories: Some(vec![Subcategory {
+                    subcategory: "subcategory".to_string(),
+                    content: "content".to_string(),
+                    keywords: Some(vec![String::new()]),
+                }]),
+                ..Default::default()
+            }]),
+        };
+
+        guide.validate().unwrap();
+    }
 }

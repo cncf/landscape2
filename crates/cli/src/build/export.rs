@@ -97,26 +97,26 @@ impl From<&data::Item> for Item {
 
         // Crunchbase values
         if let Some(organization) = &di.crunchbase_data {
-            item.crunchbase_city = organization.city.clone();
-            item.crunchbase_country = organization.country.clone();
-            item.crunchbase_description = organization.description.clone();
-            item.crunchbase_homepage = organization.homepage_url.clone();
-            item.crunchbase_kind = organization.kind.clone();
-            item.crunchbase_linkedin = organization.linkedin_url.clone();
+            item.crunchbase_city.clone_from(&organization.city);
+            item.crunchbase_country.clone_from(&organization.country);
+            item.crunchbase_description.clone_from(&organization.description);
+            item.crunchbase_homepage.clone_from(&organization.homepage_url);
+            item.crunchbase_kind.clone_from(&organization.kind);
+            item.crunchbase_linkedin.clone_from(&organization.linkedin_url);
             item.crunchbase_max_employees = organization.num_employees_max;
             item.crunchbase_min_employees = organization.num_employees_min;
-            item.crunchbase_region = organization.region.clone();
-            item.crunchbase_ticker = organization.ticker.clone();
-            item.crunchbase_twitter = organization.twitter_url.clone();
+            item.crunchbase_region.clone_from(&organization.region);
+            item.crunchbase_ticker.clone_from(&organization.ticker);
+            item.crunchbase_twitter.clone_from(&organization.twitter_url);
             item.funding = organization.funding;
-            item.organization = organization.name.clone();
+            item.organization.clone_from(&organization.name);
         }
 
         // Twitter
         if di.twitter_url.is_some() {
-            item.twitter = di.twitter_url.clone();
+            item.twitter.clone_from(&di.twitter_url);
         } else if item.crunchbase_twitter.is_some() {
-            item.twitter = item.crunchbase_twitter.clone();
+            item.twitter.clone_from(&item.crunchbase_twitter);
         }
 
         // Relation

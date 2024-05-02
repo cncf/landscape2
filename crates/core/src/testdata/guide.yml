@@ -1,0 +1,6 @@
+categories:
+  - category: Category 1
+    content: Category 1 content
+    subcategories:
+      - subcategory: Subcategory 1
+        content: Subcategory 1 content

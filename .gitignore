@@ -4,6 +4,7 @@
 crates/wasm/overlay/data
 crates/wasm/overlay/dist
 crates/wasm/overlay/sources
+lcov.info
 npm-debug.log*
 target
 target-wasm
