@@ -2,9 +2,9 @@
   width: 350px;
   max-width: 350px;
   min-width: 350px;
-  top: 4rem;
+  top: 4.5rem;
   bottom: 1rem;
-  max-height: calc(100vh - 4.5rem);
+  max-height: calc(var(--app-height) - 4.5rem);
 }
 
 .wrapper {

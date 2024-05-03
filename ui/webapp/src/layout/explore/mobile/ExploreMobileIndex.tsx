@@ -112,7 +112,7 @@ const ExploreMobileIndex = (props: Props) => {
                         const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
                         return (
-                          <div id={`card_${id}`} class="mb-3">
+                          <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
                             <div class={`d-flex flex-row fw-semibold mb-3 ${styles.title}`}>
                               <div
                                 class="d-flex flex-row align-items-center p-2 w-100"
@@ -161,7 +161,7 @@ const ExploreMobileIndex = (props: Props) => {
                             const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
                             return (
-                              <div id={`card_${id}`} class="mb-3">
+                              <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
                                 <div class={`d-flex flex-row fw-semibold mb-3 ${styles.title}`}>
                                   <div
                                     class="d-flex flex-row align-items-center p-2 w-100"
@@ -200,7 +200,10 @@ const ExploreMobileIndex = (props: Props) => {
 
                           return (
                             <>
-                              <div id={`card_${id}`} class={`d-flex flex-row fw-semibold mb-2 ${styles.title}`}>
+                              <div
+                                id={`card_${id}`}
+                                class={`d-flex flex-row fw-semibold mb-2 ${styles.title} ${styles.section}`}
+                              >
                                 <div
                                   class="d-flex flex-row align-items-center p-2 w-100"
                                   style={{ 'background-color': COLORS[0] }}

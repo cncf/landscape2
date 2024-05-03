@@ -117,11 +117,7 @@ const GuideIndex = () => {
             }
           } else {
             setTimeout(() => {
-              goToElement(
-                !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!),
-                `section_${cleanHash}`,
-                16
-              );
+              goToElement(`section_${cleanHash}`);
               scrollInToC();
             }, 50);
           }
@@ -161,10 +157,10 @@ const GuideIndex = () => {
     } else {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
-          goToElement(onSmallDevice, `section_${title}`, 16);
+          goToElement(`section_${title}`);
         }, 50);
       } else {
-        goToElement(onSmallDevice, `section_${title}`, 16);
+        goToElement(`section_${title}`);
       }
     }
   };
@@ -213,7 +209,11 @@ const GuideIndex = () => {
 
                     return (
                       <>
-                        <div id={`section_${id}`} classList={{ [styles.catSection]: !hasSubcategories }}>
+                        <div
+                          id={`section_${id}`}
+                          class={styles.section}
+                          classList={{ [styles.catSection]: !hasSubcategories }}
+                        >
                           <h1
                             class={`border-bottom mb-3 mb-lg-4 pb-2 ${styles.title}`}
                             classList={{ 'mt-4 mt-lg-5': index() !== 0 }}
@@ -237,6 +237,7 @@ const GuideIndex = () => {
                               return (
                                 <div
                                   id={`section_${id}`}
+                                  class={styles.section}
                                   classList={{ [styles.catSection]: index() === cat.subcategories.length - 1 }}
                                 >
                                   <h2 class={`mt-4 mt-lg-5 mb-3 mb-lg-4 pb-2 border-bottom ${styles.subtitle}`}>

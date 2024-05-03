@@ -128,7 +128,7 @@ const Content = (props: Props) => {
                           const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
 
                           return (
-                            <div id={`card_${id}`} class="mb-3">
+                            <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
                               <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                                 <div
                                   class={`d-flex flex-row align-items-center p-2 ${styles.categoryTitle}`}
@@ -180,7 +180,7 @@ const Content = (props: Props) => {
                       </For>
                     </Match>
                     <Match when={Array.isArray(content())}>
-                      <div id={`card_${props.classify}--${title}`} class="mb-3">
+                      <div id={`card_${props.classify}--${title}`} class={`mb-3 ${styles.section}`}>
                         <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                           <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                             <div class="flex-grow-1 text-truncate text-capitalize">

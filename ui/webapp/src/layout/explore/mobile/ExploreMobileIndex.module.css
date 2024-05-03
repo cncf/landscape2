@@ -3,6 +3,10 @@
   min-width: 0;
 }
 
+.section {
+  scroll-margin: 4rem;
+}
+
 .catTitle {
   background-color: var(--bs-gray-100);
 }

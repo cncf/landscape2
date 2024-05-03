@@ -129,11 +129,13 @@ const MobileContent = (props: Props) => {
         {/* Additional categories */}
         <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
           <div class={`fw-bold text-uppercase my-3 ${styles.titleInSection}`}>Additional categories</div>
-          <div class="d-flex flex-column align-items-start mb-1">
+          <div class="d-flex flex-column flex-sm-row align-items-start mb-1">
             <For each={itemInfo()!.additional_categories}>
               {(additional: AdditionalCategory) => {
                 return (
-                  <div class={`badge border rounded-0 text-truncate mb-2 mw-100 ${styles.badgeOutlineDark}`}>
+                  <div
+                    class={`badge border rounded-0 text-truncate mb-2 me-2 me-sm-2 mw-100 ${styles.badgeOutlineDark}`}
+                  >
                     {additional.category} / {additional.subcategory}
                   </div>
                 );

@@ -8,10 +8,12 @@
   min-width: 270px;
   top: 5.5rem;
   bottom: 1rem;
-  max-height: calc(100vh - 6.5rem);
+  max-height: calc(var(--app-height) - 6.5rem);
 }
 
 .content {
+  overflow-y: auto;
+  max-height: 100%;
   overscroll-behavior: contain;
 }
 

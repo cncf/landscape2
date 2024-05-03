@@ -36,9 +36,7 @@ const ParticipationStats = (props: Props) => {
             <Show
               when={!isAllZero()}
               fallback={
-                <div
-                  class={`alert alert-primary text-muted mx-auto mb-4 px-5 py-2 text-center border ${styles.message}`}
-                >
+                <div class={`alert rounded-0 text-muted mx-auto mb-4 px-5 py-2 text-center border ${styles.message}`}>
                   No activity in the last year
                 </div>
               }

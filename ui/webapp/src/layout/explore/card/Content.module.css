@@ -3,6 +3,10 @@
   min-width: 0;
 }
 
+.section {
+  scroll-margin: 5.5rem;
+}
+
 .categoryTitle {
   max-width: 50%;
 }
@@ -31,7 +35,10 @@
 }
 
 .card :global(.badge:not(.tagBadge)) {
-  font-size: 65%;
+  font-size: 0.6rem;
+  border: 1px solid transparent;
+  line-height: 1;
+  height: 18px;
 }
 
 .card :global(.accepted-date) {

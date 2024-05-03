@@ -7,6 +7,7 @@
 
 .loaded {
   transform: translate(-50%, 0%);
+  z-index: 1025;
 }
 
 .imageWrapper {
