@@ -7,7 +7,7 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use super::data::{CategoryName, SubCategoryName};
+use super::data::{CategoryName, SubcategoryName};
 use crate::util::{normalize_name, validate_url};
 use anyhow::{bail, format_err, Context, Result};
 use chrono::NaiveDate;
@@ -24,7 +24,7 @@ use std::{
 use tracing::{debug, instrument};
 
 /// Landscape settings location.
-#[derive(Args, Default)]
+#[derive(Args, Default, Debug, Clone, PartialEq)]
 #[group(required = true, multiple = false)]
 pub struct SettingsSource {
     /// Landscape settings file local path.
@@ -493,7 +493,7 @@ pub struct Analytics {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Category {
     pub name: CategoryName,
-    pub subcategories: Vec<SubCategoryName>,
+    pub subcategories: Vec<SubcategoryName>,
 }
 
 lazy_static! {
@@ -669,7 +669,7 @@ pub struct TagRule {
     pub category: CategoryName,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub subcategories: Option<Vec<SubCategoryName>>,
+    pub subcategories: Option<Vec<SubcategoryName>>,
 }
 
 /// Upcoming event details.
@@ -688,4 +688,737 @@ pub struct UpcomingEvent {
 pub enum ViewMode {
     Grid,
     Card,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::settings::SettingsSource;
+
+    #[test]
+    fn settings_source_new_from_url() {
+        let url = "https://example.url/settings.yml";
+        let src = SettingsSource::new_from_url(url.to_string());
+        assert_eq!(
+            src,
+            SettingsSource {
+                settings_file: None,
+                settings_url: Some(url.to_string()),
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn settings_new_using_file() {
+        let src = SettingsSource {
+            settings_file: Some(PathBuf::from("src/testdata/settings.yml")),
+            settings_url: None,
+        };
+        let _ = LandscapeSettings::new(&src).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn settings_new_using_url() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("GET", "/settings.yml")
+            .with_status(200)
+            .with_body_from_file("src/testdata/settings.yml")
+            .create_async()
+            .await;
+
+        let src = SettingsSource::new_from_url(format!("{}/settings.yml", server.url()));
+        let _ = LandscapeSettings::new(&src).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "settings file or url not provided")]
+    async fn settings_new_no_file_or_url_provided() {
+        let src = SettingsSource::default();
+        let _ = LandscapeSettings::new(&src).await.unwrap();
+    }
+
+    #[test]
+    fn settings_new_from_file() {
+        let file = Path::new("src/testdata/settings.yml");
+        let _ = LandscapeSettings::new_from_file(file).unwrap();
+    }
+
+    #[tokio::test]
+    async fn settings_new_from_url() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("GET", "/settings.yml")
+            .with_status(200)
+            .with_body_from_file("src/testdata/settings.yml")
+            .create_async()
+            .await;
+
+        let url = format!("{}/settings.yml", server.url());
+        let _ = LandscapeSettings::new_from_url(&url).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    #[should_panic(expected = "unexpected status code getting landscape settings file: 404")]
+    async fn landscape_data_new_from_url_not_found() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server.mock("GET", "/settings.yml").with_status(404).create_async().await;
+
+        let url = format!("{}/settings.yml", server.url());
+        let _ = LandscapeSettings::new_from_url(&url).await.unwrap();
+        mock.assert_async().await;
+    }
+
+    #[test]
+    fn settings_new_from_raw_data() {
+        let raw_data = fs::read_to_string("src/testdata/settings.yml").unwrap();
+        let _ = LandscapeSettings::new_from_raw_data(&raw_data).unwrap();
+    }
+
+    #[test]
+    fn settings_footer_text_to_html_works() {
+        let mut settings = LandscapeSettings {
+            footer: Some(Footer {
+                text: Some("# Footer text".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.footer_text_to_html().unwrap();
+        assert_eq!(settings.footer.unwrap().text.unwrap(), "<h1>Footer text</h1>");
+    }
+
+    #[test]
+    fn settings_remove_base_path_trailing_slash_works() {
+        let mut settings = LandscapeSettings {
+            base_path: Some("/base_path/".to_string()),
+            ..Default::default()
+        };
+
+        settings.remove_base_path_trailing_slash();
+        assert_eq!(settings.base_path.unwrap(), "/base_path");
+    }
+
+    #[test]
+    fn settings_set_groups_normalized_name_works() {
+        let mut settings = LandscapeSettings {
+            groups: Some(vec![Group {
+                name: "Group 1".to_string(),
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        settings.set_groups_normalized_name();
+        assert_eq!(
+            settings.groups.unwrap().first().unwrap().normalized_name.as_ref().unwrap(),
+            "group-1"
+        );
+    }
+
+    #[test]
+    fn settings_validate_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "foundation cannot be empty")]
+    fn settings_validate_empty_foundation() {
+        let settings = LandscapeSettings {
+            foundation: String::new(),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid landscape url")]
+    fn settings_validate_invalid_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "invalid-url".to_string(),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_base_path_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            base_path: Some("/base_path".to_string()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "base_path cannot be empty")]
+    fn settings_validate_base_path_empty() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            base_path: Some(String::new()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "base_path must start with a slash")]
+    fn settings_validate_base_path_no_slash() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            base_path: Some("base_path".to_string()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_categories_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            categories: Some(vec![Category {
+                name: "Category".to_string(),
+                subcategories: vec!["Subcategory".to_string()],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "category [0] name cannot be empty")]
+    fn settings_validate_categories_empty_name() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            categories: Some(vec![Category {
+                name: String::new(),
+                subcategories: vec![],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "category [Category]: subcategory [0] cannot be empty")]
+    fn settings_validate_categories_empty_subcategory() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            categories: Some(vec![Category {
+                name: "Category".to_string(),
+                subcategories: vec![String::new()],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_colors_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            colors: Some(Colors {
+                color1: "rgba(0, 107, 204, 1)".to_string(),
+                color2: "rgba(0, 107, 204, 1)".to_string(),
+                color3: "rgba(0, 107, 204, 1)".to_string(),
+                color4: "rgba(0, 107, 204, 1)".to_string(),
+                color5: "rgba(0, 107, 204, 1)".to_string(),
+                color6: "rgba(0, 107, 204, 1)".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "color1 is not valid (expected format: \"rgba(0, 107, 204, 1)\")")]
+    fn settings_validate_colors_invalid_format() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            colors: Some(Colors {
+                color1: "invalid-color".to_string(),
+                color2: "rgba(0, 107, 204, 1)".to_string(),
+                color3: "rgba(0, 107, 204, 1)".to_string(),
+                color4: "rgba(0, 107, 204, 1)".to_string(),
+                color5: "rgba(0, 107, 204, 1)".to_string(),
+                color6: "rgba(0, 107, 204, 1)".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_featured_items_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: "Field".to_string(),
+                options: vec![FeaturedItemRuleOption {
+                    value: "Value".to_string(),
+                    label: Some("Label".to_string()),
+                    order: Some(1),
+                }],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "field cannot be empty")]
+    fn settings_validate_featured_items_empty_field() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: String::new(),
+                options: vec![],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "options cannot be empty")]
+    fn settings_validate_featured_items_empty_options() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: "Field".to_string(),
+                options: vec![],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "option value cannot be empty")]
+    fn settings_validate_featured_items_empty_option_value() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: "Field".to_string(),
+                options: vec![FeaturedItemRuleOption {
+                    value: String::new(),
+                    ..Default::default()
+                }],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "option label cannot be empty")]
+    fn settings_validate_featured_items_empty_option_label() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: "Field".to_string(),
+                options: vec![FeaturedItemRuleOption {
+                    value: "Value".to_string(),
+                    label: Some(String::new()),
+                    ..Default::default()
+                }],
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_footer_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            footer: Some(Footer {
+                links: Some(FooterLinks {
+                    github: Some("https://github.com".to_string()),
+                    ..Default::default()
+                }),
+                logo: Some("https://logo.url".to_string()),
+                text: Some("Footer text".to_string()),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid github url")]
+    fn settings_validate_footer_invalid_github_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            footer: Some(Footer {
+                links: Some(FooterLinks {
+                    github: Some("invalid-url".to_string()),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid footer logo url")]
+    fn settings_validate_footer_invalid_logo_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            footer: Some(Footer {
+                logo: Some("invalid-url".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "footer text cannot be empty")]
+    fn settings_validate_footer_empty_text() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            footer: Some(Footer {
+                text: Some(String::new()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_groups_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            groups: Some(vec![Group {
+                name: "Group 1".to_string(),
+                categories: vec!["Category".to_string()],
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "group [0] name cannot be empty")]
+    fn settings_validate_groups_empty_name() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            groups: Some(vec![Group {
+                name: String::new(),
+                categories: vec![],
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "group [Group 1]: category [0] cannot be empty")]
+    fn settings_validate_groups_empty_category() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            groups: Some(vec![Group {
+                name: "Group 1".to_string(),
+                categories: vec![String::new()],
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_header_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            header: Some(Header {
+                links: Some(HeaderLinks {
+                    github: Some("https://github.com".to_string()),
+                }),
+                logo: Some("https://logo.url".to_string()),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid github url")]
+    fn settings_validate_header_invalid_github_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            header: Some(Header {
+                links: Some(HeaderLinks {
+                    github: Some("invalid-url".to_string()),
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid header logo url")]
+    fn settings_validate_header_invalid_logo_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            header: Some(Header {
+                logo: Some("invalid-url".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_images_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            images: Some(Images {
+                favicon: Some("https://favicon.url".to_string()),
+                open_graph: Some("https://open-graph.url".to_string()),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid favicon url")]
+    fn settings_validate_images_invalid_favicon_url() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            images: Some(Images {
+                favicon: Some("invalid-url".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_members_category_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            members_category: Some("Members".to_string()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "members category cannot be empty")]
+    fn settings_validate_members_category_empty() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            members_category: Some(String::new()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_osano_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            osano: Some(Osano {
+                customer_id: "customer_id".to_string(),
+                customer_configuration_id: "customer_configuration_id".to_string(),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "osano customer id cannot be empty")]
+    fn settings_validate_osano_empty_customer_id() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            osano: Some(Osano {
+                customer_id: String::new(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "osano customer configuration id cannot be empty")]
+    fn settings_validate_osano_empty_customer_configuration_id() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            osano: Some(Osano {
+                customer_id: "customer_id".to_string(),
+                customer_configuration_id: String::new(),
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_screenshot_width_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            screenshot_width: Some(2000),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "screenshot width must be greater than 1000")]
+    fn settings_validate_screenshot_width_invalid() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            screenshot_width: Some(1000),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_tags_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            tags: Some(BTreeMap::from_iter(vec![(
+                "tag1".to_string(),
+                vec![TagRule {
+                    category: "Category".to_string(),
+                    subcategories: Some(vec!["Subcategory".to_string()]),
+                }],
+            )])),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "tag [tag1] category cannot be empty")]
+    fn settings_validate_tags_empty_category() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            tags: Some(BTreeMap::from_iter(vec![(
+                "tag1".to_string(),
+                vec![TagRule {
+                    category: String::new(),
+                    subcategories: None,
+                }],
+            )])),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "tag [tag1] subcategories cannot be empty")]
+    fn settings_validate_tags_empty_subcategories() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            tags: Some(BTreeMap::from_iter(vec![(
+                "tag1".to_string(),
+                vec![TagRule {
+                    category: "Category".to_string(),
+                    subcategories: Some(vec![]),
+                }],
+            )])),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
 }

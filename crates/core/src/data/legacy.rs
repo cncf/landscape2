@@ -55,7 +55,7 @@ impl LandscapeData {
 
                     // Check name
                     if item.name.is_empty() {
-                        return Err(format_err!("name is required")).context(ctx);
+                        return Err(format_err!("item name is required")).context(ctx);
                     }
                     if items_seen.contains(&item.name) {
                         return Err(format_err!("duplicate item name")).context(ctx);
@@ -64,7 +64,7 @@ impl LandscapeData {
 
                     // Check homepage
                     if item.homepage_url.is_empty() {
-                        return Err(format_err!("hompage_url is required")).context(ctx);
+                        return Err(format_err!("homepage url is required")).context(ctx);
                     }
 
                     // Check logo
@@ -230,4 +230,187 @@ fn validate_urls(item: &Item) -> Result<()> {
     };
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn landscape_data_validate_succeeds() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "https://example.com".to_string(),
+                    logo: "logo".to_string(),
+                    additional_repos: Some(vec![Repository {
+                        repo_url: "https://repo.url".to_string(),
+                        ..Default::default()
+                    }]),
+                    extra: Some(ItemExtra {
+                        audits: Some(vec![ItemAudit {
+                            url: "https://audit.url".to_string(),
+                            ..Default::default()
+                        }]),
+                        blog_url: Some("https://blog.url".to_string()),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "category [0] name is required")]
+    fn landscape_data_validate_empty_category_name() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: String::new(),
+            subcategories: vec![],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "subcategory [0] name is required")]
+    fn landscape_data_validate_empty_subcategory_name() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: String::new(),
+                items: vec![],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "item name is required")]
+    fn landscape_data_validate_empty_item_name() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: String::new(),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "duplicate item name")]
+    fn landscape_data_validate_duplicate_item_name() {
+        let mut landscape = LandscapeData::default();
+        let item = Item {
+            name: "Item".to_string(),
+            homepage_url: "https://example.com".to_string(),
+            logo: "logo".to_string(),
+            ..Default::default()
+        };
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![item.clone(), item],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "homepage url is required")]
+    fn landscape_data_validate_empty_homepage_url() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "logo is required")]
+    fn landscape_data_validate_empty_logo() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "https://example.com".to_string(),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid tag")]
+    fn landscape_data_validate_invalid_tag() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "https://example.com".to_string(),
+                    logo: "logo".to_string(),
+                    extra: Some(ItemExtra {
+                        tag: Some("Invalid Tag".to_string()),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid homepage url")]
+    fn landscape_data_validate_invalid_url() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "homepage_url".to_string(),
+                    logo: "logo".to_string(),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
 }
