@@ -1,3 +1,4 @@
+import { createWindowSize } from '@solid-primitives/resize-observer';
 import { Route, Router } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
@@ -41,6 +42,8 @@ const App = () => {
   const [data, setData] = createSignal<BaseData>();
   const [loadingOverlay, setLoadingOverlay] = createSignal<boolean>(false);
   const [error, setError] = createSignal<string | undefined>();
+  const size = createWindowSize();
+  const height = () => size.height;
 
   async function fetchOverlayData() {
     try {
@@ -56,6 +59,10 @@ const App = () => {
     }
     setLoadingOverlay(false);
   }
+
+  const updateAppHeight = () => {
+    document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+  };
 
   const loadColors = () => {
     if (!isUndefined(window.baseDS) && !isUndefined(window.baseDS.colors)) {
@@ -100,6 +107,8 @@ const App = () => {
     })
   );
 
+  createEffect(on(height, updateAppHeight));
+
   onMount(() => {
     const isOverlayActive = overlayData.checkIfOverlayInQuery();
     if (!isOverlayActive) {
@@ -110,6 +119,7 @@ const App = () => {
     }
 
     batch(() => {
+      updateAppHeight();
       setIsOverlay(isOverlayActive);
       loadColors();
     });

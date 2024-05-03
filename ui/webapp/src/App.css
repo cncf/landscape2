@@ -1,23 +1,26 @@
-html,
-body {
-  height: 100%;
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-}
-
 :root {
+  --app-height: 100%;
   --card-size-width: 50px;
   --card-size-height: 45px;
   --card-gap: 5px;
   --mobile-card-size-width: 50px;
   --mobile-card-size-height: 50px;
+
   --color1: rgba(0, 107, 204, 1);
   --color2: rgba(255, 0, 170, 1);
   --color3: rgba(96, 149, 214, 1);
   --color4: rgba(0, 42, 81, 0.7);
   --color5: rgba(19, 17, 24, 0.7);
   --color6: rgba(80, 142, 191, 0.7);
+}
+
+html,
+body {
+  height: 100vh;
+  height: 100%;
+  height: var(--app-height);
+  margin: 0;
+  padding: 0;
 }
 
 button:focus,
@@ -86,8 +89,9 @@ a,
   }
 
   body {
-    min-height: 100%;
     min-height: 100vh;
+    min-height: 100%;
+    min-height: var(--app-height);
     overflow: auto;
   }
 
@@ -107,8 +111,9 @@ a,
 
 @media only screen and (min-width: 992px) {
   #landscape {
-    height: 100%;
     height: 100vh;
+    height: 100%;
+    height: var(--app-height);
   }
 
   /* Lazy loading for images are not working properly on body - desktop */

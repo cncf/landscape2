@@ -79,8 +79,7 @@ const Menu = (props: Props) => {
                             }}
                             disabled={`#${hash}` === location.hash}
                             onClick={() => {
-                              // When menu sticky, we need to check #landscape
-                              goToElement(!props.sticky, `card_${hash}`, 16);
+                              goToElement(`card_${hash}`);
                               if (!isUndefined(props.onClickOption)) {
                                 props.onClickOption();
                               }

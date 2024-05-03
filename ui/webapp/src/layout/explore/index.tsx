@@ -448,6 +448,8 @@ const Explore = (props: Props) => {
           });
         }
       }
+      // Check if select for groups has to be visible
+      checkContainerWidth();
     })
   );
 
@@ -504,7 +506,7 @@ const Explore = (props: Props) => {
     }, DELAY_ACTIONS);
   };
 
-  const handler = () => {
+  const checkContainerWidth = () => {
     if (!isUndefined(containerRef())) {
       const gap = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!) ? 0 : TITLE_GAP;
       const width = containerRef()!.offsetWidth - gap;
@@ -555,10 +557,10 @@ const Explore = (props: Props) => {
     window.addEventListener(
       'resize',
       // eslint-disable-next-line solid/reactivity
-      throttle(() => handler(), 400),
+      throttle(() => checkContainerWidth(), 400),
       { passive: true }
     );
-    handler();
+    checkContainerWidth();
 
     if (fullDataReady()) {
       fetchItems();
@@ -566,7 +568,7 @@ const Explore = (props: Props) => {
   });
 
   onCleanup(() => {
-    window.removeEventListener('resize', handler);
+    window.removeEventListener('resize', checkContainerWidth);
   });
 
   return (
@@ -579,7 +581,7 @@ const Explore = (props: Props) => {
                 title="Index"
                 class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-1 me-lg-4 btnIconMobile ${styles.mobileToCBtn}`}
                 onClick={() => setOpenMenuStatus(true)}
-                disabled={numVisibleItems() === 0}
+                disabled={numVisibleItems() === 0 || classify() === ClassifyOption.None}
               >
                 <SVGIcon kind={SVGIconKind.ToC} />
               </button>

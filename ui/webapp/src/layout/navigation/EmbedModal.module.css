@@ -67,6 +67,7 @@
   border: 3px solid rgb(248, 249, 250) !important;
   inline-size: 35px;
   block-size: 20px;
+  border-radius: 0;
 }
 
 .inputColor::-moz-color-swatch,

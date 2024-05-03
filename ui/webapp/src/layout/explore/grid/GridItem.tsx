@@ -3,6 +3,7 @@ import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../../types';
 import getItemDescription from '../../../utils/getItemDescription';
+import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import Image from '../../common/Image';
 import Loading from '../../common/Loading';
@@ -41,6 +42,9 @@ const GridItem = (props: Props) => {
   const description = () => getItemDescription(props.item);
   const containerWidth = () => (!isUndefined(props.container) ? props.container.clientWidth : window.innerWidth);
   const containerHeight = () => (!isUndefined(props.container) ? props.container.clientHeight : window.innerHeight);
+  const touchDevice = () => isTouchDevice();
+  // Only show dropdown on hover if it's not a touch device and activeDropdown prop is true
+  const activeDropdown = () => (touchDevice() ? false : props.activeDropdown);
 
   createEffect(
     on(fullDataReady, () => {
@@ -113,7 +117,7 @@ const GridItem = (props: Props) => {
 
   return (
     <Show
-      when={props.activeDropdown}
+      when={activeDropdown()}
       fallback={
         <div
           style={props.item.featured && props.item.featured.label ? { border: `2px solid ${props.borderColor}` } : {}}

@@ -39,5 +39,5 @@
 }
 
 .loading {
-  min-height: calc(100vh - 92px - 36px);
+  min-height: calc(var(--app-height) - 92px - 36px);
 }

@@ -42,7 +42,7 @@ const MobileHeader = (props: Props) => {
   return (
     <>
       <div
-        class={`d-flex flex-row align-items-center justify-content-between border-bottom shadow-sm px-2 w-100 ${styles.stickyNav}`}
+        class={`d-flex d-lg-none flex-row align-items-center justify-content-between border-bottom shadow-sm px-2 w-100 ${styles.stickyNav}`}
         classList={{ 'opacity-0': !sticky(), [styles.isSticky]: sticky() }}
       >
         <div class="d-flex flex-row align-items-center">

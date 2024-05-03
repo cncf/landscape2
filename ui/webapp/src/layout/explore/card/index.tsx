@@ -25,8 +25,6 @@ interface Props {
   menu?: CardMenu;
 }
 
-const TITLE_OFFSET = 16;
-
 const CardCategory = (props: Props) => {
   const location = useLocation();
   const [firstLoad, setFirstLoad] = createSignal<boolean>(false);
@@ -81,7 +79,7 @@ const CardCategory = (props: Props) => {
             }
           }
           setTimeout(() => {
-            goToElement(false, `card_${cleanHash}`, TITLE_OFFSET);
+            goToElement(`card_${cleanHash}`);
           }, 100);
         }
       }

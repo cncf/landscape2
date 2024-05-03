@@ -18,7 +18,7 @@
 }
 
 .loadingContent {
-  min-height: calc(100vh - 36px);
+  min-height: calc(var(--app-height) - 36px);
 }
 
 .projectsCol {

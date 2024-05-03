@@ -49,7 +49,7 @@ export const ItemsList = (props: ItemsListProps) => {
   const [items, setItems] = createSignal<(BaseItem | Item)[]>();
   const [itemsPerRow, setItemsPerRow] = createSignal<number>(0);
 
-  createEffect(() => {
+  const updateItemsPerRow = () => {
     setItemsPerRow(
       calculateGridItemsPerRow(
         percentage(),
@@ -58,21 +58,43 @@ export const ItemsList = (props: ItemsListProps) => {
         !isUndefined(props.itemWidth)
       )
     );
+  };
+
+  const prepareItems = () => {
+    setItems((prev) => {
+      const tmpItems: (BaseItem | Item)[] = [];
+
+      for (const item of new ItemIterator(initialItems(), itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow())) {
+        if (item) {
+          tmpItems.push(item);
+        }
+      }
+
+      return !isEqual(tmpItems, prev) ? tmpItems : prev;
+    });
+  };
+
+  createEffect(() => {
+    const newItemsPerRow = calculateGridItemsPerRow(
+      percentage(),
+      gridWidth(),
+      props.itemWidth || ZOOM_LEVELS[zoom()][0],
+      !isUndefined(props.itemWidth)
+    );
+    if (newItemsPerRow !== itemsPerRow()) {
+      setItemsPerRow(newItemsPerRow);
+    } else {
+      if (!isUndefined(items()) && initialItems().length !== items()!.length) {
+        prepareItems();
+      }
+    }
   });
+
+  createEffect(on(initialItems, () => updateItemsPerRow()));
 
   createEffect(
     on(itemsPerRow, () => {
-      setItems((prev) => {
-        const tmpItems: (BaseItem | Item)[] = [];
-
-        for (const item of new ItemIterator(initialItems(), itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow())) {
-          if (item) {
-            tmpItems.push(item);
-          }
-        }
-
-        return !isEqual(tmpItems, prev) ? tmpItems : prev;
-      });
+      prepareItems();
     })
   );
 
