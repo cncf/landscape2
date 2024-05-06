@@ -35,6 +35,7 @@ select:focus {
 .visibleScroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
+  background-color: var(--bs-white);
 }
 
 .visibleScroll::-webkit-scrollbar-thumb,

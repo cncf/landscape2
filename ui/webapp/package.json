@@ -20,6 +20,7 @@
     "apexcharts": "^3.49.0",
     "bootstrap": "^5.3.3",
     "lodash": "^4.17.21",
+    "minisearch": "^6.3.0",
     "moment": "^2.30.1",
     "solid-apexcharts": "^0.3.4",
     "solid-js": "^1.8.16",

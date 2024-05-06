@@ -68,7 +68,7 @@
 
 .legend {
   font-size: 0.75rem;
-  line-height: 0.75rem;
+  line-height: 0.85rem;
 }
 
 .badges {
@@ -82,23 +82,6 @@
 
 .truncateWrapper {
   min-width: 0;
-}
-
-/* Scroll */
-.visibleScroll::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-.visibleScroll::-webkit-scrollbar-thumb,
-.visibleScroll::-webkit-scrollbar-thumb:horizontal {
-  border-radius: 10px;
-  background-color: #686868;
-  border: 2px solid var(--bs-white);
-}
-
-.visibleScroll::-webkit-scrollbar-corner {
-  background-color: transparent;
 }
 
 @media only screen and (max-width: 1399.98px) {
