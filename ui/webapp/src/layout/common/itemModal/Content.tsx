@@ -427,7 +427,9 @@ const Content = (props: Props) => {
             </div>
             <Show
               when={
-                !isUndefined(itemInfo()!.crunchbase_data!.city) || !isUndefined(itemInfo()!.crunchbase_data!.country)
+                !isUndefined(itemInfo()!.crunchbase_data!.city) ||
+                !isUndefined(itemInfo()!.crunchbase_data!.region) ||
+                !isUndefined(itemInfo()!.crunchbase_data!.country)
               }
             >
               <div class={`text-muted pt-1 ${styles.location}`}>
@@ -435,6 +437,19 @@ const Content = (props: Props) => {
                 <Show
                   when={
                     !isUndefined(itemInfo()!.crunchbase_data!.city) &&
+                    (!isUndefined(itemInfo()!.crunchbase_data!.region) ||
+                      !isUndefined(itemInfo()!.crunchbase_data!.country))
+                  }
+                >
+                  <>, </>
+                </Show>
+
+                <Show when={!isUndefined(itemInfo()!.crunchbase_data!.region)}>
+                  {itemInfo()!.crunchbase_data!.region}
+                </Show>
+                <Show
+                  when={
+                    !isUndefined(itemInfo()!.crunchbase_data!.region) &&
                     !isUndefined(itemInfo()!.crunchbase_data!.country)
                   }
                 >
