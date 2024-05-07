@@ -209,7 +209,11 @@ impl GHApi {
     fn new(token: &str) -> Result<Self> {
         // Setup octorust GitHub API client
         let user_agent = format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
-        let gh_client = octorust::Client::new(user_agent.clone(), Credentials::Token(token.to_string()))?;
+        let gh_client = octorust::Client::custom(
+            user_agent.clone(),
+            Credentials::Token(token.to_string()),
+            reqwest_middleware::ClientBuilder::new(reqwest_octorust::Client::builder().build()?).build(),
+        );
 
         // Setup HTTP client ready to make requests to the GitHub API
         // (for some operations that cannot be done with the octorust client)
