@@ -1,10 +1,12 @@
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
+import { SearchResult } from 'minisearch';
+import { batch, createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
-import { BaseItem, SVGIconKind } from '../../types';
+import { SVGIconKind } from '../../types';
+import searchEngine from '../../utils/search';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
@@ -21,15 +23,15 @@ const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
-  const items = () => window.baseDS.items;
   const updateActiveItemId = useUpdateActiveItemId();
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
   const [dropdownRef, setDropdownRef] = createSignal<HTMLInputElement>();
   const [value, setValue] = createSignal<string>('');
-  const [itemsList, setItemsList] = createSignal<BaseItem[] | null>(null);
+  const [itemsList, setItemsList] = createSignal<SearchResult[] | null>(null);
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [highlightedItem, setHighlightedItem] = createSignal<number | null>(null);
   const [dropdownTimeout, setDropdownTimeout] = createSignal<number | null>(null);
+  const [error, setError] = createSignal<string | null>(null);
 
   useOutsideClick([dropdownRef], [BANNER_ID], visibleDropdown, () => {
     setValue('');
@@ -86,26 +88,35 @@ const Searchbar = (props: Props) => {
     }
   };
 
-  const onSearch = (text: string) => {
-    const filteredItems = items().filter((item: BaseItem) => {
-      const re = new RegExp(text, 'i');
-      if (re.test(item.name)) {
-        return item;
-      }
-    });
-    if (filteredItems.length > 0) {
-      const isInputFocused = inputEl() === document.activeElement;
-      // We have to be sure that input has focus to display results
-      if (isInputFocused) {
-        setItemsList(filteredItems);
+  const onSearch = async (text: string) => {
+    await searchEngine
+      .searchTerm(text) /* eslint-disable solid/reactivity */
+      .then((filteredItems) => {
+        if (filteredItems.length > 0) {
+          const isInputFocused = inputEl() === document.activeElement;
+          // We have to be sure that input has focus to display results
+          if (isInputFocused) {
+            batch(() => {
+              setError(null);
+              setItemsList(filteredItems);
+              setVisibleDropdown(true);
+            });
+          } else {
+            cleanItemsSearch();
+          }
+        } else {
+          batch(() => {
+            setItemsList([]);
+            setVisibleDropdown(true);
+            setError(null);
+          });
+        }
+      })
+      .catch((error) => {
+        setError(error);
+        setItemsList([]);
         setVisibleDropdown(true);
-      } else {
-        cleanItemsSearch();
-      }
-    } else {
-      setItemsList([]);
-      setVisibleDropdown(true);
-    }
+      });
   };
 
   const search = () => {
@@ -128,6 +139,7 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanItemsSearch = () => {
+    setError(null);
     setItemsList(null);
     setVisibleDropdown(false);
     setHighlightedItem(null);
@@ -229,9 +241,7 @@ const Searchbar = (props: Props) => {
       <Show when={visibleDropdown() && !isNull(itemsList())}>
         <div
           ref={setDropdownRef}
-          class={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto ${styles.dropdown} ${
-            styles.visibleScroll
-          } ${styles[`listLength-${itemsList()!.length}`]}`}
+          class={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto visibleScroll ${styles.dropdown} ${styles[`listLength-${itemsList()!.length}`]}`}
           role="listbox"
           id="search-list"
         >
@@ -239,7 +249,7 @@ const Searchbar = (props: Props) => {
             when={itemsList()!.length > 0}
             fallback={
               <div class="p-4 text-center fst-italic text-muted">
-                <small>We couldn't find any items that match that criteria.</small>
+                <small>{error() || `We couldn't find any items that match that criteria.`}</small>
               </div>
             }
           >

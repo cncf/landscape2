@@ -30,6 +30,7 @@ import {
 import capitalizeFirstLetter from './capitalizeFirstLetter';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
+import search from './search';
 import sortMenuOptions from './sortMenuOptions';
 
 export interface ItemsDataStatus {
@@ -129,6 +130,8 @@ export class ItemsDataGetter {
 
   private initialDataPreparation(data: LandscapeData) {
     const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
+    // Search engine initialization
+    search.init(extendedItems);
     this.landscapeData = {
       ...data,
       items: extendedItems,

@@ -1,3 +1,5 @@
+import isUndefined from 'lodash/isUndefined';
+
 import { Item, Repository } from '../types';
 import cleanEmojis from './cleanEmojis';
 
@@ -16,7 +18,12 @@ const getItemDescription = (item?: Item | null): string => {
       ) {
         return cleanEmojis(primaryRepo.github_data.description);
       }
-    } else if (item.crunchbase_data && item.crunchbase_data.description && item.crunchbase_data.description !== '') {
+    } else if (
+      isUndefined(item.maturity) &&
+      item.crunchbase_data &&
+      item.crunchbase_data.description &&
+      item.crunchbase_data.description !== ''
+    ) {
       return cleanEmojis(item.crunchbase_data.description);
     }
   }

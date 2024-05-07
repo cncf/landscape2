@@ -197,6 +197,7 @@ export interface GithubRepository {
   license: string;
   participation_stats: number[];
   stars: number;
+  topics: string[];
   url: string;
 }
 
