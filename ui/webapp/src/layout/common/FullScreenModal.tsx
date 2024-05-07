@@ -12,13 +12,15 @@ interface Props {
   open?: boolean;
   onClose?: () => void;
   initialRefs?: Accessor<HTMLElement>[];
+  excludedIds?: string[];
 }
 
 const FullScreenModal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
+  const excludedIds = () => (props.excludedIds ? [BANNER_ID, ...props.excludedIds] : [BANNER_ID]);
 
   useBodyScroll(openStatus, 'modal');
-  useOutsideClick(props.initialRefs || [], [BANNER_ID], openStatus, () => {
+  useOutsideClick(props.initialRefs || [], excludedIds(), openStatus, () => {
     closeModal();
   });
 

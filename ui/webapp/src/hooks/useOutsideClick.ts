@@ -23,7 +23,7 @@ export const useOutsideClick = (
       if (isNull(excludedItem)) return false;
       return e.target === excludedItem || excludedItem!.contains(e.target as HTMLElement);
     });
-    return test.every(Boolean);
+    return test.some(Boolean);
   };
 
   const onEvent = (e: MouseEvent) => {

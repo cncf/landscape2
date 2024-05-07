@@ -200,6 +200,7 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
 };
 
 export const BANNER_ID = 'banner-event';
+export const ITEM_VIEW = 'item-view';
 
 export const SORT_OPTION_LABEL = {
   [SortOption.Name]: 'Name',
