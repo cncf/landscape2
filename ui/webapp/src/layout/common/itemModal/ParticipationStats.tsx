@@ -20,7 +20,7 @@ const ParticipationStats = (props: Props) => {
 
   onMount(() => {
     setMonths(
-      [...Array(4).keys()].map((n: number) => {
+      [...Array(5).keys()].map((n: number) => {
         return moment()
           .subtract(n * 3, 'months')
           .format("MMM 'YY");
