@@ -2,7 +2,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, Show } from 'solid-js';
 
-import { SMALL_DEVICES_BREAKPOINTS } from '../../../data';
+import { ITEM_VIEW, SMALL_DEVICES_BREAKPOINTS } from '../../../data';
 import useBreakpointDetect from '../../../hooks/useBreakpointDetect';
 import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
@@ -48,6 +48,7 @@ const ItemModal = () => {
         modalDialogClass={visibleEventContent() ? styles.visibleUpcomingEvent : ''}
         bodyClass={styles.modalBody}
         onClose={() => updateActiveItemId()}
+        id={ITEM_VIEW}
       >
         <Show
           when={!isUndefined(itemInfo()) && !isNull(itemInfo())}

@@ -21,6 +21,7 @@ interface Props {
   size?: string;
   noScrollable?: boolean;
   visibleContentBackdrop?: boolean;
+  id?: string;
 }
 
 const Modal = (props: Props) => {
@@ -55,7 +56,10 @@ const Modal = (props: Props) => {
             [`${props.modalDialogClass}`]: !isUndefined(props.modalDialogClass),
           }}
         >
-          <div class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}>
+          <div
+            id={props.id}
+            class={`modal-content rounded-0 border border-2 mx-auto position-relative ${styles.content}`}
+          >
             <Show when={props.header}>
               <div class={`modal-header rounded-0 d-flex flex-row align-items-center ${styles.header}`}>
                 <div class={`modal-title h5 m-0 m-lg-2 flex-grow-1 ${styles.headerContent}`}>{props.header}</div>

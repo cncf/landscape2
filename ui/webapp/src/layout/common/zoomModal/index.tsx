@@ -3,7 +3,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, For, on, Show, untrack } from 'solid-js';
 
-import { ZOOM_LEVELS } from '../../../data';
+import { ITEM_VIEW, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import calculateGridWidthInPx from '../../../utils/calculateGridWidthInPx';
@@ -86,6 +86,7 @@ const ZoomModal = () => {
       <FullScreenModal
         open
         initialRefs={!isUndefined(modal()) ? [modal as Accessor<HTMLDivElement>] : undefined}
+        excludedIds={[ITEM_VIEW]}
         onClose={() => updateActiveSection()}
       >
         <div class="h-100" ref={setContainer}>
@@ -134,8 +135,8 @@ const ZoomModal = () => {
                             <GridItem
                               item={item}
                               borderColor={visibleZoomSection()!.bgColor}
-                              showMoreInfo={false}
                               container={gridContainer()}
+                              showMoreInfo
                               activeDropdown
                             />
                           );
