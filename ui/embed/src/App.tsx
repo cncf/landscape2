@@ -298,6 +298,7 @@ const App = () => {
             fallback={
               <StyleView
                 items={data()!.items}
+                foundation={data()!.foundation}
                 style={itemsStyleView()}
                 size={itemsSize()}
                 alignment={itemsAlignment()}
@@ -338,6 +339,7 @@ const App = () => {
                     </SubcategoryTitle>
                     <StyleView
                       items={items}
+                      foundation={data()!.foundation}
                       style={itemsStyleView()}
                       size={itemsSize()}
                       alignment={itemsAlignment()}

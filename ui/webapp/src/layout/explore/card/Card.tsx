@@ -24,18 +24,16 @@ interface Props {
 const Card = (props: Props) => {
   const [description, setDescription] = createSignal<string>();
   const [stars, setStars] = createSignal<number>();
-  const [mainRepoUrl, setMainRepoUrl] = createSignal<string>();
-  const [websiteUrl, setWebsiteUrl] = createSignal<string>();
+  const [primaryRepoUrl, setPrimaryRepoUrl] = createSignal<string>();
 
   onMount(() => {
     setDescription(getItemDescription(props.item));
-    setWebsiteUrl(props.item.homepage_url);
     let starsCount: number | undefined;
 
     if (props.item.repositories) {
       props.item.repositories.forEach((repo: Repository) => {
         if (repo.primary) {
-          setMainRepoUrl(repo.url);
+          setPrimaryRepoUrl(repo.url);
         }
 
         if (repo.github_data) {
@@ -43,15 +41,6 @@ const Card = (props: Props) => {
         }
       });
       setStars(starsCount);
-    }
-
-    // If homepage_url is undefined or is equal to main repository url
-    // and maturity field is undefined,
-    // we use the homepage_url fron crunchbase
-    if (isUndefined(websiteUrl) || websiteUrl() === mainRepoUrl()) {
-      if (props.item.crunchbase_data && props.item.crunchbase_data.homepage_url) {
-        setWebsiteUrl(props.item.crunchbase_data.homepage_url);
-      }
     }
   });
 
@@ -93,14 +82,14 @@ const Card = (props: Props) => {
               <MaturityBadge level={cutString(props.item.maturity!, 20)} class="me-2" />
             </Show>
 
-            <Show when={!isUndefined(websiteUrl())}>
-              <ExternalLink title="Website" class={`me-2 ${styles.link}`} href={websiteUrl()!}>
+            <Show when={!isUndefined(props.item.website)}>
+              <ExternalLink title="Website" class={`me-2 ${styles.link}`} href={props.item.website!}>
                 <SVGIcon kind={SVGIconKind.World} />
               </ExternalLink>
             </Show>
 
-            <Show when={!isUndefined(mainRepoUrl())}>
-              <ExternalLink title="Repository" class={`me-2 ${styles.link}`} href={mainRepoUrl()!}>
+            <Show when={!isUndefined(primaryRepoUrl())}>
+              <ExternalLink title="Repository" class={`me-2 ${styles.link}`} href={primaryRepoUrl()!}>
                 <SVGIcon kind={SVGIconKind.GitHubCircle} />
               </ExternalLink>
             </Show>

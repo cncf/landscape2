@@ -323,7 +323,6 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         unnamed_organization: legacy_item.unnamed_organization,
                         ..Default::default()
                     };
-                    item.set_id();
 
                     // Additional categories
                     if let Some(second_path) = legacy_item.second_path {
@@ -436,6 +435,8 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         }
                     }
 
+                    item.set_id();
+                    item.set_website();
                     data.items.push(item);
                 }
             }
@@ -488,6 +489,7 @@ pub struct Item {
     pub logo: String,
     pub name: String,
     pub subcategory: String,
+    pub website: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub accepted_at: Option<NaiveDate>,
@@ -657,6 +659,26 @@ impl Item {
             normalize_name(&self.subcategory),
             normalize_name(&self.name)
         );
+    }
+
+    /// Set item's website.
+    ///
+    /// The homepage URL is the preferred source for the website. However, when
+    /// it matches the primary repository URL, we'll fallback to the homepage
+    /// URL defined in the Crunchbase data -when available-.
+    pub fn set_website(&mut self) {
+        if let Some(primary_repository) = self.primary_repository() {
+            if self.homepage_url == primary_repository.url {
+                if let Some(crunchbase_data) = &self.crunchbase_data {
+                    if let Some(cb_homepage_url) = &crunchbase_data.homepage_url {
+                        self.website.clone_from(cb_homepage_url);
+                        return;
+                    }
+                }
+            }
+        }
+
+        self.website.clone_from(&self.homepage_url);
     }
 }
 
@@ -1356,6 +1378,7 @@ mod tests {
                 training_type: Some("training_type".to_string()),
                 twitter_url: Some("twitter_url".to_string()),
                 unnamed_organization: Some(false),
+                website: "homepage_url".to_string(),
                 youtube_url: Some("youtube_url".to_string()),
             }],
         };
@@ -1487,5 +1510,36 @@ mod tests {
 
         item.set_id();
         assert_eq!(item.id, "category--subcategory--item".to_string());
+    }
+
+    #[test]
+    fn item_set_website_from_crunchbase_data() {
+        let mut item = Item {
+            crunchbase_data: Some(Organization {
+                homepage_url: Some("crunchbase_homepage_url".to_string()),
+                ..Default::default()
+            }),
+            homepage_url: "repository_url".to_string(),
+            repositories: Some(vec![Repository {
+                url: "repository_url".to_string(),
+                primary: Some(true),
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        item.set_website();
+        assert_eq!(item.website, "crunchbase_homepage_url".to_string());
+    }
+
+    #[test]
+    fn item_set_website_from_homepage_url() {
+        let mut item = Item {
+            homepage_url: "homepage_url".to_string(),
+            ..Default::default()
+        };
+
+        item.set_website();
+        assert_eq!(item.website, "homepage_url".to_string());
     }
 }

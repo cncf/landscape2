@@ -130,7 +130,7 @@ const EmbedModal = () => {
   const [prevSearch, setPrevSearch] = createSignal<string>('');
 
   const getIFrameUrl = () => {
-    return `${
+    let url = `${
       import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
     }${BASE_PATH}/embed/embed.html?${KEY_PARAM}=${key() || categoriesList()[0].normalized_name}&${DISPLAY_HEADER_PARAM}=${
       displayHeader() ? 'true' : 'false'
@@ -138,15 +138,21 @@ const EmbedModal = () => {
       displayCategoryTitle() ? 'true' : 'false'
     }&${DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM}=${
       displayCategoryInSubcategory() ? 'true' : 'false'
-    }&${DISPLAY_ITEM_NAME_PARAM}=${displayItemName() ? 'true' : 'false'}&${UPPERCASE_TITLE_PARAM}=${
+    }&${UPPERCASE_TITLE_PARAM}=${
       uppercaseTitle() ? 'true' : 'false'
-    }&${TITLE_ALIGNMENT_PARAM}=${titleAlignment()}&${TITLE_FONT_FAMILY_PARAM}=${titleFontFamily()}&${TITLE_SIZE_PARAM}=${titleSize()}&${ITEMS_STYLE_PARAM}=${selectedStyle()}&${ITEMS_SIZE_PARAM}=${selectedSize()}&${ITEMS_ALIGNMENT_PARAM}=${itemsAlignment()}${
-      displayItemName() ? `&${ITEM_NAME_SIZE_PARAM}=${itemNameSize()}` : ''
-    }${
-      itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())
-        ? `&${ITEMS_SPACING_PARAM}=${itemsSpacing()}`
-        : ''
-    }&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(bgColor())}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${!isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''}`;
+    }&${TITLE_ALIGNMENT_PARAM}=${titleAlignment()}&${TITLE_FONT_FAMILY_PARAM}=${titleFontFamily()}&${TITLE_SIZE_PARAM}=${titleSize()}&${ITEMS_STYLE_PARAM}=${selectedStyle()}&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(bgColor())}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${!isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''}`;
+
+    if (selectedStyle() !== Style.Card) {
+      url = `${url}&${DISPLAY_ITEM_NAME_PARAM}=${displayItemName() ? 'true' : 'false'}&${ITEMS_SIZE_PARAM}=${selectedSize()}&${ITEMS_ALIGNMENT_PARAM}=${itemsAlignment()}${
+        displayItemName() ? `&${ITEM_NAME_SIZE_PARAM}=${itemNameSize()}` : ''
+      }${
+        itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())
+          ? `&${ITEMS_SPACING_PARAM}=${itemsSpacing()}`
+          : ''
+      }`;
+    }
+
+    return url;
   };
 
   const onUpdateSpacingType = (type: SpacingType) => {
@@ -519,39 +525,42 @@ const EmbedModal = () => {
                       <div class="mt-4">
                         <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item</div>
                       </div>
-                      <div class="form-check">
-                        <CheckBox
-                          name={InputType.DisplayItemName}
-                          value="true"
-                          class="ps-0 my-2"
-                          labelClass={`mw-100 text-muted ${styles.label}`}
-                          label="Display item name"
-                          checked={displayItemName()}
-                          onChange={(value: string, checked: boolean) =>
-                            onChange(InputType.DisplayItemName, value, checked)
-                          }
-                        />
-                      </div>
-                      <Show when={displayItemName()}>
-                        <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
-                            Item name font size (px):
-                          </label>
-                          <div>
-                            <input
-                              type="number"
-                              class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
-                              min={10}
-                              max={40}
-                              value={itemNameSize()}
-                              aria-label="Size"
-                              onChange={(e) => {
-                                setItemNameSize(parseInt(e.currentTarget.value));
-                              }}
-                            />
-                          </div>
+                      <Show when={selectedStyle() !== Style.Card}>
+                        <div class="form-check">
+                          <CheckBox
+                            name={InputType.DisplayItemName}
+                            value="true"
+                            class="ps-0 my-2"
+                            labelClass={`mw-100 text-muted ${styles.label}`}
+                            label="Display item name"
+                            checked={displayItemName()}
+                            onChange={(value: string, checked: boolean) =>
+                              onChange(InputType.DisplayItemName, value, checked)
+                            }
+                          />
                         </div>
+                        <Show when={displayItemName()}>
+                          <div class="d-flex flex-column mt-3">
+                            <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
+                              Item name font size (px):
+                            </label>
+                            <div>
+                              <input
+                                type="number"
+                                class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
+                                min={10}
+                                max={40}
+                                value={itemNameSize()}
+                                aria-label="Size"
+                                onChange={(e) => {
+                                  setItemNameSize(parseInt(e.currentTarget.value));
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </Show>
                       </Show>
+
                       <div class="d-flex flex-column mt-3">
                         <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Style</label>
                         <select
@@ -570,86 +579,89 @@ const EmbedModal = () => {
                           </For>
                         </select>
                       </div>
-                      <div class="d-flex flex-column mt-3">
-                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Size</label>
-                        <select
-                          id="sizes"
-                          class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                          value={selectedSize()}
-                          aria-label="Sizes"
-                          onChange={(e) => {
-                            setSelectedSize(e.currentTarget.value as Size);
-                          }}
-                        >
-                          <For each={Object.values(Size)}>
-                            {(s: Size) => {
-                              return <option value={s}>{SIZES_LEGENDS[s]}</option>;
-                            }}
-                          </For>
-                        </select>
-                      </div>
-                      <div class="d-flex flex-column mt-3">
-                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Alignment</label>
-                        <select
-                          id="alignment"
-                          class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                          value={itemsAlignment()}
-                          aria-label="Styles"
-                          onChange={(e) => {
-                            setItemsAlignment(e.currentTarget.value as Alignment);
-                          }}
-                        >
-                          <For each={Object.values(Alignment)}>
-                            {(a: Alignment) => {
-                              return <option value={a}>{capitalizeFirstLetter(a)}</option>;
-                            }}
-                          </For>
-                        </select>
-                      </div>
-                      <div class="d-flex flex-column mt-3">
-                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
-                          Gap between items:
-                        </label>
-                        <div class="d-flex mt-1">
-                          <For each={Object.values(SpacingType)}>
-                            {(t, index) => {
-                              return (
-                                <div class="form-check form-check-inline">
-                                  <input
-                                    class="form-check-input"
-                                    type="radio"
-                                    name="spacing"
-                                    id={`spacing_${t}`}
-                                    value={t}
-                                    checked={itemsSpacingType() === t}
-                                    aria-checked={itemsSpacingType() === t}
-                                    onInput={(e) => {
-                                      onUpdateSpacingType(e.currentTarget.value as SpacingType);
-                                    }}
-                                  />
-                                  <label class={`text-muted form-check-label ${styles.label}`} for={`spacing_${t}`}>
-                                    {Object.keys(SpacingType)[index()]}
-                                    <Show when={t === SpacingType.Custom}> (px)</Show>
-                                  </label>
-                                </div>
-                              );
-                            }}
-                          </For>
-                        </div>
 
-                        <Show when={itemsSpacingType() === SpacingType.Custom}>
-                          <input
-                            type="number"
-                            min={0}
-                            class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
-                            value={itemsSpacing()}
-                            aria-label="Items spacing"
+                      <Show when={selectedStyle() !== Style.Card}>
+                        <div class="d-flex flex-column mt-3">
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Size</label>
+                          <select
+                            id="sizes"
+                            class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                            value={selectedSize()}
+                            aria-label="Sizes"
                             onChange={(e) => {
-                              setItemsSpacing(parseInt(e.currentTarget.value));
+                              setSelectedSize(e.currentTarget.value as Size);
                             }}
-                          />
-                        </Show>
-                      </div>
+                          >
+                            <For each={Object.values(Size)}>
+                              {(s: Size) => {
+                                return <option value={s}>{SIZES_LEGENDS[s]}</option>;
+                              }}
+                            </For>
+                          </select>
+                        </div>
+                        <div class="d-flex flex-column mt-3">
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Alignment</label>
+                          <select
+                            id="alignment"
+                            class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                            value={itemsAlignment()}
+                            aria-label="Styles"
+                            onChange={(e) => {
+                              setItemsAlignment(e.currentTarget.value as Alignment);
+                            }}
+                          >
+                            <For each={Object.values(Alignment)}>
+                              {(a: Alignment) => {
+                                return <option value={a}>{capitalizeFirstLetter(a)}</option>;
+                              }}
+                            </For>
+                          </select>
+                        </div>
+                        <div class="d-flex flex-column mt-3">
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
+                            Gap between items:
+                          </label>
+                          <div class="d-flex mt-1">
+                            <For each={Object.values(SpacingType)}>
+                              {(t, index) => {
+                                return (
+                                  <div class="form-check form-check-inline">
+                                    <input
+                                      class="form-check-input"
+                                      type="radio"
+                                      name="spacing"
+                                      id={`spacing_${t}`}
+                                      value={t}
+                                      checked={itemsSpacingType() === t}
+                                      aria-checked={itemsSpacingType() === t}
+                                      onInput={(e) => {
+                                        onUpdateSpacingType(e.currentTarget.value as SpacingType);
+                                      }}
+                                    />
+                                    <label class={`text-muted form-check-label ${styles.label}`} for={`spacing_${t}`}>
+                                      {Object.keys(SpacingType)[index()]}
+                                      <Show when={t === SpacingType.Custom}> (px)</Show>
+                                    </label>
+                                  </div>
+                                );
+                              }}
+                            </For>
+                          </div>
+
+                          <Show when={itemsSpacingType() === SpacingType.Custom}>
+                            <input
+                              type="number"
+                              min={0}
+                              class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
+                              value={itemsSpacing()}
+                              aria-label="Items spacing"
+                              onChange={(e) => {
+                                setItemsSpacing(parseInt(e.currentTarget.value));
+                              }}
+                            />
+                          </Show>
+                        </div>
+                      </Show>
                     </div>
                   </div>
                   <div class="col-8 col-xxl-9 border-start">

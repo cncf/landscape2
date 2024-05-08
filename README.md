@@ -41,7 +41,7 @@ In addition to the information available in the landscape data file, the tool co
 
 - **GitHub**: a list of comma separated GitHub tokens with `public_repo` scope can be provided in the `GITHUB_TOKENS` environment variable. When these tokens are not provided no information from GitHub will be collected. If the expected number of items in the landscape is large it is recommended to provide more than one token to avoid hitting rate limits and speed up the collection of data (the concurrency of the process will be based on the number of tokens provided).
 
-- **Crunchbase**: a Crunchbase API key can be provided in the `CRUNCHBASE_API_KEY` environment variable. If this token is not provided no information from Crunchbase will be collected.
+- **Crunchbase**: a Crunchbase API key can be provided in the `CRUNCHBASE_API_KEY` environment variable. If this token is not provided no information from Crunchbase will be collected. Please note that landscape2 *needs access to the full Crunchbase API*, which requires an [Enterprise or Application license](https://data.crunchbase.com/docs/using-the-api).
 
 ## Installation
 

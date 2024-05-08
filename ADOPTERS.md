@@ -5,6 +5,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 *(ordered alphabetically)*
 
 - [Academy Software Foundation](https://aswf.landscape2.io)
+- [Alliance for OpenUSD](https://aousd.landscape2.io)
 - [CAMARA Project](https://camara.landscape2.io)
 - [Cloud Native Computing Foundation](https://landscape.cncf.io)
 - [Continuous Delivery Foundation](https://cdf.landscape2.io)

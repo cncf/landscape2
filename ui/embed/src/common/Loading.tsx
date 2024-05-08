@@ -123,7 +123,7 @@ const Loading = (props: Props) => {
   return (
     <Wrapper>
       <SpinnerWrapper>
-        <div class="d-flex justify-content-center">
+        <div>
           <Spinner bgColor={props.bgColor} />
         </div>
       </SpinnerWrapper>
