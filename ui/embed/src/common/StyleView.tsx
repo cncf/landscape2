@@ -2,11 +2,13 @@ import { For, Match, Switch } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
 import { Alignment, BaseItem, Size, Style } from '../types';
+import CardItem from './CardItem';
 import GridItem from './GridItem';
 
 interface Props {
   style: Style;
   size: Size;
+  foundation: string;
   items: BaseItem[];
   alignment: Alignment;
   displayName: boolean;
@@ -73,6 +75,15 @@ const ItemClass = css`
   height: var(--card-size-height);
 `;
 
+const CardWrapper = css`
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -12px;
+  margin-top: -24px;
+  width: calc(100% + 24px);
+  overflow: hidden;
+`;
+
 const StyleView = (props: Props) => {
   return (
     <Switch>
@@ -130,6 +141,15 @@ const StyleView = (props: Props) => {
             }}
           </For>
         </Grid>
+      </Match>
+      <Match when={props.style === Style.Card}>
+        <div class={CardWrapper}>
+          <For each={props.items}>
+            {(item: BaseItem) => {
+              return <CardItem item={item} foundation={props.foundation} />;
+            }}
+          </For>
+        </div>
       </Match>
     </Switch>
   );

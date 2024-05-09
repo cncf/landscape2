@@ -17,6 +17,7 @@ export const TITLE_FGCOLOR_PARAM = 'fg-color';
 export const BASE_PATH_PARAM = 'base-path';
 
 export interface Data {
+  foundation: string;
   category: Category;
   items: BaseItem[];
 }
@@ -33,21 +34,30 @@ export interface Subcategory {
 }
 
 export interface BaseItem {
-  id: string;
-  category: string;
-  oss?: boolean;
-  name: string;
-  logo: string;
-  subcategory: string;
+  additional_categories?: AdditionalCategory[];
   description?: string;
+  category: string;
+  id: string;
+  logo: string;
+  name: string;
   maturity?: string;
-  tag?: string;
+  member_subcategory?: string;
+  organization_name?: string;
+  subcategory: string;
+  website?: string;
+  primary_repository_url?: string;
+}
+
+export interface AdditionalCategory {
+  category: string;
+  subcategory: string;
 }
 
 export enum Style {
   Basic = 'clean',
   BorderedBasic = 'bordered',
   ShadowedBasic = 'shadowed',
+  Card = 'card',
 }
 
 export enum Size {
@@ -68,6 +78,11 @@ export enum FontFamily {
   Serif = 'serif',
   SansSerif = 'sans-serif',
   Monospace = 'monospace',
+}
+
+export enum SVGIconKind {
+  GitHubCircle,
+  World,
 }
 
 export const DEFAULT_DISPLAY_HEADER = true;

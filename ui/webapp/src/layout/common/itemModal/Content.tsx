@@ -68,40 +68,27 @@ const Content = (props: Props) => {
   const itemInfo = () => props.item;
   const updateActiveItemId = useUpdateActiveItemId();
   const [description, setDescription] = createSignal<string>();
-  const [mainRepo, setMainRepo] = createSignal<Repository>();
-  const [websiteUrl, setWebsiteUrl] = createSignal<string>();
+  const [primaryRepo, setPrimaryRepo] = createSignal<Repository>();
 
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
-        let mainRepoTmp: Repository | undefined;
-        const websiteUrlTmp = itemInfo()!.homepage_url;
-        setWebsiteUrl(itemInfo()!.homepage_url);
+        let primaryRepoTmp: Repository | undefined;
         setDescription(getItemDescription(itemInfo()!));
         if (!isUndefined(itemInfo()!.repositories)) {
           itemInfo()!.repositories!.forEach((repo: Repository) => {
             if (repo.primary) {
-              mainRepoTmp = repo;
+              primaryRepoTmp = repo;
             }
           });
 
-          if (mainRepoTmp) {
-            setMainRepo(mainRepoTmp);
-          }
-        }
-
-        // If homepage_url is undefined or is equal to main repository url
-        // and maturity field is undefined,
-        // we use the homepage_url fron crunchbase
-        if (isUndefined(websiteUrlTmp) || (mainRepoTmp && websiteUrlTmp === mainRepoTmp.url)) {
-          if (itemInfo()!.crunchbase_data && itemInfo()!.crunchbase_data!.homepage_url) {
-            setWebsiteUrl(itemInfo()!.crunchbase_data!.homepage_url);
+          if (primaryRepoTmp) {
+            setPrimaryRepo(primaryRepoTmp);
           }
         }
       } else {
-        setMainRepo(undefined);
+        setPrimaryRepo(undefined);
         setDescription(undefined);
-        setWebsiteUrl(undefined);
         updateActiveItemId(); // Close modal
       }
     })
@@ -194,14 +181,14 @@ const Content = (props: Props) => {
 
               <div class="ms-auto">
                 <div class={`d-flex flex-row align-items-center ${styles.extra}`}>
-                  <Show when={!isUndefined(websiteUrl())}>
-                    <ExternalLink title="Website" class={`ms-3 ${styles.link}`} href={websiteUrl()!}>
+                  <Show when={!isUndefined(props.item!.website)}>
+                    <ExternalLink title="Website" class={`ms-3 ${styles.link}`} href={props.item!.website!}>
                       <SVGIcon kind={SVGIconKind.World} />
                     </ExternalLink>
                   </Show>
 
-                  <Show when={!isUndefined(mainRepo())}>
-                    <ExternalLink title="Repository" class={`ms-3 ${styles.link}`} href={mainRepo()!.url}>
+                  <Show when={!isUndefined(primaryRepo())}>
+                    <ExternalLink title="Repository" class={`ms-3 ${styles.link}`} href={primaryRepo()!.url}>
                       <SVGIcon kind={SVGIconKind.GitHubCircle} />
                     </ExternalLink>
                   </Show>

@@ -6,7 +6,7 @@ import sortBy from 'lodash/sortBy';
 import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 
 import { FOUNDATION } from '../../../data';
-import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
+import { AdditionalCategory, Item, SecurityAudit, SVGIconKind } from '../../../types';
 import cutString from '../../../utils/cutString';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
@@ -34,34 +34,13 @@ const MobileContent = (props: Props) => {
   const itemInfo = () => props.item;
   const updateActiveItemId = useUpdateActiveItemId();
   const [description, setDescription] = createSignal<string>();
-  const [websiteUrl, setWebsiteUrl] = createSignal<string>();
 
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
-        let mainRepoTmp: Repository | undefined;
-        const websiteUrlTmp = itemInfo()!.homepage_url;
-        setWebsiteUrl(itemInfo()!.homepage_url);
         setDescription(getItemDescription(itemInfo()!));
-        if (!isUndefined(itemInfo()!.repositories)) {
-          itemInfo()!.repositories!.forEach((repo: Repository) => {
-            if (repo.primary) {
-              mainRepoTmp = repo;
-            }
-          });
-        }
-
-        // If homepage_url is undefined or is equal to main repository url
-        // and maturity field is undefined,
-        // we use the homepage_url fron crunchbase
-        if (isUndefined(websiteUrlTmp) || (mainRepoTmp && websiteUrlTmp === mainRepoTmp.url)) {
-          if (itemInfo()!.crunchbase_data && itemInfo()!.crunchbase_data!.homepage_url) {
-            setWebsiteUrl(itemInfo()!.crunchbase_data!.homepage_url);
-          }
-        }
       } else {
         setDescription(undefined);
-        setWebsiteUrl(undefined);
         updateActiveItemId(); // Close modal
       }
     })
@@ -97,8 +76,8 @@ const MobileContent = (props: Props) => {
                   <MaturityBadge level={cutString(itemInfo()!.maturity!, 16)} class="me-2" />
                 </Show>
 
-                <Show when={!isUndefined(websiteUrl())}>
-                  <ExternalLink title="Website" class={`me-2 ${styles.link}`} href={websiteUrl()!}>
+                <Show when={!isUndefined(itemInfo()!.website)}>
+                  <ExternalLink title="Website" class={`me-2 ${styles.link}`} href={itemInfo()!.website!}>
                     <SVGIcon kind={SVGIconKind.World} />
                   </ExternalLink>
                 </Show>

@@ -85,6 +85,7 @@ export interface Featured {
 }
 
 export interface Item extends BaseItem {
+  website?: string;
   accepted_at?: string;
   homepage_url?: string;
   artwork_url?: string;
