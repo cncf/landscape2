@@ -45,6 +45,7 @@ import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Category, Subcategory, SVGIconKind } from '../../types';
 import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
 import isExploreSection from '../../utils/isExploreSection';
+import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
@@ -96,7 +97,7 @@ const EmbedModal = () => {
   const isVisible = createMemo(() => isExploreSection(location.pathname));
   const isEmbedSetupActive = () => location.pathname === EMBED_SETUP_PATH;
   const [visibleModal, setVisibleModal] = createSignal<boolean>(isEmbedSetupActive());
-  const categoriesList = () => sortBy(window.baseDS.categories, ['name']);
+  const categoriesList = () => sortBy(itemsDataGetter.getCategoriesAndSubcategoriesList(), ['name']);
   const [subcategoriesList, setSubcategoriesList] = createSignal<Subcategory[]>(
     sortBy(categoriesList()[0].subcategories, ['name'])
   );

@@ -163,6 +163,32 @@ export class ItemsDataGetter {
     return undefined;
   }
 
+  // Get categories and subcategories list with items
+  public getCategoriesAndSubcategoriesList(): Category[] {
+    const list: { [key: string]: string[] } = {};
+    window.baseDS.items.forEach((i: Item) => {
+      if (list[i.category]) {
+        list[i.category].push(i.subcategory);
+      } else {
+        list[i.category] = [i.subcategory];
+      }
+    });
+    const categories: Category[] = [];
+    window.baseDS.categories.forEach((c: Category) => {
+      if (list[c.name]) {
+        const subcategories: Subcategory[] = [];
+        c.subcategories.forEach((s: Subcategory) => {
+          if (list[c.name].includes(s.name)) {
+            subcategories.push(s);
+          }
+        });
+        categories.push({ ...c, subcategories: subcategories });
+      }
+    });
+
+    return categories;
+  }
+
   // Extend items with crunchbase and github data
   private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
     const itemsList: Item[] = [];
