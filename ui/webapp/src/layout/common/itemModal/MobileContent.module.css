@@ -74,6 +74,17 @@
   font-size: 0.9rem;
 }
 
+.otherLink {
+  max-width: calc(100% - 2rem - 15px);
+  font-size: 0.65rem;
+  color: var(--color4);
+  line-height: 16px;
+}
+
+.dot {
+  line-height: 1;
+}
+
 .section {
   font-size: 0.8rem;
 }

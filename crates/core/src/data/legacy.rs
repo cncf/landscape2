@@ -1,7 +1,7 @@
 //! This module defines some types used to parse the landscape data file in
 //! legacy format and convert it to the new one.
 
-use super::ItemAudit;
+use super::{ItemAudit, ItemLink};
 use crate::util::validate_url;
 use anyhow::{bail, format_err, Context, Result};
 use chrono::NaiveDate;
@@ -74,6 +74,18 @@ impl LandscapeData {
 
                     // Check some values in extra
                     if let Some(extra) = &item.extra {
+                        // Check other links
+                        if let Some(other_links) = &extra.other_links {
+                            for link in other_links {
+                                if link.name.is_empty() {
+                                    return Err(format_err!("link name is required")).context(ctx);
+                                }
+                                if link.url.is_empty() {
+                                    return Err(format_err!("link url is required")).context(ctx);
+                                }
+                            }
+                        }
+
                         // Check tag name
                         if let Some(tag) = &extra.tag {
                             if !TAG_NAME.is_match(tag) {
@@ -151,6 +163,7 @@ pub(super) struct ItemExtra {
     pub incubating: Option<NaiveDate>,
     pub linkedin_url: Option<String>,
     pub mailing_list_url: Option<String>,
+    pub other_links: Option<Vec<ItemLink>>,
     pub package_manager_url: Option<String>,
     pub parent_project: Option<String>,
     pub slack_url: Option<String>,
@@ -257,6 +270,10 @@ mod tests {
                             ..Default::default()
                         }]),
                         blog_url: Some("https://blog.url".to_string()),
+                        other_links: Some(vec![ItemLink {
+                            name: "link".to_string(),
+                            url: "https://link.url".to_string(),
+                        }]),
                         ..Default::default()
                     }),
                     ..Default::default()
@@ -362,6 +379,60 @@ mod tests {
                 items: vec![Item {
                     name: "Item".to_string(),
                     homepage_url: "https://example.com".to_string(),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "link name is required")]
+    fn landscape_data_validate_empty_link_name() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "https://example.com".to_string(),
+                    logo: "logo".to_string(),
+                    extra: Some(ItemExtra {
+                        other_links: Some(vec![ItemLink {
+                            name: String::new(),
+                            url: "https://link.url".to_string(),
+                        }]),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }],
+            }],
+        });
+
+        landscape.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "link url is required")]
+    fn landscape_data_validate_empty_link_url() {
+        let mut landscape = LandscapeData::default();
+        landscape.landscape.push(Category {
+            name: "Category".to_string(),
+            subcategories: vec![SubCategory {
+                name: "Subcategory".to_string(),
+                items: vec![Item {
+                    name: "Item".to_string(),
+                    homepage_url: "https://example.com".to_string(),
+                    logo: "logo".to_string(),
+                    extra: Some(ItemExtra {
+                        other_links: Some(vec![ItemLink {
+                            name: "name".to_string(),
+                            url: String::new(),
+                        }]),
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 }],
             }],

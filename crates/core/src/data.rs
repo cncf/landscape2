@@ -397,6 +397,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.latest_annual_review_url = extra.annual_review_url;
                         item.linkedin_url = extra.linkedin_url;
                         item.mailing_list_url = extra.mailing_list_url;
+                        item.other_links = extra.other_links;
                         item.package_manager_url = extra.package_manager_url;
                         item.parent_project = extra.parent_project;
                         item.slack_url = extra.slack_url;
@@ -582,6 +583,9 @@ pub struct Item {
     pub oss: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub other_links: Option<Vec<ItemLink>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub package_manager_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -750,6 +754,13 @@ pub struct ItemFeatured {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<usize>,
+}
+
+/// Landscape item link.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct ItemLink {
+    pub name: String,
+    pub url: String,
 }
 
 /// Landscape item summary.
@@ -1260,6 +1271,10 @@ mod tests {
                             incubating: Some(date),
                             linkedin_url: Some("linkedin_url".to_string()),
                             mailing_list_url: Some("mailing_list_url".to_string()),
+                            other_links: Some(vec![ItemLink {
+                                name: "name".to_string(),
+                                url: "https://link.url".to_string(),
+                            }]),
                             package_manager_url: Some("package_manager_url".to_string()),
                             parent_project: Some("parent_project".to_string()),
                             slack_url: Some("slack_url".to_string()),
@@ -1344,6 +1359,10 @@ mod tests {
                 latest_annual_review_url: Some("annual_review_url".to_string()),
                 openssf_best_practices_url: Some("url_for_bestpractices".to_string()),
                 oss: None,
+                other_links: Some(vec![ItemLink {
+                    name: "name".to_string(),
+                    url: "https://link.url".to_string(),
+                }]),
                 package_manager_url: Some("package_manager_url".to_string()),
                 parent_project: Some("parent_project".to_string()),
                 repositories: Some(vec![

@@ -120,6 +120,12 @@ export interface Item extends BaseItem {
   linkedin_url?: string;
   audits?: SecurityAudit[];
   parent_project?: string;
+  other_links?: OtherLink[];
+}
+
+export interface OtherLink {
+  name: string;
+  url: string;
 }
 
 export interface SecurityAudit {
