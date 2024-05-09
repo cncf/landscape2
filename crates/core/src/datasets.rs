@@ -280,7 +280,12 @@ pub mod embed {
                     items: landscape_data
                         .items
                         .iter()
-                        .filter(|i| i.category == category.name)
+                        .filter(|i| {
+                            i.category == category.name
+                                || i.additional_categories
+                                    .as_ref()
+                                    .map_or(false, |ac| ac.iter().any(|ac| ac.category == category.name))
+                        })
                         .map(Item::from)
                         .collect(),
                 };
@@ -299,7 +304,15 @@ pub mod embed {
                         items: landscape_data
                             .items
                             .iter()
-                            .filter(|i| i.category == category.name && i.subcategory == *subcategory.name)
+                            .filter(|i| {
+                                (i.category == category.name && i.subcategory == *subcategory.name)
+                                    || i.additional_categories.as_ref().map_or(false, |ac| {
+                                        ac.iter().any(|ac| {
+                                            ac.category == category.name
+                                                && ac.subcategory == *subcategory.name
+                                        })
+                                    })
+                            })
                             .map(Item::from)
                             .collect(),
                     };
@@ -622,6 +635,10 @@ mod tests {
     #[test]
     fn embed_new() {
         let item = data::Item {
+            additional_categories: Some(vec![AdditionalCategory {
+                category: "Category 2".to_string(),
+                subcategory: "Subcategory 2".to_string(),
+            }]),
             category: "Category 1".to_string(),
             homepage_url: "https://homepage.url".to_string(),
             id: "id".to_string(),
@@ -631,14 +648,24 @@ mod tests {
             ..Default::default()
         };
         let landscape_data = LandscapeData {
-            categories: vec![data::Category {
-                name: "Category 1".to_string(),
-                normalized_name: "category-1".to_string(),
-                subcategories: vec![Subcategory {
-                    name: "Subcategory 1".to_string(),
-                    normalized_name: "subcategory-1".to_string(),
-                }],
-            }],
+            categories: vec![
+                data::Category {
+                    name: "Category 1".to_string(),
+                    normalized_name: "category-1".to_string(),
+                    subcategories: vec![Subcategory {
+                        name: "Subcategory 1".to_string(),
+                        normalized_name: "subcategory-1".to_string(),
+                    }],
+                },
+                data::Category {
+                    name: "Category 2".to_string(),
+                    normalized_name: "category-2".to_string(),
+                    subcategories: vec![Subcategory {
+                        name: "Subcategory 2".to_string(),
+                        normalized_name: "subcategory-2".to_string(),
+                    }],
+                },
+            ],
             items: vec![item.clone()],
         };
         let settings = LandscapeSettings {
@@ -647,7 +674,7 @@ mod tests {
         };
 
         let embed = Embed::new(&landscape_data, &settings);
-        let expected_embed_view = EmbedView {
+        let expected_embed_view_c1 = EmbedView {
             foundation: "Foundation".to_string(),
             category: data::Category {
                 name: "Category 1".to_string(),
@@ -659,10 +686,24 @@ mod tests {
             },
             items: vec![(&item).into()],
         };
+        let expected_embed_view_c2 = EmbedView {
+            foundation: "Foundation".to_string(),
+            category: data::Category {
+                name: "Category 2".to_string(),
+                normalized_name: "category-2".to_string(),
+                subcategories: vec![Subcategory {
+                    name: "Subcategory 2".to_string(),
+                    normalized_name: "subcategory-2".to_string(),
+                }],
+            },
+            items: vec![(&item).into()],
+        };
         let expected_embed = embed::Embed {
             views: vec![
-                ("category-1".to_string(), expected_embed_view.clone()),
-                ("category-1--subcategory-1".to_string(), expected_embed_view),
+                ("category-1".to_string(), expected_embed_view_c1.clone()),
+                ("category-1--subcategory-1".to_string(), expected_embed_view_c1),
+                ("category-2".to_string(), expected_embed_view_c2.clone()),
+                ("category-2--subcategory-2".to_string(), expected_embed_view_c2),
             ]
             .into_iter()
             .collect(),

@@ -139,6 +139,13 @@ const App = () => {
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
 
+  // Sort items by name alphabetically
+  const sortItemsByName = (items: BaseItem[]): BaseItem[] => {
+    return items.sort((a, b) => {
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+  };
+
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const basePathParam = urlParams.get(BASE_PATH_PARAM);
@@ -253,6 +260,7 @@ const App = () => {
               throw new Error('Something went wrong');
             })
             .then((res) => {
+              console.log(res);
               setData(res);
             })
             .catch(() => {
@@ -297,7 +305,7 @@ const App = () => {
             when={displayHeader()}
             fallback={
               <StyleView
-                items={data()!.items}
+                items={sortItemsByName(data()!.items)}
                 foundation={data()!.foundation}
                 style={itemsStyleView()}
                 size={itemsSize()}
@@ -320,9 +328,25 @@ const App = () => {
             </Show>
             <For each={data()!.category.subcategories}>
               {(subcategory, index) => {
-                const items = data()!.items.filter((item: BaseItem) => {
-                  return item.category === data()!.category.name && item.subcategory === subcategory.name;
-                });
+                const items = sortItemsByName(
+                  data()!.items.filter((item: BaseItem) => {
+                    let inAdditionalCategory = false;
+                    // Check if category/subcategory is in additional_categories
+                    if (item.additional_categories) {
+                      inAdditionalCategory = item.additional_categories.some((additionalCategory) => {
+                        return (
+                          additionalCategory.category === data()!.category.name &&
+                          additionalCategory.subcategory === subcategory.name
+                        );
+                      });
+                    }
+
+                    return (
+                      (item.category === data()!.category.name && item.subcategory === subcategory.name) ||
+                      inAdditionalCategory
+                    );
+                  })
+                );
 
                 return (
                   <>
