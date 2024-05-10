@@ -41,6 +41,13 @@
   font-size: 0.9rem;
 }
 
+.otherLink {
+  font-size: 0.75rem;
+  color: var(--color4);
+  max-width: calc(50% - 2rem - 15px);
+  line-height: 24px;
+}
+
 .additionalInfo {
   font-size: 0.75rem;
 }

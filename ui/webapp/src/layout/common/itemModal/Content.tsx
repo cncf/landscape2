@@ -7,6 +7,7 @@ import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-
 
 import { FOUNDATION } from '../../../data';
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../../../types';
+import cutString from '../../../utils/cutString';
 import formatProfitLabel from '../../../utils/formatLabelProfit';
 import getItemDescription from '../../../utils/getItemDescription';
 import { formatTAGName } from '../../../utils/prepareFilters';
@@ -309,6 +310,30 @@ const Content = (props: Props) => {
         </div>
         {/* Description */}
         <div class={`mt-4 text-muted ${styles.description}`}>{description()}</div>
+
+        {/* Other links */}
+        <Show when={!isUndefined(itemInfo()!.other_links)}>
+          <div class="d-flex flex-row flex-wrap align-items-center mt-2">
+            <For each={itemInfo()!.other_links}>
+              {(link, index) => {
+                return (
+                  <>
+                    <ExternalLink
+                      href={link.url}
+                      class={`fw-semibold text-nowrap d-inline-block text-truncate text-uppercase ${styles.otherLink}`}
+                    >
+                      {cutString(link.name, 30)}
+                    </ExternalLink>
+                    <Show when={index() !== itemInfo()!.other_links!.length - 1}>
+                      <div class="mx-2">·</div>
+                    </Show>
+                  </>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
+
         {/* Additional categories */}
         <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
           <div class={`fw-bold text-uppercase mt-4 mb-3 ${styles.titleInSection}`}>Additional categories</div>

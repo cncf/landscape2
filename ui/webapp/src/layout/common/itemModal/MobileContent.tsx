@@ -105,6 +105,29 @@ const MobileContent = (props: Props) => {
           </div>
         </div>
 
+        {/* Other links */}
+        <Show when={!isUndefined(itemInfo()!.other_links)}>
+          <div class="d-flex flex-row flex-wrap align-items-center mb-3 mt-1">
+            <For each={itemInfo()!.other_links}>
+              {(link, index) => {
+                return (
+                  <>
+                    <ExternalLink
+                      href={link.url}
+                      class={`fw-semibold text-nowrap d-inline-block text-truncate text-uppercase me-2 mt-2 ${styles.otherLink}`}
+                    >
+                      {cutString(link.name, 30)}
+                    </ExternalLink>
+                    <Show when={index() !== itemInfo()!.other_links!.length - 1}>
+                      <div class={`me-2 mt-2 ${styles.dot}`}>·</div>
+                    </Show>
+                  </>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
+
         {/* Additional categories */}
         <Show when={!isUndefined(itemInfo()!.additional_categories) && !isEmpty(itemInfo()!.additional_categories)}>
           <div class={`fw-bold text-uppercase my-3 ${styles.titleInSection}`}>Additional categories</div>
