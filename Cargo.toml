@@ -84,6 +84,8 @@ lto = "thin"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
+# Allow customization of release workflow
+allow-dirty = ["ci"]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
 cargo-dist-version = "0.14.1"
 # CI backends to support
