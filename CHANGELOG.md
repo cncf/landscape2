@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2024-05-13
+
+### Added
+
+- Experimental overlay (#587)
+- Improve search (#619)
+- New embed card style (#622)
+- Repository selector to item details view (#581)
+- Not open source filter (#583)
+- Repositories good first issues link (#582)
+- Display parent project in item details view (#570, #568)
+- Display loading spinner in controls bar (#579)
+- Display package manager link in item details view (#609, 592)
+- Display other links in item's detail view (#624)
+- Organization region in items details view (#617)
+- Make default view mode configurable (#574, #572)
+- Make logos viewbox adjustments configurable (#577)
+- Hide stats link when there are no stats available (#607)
+- Open item details modal from zoom view (#620)
+- Do not display empty groups in group selector (#606)
+- Collect repositories topics from GitHub (#590)
+- Some more options to logos preview (#594)
+- Some tests to core crate (#613)
+
+### Fixed
+
+- Some issues in mobile devices (#612)
+- Some issues with filters modal (#593)
+- Badge url issue (#608)
+- Participation stats legend in item details view (#616)
+- Use additional categories on embed views (#623)
+- Do not raise errors detecting mime type on deploy (#573)
+
+### Changed
+
+- Check logos checksum while deploying (#578)
+- Use only orgs in data file when processing stats (#589)
+- Use custom octorust client (#615)
+- Upgrade CLI tool dependencies (#605)
+- Upgrade web application and embed dependencies (#610)
+
 ## [0.8.1] - 2024-04-11
 
 ### Fixed

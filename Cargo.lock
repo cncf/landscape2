@@ -1840,7 +1840,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "askama",
@@ -1891,7 +1891,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-core"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1912,7 +1912,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-overlay"
-version = "0.8.1"
+version = "0.9.0"
 dependencies = [
  "anyhow",
  "landscape2-core",
