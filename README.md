@@ -27,7 +27,7 @@ You can check out how the generated landscapes look like by visiting the [CNCF l
 
 **Landscape2** is a CLI tool that generates static websites from the information available in the data sources provided. These data sources are passed to the tool via arguments, usually in the form of *urls* or *local paths*, and are as follows:
 
-- **Landscape data**. The landscape data file is a YAML file that describes the items that will be displayed in the landscape website. For backwards compatibility reasons, this file *must* follow the format and conventions defined in the [CNCF *landscape.yml* file](https://github.com/cncf/landscape/blob/master/landscape.yml).
+- **Landscape data**. The landscape data file is a YAML file that describes the items that will be displayed in the landscape website. For more information, please see the [reference documentation](https://github.com/cncf/landscape2/blob/main/docs/config/data.yml).
 
 - **Landscape settings**. The settings file is a YAML file that allows customizing some aspects of the generated landscape website, such as the logo, colors, how to group items or which ones should be featured. For more information about the settings file, please see the [reference documentation](https://github.com/cncf/landscape2/blob/main/docs/config/settings.yml).
 

@@ -1,0 +1,247 @@
+# Landscape2 data
+#
+# This file contains the data that will be used to generate the landscape. The landscape data is a
+# collection of items organized into categories and subcategories.
+#
+# NOTE: to maintain backwards compatibility with the previous version of the landscape, the data
+# file used by v2 is based on the format used by v1. There are some extra fields not available in
+# v1, and it's likely that more will be added over time. Most of the fields supported by v1 should
+# also be supported by v2, although there might be some exceptions.
+
+# List of categories in the landscape (required) (this field can also be named `landscape`).
+categories:
+  - # Name of the category (required).
+    name: My category
+
+    # List of subcategories in this category (required).
+    subcategories:
+      - # Name of the subcategory (required).
+        name: My subcategory
+
+        # List of items in this subcategory (required).
+        items:
+          - # Name of the item (required).
+            name: My item
+
+            # Homepage URL (required).
+            homepage_url: https://homepage.url
+
+            # File name of the logo (required). The provided logo file is expected to be located in
+            # the landscape logos path (i.e. `hosted-logos`). URLs are not supported, it must be a
+            # file name. The logo file must be an SVG file.
+            logo: logo.svg
+
+            # Description of the item (optional). When the description is not provided, the primary
+            # repository's description or the organization's description from Crunchbase will be
+            # used (in that order). This description will be indexed to power the search feature.
+            description: This is the description of item 1
+
+            # Alternative `category / subcategory` where this item should be listed in (optional).
+            # Sometimes we may want to list an item in multiple categories or subcategories. This
+            # field allows specifying additional locations for an item without having to duplicate
+            # it. It is possible to provide multiple entries, and the format is as follows:
+            #
+            # second_path:
+            #   - "Category 2 / Subcategory 2-1"
+            #   - "Category 3 / Subcategory 3-1"
+            #
+            # The alternative category or subcategory name must not contain a slash.
+            second_path: []
+
+            # Maturity of the project (optional). This field is only expected on items that
+            # represent a project that belongs to the foundation. The maturity can be any string,
+            # but there are some values that have a special meaning:
+            #
+            # - "graduated, incubating, sandbox": when used in combination with the date they moved
+            #   to that state (set in `extra` field), a special progress bar will be displayed in
+            #   the item's details view.
+            #
+            # - "archived": items in this state will be grayed out.
+            project: "sandbox"
+
+            # Date at which the member joined the foundation (optional). This field is only
+            # expected on items that represent a foundation's member. The date should be a string
+            # using the format 'YYYY-MM-DD'.
+            joined: "2024-05-14"
+
+            # URL of the primary repository (optional). Some extra information will be collected
+            # for repositories hosted in GitHub.
+            repo_url: https://github.com/owner/repo
+
+            # Branch to use when collecting information for the primary repository (optional).
+            branch: main
+
+            # List of additional repositories (optional). The structure for each repository is as
+            # follows:
+            #
+            # additional_repos:
+            #   - # URL of the repository (required).
+            #     repo_url: https://github.com/owner/repo
+            #     # Branch to use when collecting information for the repository (optional).
+            #     branch: main
+            additional_repos: []
+
+            # Crunchbase URL of the organization this item belongs to (optional).
+            crunchbase: https://www.crunchbase.com/organization/my-organization
+
+            # Twitter URL (optional).
+            twitter: https://twitter.com/my-organization
+
+            # OpenSSF best practices URL (optional).
+            url_for_bestpractices: https://www.bestpractices.dev/en/projects/1234
+
+            # Indicate if the item corresponds to an end user (optional). The value must be a
+            # boolean.
+            enduser: false
+
+            # Extra information about the item (optional).
+            extra:
+              - # Date at which the project was accepted in the foundation (optional). This field
+                # is only expected on items that represent a foundation's project.
+                # Format: 'YYYY-MM-DD'.
+                accepted: "2024-05-14"
+
+                # Date at which the project was archived (optional). This field is only expected on
+                # items that represent a foundation's project. Format: 'YYYY-MM-DD'.
+                archived: "2020-05-14"
+
+                # List of security audits the projet has undergone (optional). The structure for
+                # each audit is as follows:
+                #
+                # audits:
+                #   - # Date of the audit (required). Format: 'YYYY-MM-DD'.
+                #     date: "2024-05-14"
+                #     # Audit type (required).
+                #     type: fuzzing
+                #     # URL of the audit report (required).
+                #     url: https://audit.report.url
+                #     # Name of the vendor who did the audit (required).
+                #     vendor: Vendor name
+                audits: []
+
+                # Date of the last annual review presented by this project (optional). This field
+                # is only expected  on items that represent a foundation's project.
+                # Format: 'YYYY-MM-DD'.
+                annual_review_date: "2024-05-14"
+
+                # URL of the last annual review presented by this project (optional). This field is
+                # only expected on items that represent a foundation's project.
+                annual_review_url: https://annual.review.url
+
+                # Artwork URL (optional).
+                artwork_url: https://artwork.url
+
+                # Blog URL (optional).
+                blog_url: https://blog.url
+
+                # Channel to discuss topics related to this item (optional).
+                chat_channel: "#channel"
+
+                # The name of a project listed in CLOMonitor that matches this item (optional).
+                # This reference is used to pull the CLOMonitor report for this item and display it
+                # in the item's details view. CLOMonitor is only enabled for a small number of
+                # foundations, so this field won't be used in most cases. 
+                clomonitor_name: "project-name"
+
+                # Dev stats URL (optional).
+                dev_stats_url: https://dev.stats.url
+
+                # Discord URL (optional).
+                discord_url: https://discord.url
+
+                # Docker URL (optional).
+                docker_url: https://docker.url
+
+                # GitHub discussions URL (optional).
+                github_discussions_url: https://github.discussions.url
+
+                # Gitter URL (optional).
+                gitter_url: https://gitter.url
+
+                # Date at which the project moved to graduated (optional). Format: 'YYYY-MM-DD'.
+                # This field is only expected on items that represent a foundation's project, and
+                # should only be used when adhering to the graduated/incubating/sandbox maturities.
+                graduated: "2024-05-14"
+
+                # Date at which the project moved to incubating (optional). Format: 'YYYY-MM-DD'.
+                # This field is only expected on items that represent a foundation's project, and
+                # should only be used when adhering to the graduated/incubating/sandbox maturities.
+                incubating: "2024-05-14"
+
+                # LinkedIn URL (optional).
+                linkedin_url: "https://linkedin.url"
+
+                # Mailing list URL (optional).
+                mailing_list_url: "https://mailing.list.url"
+
+                # List of links to feature in the item's details view (optional). The structure for
+                # each link is as follows:
+                #
+                # other_links:
+                #   - # Name of the link (required).
+                #     name: Link name
+                #     # URL of the link (required).
+                #     url: https://link.url
+                other_links: []
+
+                # Package manager URL (optional). Link to the package manager where the item is
+                # available.
+                package_manager_url: https://package.manager.url/my-item
+
+                # Name of the parent project (optional). The parent of a project will be
+                # highlighted in the item's details view. The parent project must be listed in the
+                # landscape and the name must match exactly.
+                parent_project: "Project name"
+
+                # Slack URL (optional).
+                slack_url: https://slack.url
+
+                # Indicate whether this item is a specification (optional). The value must be a
+                # boolean.
+                specification: false
+
+                # Stack Overflow URL (optional).
+                stack_overflow_url: https://stackoverflow.url
+
+                # Description of the business use case (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_business_use_case: "Reduce operational risks associated with software supply chain"
+
+                # Comma separated list of other projects this item integrates with (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_integration: "Project 1, Project 2"
+
+                # Alternative field for `summary_integration` (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_integrations: "Project 1, Project 2"
+
+                # Video URL of the item's pitch (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_intro_url: https://summary.intro.url
+
+                # List of target users this item is intended for (optional). Entries must be
+                # separated by commas
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_personas: "Cloud Architects, Platform Engineers"
+
+                # Describes how often a new version of the item is released (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_release_rate: "Every 3 months"
+
+                # Keywords that describe the item (optional). The keywords must be separated by
+                # commas. These keywords will be indexed to power the search feature.
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_tags: "security, networking, cloud"
+
+                # Description of the technical problem this item solves (optional).
+                # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
+                summary_use_case: "Provides security for the software supply chain"
+
+                # Technical Advisory Group (TAG) this item belongs to (optional). When the
+                # automatic TAG mapping feature is enabled in the landscape settings, the TAG name
+                # used here must match exactly one of the TAGs listed in the landscape settings
+                # (provided it refers to the same TAG).
+                tag: security
+
+                # YouTube URL (optional).
+                youtube_url: https://youtube.url
