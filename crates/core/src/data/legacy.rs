@@ -17,6 +17,7 @@ lazy_static! {
 /// Landscape data (legacy format).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(super) struct LandscapeData {
+    #[serde(alias = "categories")]
     pub landscape: Vec<Category>,
 }
 
@@ -173,10 +174,10 @@ pub(super) struct ItemExtra {
     pub summary_integration: Option<String>,
     pub summary_integrations: Option<String>,
     pub summary_intro_url: Option<String>,
-    pub summary_use_case: Option<String>,
     pub summary_personas: Option<String>,
     pub summary_release_rate: Option<String>,
     pub summary_tags: Option<String>,
+    pub summary_use_case: Option<String>,
     pub tag: Option<String>,
     pub training_certifications: Option<String>,
     pub training_type: Option<String>,
