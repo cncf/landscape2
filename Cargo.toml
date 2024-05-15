@@ -19,8 +19,8 @@ anyhow = "1.0.83"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.80"
-aws-config = "1.3.0"
-aws-sdk-s3 = "1.25.0"
+aws-config = "1.4.0"
+aws-sdk-s3 = "1.29.0"
 axum = "0.7.5"
 base64 = "0.22.1"
 chrono = { version = "0.4.38", features = ["serde"] }
@@ -49,9 +49,9 @@ regex = "1.10.4"
 reqwest = { version = "0.12.4", features = ["json", "native-tls-vendored"] }
 reqwest_octorust = { package = "reqwest", version = "0.11.14", default-features = false, features = ["json", "multipart"] }
 reqwest-middleware = "0.2.2"
-rust-embed = "8.3.0"
-serde = { version = "1.0.200", features = ["derive"] }
-serde_json = "1.0.116"
+rust-embed = "8.4.0"
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.10.8"
