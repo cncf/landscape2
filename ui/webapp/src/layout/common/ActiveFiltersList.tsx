@@ -147,11 +147,13 @@ const ActiveFiltersList = (props: Props) => {
                       </For>
                     </Match>
                   </Switch>
+
                   <For each={activeFiltersPerCategory()}>
                     {(c: string) => {
                       if (
                         (allMaturitySelected() && c !== `non-${getFoundationNameLabel()}`) ||
-                        (allLicensesSelected() && c !== 'non-oss')
+                        (allLicensesSelected() && c !== 'non-oss') ||
+                        f === FilterCategory.Extra
                       )
                         return null;
 
