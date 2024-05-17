@@ -145,7 +145,7 @@ const Content = (props: Props) => {
                     </div>
                   </Show>
                 </Show>
-                <Show when={!isUndefined(itemInfo()!.joined_at)}>
+                <Show when={!isUndefined(itemInfo()!.joined_at) && isUndefined(itemInfo()!.accepted_at)}>
                   <div
                     title={`Joined at ${itemInfo()!.joined_at}`}
                     class="d-flex flex-row align-items-center accepted-date me-3 mt-1"
