@@ -56,11 +56,13 @@ pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
         }
 
         // Some checks specific to the url kind provided
-        let check_domain = |domain: &str| {
-            if url.host_str().is_some_and(|host| !host.ends_with(domain)) {
-                return invalid_url(&format!("expecting https://{domain}/..."));
+        let check_domains = |domains: &[&str]| {
+            for domain in domains {
+                if url.host_str().is_some_and(|host| host.ends_with(domain)) {
+                    return Ok(());
+                }
             }
-            Ok(())
+            invalid_url(&format!("expecting https://{}/...", domains.join("|")))
         };
         match kind {
             "crunchbase" => {
@@ -68,15 +70,15 @@ pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
                     return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
                 }
             }
-            "facebook" => return check_domain("facebook.com"),
-            "flickr" => return check_domain("flickr.com"),
-            "github" => return check_domain("github.com"),
-            "instagram" => return check_domain("instagram.com"),
-            "linkedin" => return check_domain("linkedin.com"),
-            "stack_overflow" => return check_domain("stackoverflow.com"),
-            "twitch" => return check_domain("twitch.tv"),
-            "twitter" => return check_domain("twitter.com"),
-            "youtube" => return check_domain("youtube.com"),
+            "facebook" => return check_domains(&["facebook.com"]),
+            "flickr" => return check_domains(&["flickr.com"]),
+            "github" => return check_domains(&["github.com"]),
+            "instagram" => return check_domains(&["instagram.com"]),
+            "linkedin" => return check_domains(&["linkedin.com"]),
+            "stack_overflow" => return check_domains(&["stackoverflow.com"]),
+            "twitch" => return check_domains(&["twitch.tv"]),
+            "twitter" => return check_domains(&["twitter.com", "x.com"]),
+            "youtube" => return check_domains(&["youtube.com"]),
             _ => {}
         }
     }
@@ -114,6 +116,7 @@ mod tests {
             ("stack_overflow", "stackoverflow.com"),
             ("twitch", "twitch.tv"),
             ("twitter", "twitter.com"),
+            ("twitter", "x.com"),
             ("youtube", "youtube.com"),
         ] {
             validate_url(kind, &Some(format!("https://{domain}/test"))).unwrap();
@@ -140,21 +143,21 @@ mod tests {
 
     #[test]
     fn validate_url_invalid_domain() {
-        for (kind, domain) in &[
-            ("facebook", "facebook.com"),
-            ("flickr", "flickr.com"),
-            ("github", "github.com"),
-            ("instagram", "instagram.com"),
-            ("linkedin", "linkedin.com"),
-            ("stack_overflow", "stackoverflow.com"),
-            ("twitch", "twitch.tv"),
-            ("twitter", "twitter.com"),
-            ("youtube", "youtube.com"),
+        let url = "https://example.com/test".to_string();
+        for kind in &[
+            "facebook",
+            "flickr",
+            "github",
+            "instagram",
+            "linkedin",
+            "stack_overflow",
+            "twitch",
+            "twitter",
+            "youtube",
         ] {
-            assert_eq!(
-                validate_url(kind, &Some("https://example.com/test".to_string())).unwrap_err().to_string(),
-                format!("invalid {kind} url: expecting https://{domain}/...")
-            );
+            let error = validate_url(kind, &Some(url.clone())).unwrap_err().to_string();
+            let expected_error = format!("invalid {kind} url");
+            assert!(error.starts_with(expected_error.as_str()));
         }
     }
 }
