@@ -1,7 +1,7 @@
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import startCase from 'lodash/startCase';
-import { batch, createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
+import { For, Match, Show, Switch } from 'solid-js';
 
 import { REGEX_UNDERSCORE } from '../../data';
 import { ActiveFilters, FilterCategory, SVGIconKind } from '../../types';
@@ -19,28 +19,184 @@ interface Props {
   removeFilter: (name: FilterCategory, value: string) => void;
 }
 
-const ActiveFiltersList = (props: Props) => {
-  const initialActiveFilters = () => props.activeFilters;
-  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
-  const [activeFiltersKeys, setActiveFiltersKeys] = createSignal<FilterCategory[]>([]);
-  const licenseOptions = () => props.licenseOptions;
+interface FiltersProps {
+  category: FilterCategory;
+  filters: string[];
+  removeFilter: (name: FilterCategory, value: string) => void;
+}
 
-  createEffect(
-    on(initialActiveFilters, () => {
-      const keys: FilterCategory[] = [];
-      Object.keys(initialActiveFilters()).forEach((key) => {
-        if (!isEmpty(initialActiveFilters()[key as FilterCategory])) keys.push(key as FilterCategory);
-      });
+interface FiltersPerCategoryProps extends FiltersProps {
+  maturityOptions?: string[];
+  licenseOptions?: string[];
+}
 
-      batch(() => {
-        setActiveFilters(initialActiveFilters());
-        setActiveFiltersKeys(keys);
-      });
-    })
+const FiltersPerCategoryList = (props: FiltersProps) => {
+  return (
+    <For each={props.filters}>
+      {(c: string) => {
+        return (
+          <span
+            role="listitem"
+            class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+          >
+            <div class="d-flex flex-row align-items-baseline">
+              <div>
+                <small class="text-uppercase fw-normal me-2">{props.category}:</small>
+                <span
+                  class={
+                    [FilterCategory.Maturity, FilterCategory.OrgType].includes(props.category) ? 'text-uppercase' : ''
+                  }
+                >
+                  <Switch fallback={<>{c}</>}>
+                    <Match when={props.category === FilterCategory.OrgType}>
+                      <>{formatProfitLabel(c)}</>
+                    </Match>
+                    <Match when={props.category === FilterCategory.TAG}>
+                      <span class="text-uppercase">{formatTAGName(c)}</span>
+                    </Match>
+                    <Match when={props.category === FilterCategory.InvestmentType}>
+                      <>{startCase(c.replace(REGEX_UNDERSCORE, ' '))}</>
+                    </Match>
+                    <Match when={props.category === FilterCategory.License && c === 'non-oss'}>
+                      <span class="text-uppercase">Not open source</span>
+                    </Match>
+                    <Match when={props.category === FilterCategory.Maturity && c === `non-${getFoundationNameLabel()}`}>
+                      <span class="text-uppercase">Not {getFoundationNameLabel()} project</span>
+                    </Match>
+                  </Switch>
+                </span>
+              </div>
+              <button
+                class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                onClick={() => props.removeFilter(props.category, c)}
+                aria-label={`Remove ${c} filter`}
+                title={`Remove ${c} filter`}
+              >
+                <SVGIcon kind={SVGIconKind.ClearCircle} />
+              </button>
+            </div>
+          </span>
+        );
+      }}
+    </For>
   );
+};
+
+const FiltersPerCategory = (props: FiltersPerCategoryProps) => {
+  const foundationLabel = getFoundationNameLabel();
 
   return (
-    <Show when={Object.keys(activeFilters()).length > 0}>
+    <Switch>
+      <Match when={props.category === FilterCategory.Maturity}>
+        <Show
+          when={
+            !isUndefined(props.maturityOptions) &&
+            props.maturityOptions.length > 0 &&
+            props.maturityOptions.every((element) => props.filters.includes(element))
+          }
+          fallback={
+            <FiltersPerCategoryList
+              category={props.category}
+              filters={props.filters}
+              removeFilter={props.removeFilter}
+            />
+          }
+        >
+          <span
+            role="listitem"
+            class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+          >
+            <div class="d-flex flex-row align-items-baseline">
+              <div>
+                <small class="text-uppercase fw-normal me-2">{props.category}:</small>
+                <span class="text-uppercase">{foundationLabel}</span>
+              </div>
+              <button
+                class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                onClick={() => props.removeFilter(props.category, foundationLabel)}
+                aria-label={`Remove ${foundationLabel} filter`}
+                title={`Remove ${foundationLabel} filter`}
+              >
+                <SVGIcon kind={SVGIconKind.ClearCircle} />
+              </button>
+            </div>
+          </span>
+        </Show>
+      </Match>
+      <Match when={props.category === FilterCategory.License}>
+        <Show
+          when={
+            !isUndefined(props.licenseOptions) &&
+            props.licenseOptions.length > 0 &&
+            props.licenseOptions.every((element) => props.filters.includes(element))
+          }
+          fallback={
+            <FiltersPerCategoryList
+              category={props.category}
+              filters={props.filters}
+              removeFilter={props.removeFilter}
+            />
+          }
+        >
+          <span
+            role="listitem"
+            class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+          >
+            <div class="d-flex flex-row align-items-baseline">
+              <div>
+                <small class="text-uppercase fw-normal me-2">{props.category}:</small>
+                <span class="text-uppercase">Open Source</span>
+              </div>
+              <button
+                class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                onClick={() => props.removeFilter(props.category, 'oss')}
+                aria-label={`Remove open source filter`}
+                title={`Remove open source filter`}
+              >
+                <SVGIcon kind={SVGIconKind.ClearCircle} />
+              </button>
+            </div>
+          </span>
+        </Show>
+      </Match>
+      <Match when={props.category === FilterCategory.Extra}>
+        <For each={props.filters}>
+          {(c: string) => {
+            return (
+              <span
+                role="listitem"
+                class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
+              >
+                <div class="d-flex flex-row align-items-baseline">
+                  <div>
+                    <span class="text-uppercase">{c}</span>
+                  </div>
+                  <button
+                    class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
+                    onClick={() => props.removeFilter(props.category, c)}
+                    aria-label={`Remove ${c} filter`}
+                    title={`Remove ${c} filter`}
+                  >
+                    <SVGIcon kind={SVGIconKind.ClearCircle} />
+                  </button>
+                </div>
+              </span>
+            );
+          }}
+        </For>
+      </Match>
+      <Match when={![FilterCategory.Maturity, FilterCategory.License, FilterCategory.Extra].includes(props.category)}>
+        <FiltersPerCategoryList category={props.category} filters={props.filters} removeFilter={props.removeFilter} />{' '}
+      </Match>
+    </Switch>
+  );
+};
+
+const ActiveFiltersList = (props: Props) => {
+  const initialActiveFilters = () => props.activeFilters;
+
+  return (
+    <Show when={Object.keys(initialActiveFilters()).length > 0}>
       <div class="d-flex flex-row align-items-start mb-3">
         <div
           class={`d-flex flex-row align-items-center text-nowrap text-muted text-uppercase me-3 mt-2 ${styles.btnLegend}`}
@@ -55,158 +211,20 @@ const ActiveFiltersList = (props: Props) => {
           <small>:</small>
         </div>
         <div class="d-flex flex-row flex-wrap">
-          <For each={activeFiltersKeys()}>
+          <For each={Object.keys(initialActiveFilters())}>
             {(f: string) => {
-              const activeFiltersPerCategory = () => activeFilters()[f as FilterCategory];
-              if (isUndefined(activeFiltersPerCategory()) || isEmpty(activeFiltersPerCategory())) return null;
-
-              const allMaturitySelected = () =>
-                !isUndefined(props.maturityOptions) &&
-                f === FilterCategory.Maturity &&
-                props.maturityOptions.every((element) => activeFiltersPerCategory()!.includes(element));
-
-              const allLicensesSelected = () =>
-                !isUndefined(licenseOptions()) &&
-                licenseOptions()!.length > 0 &&
-                f === FilterCategory.License &&
-                licenseOptions()!.every((element) => activeFiltersPerCategory()!.includes(element));
-
-              const foundationLabel = getFoundationNameLabel();
+              const category = f as FilterCategory;
+              const filters = () => initialActiveFilters()[category];
+              if (isUndefined(filters()) || isEmpty(filters())) return null;
 
               return (
-                <>
-                  <Switch>
-                    <Match when={allMaturitySelected()}>
-                      <span
-                        role="listitem"
-                        class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
-                      >
-                        <div class="d-flex flex-row align-items-baseline">
-                          <div>
-                            <small class="text-uppercase fw-normal me-2">{f}:</small>
-                            <span class="text-uppercase">{foundationLabel}</span>
-                          </div>
-                          <button
-                            class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
-                            onClick={() => props.removeFilter(f as FilterCategory, foundationLabel)}
-                            aria-label={`Remove ${foundationLabel} filter`}
-                            title={`Remove ${foundationLabel} filter`}
-                          >
-                            <SVGIcon kind={SVGIconKind.ClearCircle} />
-                          </button>
-                        </div>
-                      </span>
-                    </Match>
-
-                    <Match when={allLicensesSelected()}>
-                      <span
-                        role="listitem"
-                        class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
-                      >
-                        <div class="d-flex flex-row align-items-baseline">
-                          <div>
-                            <small class="text-uppercase fw-normal me-2">{f}:</small>
-                            <span class="text-uppercase">Open Source</span>
-                          </div>
-                          <button
-                            class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
-                            onClick={() => props.removeFilter(f as FilterCategory, 'oss')}
-                            aria-label={`Remove open source filter`}
-                            title={`Remove open source filter`}
-                          >
-                            <SVGIcon kind={SVGIconKind.ClearCircle} />
-                          </button>
-                        </div>
-                      </span>
-                    </Match>
-
-                    <Match when={f === FilterCategory.Extra}>
-                      <For each={activeFiltersPerCategory()}>
-                        {(c: string) => {
-                          return (
-                            <span
-                              role="listitem"
-                              class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
-                            >
-                              <div class="d-flex flex-row align-items-baseline">
-                                <div>
-                                  <span class="text-uppercase">{c}</span>
-                                </div>
-                                <button
-                                  class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
-                                  onClick={() => props.removeFilter(f as FilterCategory, c)}
-                                  aria-label={`Remove ${c} filter`}
-                                  title={`Remove ${c} filter`}
-                                >
-                                  <SVGIcon kind={SVGIconKind.ClearCircle} />
-                                </button>
-                              </div>
-                            </span>
-                          );
-                        }}
-                      </For>
-                    </Match>
-                  </Switch>
-
-                  <For each={activeFiltersPerCategory()}>
-                    {(c: string) => {
-                      if (
-                        (allMaturitySelected() && c !== `non-${getFoundationNameLabel()}`) ||
-                        (allLicensesSelected() && c !== 'non-oss') ||
-                        f === FilterCategory.Extra
-                      )
-                        return null;
-
-                      return (
-                        <span
-                          role="listitem"
-                          class={`badge badge-sm border rounded-0 me-3 my-1 d-flex flex-row align-items-center ${styles.filterBadge}`}
-                        >
-                          <div class="d-flex flex-row align-items-baseline">
-                            <div>
-                              <small class="text-uppercase fw-normal me-2">{f}:</small>
-                              <span
-                                class={
-                                  [FilterCategory.Maturity, FilterCategory.OrgType].includes(f as FilterCategory)
-                                    ? 'text-uppercase'
-                                    : ''
-                                }
-                              >
-                                <Switch fallback={<>{c}</>}>
-                                  <Match when={f === FilterCategory.OrgType}>
-                                    <>{formatProfitLabel(c)}</>
-                                  </Match>
-                                  <Match when={f === FilterCategory.TAG}>
-                                    <span class="text-uppercase">{formatTAGName(c)}</span>
-                                  </Match>
-                                  <Match when={f === FilterCategory.InvestmentType}>
-                                    <>{startCase(c.replace(REGEX_UNDERSCORE, ' '))}</>
-                                  </Match>
-                                  <Match when={f === FilterCategory.License && c === 'non-oss'}>
-                                    <span class="text-uppercase">Not open source</span>
-                                  </Match>
-                                  <Match
-                                    when={f === FilterCategory.Maturity && c === `non-${getFoundationNameLabel()}`}
-                                  >
-                                    <span class="text-uppercase">Not {getFoundationNameLabel()} project</span>
-                                  </Match>
-                                </Switch>
-                              </span>
-                            </div>
-                            <button
-                              class="btn btn-link btn-sm text-reset lh-1 p-0 ps-2"
-                              onClick={() => props.removeFilter(f as FilterCategory, c)}
-                              aria-label={`Remove ${c} filter`}
-                              title={`Remove ${c} filter`}
-                            >
-                              <SVGIcon kind={SVGIconKind.ClearCircle} />
-                            </button>
-                          </div>
-                        </span>
-                      );
-                    }}
-                  </For>
-                </>
+                <FiltersPerCategory
+                  category={category}
+                  filters={filters()!}
+                  maturityOptions={props.maturityOptions}
+                  licenseOptions={props.licenseOptions}
+                  removeFilter={props.removeFilter}
+                />
               );
             }}
           </For>
