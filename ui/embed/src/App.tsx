@@ -260,7 +260,6 @@ const App = () => {
               throw new Error('Something went wrong');
             })
             .then((res) => {
-              console.log(res);
               setData(res);
             })
             .catch(() => {

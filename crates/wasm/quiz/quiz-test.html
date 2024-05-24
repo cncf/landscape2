@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+  </head>
+  <body>
+    <script type="module">
+      import init, { Quiz, QuizOptions } from './dist/landscape2_quiz.js';
+
+      async function run() {
+        await init();
+
+        const landscape_url = "http://localhost:8000";
+        const options = new QuizOptions(landscape_url);
+
+        const quiz1 = await new Quiz(options);
+        console.log("quiz1.questions()", quiz1.questions());
+        console.log("quiz1.state()", quiz1.state());
+        console.log("quiz1.check_player_guess(0)", quiz1.check_player_guess(0));
+        console.log("quiz1.next_question()", quiz1.next_question());
+        console.log("quiz1.check_player_guess(1)", quiz1.check_player_guess(1));
+      }
+
+      run();
+    </script>
+  </body>
+</html>

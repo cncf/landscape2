@@ -1,0 +1,256 @@
+.wrapper * {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+}
+
+.startBtn {
+  height: 30px;
+  width: 30px;
+}
+
+.header {
+  line-height: 53px;
+  font-size: 1.75rem;
+}
+
+.dot {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  margin-top: -0.25rem;
+}
+
+.dotCorrect {
+  background-color: var(--color-success);
+}
+
+.dotWrong {
+  background-color: var(--color-error);
+}
+
+.game {
+  min-height: 880px;
+  background-color: var(--color1);
+  border-color: var(--color1) !important;
+  border-radius: 1.5rem;
+  padding: 2.5rem 3rem;
+}
+
+.quizContent {
+  width: 80%;
+}
+
+.title {
+  border-radius: 1.5rem;
+  font-size: 2.25rem;
+  line-height: 1.5;
+  height: 235px;
+  border-color: var(--color7) !important;
+  box-shadow: 0px 0px 10px 3px var(--color7);
+  padding: 2rem 3rem;
+}
+
+.btn {
+  padding: 0.5rem 0.75rem 0.25rem 0.75rem;
+}
+
+.option {
+  border-radius: 1.5rem;
+  overflow: hidden;
+  width: 200px;
+  border-color: var(--color7) !important;
+  box-shadow: 0px 0px 10px 3px var(--color7);
+}
+
+.option.selected {
+  border-color: var(--color1) !important;
+}
+
+.option:not(.answered) {
+  cursor: pointer;
+}
+
+.logoContent {
+  height: 175px;
+}
+
+.logoWrapper {
+  width: 150px;
+  height: 150px;
+}
+
+.logo {
+  max-height: 100%;
+  height: auto;
+}
+
+.item {
+  background-color: var(--color7);
+  width: 100%;
+}
+
+.itemName {
+  padding-top: 3px;
+}
+
+.option.correct .item {
+  background-color: var(--color-success);
+}
+
+.option.wrong .item {
+  background-color: var(--color-error);
+}
+
+.questionLabel {
+  font-size: 0.9rem;
+}
+
+.buttons {
+  min-height: 44px;
+}
+
+@media (max-width: 1399.98px) {
+  .game {
+    min-height: 855px;
+  }
+
+  .quizContent {
+    width: 95%;
+  }
+
+  .title {
+    font-size: 2rem;
+    height: 210px;
+    padding: 2rem;
+  }
+}
+
+@media only screen and (max-width: 1199.98px) {
+  .game {
+    min-height: 695px;
+    padding: 2rem 2.5rem;
+  }
+
+  .title {
+    height: 190px;
+    font-size: 1.75rem;
+  }
+
+  .quizContent {
+    width: 100%;
+  }
+
+  .header {
+    line-height: 44px;
+    font-size: 1.5rem;
+  }
+
+  .option {
+    width: 150px;
+  }
+
+  .logoContent {
+    height: 125px;
+  }
+
+  .logoWrapper {
+    width: 100px;
+    height: 100px;
+  }
+
+  .item {
+    font-size: 0.8rem;
+  }
+
+  .title,
+  .option {
+    box-shadow: 0px 0px 7px 1px var(--color7);
+  }
+}
+
+@media only screen and (max-width: 991.98px) {
+  .game {
+    padding: 1.5rem 2rem;
+    min-height: 920px;
+  }
+
+  .title {
+    padding: 1.5rem;
+  }
+
+  .header {
+    font-size: 1.25rem;
+  }
+
+  .logoContent {
+    width: 100px;
+    height: 75px;
+  }
+
+  .logoWrapper {
+    width: 75px;
+    height: 75px;
+  }
+
+  .itemName {
+    padding-top: 5px;
+  }
+
+  .option {
+    width: 100%;
+  }
+
+  .item {
+    font-size: 1rem;
+    width: calc(100% - 100px);
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .game {
+    padding: 1rem 1.5rem;
+    min-height: 665px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+    padding: 1rem;
+    height: 140px;
+  }
+
+  .header {
+    font-size: 1rem;
+    line-height: 30px;
+  }
+
+  .dot {
+    height: 15px;
+    width: 15px;
+  }
+
+  .logoContent {
+    height: 50px;
+    width: 75px;
+    min-width: 75px;
+  }
+
+  .logoWrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .item {
+    width: calc(100% - 75px);
+  }
+
+  .title,
+  .option {
+    box-shadow: 0px 0px 3px 1px var(--color7);
+  }
+}
+
+@media (hover: hover) {
+  .option:not(.answered):hover {
+    border-color: var(--color1) !important;
+  }
+}

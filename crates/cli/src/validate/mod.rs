@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use clap::Subcommand;
 use landscape2_core::{
     data::{DataSource, LandscapeData},
+    games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
     settings::{LandscapeSettings, SettingsSource},
 };
@@ -24,6 +25,9 @@ pub enum Target {
     /// Validate landscape data file.
     Data(DataSource),
 
+    /// Validate landscape games file.
+    Games(GamesSource),
+
     /// Validate landscape guide file.
     Guide(GuideSource),
 
@@ -42,14 +46,14 @@ pub async fn validate_data(data_source: &DataSource) -> Result<()> {
     Ok(())
 }
 
-/// Validate landscape settings file.
+/// Validate landscape games file.
 #[instrument(skip_all)]
-pub async fn validate_settings(settings_source: &SettingsSource) -> Result<()> {
-    LandscapeSettings::new(settings_source)
+pub async fn validate_games(games_source: &GamesSource) -> Result<()> {
+    LandscapeGames::new(games_source)
         .await
-        .context("the landscape settings file provided is not valid")?;
+        .context("the landscape games file provided is not valid")?;
 
-    println!("The landscape settings file provided is valid!");
+    println!("The landscape games file provided is valid!");
     Ok(())
 }
 
@@ -61,5 +65,16 @@ pub async fn validate_guide(guide_source: &GuideSource) -> Result<()> {
         .context("the landscape guide file provided is not valid")?;
 
     println!("The landscape guide file provided is valid!");
+    Ok(())
+}
+
+/// Validate landscape settings file.
+#[instrument(skip_all)]
+pub async fn validate_settings(settings_source: &SettingsSource) -> Result<()> {
+    LandscapeSettings::new(settings_source)
+        .await
+        .context("the landscape settings file provided is not valid")?;
+
+    println!("The landscape settings file provided is valid!");
     Ok(())
 }

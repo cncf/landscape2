@@ -213,6 +213,9 @@ pub struct Subcategory {
 mod tests {
     use super::*;
 
+    const GUIDE_FILE: &str = "guide.yml";
+    const TESTS_GUIDE_FILE: &str = "src/testdata/guide.yml";
+
     #[test]
     fn guidesource_new_from_url() {
         let url = "https://example.url/guide.yml";
@@ -229,7 +232,7 @@ mod tests {
     #[tokio::test]
     async fn guide_new_using_file() {
         let src = GuideSource {
-            guide_file: Some(PathBuf::from("src/testdata/guide.yml")),
+            guide_file: Some(PathBuf::from(TESTS_GUIDE_FILE)),
             guide_url: None,
         };
         let _ = LandscapeGuide::new(&src).await.unwrap();
@@ -239,13 +242,13 @@ mod tests {
     async fn guide_new_using_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/guide.yml")
+            .mock("GET", format!("/{GUIDE_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/guide.yml")
+            .with_body_from_file(TESTS_GUIDE_FILE)
             .create_async()
             .await;
 
-        let src = GuideSource::new_from_url(format!("{}/guide.yml", server.url()));
+        let src = GuideSource::new_from_url(format!("{}/{GUIDE_FILE}", server.url()));
         let _ = LandscapeGuide::new(&src).await.unwrap();
         mock.assert_async().await;
     }
@@ -258,7 +261,7 @@ mod tests {
 
     #[test]
     fn guide_new_from_file() {
-        let file = Path::new("src/testdata/guide.yml");
+        let file = Path::new(TESTS_GUIDE_FILE);
         let _ = LandscapeGuide::new_from_file(file).unwrap();
     }
 
@@ -266,13 +269,13 @@ mod tests {
     async fn guide_new_from_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/guide.yml")
+            .mock("GET", format!("/{GUIDE_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/guide.yml")
+            .with_body_from_file(TESTS_GUIDE_FILE)
             .create_async()
             .await;
 
-        let url = format!("{}/guide.yml", server.url());
+        let url = format!("{}/{GUIDE_FILE}", server.url());
         let _ = LandscapeGuide::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
@@ -281,16 +284,20 @@ mod tests {
     #[should_panic(expected = "unexpected status code getting landscape guide file: 404")]
     async fn guide_new_from_url_not_found() {
         let mut server = mockito::Server::new_async().await;
-        let mock = server.mock("GET", "/guide.yml").with_status(404).create_async().await;
+        let mock = server
+            .mock("GET", format!("/{GUIDE_FILE}").as_str())
+            .with_status(404)
+            .create_async()
+            .await;
 
-        let url = format!("{}/guide.yml", server.url());
+        let url = format!("{}/{GUIDE_FILE}", server.url());
         let _ = LandscapeGuide::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
 
     #[test]
     fn guide_new_from_yaml() {
-        let raw_data = fs::read_to_string("src/testdata/guide.yml").unwrap();
+        let raw_data = fs::read_to_string(TESTS_GUIDE_FILE).unwrap();
         let _ = LandscapeGuide::new_from_yaml(&raw_data).unwrap();
     }
 

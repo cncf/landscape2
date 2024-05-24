@@ -621,6 +621,30 @@ export class ItemsDataGetter {
     return [];
   }
 
+  public getLogoItem(itemName: string, category?: string, subcategory?: string): string | undefined | null {
+    let item: Item | undefined = window.baseDS.items.find((i: Item) => i.name === itemName && i.category === category);
+    if (!isUndefined(subcategory) && !isUndefined(category)) {
+      item = window.baseDS.items.find(
+        (i: Item) =>
+          i.name.toLowerCase() === itemName.toLowerCase() &&
+          i.category.toLowerCase() === category.toLowerCase() &&
+          i.subcategory.toLowerCase() === subcategory.toLowerCase()
+      );
+    } else if (!isUndefined(category)) {
+      item = window.baseDS.items.find(
+        (i: Item) =>
+          i.name.toLowerCase() === itemName.toLowerCase() && i.category.toLowerCase() === category.toLowerCase()
+      );
+    } else {
+      item = window.baseDS.items.find((i: Item) => i.name.toLowerCase() === itemName.toLowerCase());
+    }
+    if (item) {
+      return item.logo;
+    } else {
+      return null;
+    }
+  }
+
   // Prepare logos options
   public prepareLogosOptions(): LogosOptionsGroup[] {
     const options: LogosOptionsGroup[] = [];

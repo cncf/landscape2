@@ -7,6 +7,7 @@
 
 pub mod data;
 pub mod datasets;
+pub mod games;
 pub mod guide;
 pub mod settings;
 pub mod stats;

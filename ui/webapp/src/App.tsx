@@ -9,6 +9,7 @@ import {
   EMBED_SETUP_PATH,
   EXPLORE_PATH,
   FINANCES_PATH,
+  GAMES_PATH,
   GUIDE_PATH,
   LOGOS_PREVIEW_PATH,
   SCREENSHOTS_PATH,
@@ -18,6 +19,7 @@ import Layout from './layout';
 import Loading from './layout/common/Loading';
 import Explore from './layout/explore';
 import Finances from './layout/finances';
+import Games from './layout/games';
 import Guide from './layout/guide';
 import Logos from './layout/logos';
 import NotFound from './layout/notFound';
@@ -36,6 +38,7 @@ let COLOR_3 = 'rgba(96, 149, 214, 1)';
 let COLOR_4 = 'rgba(0, 42, 81, 0.7)';
 let COLOR_5 = 'rgba(1, 107, 204, 0.7)';
 let COLOR_6 = 'rgba(0, 42, 81, 0.7)';
+let COLOR_7 = 'rgba(180, 219, 255, 1)';
 
 const App = () => {
   const [isOverlay, setIsOverlay] = createSignal<boolean | undefined>();
@@ -85,8 +88,11 @@ const App = () => {
       if (!isUndefined(window.baseDS.colors?.color6)) {
         COLOR_6 = window.baseDS.colors?.color6;
       }
+      if (!isUndefined(window.baseDS.colors?.color7)) {
+        COLOR_7 = window.baseDS.colors?.color7;
+      }
 
-      const colors = [COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5, COLOR_6];
+      const colors = [COLOR_1, COLOR_2, COLOR_3, COLOR_4, COLOR_5, COLOR_6, COLOR_7];
 
       range(colors.length).forEach((i: number) => {
         document.documentElement.style.setProperty(`--color${i + 1}`, colors[i]);
@@ -168,6 +174,7 @@ const App = () => {
           <Route path={[EXPLORE_PATH, EMBED_SETUP_PATH]} component={() => <Explore initialData={data()!} />} />
           <Route path={GUIDE_PATH} component={Guide} />
           <Route path={STATS_PATH} component={Stats} />
+          <Route path={GAMES_PATH} component={Games} />
           <Route path={FINANCES_PATH} component={Finances} />
           <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
           <Route path="*" component={NotFound} />

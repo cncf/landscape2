@@ -904,6 +904,9 @@ mod tests {
     use super::*;
     use crate::settings::{FeaturedItemRule, FeaturedItemRuleOption, TagRule};
 
+    const DATA_FILE: &str = "data.yml";
+    const TESTS_DATA_FILE: &str = "src/testdata/data.yml";
+
     #[test]
     fn datasource_new_from_url() {
         let url = "https://example.url/data.yml";
@@ -920,7 +923,7 @@ mod tests {
     #[tokio::test]
     async fn landscape_data_new_using_file() {
         let src = DataSource {
-            data_file: Some(PathBuf::from("src/testdata/data.yml")),
+            data_file: Some(PathBuf::from(TESTS_DATA_FILE)),
             data_url: None,
         };
         let _ = LandscapeData::new(&src).await.unwrap();
@@ -930,13 +933,13 @@ mod tests {
     async fn landscape_data_new_using_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/data.yml")
+            .mock("GET", format!("/{DATA_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/data.yml")
+            .with_body_from_file(TESTS_DATA_FILE)
             .create_async()
             .await;
 
-        let src = DataSource::new_from_url(format!("{}/data.yml", server.url()));
+        let src = DataSource::new_from_url(format!("{}/{DATA_FILE}", server.url()));
         let _ = LandscapeData::new(&src).await.unwrap();
         mock.assert_async().await;
     }
@@ -950,7 +953,7 @@ mod tests {
 
     #[test]
     fn landscape_data_new_from_file() {
-        let file = Path::new("src/testdata/data.yml");
+        let file = Path::new(TESTS_DATA_FILE);
         let _ = LandscapeData::new_from_file(file).unwrap();
     }
 
@@ -958,13 +961,13 @@ mod tests {
     async fn landscape_data_new_from_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/data.yml")
+            .mock("GET", format!("/{DATA_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/data.yml")
+            .with_body_from_file(TESTS_DATA_FILE)
             .create_async()
             .await;
 
-        let url = format!("{}/data.yml", server.url());
+        let url = format!("{}/{DATA_FILE}", server.url());
         let _ = LandscapeData::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
@@ -973,16 +976,16 @@ mod tests {
     #[should_panic(expected = "unexpected status code getting landscape data file: 404")]
     async fn landscape_data_new_from_url_not_found() {
         let mut server = mockito::Server::new_async().await;
-        let mock = server.mock("GET", "/data.yml").with_status(404).create_async().await;
+        let mock = server.mock("GET", format!("/{DATA_FILE}").as_str()).with_status(404).create_async().await;
 
-        let url = format!("{}/data.yml", server.url());
+        let url = format!("{}/{DATA_FILE}", server.url());
         let _ = LandscapeData::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
 
     #[test]
     fn landscape_data_new_from_raw_data() {
-        let raw_data = fs::read_to_string("src/testdata/data.yml").unwrap();
+        let raw_data = fs::read_to_string(TESTS_DATA_FILE).unwrap();
         let _ = LandscapeData::new_from_raw_data(&raw_data).unwrap();
     }
 

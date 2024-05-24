@@ -8,6 +8,7 @@ use which::which;
 fn main() -> Result<()> {
     // Tell Cargo to rerun this build script if the source changes
     println!("cargo:rerun-if-changed=../wasm/overlay");
+    println!("cargo:rerun-if-changed=../wasm/quiz");
     println!("cargo:rerun-if-changed=../../ui/embed/src");
     println!("cargo:rerun-if-changed=../../ui/embed/embed.html");
     println!("cargo:rerun-if-changed=../../ui/webapp/src");
@@ -43,6 +44,22 @@ fn main() -> Result<()> {
             "../../../ui/webapp/wasm/overlay",
             wasm_profile,
             "../wasm/overlay",
+            "--target-dir",
+            &wasm_target_dir,
+        ],
+    )?;
+
+    // Build quiz game wasm module
+    run(
+        "wasm-pack",
+        &[
+            "build",
+            "--target",
+            "web",
+            "--out-dir",
+            "../../../ui/webapp/wasm/quiz",
+            wasm_profile,
+            "../wasm/quiz",
             "--target-dir",
             &wasm_target_dir,
         ],

@@ -1,0 +1,20 @@
+# Landscape2 games data
+#
+# This file contains the data that will be used in the landscape games.
+#
+# Reference documentation: https://github.com/cncf/landscape2/blob/main/docs/config/games.yml
+
+quiz:
+  questions:
+    - title: "Which of the following items have feature X?"
+      options:
+        - item: Item 1
+          correct: true
+        - item: Item 2
+        - item: Item 3
+    - title: "Please select the item with feature Y"
+      options:
+        - item: Item 1
+        - item: Item 2
+        - item: Item 3
+          correct: true

@@ -12,7 +12,9 @@ use landscape2::deploy::s3::{self};
 use landscape2::deploy::{DeployArgs, Provider};
 use landscape2::new::{new, NewArgs};
 use landscape2::serve::{serve, ServeArgs};
-use landscape2::validate::{validate_data, validate_guide, validate_settings, Target, ValidateArgs};
+use landscape2::validate::{
+    validate_data, validate_games, validate_guide, validate_settings, Target, ValidateArgs,
+};
 
 /// CLI arguments.
 #[derive(Parser)]
@@ -29,6 +31,7 @@ struct Cli {
 
 /// Commands available.
 #[derive(Subcommand)]
+#[allow(clippy::large_enum_variant)]
 enum Command {
     /// Build landscape website.
     Build(BuildArgs),
@@ -73,6 +76,7 @@ async fn main() -> Result<()> {
         Command::Serve(args) => serve(args).await?,
         Command::Validate(args) => match &args.target {
             Target::Data(src) => validate_data(src).await?,
+            Target::Games(src) => validate_games(src).await?,
             Target::Guide(src) => validate_guide(src).await?,
             Target::Settings(src) => validate_settings(src).await?,
         },

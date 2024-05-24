@@ -4,6 +4,7 @@ use anyhow::{bail, Context, Result};
 use landscape2_core::{
     data::{DataSource, Item, LandscapeData},
     datasets::{base::Base, full::Full},
+    games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
     settings::{LandscapeSettings, SettingsSource},
     stats::Stats,
@@ -24,12 +25,16 @@ const DEFAULT_SETTINGS_PATH: &str = "sources/settings.yml";
 /// Path of the default guide file.
 const DEFAULT_GUIDE_PATH: &str = "sources/guide.yml";
 
+/// Path of the default games data file.
+const DEFAULT_GAMES_PATH: &str = "sources/games.yml";
+
 /// Input data for the get_overlay_data function.
 #[derive(Deserialize)]
 struct GetOverlayDataInput {
     landscape_url: String,
 
     data_url: Option<String>,
+    games_url: Option<String>,
     guide_url: Option<String>,
     logos_url: Option<String>,
     settings_url: Option<String>,
@@ -39,6 +44,7 @@ struct GetOverlayDataInput {
 #[derive(Serialize)]
 struct OverlayData {
     datasets: Datasets,
+    games: Option<LandscapeGames>,
     guide: Option<LandscapeGuide>,
 }
 
@@ -81,6 +87,15 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
     let guide_src = GuideSource::new_from_url(guide_url);
     let guide = LandscapeGuide::new(&guide_src).await.context("error fetching guide").map_err(to_str)?;
 
+    // Get landscape games data
+    let default_games_url = format!("{}/{}", input.landscape_url, DEFAULT_GAMES_PATH);
+    let games_url = input.games_url.unwrap_or(default_games_url);
+    let games_src = GamesSource::new_from_url(games_url);
+    let games = LandscapeGames::new(&games_src)
+        .await
+        .context("error fetching games data")
+        .map_err(to_str)?;
+
     // Get Crunchbase and GitHub data from deployed full dataset
     let deployed_full_dataset = get_full_dataset(&input.landscape_url).await.map_err(to_str)?;
     let deployed_items = deployed_full_dataset.items;
@@ -99,13 +114,17 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
     // Prepare datasets
     let qr_code = String::new();
     let datasets = Datasets {
-        base: Base::new(&landscape_data, &settings, &guide, &qr_code),
+        base: Base::new(&landscape_data, &settings, &guide, &games, &qr_code),
         full: Full::new(&landscape_data, &crunchbase_data, &github_data),
         stats: Stats::new(&landscape_data, &settings),
     };
 
     // Prepare overlay data and return it
-    let overlay_data = OverlayData { datasets, guide };
+    let overlay_data = OverlayData {
+        datasets,
+        games,
+        guide,
+    };
     let overlay_data_json = serde_json::to_string(&overlay_data).map_err(to_str)?;
 
     Ok(overlay_data_json)

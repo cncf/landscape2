@@ -28,6 +28,7 @@ use headless_chrome::{
 use landscape2_core::{
     data::{self, DataSource, LandscapeData},
     datasets::{Datasets, NewDatasetsInput},
+    games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
     settings::{self, Analytics, LandscapeSettings, LogosViewbox, Osano, SettingsSource},
 };
@@ -107,6 +108,10 @@ pub struct BuildArgs {
     #[command(flatten)]
     pub data_source: DataSource,
 
+    /// Games source.
+    #[command(flatten)]
+    pub games_source: GamesSource,
+
     /// Guide source.
     #[command(flatten)]
     pub guide_source: GuideSource,
@@ -144,6 +149,9 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
 
     // Get landscape settings from the source provided
     let mut settings = LandscapeSettings::new(&args.settings_source).await?;
+
+    // Prepare games data and copy it to the output directory
+    let games = prepare_games_data(&args.games_source, &args.output_dir).await?;
 
     // Prepare guide and copy it to the output directory
     let guide = prepare_guide(&args.guide_source, &args.output_dir).await?;
@@ -193,6 +201,7 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
     let datasets = generate_datasets(
         &NewDatasetsInput {
             crunchbase_data: &crunchbase_data,
+            games: &games,
             github_data: &github_data,
             guide: &guide,
             landscape_data: &landscape_data,
@@ -352,6 +361,15 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
         &args.guide_source.guide_file,
         &args.guide_source.guide_url,
         guide_file,
+    )
+    .await?;
+
+    // Games data
+    let games_file = output_dir.join(SOURCES_PATH).join("games.yml");
+    copy(
+        &args.games_source.games_file,
+        &args.games_source.games_url,
+        games_file,
     )
     .await?;
 
@@ -524,6 +542,24 @@ fn generate_qr_code(url: &String, output_dir: &Path) -> Result<String> {
     File::create(output_dir.join(&svg_path))?.write_all(svg.as_bytes())?;
 
     Ok(svg_path.to_string_lossy().into_owned())
+}
+
+/// Prepare games data and copy it to the output directory.
+#[instrument(skip_all, err)]
+async fn prepare_games_data(games_source: &GamesSource, output_dir: &Path) -> Result<Option<LandscapeGames>> {
+    debug!("preparing games data");
+
+    let Some(games) = LandscapeGames::new(games_source).await? else {
+        return Ok(None);
+    };
+
+    // Quiz game data
+    if let Some(quiz) = &games.quiz {
+        let path = output_dir.join(DATASETS_PATH).join("quiz.json");
+        File::create(path)?.write_all(&serde_json::to_vec(&quiz.questions)?)?;
+    }
+
+    Ok(Some(games))
 }
 
 /// Prepare guide and copy it to the output directory.
