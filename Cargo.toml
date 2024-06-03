@@ -20,8 +20,8 @@ anyhow = "1.0.86"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.80"
-aws-config = "1.4.0"
-aws-sdk-s3 = "1.29.0"
+aws-config = "1.5.0"
+aws-sdk-s3 = "1.32.0"
 axum = "0.7.5"
 base64 = "0.22.1"
 cached = { version = "0.51.3", default-features = false, features = ["async", "proc_macro"] }
@@ -38,7 +38,7 @@ hex = "0.4.3"
 imagesize = "0.12.0"
 itertools = "0.12.1"
 lazy_static = "1.4.0"
-leaky-bucket = "1.1.1"
+leaky-bucket = "1.1.2"
 markdown = "1.0.0-alpha.17"
 md-5 = "0.10.6"
 mime_guess = "2.0.4"
@@ -55,12 +55,12 @@ reqwest = { version = "0.12.4", features = ["json", "native-tls-vendored"] }
 reqwest_octorust = { package = "reqwest", version = "0.11.14", default-features = false, features = ["json", "multipart"] }
 reqwest-middleware = "0.2.2"
 rust-embed = "8.4.0"
-serde = { version = "1.0.202", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.10.8"
-tokio = { version = "1.37.0", features = [
+tokio = { version = "1.38.0", features = [
     "macros",
     "process",
     "rt-multi-thread",
