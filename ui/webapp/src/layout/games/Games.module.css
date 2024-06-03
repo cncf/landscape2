@@ -1,0 +1,3 @@
+.loadingContent {
+  min-height: calc(var(--app-height) - 36px);
+}

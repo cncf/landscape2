@@ -271,6 +271,7 @@ impl LandscapeSettings {
                 ("color4", &colors.color4),
                 ("color5", &colors.color5),
                 ("color6", &colors.color6),
+                ("color7", &colors.color7),
             ];
 
             for (name, value) in colors {
@@ -512,6 +513,7 @@ pub struct Colors {
     pub color4: String,
     pub color5: String,
     pub color6: String,
+    pub color7: String,
 }
 
 /// Featured item rule information. A featured item is specially highlighted in
@@ -695,6 +697,9 @@ mod tests {
     use super::*;
     use crate::settings::SettingsSource;
 
+    const SETTINGS_FILE: &str = "settings.yml";
+    const TESTS_SETTINGS_FILE: &str = "src/testdata/settings.yml";
+
     #[test]
     fn settings_source_new_from_url() {
         let url = "https://example.url/settings.yml";
@@ -711,7 +716,7 @@ mod tests {
     #[tokio::test]
     async fn settings_new_using_file() {
         let src = SettingsSource {
-            settings_file: Some(PathBuf::from("src/testdata/settings.yml")),
+            settings_file: Some(PathBuf::from(TESTS_SETTINGS_FILE)),
             settings_url: None,
         };
         let _ = LandscapeSettings::new(&src).await.unwrap();
@@ -721,13 +726,13 @@ mod tests {
     async fn settings_new_using_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/settings.yml")
+            .mock("GET", format!("/{SETTINGS_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/settings.yml")
+            .with_body_from_file(TESTS_SETTINGS_FILE)
             .create_async()
             .await;
 
-        let src = SettingsSource::new_from_url(format!("{}/settings.yml", server.url()));
+        let src = SettingsSource::new_from_url(format!("{}/{SETTINGS_FILE}", server.url()));
         let _ = LandscapeSettings::new(&src).await.unwrap();
         mock.assert_async().await;
     }
@@ -741,7 +746,7 @@ mod tests {
 
     #[test]
     fn settings_new_from_file() {
-        let file = Path::new("src/testdata/settings.yml");
+        let file = Path::new(TESTS_SETTINGS_FILE);
         let _ = LandscapeSettings::new_from_file(file).unwrap();
     }
 
@@ -749,13 +754,13 @@ mod tests {
     async fn settings_new_from_url() {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", "/settings.yml")
+            .mock("GET", format!("/{SETTINGS_FILE}").as_str())
             .with_status(200)
-            .with_body_from_file("src/testdata/settings.yml")
+            .with_body_from_file(TESTS_SETTINGS_FILE)
             .create_async()
             .await;
 
-        let url = format!("{}/settings.yml", server.url());
+        let url = format!("{}/{SETTINGS_FILE}", server.url());
         let _ = LandscapeSettings::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
@@ -764,16 +769,20 @@ mod tests {
     #[should_panic(expected = "unexpected status code getting landscape settings file: 404")]
     async fn landscape_data_new_from_url_not_found() {
         let mut server = mockito::Server::new_async().await;
-        let mock = server.mock("GET", "/settings.yml").with_status(404).create_async().await;
+        let mock = server
+            .mock("GET", format!("/{SETTINGS_FILE}").as_str())
+            .with_status(404)
+            .create_async()
+            .await;
 
-        let url = format!("{}/settings.yml", server.url());
+        let url = format!("{}/{SETTINGS_FILE}", server.url());
         let _ = LandscapeSettings::new_from_url(&url).await.unwrap();
         mock.assert_async().await;
     }
 
     #[test]
     fn settings_new_from_raw_data() {
-        let raw_data = fs::read_to_string("src/testdata/settings.yml").unwrap();
+        let raw_data = fs::read_to_string(TESTS_SETTINGS_FILE).unwrap();
         let _ = LandscapeSettings::new_from_raw_data(&raw_data).unwrap();
     }
 
@@ -950,6 +959,7 @@ mod tests {
                 color4: "rgba(0, 107, 204, 1)".to_string(),
                 color5: "rgba(0, 107, 204, 1)".to_string(),
                 color6: "rgba(0, 107, 204, 1)".to_string(),
+                color7: "rgba(0, 107, 204, 1)".to_string(),
             }),
             ..Default::default()
         };
@@ -970,6 +980,7 @@ mod tests {
                 color4: "rgba(0, 107, 204, 1)".to_string(),
                 color5: "rgba(0, 107, 204, 1)".to_string(),
                 color6: "rgba(0, 107, 204, 1)".to_string(),
+                color7: "rgba(0, 107, 204, 1)".to_string(),
             }),
             ..Default::default()
         };

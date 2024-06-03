@@ -23,6 +23,7 @@ serde = { workspace = true }
 serde_yaml = { workspace = true }
 tracing = { workspace = true }
 url = { workspace = true }
+wasm-bindgen = { workspace = true }
 
 [dev-dependencies]
 mockito = { workspace = true }

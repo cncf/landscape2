@@ -22,6 +22,7 @@ export const EMBED_SETUP_PATH = `${BASE_PATH}/embed-setup`;
 export const STATS_PATH = `${BASE_PATH}/stats`;
 export const GUIDE_PATH = `${BASE_PATH}/guide`;
 export const FINANCES_PATH = `${BASE_PATH}/finances`;
+export const GAMES_PATH = `${BASE_PATH}/games`;
 export const LOGOS_PREVIEW_PATH = `${BASE_PATH}/logos-preview`;
 export const SCREENSHOTS_PATH = '/screenshot';
 
@@ -43,6 +44,7 @@ export const OVERLAY_DATA_PARAM = 'overlay-data';
 export const OVERLAY_SETTINGS_PARAM = 'overlay-settings';
 export const OVERLAY_GUIDE_PARAM = 'overlay-guide';
 export const OVERLAY_LOGOS_PATH_PARAM = 'overlay-logos';
+export const OVERLAY_GAMES_PATH_PARAM = 'overlay-games';
 
 export const REGEX_SPACE = / /g;
 export const REGEX_PLUS = /\+/g;

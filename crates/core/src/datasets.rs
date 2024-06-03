@@ -9,6 +9,7 @@
 use self::{base::Base, embed::Embed, full::Full};
 use crate::{
     data::{CrunchbaseData, GithubData, LandscapeData},
+    games::LandscapeGames,
     guide::LandscapeGuide,
     settings::LandscapeSettings,
     stats::Stats,
@@ -18,6 +19,7 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct NewDatasetsInput<'a> {
     pub crunchbase_data: &'a CrunchbaseData,
+    pub games: &'a Option<LandscapeGames>,
     pub github_data: &'a GithubData,
     pub guide: &'a Option<LandscapeGuide>,
     pub landscape_data: &'a LandscapeData,
@@ -46,7 +48,7 @@ impl Datasets {
     #[must_use]
     pub fn new(i: &NewDatasetsInput) -> Self {
         Datasets {
-            base: Base::new(i.landscape_data, i.settings, i.guide, i.qr_code),
+            base: Base::new(i.landscape_data, i.settings, i.guide, i.games, i.qr_code),
             embed: Embed::new(i.landscape_data, i.settings),
             full: Full::new(i.landscape_data, i.crunchbase_data, i.github_data),
             stats: Stats::new(i.landscape_data, i.settings),
@@ -61,6 +63,7 @@ impl Datasets {
 pub mod base {
     use crate::{
         data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
+        games::LandscapeGames,
         guide::LandscapeGuide,
         settings::{
             Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent, ViewMode,
@@ -91,6 +94,9 @@ pub mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub footer: Option<Footer>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub games_available: Option<Vec<String>>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub grid_items_size: Option<GridItemsSize>,
@@ -127,6 +133,7 @@ pub mod base {
             landscape_data: &LandscapeData,
             settings: &LandscapeSettings,
             guide: &Option<LandscapeGuide>,
+            games: &Option<LandscapeGames>,
             qr_code: &str,
         ) -> Self {
             let mut base = Base {
@@ -138,6 +145,7 @@ pub mod base {
                 categories_overridden: vec![],
                 colors: settings.colors.clone(),
                 footer: settings.footer.clone(),
+                games_available: None,
                 grid_items_size: settings.grid_items_size.clone(),
                 groups: settings.groups.clone().unwrap_or_default(),
                 guide_summary: BTreeMap::new(),
@@ -162,6 +170,13 @@ pub mod base {
             // Prepare items from landscape data
             for item in &landscape_data.items {
                 base.items.push(item.into());
+            }
+
+            // Check what games will be available
+            if let Some(games) = games {
+                if games.quiz.is_some() {
+                    base.games_available = Some(vec!["quiz".to_string()]);
+                }
             }
 
             // Prepare guide summary
@@ -432,6 +447,7 @@ mod tests {
     use crate::{
         data::{self, *},
         datasets::base,
+        games::Quiz,
         guide::{self, LandscapeGuide},
         settings::{self, *},
     };
@@ -442,6 +458,7 @@ mod tests {
     fn datasets_new() {
         let input = NewDatasetsInput {
             crunchbase_data: &CrunchbaseData::default(),
+            games: &None,
             github_data: &GithubData::default(),
             guide: &None,
             landscape_data: &LandscapeData::default(),
@@ -553,10 +570,15 @@ mod tests {
             }]),
         };
 
+        // Games
+        let games = LandscapeGames {
+            quiz: Some(Quiz { questions: vec![] }),
+        };
+
         // QR code
         let qr_code = "QR_CODE".to_string();
 
-        let base = Base::new(&landscape_data, &settings, &Some(guide), &qr_code);
+        let base = Base::new(&landscape_data, &settings, &Some(guide), &Some(games), &qr_code);
         let expected_base = Base {
             finances_available: true,
             foundation: "Foundation".to_string(),
@@ -573,6 +595,7 @@ mod tests {
             categories_overridden: vec!["Category 1".to_string()],
             colors,
             footer,
+            games_available: Some(vec!["quiz".to_string()]),
             grid_items_size: Some(GridItemsSize::Small),
             groups,
             guide_summary: vec![("Category 1".to_string(), vec!["Subcategory 1".to_string()])]

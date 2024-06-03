@@ -60,7 +60,7 @@ fn display_success_msg(output_dir: &str) {
 
 You can build it by running the following command:
 
-👉 cd {output_dir} && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --logos-path logos --output-dir build
+👉 cd {output_dir} && landscape2 build --data-file data.yml --settings-file settings.yml --guide-file guide.yml --games-file games.yml --logos-path logos --output-dir build
 "
     );
 }

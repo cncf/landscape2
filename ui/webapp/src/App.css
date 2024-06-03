@@ -12,6 +12,17 @@
   --color4: rgba(0, 42, 81, 0.7);
   --color5: rgba(19, 17, 24, 0.7);
   --color6: rgba(80, 142, 191, 0.7);
+  --color7: rgba(180, 219, 255, 1);
+
+  --color-success: #97c639;
+  --color-error: #e83030;
+}
+
+@font-face {
+  font-family: Orbitron;
+  src:
+    url(/fonts/orbitron-medium-webfont.ttf) format('truetype'),
+    url(/fonts/orbitron-medium-webfont.woff) format('woff');
 }
 
 html,

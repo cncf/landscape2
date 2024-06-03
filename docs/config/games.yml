@@ -1,0 +1,50 @@
+# Landscape games data
+#
+# This file allows defining the content of the landscape games.
+
+# Quiz game content
+quiz:
+  # List of questions
+  #
+  # A subset of these questions will be randomly picked up for each quiz game.
+  questions:
+    - # Question title (required)
+      title: "Which of the following projects provides an open source container orchestration engine for automating deployment, scaling, and management of containerized applications?"
+
+      # Answer options (required)
+      #
+      # At least two options must be provided. Options will be shuffled on
+      # every quiz game, so the order used here is not important.
+      options:
+        - # Name of the landscape item this option refers to (required)
+          #
+          # It must match the name of the item in the landscape.yml file.
+          item: Kubernetes
+
+          # Category of the item in the landscape (optional)
+          #
+          # This field can be used when the item is not unique across the
+          # landscape to avoid ambiguity.
+          category: "Orchestration & Management"
+
+          # Subcategory of the item in the landscape (optional)
+          #
+          # This field can be used when the item is not unique across the
+          # landscape to avoid ambiguity.
+          subcategory: "Scheduling & Orchestration"
+
+          # Whether this option is correct (optional)
+          #
+          # It can be omitted if this not the correct option. Only one option
+          # can be marked as correct.
+          correct: true
+
+        - # Name of the landscape item this option refers to (required)
+          #
+          # It must match the name of the item in the landscape.yml file.
+          item: gRPC
+
+        - # Name of the landscape item this option refers to (required)
+          #
+          # It must match the name of the item in the landscape.yml file.
+          item: Cilium

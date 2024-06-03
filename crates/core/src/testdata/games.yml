@@ -1,0 +1,8 @@
+quiz:
+  questions:
+    - title: Question title
+      options:
+        - item: item1
+          correct: true
+        - item: item2
+        - item: item3

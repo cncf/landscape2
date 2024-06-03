@@ -5,11 +5,13 @@ import {
   DEFAULT_GRID_ITEMS_SIZE,
   DEFAULT_VIEW_MODE,
   OVERLAY_DATA_PARAM,
+  OVERLAY_GAMES_PATH_PARAM,
   OVERLAY_GUIDE_PARAM,
   OVERLAY_LOGOS_PATH_PARAM,
   OVERLAY_SETTINGS_PARAM,
   overrideSettings,
 } from '../data';
+import isWasmSupported from './isWasmSupported';
 import itemsDataGetter from './itemsDataGetter';
 
 interface OverlayParams {
@@ -17,6 +19,7 @@ interface OverlayParams {
   settings?: string;
   guide?: string;
   logosPath?: string;
+  gamesPath?: string;
 }
 
 interface OverlayInput {
@@ -25,6 +28,7 @@ interface OverlayInput {
   settings_url?: string;
   guide_url?: string;
   logos_url?: string;
+  games_url?: string;
 }
 
 export class OverlayData {
@@ -55,6 +59,7 @@ export class OverlayData {
     const settingsUrl = currentSearch.get(OVERLAY_SETTINGS_PARAM);
     const guideUrl = currentSearch.get(OVERLAY_GUIDE_PARAM);
     const logosPathUrl = currentSearch.get(OVERLAY_LOGOS_PATH_PARAM);
+    const gamesPathUrl = currentSearch.get(OVERLAY_GAMES_PATH_PARAM);
 
     this.params = {};
 
@@ -75,6 +80,10 @@ export class OverlayData {
       this.params.logosPath = logosPathUrl;
       this.query.set(OVERLAY_LOGOS_PATH_PARAM, logosPathUrl);
     }
+    if (gamesPathUrl) {
+      this.params.gamesPath = gamesPathUrl;
+      this.query.set(OVERLAY_GAMES_PATH_PARAM, gamesPathUrl);
+    }
   }
 
   public isActiveOverlay() {
@@ -85,18 +94,8 @@ export class OverlayData {
     return this.isActive ? this.query.toString() : '';
   }
 
-  private isWasmSupported() {
-    if (typeof WebAssembly !== 'undefined') {
-      // WebAssembly is supported
-      return true;
-    } else {
-      // WebAssembly is not supported
-      return false;
-    }
-  }
-
   public async getOverlayBaseData() {
-    if (!this.isWasmSupported()) {
+    if (!isWasmSupported()) {
       return Promise.reject('WebAssembly is not supported in this browser');
     } else {
       return import('../../wasm/overlay/landscape2_overlay')
@@ -119,6 +118,9 @@ export class OverlayData {
             }
             if (this.params.logosPath) {
               input.logos_url = this.params.logosPath;
+            }
+            if (this.params.gamesPath) {
+              input.games_url = this.params.gamesPath;
             }
           }
 

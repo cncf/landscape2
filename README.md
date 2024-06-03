@@ -33,6 +33,8 @@ You can check out how the generated landscapes look like by visiting the [CNCF l
 
 - **Landscape guide**. The guide file is a YAML file that defines the content of the guide that will be displayed on the landscape website. For more information, please see the [reference documentation](https://github.com/cncf/landscape2/blob/main/docs/config/guide.yml).
 
+- **Landscape games**. The games data file is a YAML file that defines the content of the games that will be displayed on the landscape website. For more information, please see the [reference documentation](https://github.com/cncf/landscape2/blob/main/docs/config/games.yml).
+
 - **Logos location**. Each landscape item *must* provide a valid relative reference to a logo image in SVG format in the landscape data file (item's `logo` field). The logos data source defines the location of those logos (base *url* or *local path*), so that the tool can get them as needed when processing the landscape items.
 
 ### Data collection from external services
@@ -224,6 +226,7 @@ The overlay can be enabled by providing any of the following query parameters to
 - `overlay-data`: *data file url*
 - `overlay-settings`: *settings file url*
 - `overlay-guide`: *guide file url*
+- `overlay-games`: *games data file url*
 - `overlay-logos`: *logos base url*
 
 > [!WARNING]
