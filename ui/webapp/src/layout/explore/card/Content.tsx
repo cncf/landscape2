@@ -155,7 +155,11 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title, subtitle)}>
                                     <div>
                                       <A
-                                        href={`${GUIDE_PATH}#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`}
+                                        href={`${GUIDE_PATH}#${getNormalizedName({
+                                          title: title,
+                                          subtitle: subtitle,
+                                          grouped: true,
+                                        })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
                                       >

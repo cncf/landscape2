@@ -241,7 +241,9 @@ const Searchbar = (props: Props) => {
       <Show when={visibleDropdown() && !isNull(itemsList())}>
         <div
           ref={setDropdownRef}
-          class={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto visibleScroll ${styles.dropdown} ${styles[`listLength-${itemsList()!.length}`]}`}
+          class={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto visibleScroll ${
+            styles.dropdown
+          } ${styles[`listLength-${itemsList()!.length}`]}`}
           role="listbox"
           id="search-list"
         >

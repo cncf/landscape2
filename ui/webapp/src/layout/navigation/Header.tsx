@@ -3,7 +3,15 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createMemo, Show } from 'solid-js';
 
-import { ALL_OPTION, DEFAULT_VIEW_MODE, EXPLORE_PATH, GUIDE_PATH, SCREENSHOTS_PATH, STATS_PATH } from '../../data';
+import {
+  ALL_OPTION,
+  DEFAULT_VIEW_MODE,
+  EXPLORE_PATH,
+  GAMES_PATH,
+  GUIDE_PATH,
+  SCREENSHOTS_PATH,
+  STATS_PATH,
+} from '../../data';
 import { SVGIconKind } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
@@ -135,6 +143,19 @@ const Header = (props: Props) => {
             <div class={`d-flex align-items-center ${styles.icons}`}>
               <EmbedModal />
               <DownloadDropdown />
+              <Show when={!isUndefined(window.baseDS.games_available)}>
+                <button
+                  class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
+                  onClick={() => {
+                    navigate(prepareLink(GAMES_PATH), {
+                      state: { from: 'header' },
+                    });
+                    scrollToTop(false);
+                  }}
+                >
+                  <SVGIcon kind={SVGIconKind.Games} class={`position-relative ${styles.linkIcon}`} />
+                </button>
+              </Show>
               <Show
                 when={
                   !isUndefined(window.baseDS.header) &&
@@ -146,7 +167,7 @@ const Header = (props: Props) => {
                   class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
                   href={window.baseDS.header!.links!.github!}
                 >
-                  <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
+                  <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.linkIcon}`} />
                 </ExternalLink>
               </Show>
             </div>

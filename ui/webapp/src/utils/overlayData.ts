@@ -103,7 +103,9 @@ export class OverlayData {
           await obj.default();
 
           const input: OverlayInput = {
-            landscape_url: `${import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin}${BASE_PATH}`,
+            landscape_url: `${
+              import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
+            }${BASE_PATH}`,
           };
 
           if (!isEmpty(this.params)) {

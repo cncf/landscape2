@@ -8,14 +8,18 @@ import { SVGIconKind } from '../../types';
 import isWasmSupported from '../../utils/isWasmSupported';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import Image from '../common/Image';
+import Loading from '../common/Loading';
+import NoData from '../common/NoData';
 import SVGIcon from '../common/SVGIcon';
 import styles from './Content.module.css';
 import Title from './Title';
 
 const Content = () => {
+  const [loaded, setLoaded] = createSignal<boolean>(false);
   const [activeQuiz, setActiveQuiz] = createSignal<Quiz | null>(null);
   const [quizState, setQuizState] = createSignal<State | undefined>();
   const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(null);
+  const [error, setError] = createSignal<string | undefined>();
 
   const startGame = async (initiated?: boolean) => {
     const options = new QuizOptions(import.meta.env.MODE === 'development' ? 'http://localhost:8000' : location.origin);
@@ -32,9 +36,12 @@ const Content = () => {
 
   const importGames = async () => {
     if (!isWasmSupported()) {
+      setError("This game requires WebAssembly, but your browser doesn't seem to support it");
+      setLoaded(true);
       return Promise.reject('WebAssembly is not supported in this browser');
     } else {
       await init();
+      setLoaded(true);
       startGame();
     }
   };
@@ -62,10 +69,10 @@ const Content = () => {
                   {quizState()!.current_question.index + 1} / {activeQuiz()!.questions().length}
                 </div>
                 <div class="d-flex flex-row align-items-center ms-4 ms-xl-5">
-                  <div class={`${styles.dot} ${styles.dotCorrect}`} />
+                  <div class={`border border-2 border-light ${styles.dot} ${styles.dotCorrect}`} />
                   <div class={`ms-2 fw-semibold ${styles.score}`}>{quizState()!.score.correct}</div>
 
-                  <div class={`ms-3 ms-xl-4 ${styles.dot} ${styles.dotWrong}`} />
+                  <div class={`ms-3 ms-xl-4 border border-2 border-light  ${styles.dot} ${styles.dotWrong}`} />
                   <div class={`ms-2 fw-semibold ${styles.score}`}>{quizState()!.score.wrong}</div>
                 </div>
               </div>
@@ -85,6 +92,14 @@ const Content = () => {
             </Show>
           </div>
         </div>
+        <Show when={!loaded()}>
+          <Loading />
+        </Show>
+        <Show when={!isUndefined(error())}>
+          <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center h-100 w-100">
+            <NoData class="bg-light fs-5">{error()}</NoData>
+          </div>
+        </Show>
         <Show when={!isNull(activeQuiz()) && isUndefined(quizState())}>
           <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center h-100 w-100">
             {/* Init Quiz state */}
@@ -96,7 +111,7 @@ const Content = () => {
             </button>
           </div>
         </Show>
-        <Show when={!isUndefined(quizState())}>
+        <Show when={!isUndefined(quizState()) && !isNull(quizState())}>
           <div class="d-flex flex-column h-100">
             <div class={`flex-grow-1 d-flex flex-column mx-auto py-4 ${styles.quizContent}`}>
               <div
