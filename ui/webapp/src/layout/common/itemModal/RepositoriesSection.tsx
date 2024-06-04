@@ -72,10 +72,14 @@ const RepositoryInfo = (props: RepoProps) => {
               <div class="d-none d-md-flex">
                 <ExternalLink
                   class={`d-flex ${styles.goodFirstBadge}`}
-                  href={`https://github.com/${formatRepoUrl(props.repository.url)}/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"`}
+                  href={`https://github.com/${formatRepoUrl(
+                    props.repository.url
+                  )}/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"`}
                 >
                   <img
-                    src={`https://img.shields.io/github/issues/${formatRepoUrl(props.repository.url)}/good%20first%20issue.svg?style=flat-square&label=good%20first%20issues&labelColor=e9ecef&color=6c757d`}
+                    src={`https://img.shields.io/github/issues/${formatRepoUrl(
+                      props.repository.url
+                    )}/good%20first%20issue.svg?style=flat-square&label=good%20first%20issues&labelColor=e9ecef&color=6c757d`}
                   />
                 </ExternalLink>
               </div>

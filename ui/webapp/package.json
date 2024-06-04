@@ -8,6 +8,7 @@
     "dev": "vite --host",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:diff": "prettier --list-different \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "prettier:fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "lint": "eslint src --max-warnings 0",
     "lint:fix": "eslint src --max-warnings 0 --fix",
     "preview": "vite preview"

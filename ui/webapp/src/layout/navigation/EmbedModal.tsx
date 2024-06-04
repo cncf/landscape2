@@ -133,18 +133,24 @@ const EmbedModal = () => {
   const getIFrameUrl = () => {
     let url = `${
       import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
-    }${BASE_PATH}/embed/embed.html?${KEY_PARAM}=${key() || categoriesList()[0].normalized_name}&${DISPLAY_HEADER_PARAM}=${
-      displayHeader() ? 'true' : 'false'
-    }&${DISPLAY_HEADER_CATEGORY_PARAM}=${
+    }${BASE_PATH}/embed/embed.html?${KEY_PARAM}=${
+      key() || categoriesList()[0].normalized_name
+    }&${DISPLAY_HEADER_PARAM}=${displayHeader() ? 'true' : 'false'}&${DISPLAY_HEADER_CATEGORY_PARAM}=${
       displayCategoryTitle() ? 'true' : 'false'
     }&${DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM}=${
       displayCategoryInSubcategory() ? 'true' : 'false'
     }&${UPPERCASE_TITLE_PARAM}=${
       uppercaseTitle() ? 'true' : 'false'
-    }&${TITLE_ALIGNMENT_PARAM}=${titleAlignment()}&${TITLE_FONT_FAMILY_PARAM}=${titleFontFamily()}&${TITLE_SIZE_PARAM}=${titleSize()}&${ITEMS_STYLE_PARAM}=${selectedStyle()}&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(bgColor())}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${!isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''}`;
+    }&${TITLE_ALIGNMENT_PARAM}=${titleAlignment()}&${TITLE_FONT_FAMILY_PARAM}=${titleFontFamily()}&${TITLE_SIZE_PARAM}=${titleSize()}&${ITEMS_STYLE_PARAM}=${selectedStyle()}&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(
+      bgColor()
+    )}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${
+      !isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''
+    }`;
 
     if (selectedStyle() !== Style.Card) {
-      url = `${url}&${DISPLAY_ITEM_NAME_PARAM}=${displayItemName() ? 'true' : 'false'}&${ITEMS_SIZE_PARAM}=${selectedSize()}&${ITEMS_ALIGNMENT_PARAM}=${itemsAlignment()}${
+      url = `${url}&${DISPLAY_ITEM_NAME_PARAM}=${
+        displayItemName() ? 'true' : 'false'
+      }&${ITEMS_SIZE_PARAM}=${selectedSize()}&${ITEMS_ALIGNMENT_PARAM}=${itemsAlignment()}${
         displayItemName() ? `&${ITEM_NAME_SIZE_PARAM}=${itemNameSize()}` : ''
       }${
         itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())

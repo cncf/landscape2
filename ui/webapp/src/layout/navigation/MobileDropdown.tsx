@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
-import { EXPLORE_PATH, GUIDE_PATH, STATS_PATH } from '../../data';
+import { EXPLORE_PATH, GAMES_PATH, GUIDE_PATH, STATS_PATH } from '../../data';
 import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { SVGIconKind } from '../../types';
 import ExternalLink from '../common/ExternalLink';
@@ -74,6 +74,18 @@ const MobileDropdown = (props: Props) => {
               onClick={closeDropdown}
             >
               Stats
+            </A>
+          </div>
+        </Show>
+        <Show when={!isUndefined(window.baseDS.games_available)}>
+          <div class="dropdown-item mb-2">
+            <A
+              class={`btn btn-link position-relative text-uppercase w-100 text-start fw-semibold text-decoration-none p-0 ${styles.link}`}
+              activeClass="activeLink"
+              href={GAMES_PATH}
+              onClick={closeDropdown}
+            >
+              Games
             </A>
           </div>
         </Show>
