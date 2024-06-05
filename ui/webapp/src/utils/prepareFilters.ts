@@ -61,6 +61,10 @@ const prepareFilters = (items: Item[], group: string): FilterSection[] => {
       extraTypes.push('specification');
     }
 
+    if (i.enduser) {
+      extraTypes.push('enduser');
+    }
+
     if (i.category && checkIfCategoryInGroup(i.category, group)) {
       categories.push(i.category);
     }
@@ -193,15 +197,23 @@ const prepareFilters = (items: Item[], group: string): FilterSection[] => {
     }
 
     if (extraTypes.length > 0) {
+      const options = [];
+      if (extraTypes.includes('enduser')) {
+        options.push({
+          value: 'enduser',
+          name: 'End user',
+        });
+      }
+      if (extraTypes.includes('specification')) {
+        options.push({
+          value: 'specification',
+          name: 'Specification',
+        });
+      }
       filters.push({
         value: FilterCategory.Extra,
         title: 'Extra',
-        options: [
-          {
-            value: 'specification',
-            name: 'Specification',
-          },
-        ],
+        options: options,
       });
     }
   }

@@ -63,7 +63,7 @@ interface Props {
 const TITLE_GAP = 40;
 const CONTROLS_WIDTH = 102 + 49 + 160 + 101 + 24 + 32; // Filters + Group legend + View Mode + Zoom + Right margin + Loading
 const CONTROLS_CARD_WIDTH = CONTROLS_WIDTH + 0 + 435 - 101; // + Classify/Sort - Zoom
-const EXTRA_FILTERS = ['specification'];
+const EXTRA_FILTERS = ['specification', 'enduser'];
 const DELAY_ACTIONS = 40;
 
 const Explore = (props: Props) => {
