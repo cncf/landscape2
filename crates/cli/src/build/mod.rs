@@ -181,6 +181,7 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.add_github_data(&github_data);
     landscape_data.add_member_subcategory(&settings.members_category);
     landscape_data.add_tags(&settings);
+    landscape_data.set_enduser_flag(&settings);
 
     // Collect CLOMonitor reports summaries and copy them to the output directory
     collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;

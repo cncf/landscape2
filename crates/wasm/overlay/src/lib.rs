@@ -108,6 +108,7 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
     landscape_data.add_github_data(&github_data);
     landscape_data.add_member_subcategory(&settings.members_category);
     landscape_data.add_tags(&settings);
+    landscape_data.set_enduser_flag(&settings);
     set_clomonitor_report_summary(&mut landscape_data, &deployed_items);
     set_logos_url(&mut landscape_data, input.logos_url, &deployed_items);
 
