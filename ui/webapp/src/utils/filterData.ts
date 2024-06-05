@@ -14,6 +14,10 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
         ) {
           return false;
         }
+
+        if (activeFilters[FilterCategory.Extra].includes('enduser') && (isUndefined(item.enduser) || !item.enduser)) {
+          return false;
+        }
       }
 
       // Filter Category

@@ -75,10 +75,6 @@ const Logos = () => {
                 list = itemsDataGetter.getItemsByEndUser() || [];
                 break;
 
-              case 'allenduser':
-                list = itemsDataGetter.getAllEndUserItems() || [];
-                break;
-
               default:
                 break;
             }

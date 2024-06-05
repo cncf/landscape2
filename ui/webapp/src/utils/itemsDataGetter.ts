@@ -584,16 +584,6 @@ export class ItemsDataGetter {
     }
   }
 
-  // Get all end users
-  public getAllEndUserItems(): Item[] | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.filter(
-        (i: Item) =>
-          (i.enduser && window.baseDS.members_category === i.category) || i.subcategory === 'End User Supporter'
-      );
-    }
-  }
-
   // Get maturity options
   public getMaturityOptions(): string[] {
     const maturity = window.baseDS.items.map((i: Item) => i.maturity);
@@ -703,10 +693,6 @@ export class ItemsDataGetter {
           {
             value: 'enduser',
             name: 'End user members',
-          },
-          {
-            value: 'allenduser',
-            name: 'All end users',
           },
         ],
       });

@@ -163,6 +163,10 @@ export const COMMON_FILTERS: FilterSection[] = [
         value: 'specification',
         name: 'Specification',
       },
+      {
+        value: 'enduser',
+        name: 'End user',
+      },
     ],
   },
 ];
