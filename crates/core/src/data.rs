@@ -282,6 +282,41 @@ impl LandscapeData {
             }
         }
     }
+
+    /// Set items `enduser` flag based on the settings provided.
+    #[instrument(skip_all)]
+    pub fn set_enduser_flag(&mut self, settings: &LandscapeSettings) {
+        let Some(enduser) = &settings.enduser else {
+            return;
+        };
+
+        // Iterate over items and set enduser flag when applicable
+        for item in &mut self.items {
+            // `enduser` values set at the item level have precedence
+            if item.enduser.is_some() {
+                continue;
+            }
+
+            // Set `enduser` flag when the category/subcategory matches
+            for rule in enduser {
+                // Consider an empty list of subcategories as None
+                let subcategories = rule.subcategories.as_ref().and_then(|s| {
+                    if s.is_empty() {
+                        return None;
+                    }
+                    Some(s)
+                });
+
+                if let Some(subcategories) = &subcategories {
+                    if item.category == rule.category && subcategories.contains(&item.subcategory) {
+                        item.enduser = Some(true);
+                    }
+                } else if item.category == rule.category {
+                    item.enduser = Some(true);
+                }
+            }
+        }
+    }
 }
 
 impl From<legacy::LandscapeData> for LandscapeData {
@@ -902,7 +937,7 @@ pub struct RepositoryGithubData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::settings::{FeaturedItemRule, FeaturedItemRuleOption, TagRule};
+    use crate::settings::{EndUserRule, FeaturedItemRule, FeaturedItemRuleOption, TagRule};
 
     const DATA_FILE: &str = "data.yml";
     const TESTS_DATA_FILE: &str = "src/testdata/data.yml";
@@ -1227,6 +1262,74 @@ mod tests {
 
         landscape_data.add_tags(&settings);
         assert_eq!(landscape_data.items[0].tag, Some("tag2".to_string()));
+    }
+
+    #[test]
+    fn landscape_data_set_enduser_flag_category_match() {
+        let mut landscape_data = LandscapeData::default();
+        landscape_data.items.push(Item {
+            category: "Category".to_string(),
+            maturity: Some("graduated".to_string()),
+            ..Default::default()
+        });
+
+        let enduser = Some(vec![EndUserRule {
+            category: "Category".to_string(),
+            subcategories: Some(vec![]),
+        }]);
+        let settings = LandscapeSettings {
+            enduser,
+            ..Default::default()
+        };
+
+        landscape_data.set_enduser_flag(&settings);
+        assert_eq!(landscape_data.items[0].enduser, Some(true));
+    }
+
+    #[test]
+    fn landscape_data_set_enduser_flag_subcategory_match() {
+        let mut landscape_data = LandscapeData::default();
+        landscape_data.items.push(Item {
+            category: "Category".to_string(),
+            subcategory: "Subcategory".to_string(),
+            maturity: Some("graduated".to_string()),
+            ..Default::default()
+        });
+
+        let enduser = Some(vec![EndUserRule {
+            category: "Category".to_string(),
+            subcategories: Some(vec!["Subcategory".to_string()]),
+        }]);
+        let settings = LandscapeSettings {
+            enduser,
+            ..Default::default()
+        };
+
+        landscape_data.set_enduser_flag(&settings);
+        assert_eq!(landscape_data.items[0].enduser, Some(true));
+    }
+
+    #[test]
+    fn landscape_data_set_enduser_flag_already_set() {
+        let mut landscape_data = LandscapeData::default();
+        landscape_data.items.push(Item {
+            category: "Category".to_string(),
+            maturity: Some("graduated".to_string()),
+            enduser: Some(false),
+            ..Default::default()
+        });
+
+        let enduser = Some(vec![EndUserRule {
+            category: "Category".to_string(),
+            subcategories: Some(vec![]),
+        }]);
+        let settings = LandscapeSettings {
+            enduser,
+            ..Default::default()
+        };
+
+        landscape_data.set_enduser_flag(&settings);
+        assert_eq!(landscape_data.items[0].enduser, Some(false));
     }
 
     #[test]

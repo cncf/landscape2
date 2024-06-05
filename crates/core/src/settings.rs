@@ -66,6 +66,9 @@ pub struct LandscapeSettings {
     pub colors: Option<Colors>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub enduser: Option<Vec<EndUserRule>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub featured_items: Option<Vec<FeaturedItemRule>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -514,6 +517,16 @@ pub struct Colors {
     pub color5: String,
     pub color6: String,
     pub color7: String,
+}
+
+/// Rule to automatically set the `enduser` flag on the items that belong to
+/// the category (and optionally subcategories) defined.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct EndUserRule {
+    pub category: CategoryName,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subcategories: Option<Vec<SubcategoryName>>,
 }
 
 /// Featured item rule information. A featured item is specially highlighted in
