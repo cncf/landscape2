@@ -1,0 +1,1 @@
+export { cutString } from './cutString';

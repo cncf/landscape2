@@ -5,12 +5,12 @@ import { BaseItem, Item } from '../../../types';
 import getItemDescription from '../../../utils/getItemDescription';
 import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
-import Image from '../../common/Image';
 import Loading from '../../common/Loading';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
 import Card from '../card/Card';
 import styles from './GridItem.module.css';
+import { Image } from 'common';
 
 interface Props {
   item: BaseItem | Item;

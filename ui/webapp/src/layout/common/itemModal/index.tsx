@@ -2,7 +2,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, Show } from 'solid-js';
 
-import { ITEM_VIEW, SMALL_DEVICES_BREAKPOINTS } from '../../../data';
+import { BASE_PATH, FOUNDATION, ITEM_VIEW, SMALL_DEVICES_BREAKPOINTS } from '../../../data';
 import useBreakpointDetect from '../../../hooks/useBreakpointDetect';
 import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
@@ -10,10 +10,8 @@ import { useActiveItemId, useUpdateActiveItemId } from '../../stores/activeItem'
 import { useFullDataReady } from '../../stores/fullData';
 import { useEventVisibleContent } from '../../stores/upcomingEventData';
 import Loading from '../Loading';
-import Modal from '../Modal';
-import Content from './Content';
 import styles from './ItemModal.module.css';
-import MobileContent from './MobileContent';
+import { ItemModalContent, ItemModalMobileContent, Modal } from 'common';
 
 const ItemModal = () => {
   const fullDataReady = useFullDataReady();
@@ -21,12 +19,20 @@ const ItemModal = () => {
   const updateActiveItemId = useUpdateActiveItemId();
   const visibleEventContent = useEventVisibleContent();
   const [itemInfo, setItemInfo] = createSignal<Item | null | undefined>(undefined);
+  const [parentInfo, setParentInfo] = createSignal<Item>();
   const { point } = useBreakpointDetect();
 
   createEffect(() => {
     async function fetchItemInfo() {
       try {
         const itemTmp = await itemsDataGetter.getItemById(visibleItemId()! as string);
+        if (!isUndefined(itemTmp) && !isUndefined(itemTmp!.parent_project)) {
+          const parentItem = await itemsDataGetter.getItemByName(itemTmp.parent_project);
+          if (!isUndefined(parentItem)) {
+            setParentInfo(parentItem);
+          }
+        }
+        console.log('tmp', itemTmp);
         setItemInfo(itemTmp);
       } catch {
         setItemInfo(null);
@@ -60,9 +66,22 @@ const ItemModal = () => {
         >
           <Show
             when={isUndefined(point()) || !SMALL_DEVICES_BREAKPOINTS.includes(point()!)}
-            fallback={<MobileContent item={itemInfo()} />}
+            fallback={
+              <ItemModalMobileContent
+                item={itemInfo()}
+                foundation={FOUNDATION}
+                parentInfo={parentInfo()}
+                onClose={() => updateActiveItemId()}
+              />
+            }
           >
-            <Content item={itemInfo()} />
+            <ItemModalContent
+              item={itemInfo()}
+              foundation={FOUNDATION}
+              basePath={BASE_PATH}
+              parentInfo={parentInfo()}
+              onClose={() => updateActiveItemId()}
+            />
           </Show>
         </Show>
       </Modal>

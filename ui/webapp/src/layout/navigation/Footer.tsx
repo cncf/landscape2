@@ -3,10 +3,10 @@ import isUndefined from 'lodash/isUndefined';
 import { JSXElement, Show } from 'solid-js';
 
 import { SVGIconKind } from '../../types';
-import ExternalLink from '../common/ExternalLink';
 import Image from '../common/Image';
 import SVGIcon from '../common/SVGIcon';
 import styles from './Footer.module.css';
+import { ExternalLink } from 'common';
 
 const Footer = () => {
   const foundationLink = () =>

@@ -14,6 +14,7 @@ interface Props {
   itemNameSize: number;
   withShadow?: boolean;
   class?: string;
+  onClick?: () => void;
 }
 
 interface ItemProps {
@@ -100,18 +101,36 @@ const GridItem = (props: Props) => {
       withShadow={typeof props.withShadow !== 'undefined' && props.withShadow}
       size={props.size}
     >
-      <ExternalLink
-        href={`${getUrl()}?item=${props.item.id}`}
-        paddingBottom={props.withName ? props.itemNameSize + 8 : 0}
-        class={LinkClass}
+      <Show
+        when={props.onClick !== undefined}
+        fallback={
+          <ExternalLink
+            href={`${getUrl()}?item=${props.item.id}`}
+            paddingBottom={props.withName ? props.itemNameSize + 8 : 0}
+            class={LinkClass}
+          >
+            <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+            <Show when={props.withName}>
+              <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
+                {props.item.name}
+              </ItemName>
+            </Show>
+          </ExternalLink>
+        }
       >
-        <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
-        <Show when={props.withName}>
-          <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
-            {props.item.name}
-          </ItemName>
-        </Show>
-      </ExternalLink>
+        <button
+          onClick={props.onClick}
+          style={{ 'padding-bottom': `${props.withName ? props.itemNameSize + 8 : 0}px` }}
+          class={LinkClass}
+        >
+          <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+          <Show when={props.withName}>
+            <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
+              {props.item.name}
+            </ItemName>
+          </Show>
+        </button>
+      </Show>
     </Item>
   );
 };

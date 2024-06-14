@@ -10,7 +10,7 @@ import searchEngine from '../../utils/search';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
-import Image from './Image';
+import { Image } from 'common';
 import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
 import SVGIcon from './SVGIcon';
