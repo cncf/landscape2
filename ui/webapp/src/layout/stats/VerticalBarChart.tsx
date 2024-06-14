@@ -1,8 +1,8 @@
+import { prettifyNumber } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
 
-import prettifyNumber from '../../utils/prettifyNumber';
 import styles from './VerticalBarChart.module.css';
 
 interface Props {

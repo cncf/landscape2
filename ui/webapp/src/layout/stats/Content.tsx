@@ -1,13 +1,12 @@
 import { useLocation } from '@solidjs/router';
+import { prettifyNumber, sortObjectByValue } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 
 import { StateContent, Stats } from '../../types';
 import prettifyBytes from '../../utils/prettifyBytes';
-import prettifyNumber from '../../utils/prettifyNumber';
 import scrollToTop from '../../utils/scrollToTop';
-import sortObjectByValue from '../../utils/sortObjectByValue';
 import Box from './Box';
 import ChartsGroup from './ChartsGroup';
 import CollapsableTable from './CollapsableTable';

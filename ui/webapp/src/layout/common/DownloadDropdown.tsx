@@ -1,11 +1,9 @@
+import { SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
-import { SVGIconKind } from '../../types';
 import styles from './DownloadDropdown.module.css';
-import SVGIcon from './SVGIcon';
 
 enum DocType {
   Items = 'items',

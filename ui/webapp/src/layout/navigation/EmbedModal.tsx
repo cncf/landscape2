@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import { capitalizeFirstLetter, CodeBlock, Modal, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import { batch, createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
@@ -8,6 +9,7 @@ import {
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
+  DEFAULT_DISPLAY_ITEM_MODAL,
   DEFAULT_DISPLAY_ITEM_NAME,
   DEFAULT_ITEM_NAME_SIZE,
   DEFAULT_ITEMS_ALIGNMENT,
@@ -23,6 +25,7 @@ import {
   DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
   DISPLAY_HEADER_CATEGORY_PARAM,
   DISPLAY_HEADER_PARAM,
+  DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
   ITEM_NAME_SIZE_PARAM,
@@ -41,17 +44,12 @@ import {
   UPPERCASE_TITLE_PARAM,
 } from '../../../../embed/src/types';
 import { BASE_PATH, EMBED_SETUP_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { Category, Subcategory, SVGIconKind } from '../../types';
-import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
+import { Category, Subcategory } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
-import CodeBlock from '../common/CodeBlock';
-import Modal from '../common/Modal';
-import SVGIcon from '../common/SVGIcon';
 import styles from './EmbedModal.module.css';
 
 enum InputType {
@@ -70,6 +68,7 @@ enum InputType {
   TitleFgColor = TITLE_FGCOLOR_PARAM,
   DisplayItemName = DISPLAY_ITEM_NAME_PARAM,
   ItemNameSize = ITEM_NAME_SIZE_PARAM,
+  DisplayItemModal = DISPLAY_ITEM_MODAL_PARAM,
 }
 
 const SIZES_LEGENDS = {
@@ -126,40 +125,50 @@ const EmbedModal = () => {
   const [itemsSpacingType, setItemsSpacingType] = createSignal<SpacingType>(SpacingType.Default);
   const [displayItemName, setDisplayItemName] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_NAME);
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
+  const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
   const [url, setUrl] = createSignal<string>();
   const [prevHash, setPrevHash] = createSignal<string>('');
   const [prevSearch, setPrevSearch] = createSignal<string>('');
+  const [embedScriptLoaded, setEmbedScriptLoaded] = createSignal<boolean>(false);
+  const embedOrigin = () =>
+    `${import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin}${BASE_PATH}/embed`;
 
   const getIFrameUrl = () => {
-    let url = `${
-      import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
-    }${BASE_PATH}/embed/embed.html?${KEY_PARAM}=${
-      key() || categoriesList()[0].normalized_name
-    }&${DISPLAY_HEADER_PARAM}=${displayHeader() ? 'true' : 'false'}&${DISPLAY_HEADER_CATEGORY_PARAM}=${
-      displayCategoryTitle() ? 'true' : 'false'
-    }&${DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM}=${
-      displayCategoryInSubcategory() ? 'true' : 'false'
-    }&${UPPERCASE_TITLE_PARAM}=${
-      uppercaseTitle() ? 'true' : 'false'
-    }&${TITLE_ALIGNMENT_PARAM}=${titleAlignment()}&${TITLE_FONT_FAMILY_PARAM}=${titleFontFamily()}&${TITLE_SIZE_PARAM}=${titleSize()}&${ITEMS_STYLE_PARAM}=${selectedStyle()}&${TITLE_BGCOLOR_PARAM}=${encodeURIComponent(
-      bgColor()
-    )}&${TITLE_FGCOLOR_PARAM}=${encodeURIComponent(fgColor())}${
-      !isUndefined(window.baseDS.base_path) ? `&base-path=${encodeURIComponent(window.baseDS.base_path)}` : ''
-    }`;
+    const embedUrl = new URL(`${embedOrigin()}/embed.html`);
+    const embedParams = new URLSearchParams();
+    embedParams.append(KEY_PARAM, key() || categoriesList()[0].normalized_name);
+    embedParams.append(DISPLAY_HEADER_PARAM, displayHeader() ? 'true' : 'false');
+    embedParams.append(DISPLAY_HEADER_CATEGORY_PARAM, displayCategoryTitle() ? 'true' : 'false');
+    embedParams.append(DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM, displayCategoryInSubcategory() ? 'true' : 'false');
+    embedParams.append(UPPERCASE_TITLE_PARAM, uppercaseTitle() ? 'true' : 'false');
+    embedParams.append(TITLE_ALIGNMENT_PARAM, titleAlignment());
+    embedParams.append(TITLE_FONT_FAMILY_PARAM, titleFontFamily());
+    embedParams.append(TITLE_SIZE_PARAM, titleSize().toString());
+    embedParams.append(ITEMS_STYLE_PARAM, selectedStyle());
+    embedParams.append(TITLE_BGCOLOR_PARAM, bgColor());
+    embedParams.append(TITLE_FGCOLOR_PARAM, fgColor());
+    embedParams.append(DISPLAY_ITEM_MODAL_PARAM, displayItemModal() ? 'true' : 'false');
 
     if (selectedStyle() !== Style.Card) {
-      url = `${url}&${DISPLAY_ITEM_NAME_PARAM}=${
-        displayItemName() ? 'true' : 'false'
-      }&${ITEMS_SIZE_PARAM}=${selectedSize()}&${ITEMS_ALIGNMENT_PARAM}=${itemsAlignment()}${
-        displayItemName() ? `&${ITEM_NAME_SIZE_PARAM}=${itemNameSize()}` : ''
-      }${
-        itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())
-          ? `&${ITEMS_SPACING_PARAM}=${itemsSpacing()}`
-          : ''
-      }`;
+      embedParams.append(DISPLAY_ITEM_NAME_PARAM, displayItemName() ? 'true' : 'false');
+      embedParams.append(ITEMS_SIZE_PARAM, selectedSize());
+      embedParams.append(ITEMS_ALIGNMENT_PARAM, itemsAlignment());
+      if (displayItemName()) {
+        embedParams.append(ITEM_NAME_SIZE_PARAM, itemNameSize().toString());
+      }
+      if (itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())) {
+        embedParams.append(ITEMS_SPACING_PARAM, itemsSpacing()!.toString());
+      }
     }
 
-    return url;
+    return `${embedUrl}?${embedParams.toString()}`;
+  };
+
+  const getExtraCode = () => {
+    if (displayItemModal()) {
+      return `\n<!-- Landscape embed item details view -->\n<!-- NOTE: the script and the iframe below should only be added once, even when adding multiple embed views to the page -->\n<script src="${embedOrigin()}/embed-item.js"></script>\n<iframe id="embed-item" src="${embedOrigin()}/embed-item.html" style="width:100%;height:100%;display:block;border:none;position:fixed;top:0;bottom:0;left:0;right:0;z-index:999999999;display:none;"></iframe>`;
+    }
+    return '';
   };
 
   const onUpdateSpacingType = (type: SpacingType) => {
@@ -218,6 +227,9 @@ const EmbedModal = () => {
       case InputType.TitleFgColor:
         setFgColor(value);
         break;
+      case InputType.DisplayItemModal:
+        setDisplayItemModal(checked!);
+        break;
       default:
         break;
     }
@@ -267,6 +279,7 @@ const EmbedModal = () => {
       setItemsSpacing(undefined);
       setBgColor(BG_COLOR);
       setFgColor(DEFAULT_TITLE_FG_COLOR);
+      setDisplayItemModal(DEFAULT_DISPLAY_ITEM_MODAL);
     });
   };
 
@@ -292,6 +305,16 @@ const EmbedModal = () => {
         setPrevSearch(location.search);
         setPrevHash(location.hash);
         setUrl(getIFrameUrl());
+      }
+    })
+  );
+
+  createEffect(
+    on(displayItemModal, () => {
+      if (displayItemModal()) {
+        import(`${embedOrigin()}/embed-item.js`).then(() => {
+          setEmbedScriptLoaded(true);
+        });
       }
     })
   );
@@ -546,6 +569,19 @@ const EmbedModal = () => {
                             }
                           />
                         </div>
+                        <div class="form-check">
+                          <CheckBox
+                            name={InputType.DisplayItemModal}
+                            value="true"
+                            class="ps-0 my-2"
+                            labelClass={`mw-100 text-muted ${styles.label}`}
+                            label="Open details modal on click"
+                            checked={displayItemModal()}
+                            onChange={(value: string, checked: boolean) =>
+                              onChange(InputType.DisplayItemModal, value, checked)
+                            }
+                          />
+                        </div>
                         <Show when={displayItemName()}>
                           <div class="d-flex flex-column mt-3">
                             <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
@@ -630,7 +666,7 @@ const EmbedModal = () => {
                           </label>
                           <div class="d-flex mt-1">
                             <For each={Object.values(SpacingType)}>
-                              {(t, index) => {
+                              {(t: string | number | string[], index: () => number) => {
                                 return (
                                   <div class="form-check form-check-inline">
                                     <input
@@ -679,23 +715,44 @@ const EmbedModal = () => {
                       <Show when={!isUndefined(url())}>
                         <div class="p-4 pt-2 flex-grow-1">
                           <iframe src={url()} class="d-block w-100 h-100 border-0 scroll-auto" />
+                          <Show when={displayItemModal() && embedScriptLoaded()}>
+                            <iframe
+                              id="embed-item"
+                              src={`${embedOrigin()}/embed-item.html`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'none',
+                                border: 'none',
+                                position: 'fixed',
+                                top: '0',
+                                bottom: '0',
+                                left: '0',
+                                right: '0',
+                                'z-index': '999999999',
+                              }}
+                            />
+                          </Show>
                         </div>
                       </Show>
                     </div>
                   </div>
                 </div>
               </div>
+
               <div class={`border-top p-4 ${styles.codeWrapper}`}>
                 <div class={`text-uppercase text-muted fw-semibold mb-2 ${styles.labelSelect}`}>Embed code</div>
                 <CodeBlock
                   language="html"
                   content={
                     !isUndefined(url())
-                      ? `<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;"></iframe>`
+                      ? `<!-- Landscape embed view -->\n<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;"></iframe>${getExtraCode()}`
                       : ''
                   }
+                  alignment="top"
+                  orientation="column"
                   codeClass={`bg-dark text-white ${styles.code}`}
-                  btnWrapperClass="ms-2"
+                  btnWrapperClass="mt-2 ms-auto"
                   withCopyBtn
                   visibleBtnText
                 />

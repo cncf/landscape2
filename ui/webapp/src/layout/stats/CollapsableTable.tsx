@@ -1,9 +1,9 @@
+import { SVGIcon, SVGIconKind } from 'common';
 import orderBy from 'lodash/orderBy';
 import { createSignal, For, onMount, Show } from 'solid-js';
 
-import { CategoryValueStats, SVGIconKind } from '../../types';
+import { CategoryValueStats } from '../../types';
 import sumValues from '../../utils/sumValues';
-import SVGIcon from '../common/SVGIcon';
 import styles from './CollapsableTable.module.css';
 
 interface Props {

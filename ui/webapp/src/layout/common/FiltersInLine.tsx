@@ -1,7 +1,7 @@
+import { useOutsideClick } from 'common';
 import { Accessor, createSignal, For } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
 import { ActiveFilters, FilterCategory, FilterSection } from '../../types';
 import styles from './FiltersInLine.module.css';
 import Section from './Section';

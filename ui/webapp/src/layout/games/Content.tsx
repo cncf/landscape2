@@ -1,16 +1,12 @@
+import { Image, Loading, NoData, SVGIcon, SVGIconKind } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, For, onMount, Show } from 'solid-js';
 
 import init, { Quiz, QuizOptions, State } from '../../../wasm/quiz/landscape2_quiz';
 import pattern from '../../media/pattern_quiz.png';
-import { SVGIconKind } from '../../types';
 import isWasmSupported from '../../utils/isWasmSupported';
 import itemsDataGetter from '../../utils/itemsDataGetter';
-import Image from '../common/Image';
-import Loading from '../common/Loading';
-import NoData from '../common/NoData';
-import SVGIcon from '../common/SVGIcon';
 import styles from './Content.module.css';
 import Title from './Title';
 

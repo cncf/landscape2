@@ -1,10 +1,9 @@
+import { useBodyScroll, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, JSXElement, onCleanup, onMount, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
 import { BANNER_ID } from '../../data';
-import { useBodyScroll } from '../../hooks/useBodyScroll';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './FullScreenModal.module.css';
 
 interface Props {

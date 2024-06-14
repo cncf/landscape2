@@ -1,4 +1,4 @@
-import './styles/default.scss';
+import './styles/bootstrap.scss';
 import './App.css';
 import './styles/cookies.css';
 

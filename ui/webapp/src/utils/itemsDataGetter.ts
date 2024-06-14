@@ -1,3 +1,4 @@
+import { capitalizeFirstLetter } from 'common';
 import compact from 'lodash/compact';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
@@ -27,7 +28,6 @@ import {
   SortOption,
   Subcategory,
 } from '../types';
-import capitalizeFirstLetter from './capitalizeFirstLetter';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
 import search from './search';

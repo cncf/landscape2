@@ -1,10 +1,11 @@
 import { A } from '@solidjs/router';
+import { SVGIcon, SVGIconKind } from 'common';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { GRID_SIZE, GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
-import { BaseItem, Item, SVGIconKind } from '../../../types';
+import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import getGridCategoryLayout, {
@@ -17,7 +18,6 @@ import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoryData } from '../../../utils/itemsDataGetter';
 import ItemIterator from '../../../utils/itemsIterator';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
-import SVGIcon from '../../common/SVGIcon';
 import { useGridWidth } from '../../stores/gridWidth';
 import { useSetVisibleZoom } from '../../stores/visibleZoomSection';
 import { useZoomLevel } from '../../stores/zoom';

@@ -1,11 +1,10 @@
+import { Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { FilterOption, Item, Option } from '../../types';
 import itemsDataGetter, { LogosOptionsGroup, LogosPreviewOptions } from '../../utils/itemsDataGetter';
-import Image from '../common/Image';
-import Loading from '../common/Loading';
 import Footer from '../navigation/Footer';
 import { useFullDataReady } from '../stores/fullData';
 import styles from './Logos.module.css';

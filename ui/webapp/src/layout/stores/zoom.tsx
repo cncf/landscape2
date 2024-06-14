@@ -1,8 +1,8 @@
+import { useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createEffect, createSignal, ParentComponent, useContext } from 'solid-js';
 
 import { DEFAULT_ZOOM_LEVELS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Breakpoint } from '../../types';
 
 function useZoomLevelProvider() {

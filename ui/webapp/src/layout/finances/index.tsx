@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import { ExternalLink, Loading, NoData, prettifyNumber, useBreakpointDetect } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isNull from 'lodash/isNull';
@@ -17,17 +18,12 @@ import {
   SORT_BY_PARAM,
   SORT_DIRECTION_PARAM,
 } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { AcquisitionData, ActiveFilters, FilterCategory, FinancesData, FinancesKind, FundingData } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareFinances from '../../utils/prepareFinances';
-import prettifyNumber from '../../utils/prettifyNumber';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
-import ExternalLink from '../common/ExternalLink';
 import FiltersInLine from '../common/FiltersInLine';
-import Loading from '../common/Loading';
-import NoData from '../common/NoData';
 import Pagination from '../common/Pagination';
 import Footer from '../navigation/Footer';
 import { useFinancesDataContent, useSetFinancesDataContent } from '../stores/financesData';

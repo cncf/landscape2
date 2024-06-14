@@ -1,18 +1,16 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import { Loading, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
 
 import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { CategoryGuide, Guide, StateContent, SubcategoryGuide, SVGIconKind, ToCTitle } from '../../types';
+import { CategoryGuide, Guide, StateContent, SubcategoryGuide, ToCTitle } from '../../types';
 import getNormalizedName from '../../utils/getNormalizedName';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
 import scrollToTop from '../../utils/scrollToTop';
 import ButtonToTopScroll from '../common/ButtonToTopScroll';
-import Loading from '../common/Loading';
 import { Sidebar } from '../common/Sidebar';
-import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
 import { useGuideFileContent, useGuideTOC, useSetGuideFileContent, useSetGuideTOC } from '../stores/guideFile';
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';

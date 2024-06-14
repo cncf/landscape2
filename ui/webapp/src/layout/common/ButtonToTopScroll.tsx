@@ -1,13 +1,11 @@
 import { createScrollPosition } from '@solid-primitives/scroll';
+import { SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on } from 'solid-js';
 
 import { SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { SVGIconKind } from '../../types';
 import scrollToTop from '../../utils/scrollToTop';
 import styles from './ButtonToTopScroll.module.css';
-import SVGIcon from './SVGIcon';
 
 const NAV_HEIGHT = 200;
 

@@ -8,7 +8,11 @@ export default defineConfig({
       input: {
         app: './embed.html',
       },
+      output: {
+        entryFileNames: 'assets/embed.[hash].js',
+        chunkFileNames: 'assets/embed.[hash].js',
+      },
     },
   },
-  plugins: [solid()]
+  plugins: [solid()],
 });

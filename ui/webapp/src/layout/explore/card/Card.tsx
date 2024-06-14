@@ -1,16 +1,20 @@
+import {
+  cutString,
+  ExternalLink,
+  formatTAGName,
+  FoundationBadge,
+  getItemDescription,
+  Image,
+  MaturityBadge,
+  prettifyNumber,
+  SVGIcon,
+  SVGIconKind,
+} from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
 
-import { Item, Repository, SVGIconKind } from '../../../types';
-import cutString from '../../../utils/cutString';
-import getItemDescription from '../../../utils/getItemDescription';
-import { formatTAGName } from '../../../utils/prepareFilters';
-import prettifyNumber from '../../../utils/prettifyNumber';
-import ExternalLink from '../../common/ExternalLink';
-import FoundationBadge from '../../common/FoundationBadge';
-import Image from '../../common/Image';
-import MaturityBadge from '../../common/MaturityBadge';
-import SVGIcon from '../../common/SVGIcon';
+import { FOUNDATION } from '../../../data';
+import { Item, Repository } from '../../../types';
 import styles from './Card.module.css';
 import CardTitle from './CardTitle';
 
@@ -78,7 +82,7 @@ const Card = (props: Props) => {
                 </Show>
               }
             >
-              <FoundationBadge class="me-2" />
+              <FoundationBadge foundation={FOUNDATION} class="me-2" />
               <MaturityBadge level={cutString(props.item.maturity!, 20)} class="me-2" />
             </Show>
 

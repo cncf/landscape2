@@ -15,6 +15,7 @@ export const ITEMS_SPACING_PARAM = 'items-spacing';
 export const TITLE_BGCOLOR_PARAM = 'bg-color';
 export const TITLE_FGCOLOR_PARAM = 'fg-color';
 export const BASE_PATH_PARAM = 'base-path';
+export const DISPLAY_ITEM_MODAL_PARAM = 'item-modal';
 
 export interface Data {
   foundation: string;
@@ -100,3 +101,4 @@ export const DEFAULT_ITEMS_ALIGNMENT = Alignment.Left;
 export const DEFAULT_ITEMS_SPACING = 15;
 export const DEFAULT_TITLE_BG_COLOR = '#323437';
 export const DEFAULT_TITLE_FG_COLOR = '#ffffff';
+export const DEFAULT_DISPLAY_ITEM_MODAL = false;

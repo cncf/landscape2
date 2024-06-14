@@ -9,8 +9,12 @@ fn main() -> Result<()> {
     // Tell Cargo to rerun this build script if the source changes
     println!("cargo:rerun-if-changed=../wasm/overlay");
     println!("cargo:rerun-if-changed=../wasm/quiz");
+    println!("cargo:rerun-if-changed=../../ui/common/src");
     println!("cargo:rerun-if-changed=../../ui/embed/src");
     println!("cargo:rerun-if-changed=../../ui/embed/embed.html");
+    println!("cargo:rerun-if-changed=../../ui/embed-item/public/embed-item.js");
+    println!("cargo:rerun-if-changed=../../ui/embed-item/src");
+    println!("cargo:rerun-if-changed=../../ui/embed-item/embed-item.html");
     println!("cargo:rerun-if-changed=../../ui/webapp/src");
     println!("cargo:rerun-if-changed=../../ui/webapp/static");
     println!("cargo:rerun-if-changed=../../ui/webapp/index.html");
@@ -65,9 +69,17 @@ fn main() -> Result<()> {
         ],
     )?;
 
+    // Build common
+    run("yarn", &["--cwd", "../../ui/common", "install"])?;
+    run("yarn", &["--cwd", "../../ui/common", "build"])?;
+
     // Build embed
     run("yarn", &["--cwd", "../../ui/embed", "install"])?;
     run("yarn", &["--cwd", "../../ui/embed", "build"])?;
+
+    // Build embed item
+    run("yarn", &["--cwd", "../../ui/embed-item", "install"])?;
+    run("yarn", &["--cwd", "../../ui/embed-item", "build"])?;
 
     // Build web application
     run("yarn", &["--cwd", "../../ui/webapp", "install"])?;
