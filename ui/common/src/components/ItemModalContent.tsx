@@ -17,14 +17,14 @@ import { Box } from './Box';
 import { CollapsableText } from './CollapsableText';
 import { ExternalLink } from './ExternalLink';
 import { FoundationBadge } from './FoundationBadge';
+import { FundingRoundsTable } from './FundingRoundsTable';
 import { Image } from './Image';
+import { ItemDropdown } from './ItemDropdown';
 import { MaturityBadge } from './MaturityBadge';
+import { MaturitySection } from './MaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
-import { ItemDropdown } from './ItemDropdown';
-import { MaturitySection } from './MaturitySection';
-import { FundingRoundsTable } from './FundingRoundsTable';
 
 interface Props {
   item?: Item | null;
@@ -218,7 +218,6 @@ export const ItemModalContent = (props: Props) => {
 
   createEffect(
     on(itemInfo, () => {
-      console.log('itemInfo ---> ', itemInfo());
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
         let primaryRepoTmp: Repository | undefined;
         setDescription(props.itemDescription);

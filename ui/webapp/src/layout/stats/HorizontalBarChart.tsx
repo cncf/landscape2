@@ -3,8 +3,8 @@ import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyBytes from '../../utils/prettifyBytes';
-import sortObjectByValue from '../../utils/sortObjectByValue';
 import styles from './HorizontalBarChart.module.css';
+import { sortObjectByValue } from 'common';
 
 interface Props {
   name: string;

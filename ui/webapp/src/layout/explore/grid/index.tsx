@@ -1,13 +1,13 @@
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
 import { CategoriesData, CategoryData } from '../../../utils/itemsDataGetter';
 import Grid from './Grid';
 import styles from './GridCategory.module.css';
+import { cutString } from 'common';
 
 interface Props {
   data: CategoriesData;

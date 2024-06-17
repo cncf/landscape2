@@ -3,9 +3,8 @@ import { Accessor, createEffect, createSignal, JSXElement, onCleanup, onMount, S
 import { Portal } from 'solid-js/web';
 
 import { BANNER_ID } from '../../data';
-import { useBodyScroll } from '../../hooks/useBodyScroll';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './FullScreenModal.module.css';
+import { useBodyScroll, useOutsideClick } from 'common';
 
 interface Props {
   children: JSXElement | JSXElement[];

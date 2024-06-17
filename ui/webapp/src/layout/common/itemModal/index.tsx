@@ -1,17 +1,15 @@
+import { ItemModalContent, ItemModalMobileContent, Loading, Modal, useBreakpointDetect } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, Show } from 'solid-js';
 
 import { BASE_PATH, FOUNDATION, ITEM_VIEW, SMALL_DEVICES_BREAKPOINTS } from '../../../data';
-import useBreakpointDetect from '../../../hooks/useBreakpointDetect';
 import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useActiveItemId, useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFullDataReady } from '../../stores/fullData';
 import { useEventVisibleContent } from '../../stores/upcomingEventData';
-import Loading from '../Loading';
 import styles from './ItemModal.module.css';
-import { ItemModalContent, ItemModalMobileContent, Modal } from 'common';
 
 const ItemModal = () => {
   const fullDataReady = useFullDataReady();
@@ -32,7 +30,6 @@ const ItemModal = () => {
             setParentInfo(parentItem);
           }
         }
-        console.log('tmp', itemTmp);
         setItemInfo(itemTmp);
       } catch {
         setItemInfo(null);

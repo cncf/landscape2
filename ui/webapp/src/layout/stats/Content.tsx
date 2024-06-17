@@ -5,9 +5,7 @@ import { createMemo, createSignal, For, onMount, Show } from 'solid-js';
 
 import { StateContent, Stats } from '../../types';
 import prettifyBytes from '../../utils/prettifyBytes';
-import prettifyNumber from '../../utils/prettifyNumber';
 import scrollToTop from '../../utils/scrollToTop';
-import sortObjectByValue from '../../utils/sortObjectByValue';
 import Box from './Box';
 import ChartsGroup from './ChartsGroup';
 import CollapsableTable from './CollapsableTable';
@@ -16,6 +14,7 @@ import HorizontalBarChart from './HorizontalBarChart';
 import styles from './Stats.module.css';
 import TimestampLineChart from './TimestampLineChart';
 import VerticalBarChart from './VerticalBarChart';
+import { prettifyNumber, sortObjectByValue } from 'common';
 
 const Content = () => {
   const location = useLocation();

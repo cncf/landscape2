@@ -1,12 +1,11 @@
 import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
-import useBreakpointDetect from '../../../hooks/useBreakpointDetect';
 import { BaseItem, Breakpoint, Item } from '../../../types';
-import Image from '../../common/Image';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { ItemsList } from '../grid/Grid';
 import styles from './MobileGrid.module.css';
+import { Image, useBreakpointDetect } from 'common';
 
 interface Props {
   items: (BaseItem | Item)[];

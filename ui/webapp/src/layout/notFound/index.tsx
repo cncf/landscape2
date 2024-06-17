@@ -1,10 +1,9 @@
 import { A } from '@solidjs/router';
 
 import { EXPLORE_PATH } from '../../data';
-import { SVGIconKind } from '../../types';
-import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
 import styles from './NotFound.module.css';
+import { SVGIcon, SVGIconKind } from 'common';
 
 const NotFound = () => {
   return (

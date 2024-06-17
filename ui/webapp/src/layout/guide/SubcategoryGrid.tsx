@@ -6,10 +6,10 @@ import { COLORS } from '../../data';
 import { BaseItem, Item } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
 import ItemIterator from '../../utils/itemsIterator';
-import Image from '../common/Image';
 import GridItem from '../explore/grid/GridItem';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import styles from './SubcategoryGrid.module.css';
+import { Image } from 'common';
 
 interface Props {
   items?: (BaseItem | Item)[];

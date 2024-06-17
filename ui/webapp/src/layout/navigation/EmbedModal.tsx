@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import { capitalizeFirstLetter, CodeBlock, Modal, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import { batch, createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
@@ -41,17 +42,12 @@ import {
   UPPERCASE_TITLE_PARAM,
 } from '../../../../embed/src/types';
 import { BASE_PATH, EMBED_SETUP_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
-import { Category, Subcategory, SVGIconKind } from '../../types';
-import capitalizeFirstLetter from '../../utils/capitalizeFirstLetter';
+import { Category, Subcategory } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
-import CodeBlock from '../common/CodeBlock';
-import Modal from '../common/Modal';
-import SVGIcon from '../common/SVGIcon';
 import styles from './EmbedModal.module.css';
 
 enum InputType {

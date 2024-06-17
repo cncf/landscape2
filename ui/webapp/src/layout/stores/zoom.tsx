@@ -2,8 +2,8 @@ import isUndefined from 'lodash/isUndefined';
 import { createContext, createEffect, createSignal, ParentComponent, useContext } from 'solid-js';
 
 import { DEFAULT_ZOOM_LEVELS } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import { Breakpoint } from '../../types';
+import { useBreakpointDetect } from 'common';
 
 function useZoomLevelProvider() {
   const [zoom, setZoom] = createSignal(DEFAULT_ZOOM_LEVELS[Breakpoint.XL]);

@@ -1,3 +1,5 @@
+import { createEffect, createSignal, on } from 'solid-js';
+
 import { SVGIconKind } from '../types/types';
 import { formatShieldsBadgeContent } from '../utils/formatShieldsBadgeContent';
 import { CodeBlock } from './CodeBlock';
@@ -18,11 +20,19 @@ export const BadgeModal = (props: Props) => {
   const foundation = () => props.foundation;
   const openStatus = () => props.openStatus;
   const origin = window.location.origin;
-  const badgeImage = `https://img.shields.io/badge/${formatShieldsBadgeContent(foundation())}%20Landscape-5699C6`;
+  const [badgeImage, setBadgeImage] = createSignal<string>(
+    `https://img.shields.io/badge/${formatShieldsBadgeContent(foundation())}%20Landscape-5699C6`
+  );
   const markdownLink = () =>
-    `[![${foundation()} Landscape](${badgeImage})](${origin}${props.basePath}/?item=${itemId()})`;
+    `[![${foundation()} Landscape](${badgeImage()})](${origin}${props.basePath}/?item=${itemId()})`;
   const asciiLink = () =>
-    `${origin}${props.basePath}/?item=${itemId()}[image:${badgeImage}[${foundation()} LANDSCAPE]]`;
+    `${origin}${props.basePath}/?item=${itemId()}[image:${badgeImage()}[${foundation()} LANDSCAPE]]`;
+
+  createEffect(
+    on(foundation, () => {
+      setBadgeImage(`https://img.shields.io/badge/${formatShieldsBadgeContent(foundation())}%20Landscape-5699C6`);
+    })
+  );
 
   return (
     <Modal
@@ -55,7 +65,7 @@ export const BadgeModal = (props: Props) => {
               content: (
                 <>
                   <div class="mt-2 mb-4">
-                    <img src={badgeImage} alt="Landscape badge" />
+                    <img src={badgeImage()} alt="Landscape badge" />
                   </div>
 
                   <CodeBlock
@@ -73,7 +83,7 @@ export const BadgeModal = (props: Props) => {
               content: (
                 <>
                   <div class="mt-2 mb-4">
-                    <img src={badgeImage} alt="Landscape badge" />
+                    <img src={badgeImage()} alt="Landscape badge" />
                   </div>
 
                   <CodeBlock

@@ -27,11 +27,11 @@ import {
   SortOption,
   Subcategory,
 } from '../types';
-import capitalizeFirstLetter from './capitalizeFirstLetter';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
 import search from './search';
 import sortMenuOptions from './sortMenuOptions';
+import { capitalizeFirstLetter } from 'common';
 
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;

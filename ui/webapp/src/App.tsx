@@ -1,5 +1,6 @@
 import { createWindowSize } from '@solid-primitives/resize-observer';
 import { Route, Router } from '@solidjs/router';
+import { Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
 import { batch, createEffect, createSignal, on, onMount, Show } from 'solid-js';
@@ -16,7 +17,6 @@ import {
   STATS_PATH,
 } from './data';
 import Layout from './layout';
-import Loading from './layout/common/Loading';
 import Explore from './layout/explore';
 import Finances from './layout/finances';
 import Games from './layout/games';

@@ -4,7 +4,6 @@ import { createEffect, createSignal, For, on, Show } from 'solid-js';
 import { DEFAULT_ZOOM_LEVELS, ZOOM_LEVELS } from '../../data';
 import { BaseItem, Breakpoint } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
-import cutString from '../../utils/cutString';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -15,6 +14,7 @@ import ItemIterator from '../../utils/itemsIterator';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
 import GridItem from '../explore/grid/GridItem';
 import styles from './Grid.module.css';
+import { cutString } from 'common';
 
 const GRID_ITEM = ZOOM_LEVELS[DEFAULT_ZOOM_LEVELS[Breakpoint.XL]];
 

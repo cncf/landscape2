@@ -15,13 +15,13 @@ import { Badge } from './Badge';
 import { Box } from './Box';
 import { ExternalLink } from './ExternalLink';
 import { FoundationBadge } from './FoundationBadge';
+import { FundingRoundsTable } from './FundingRoundsTable';
 import { Image } from './Image';
 import { MaturityBadge } from './MaturityBadge';
+import { MobileMaturitySection } from './MobileMaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
-import { MobileMaturitySection } from './MobileMaturitySection';
-import { FundingRoundsTable } from './FundingRoundsTable';
 
 interface Props {
   item?: Item | null;

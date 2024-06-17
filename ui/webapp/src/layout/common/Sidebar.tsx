@@ -1,9 +1,8 @@
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, JSXElement, on, Show } from 'solid-js';
 
-import { useBodyScroll } from '../../hooks/useBodyScroll';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './Sidebar.module.css';
+import { useBodyScroll, useOutsideClick } from 'common';
 
 export interface Props {
   label: string;

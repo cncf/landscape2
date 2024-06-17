@@ -4,12 +4,10 @@ import startCase from 'lodash/startCase';
 import { For, Match, Show, Switch } from 'solid-js';
 
 import { REGEX_UNDERSCORE } from '../../data';
-import { ActiveFilters, FilterCategory, SVGIconKind } from '../../types';
-import formatProfitLabel from '../../utils/formatLabelProfit';
+import { ActiveFilters, FilterCategory } from '../../types';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
-import { formatTAGName } from '../../utils/prepareFilters';
 import styles from './ActiveFiltersList.module.css';
-import SVGIcon from './SVGIcon';
+import { SVGIcon, SVGIconKind, formatProfitLabel, formatTAGName } from 'common';
 
 interface Props {
   activeFilters: ActiveFilters;

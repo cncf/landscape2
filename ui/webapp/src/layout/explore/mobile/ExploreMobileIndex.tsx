@@ -10,7 +10,6 @@ import { CategoriesData } from '../../../utils/itemsDataGetter';
 import sortItems from '../../../utils/sortItems';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
-import Loading from '../../common/Loading';
 import { Sidebar } from '../../common/Sidebar';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useGroupActive } from '../../stores/groupActive';
@@ -19,6 +18,7 @@ import Menu from '../card/Menu';
 import Card from './Card';
 import styles from './ExploreMobileIndex.module.css';
 import MobileGrid from './MobileGrid';
+import { Loading } from 'common';
 
 interface Props {
   openMenuStatus: boolean;

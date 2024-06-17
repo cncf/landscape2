@@ -3,11 +3,11 @@ import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
-import { CardMenu, SVGIconKind } from '../../../types';
+import { CardMenu } from '../../../types';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
-import SVGIcon from '../../common/SVGIcon';
 import styles from './Menu.module.css';
+import { SVGIcon, SVGIconKind } from 'common';
 
 interface Props {
   menu: CardMenu;

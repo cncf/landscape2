@@ -2,9 +2,8 @@ import isNumber from 'lodash/isNumber';
 import isString from 'lodash/isString';
 import { createEffect, createSignal, For, JSXElement, Show } from 'solid-js';
 
-import { SVGIconKind } from '../../types';
 import styles from './Pagination.module.css';
-import SVGIcon from './SVGIcon';
+import { SVGIcon, SVGIconKind } from 'common';
 
 interface Props {
   initialLimit: number;

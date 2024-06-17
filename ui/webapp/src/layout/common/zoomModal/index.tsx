@@ -13,8 +13,8 @@ import GridItem from '../../explore/grid/GridItem';
 import { useFullDataReady } from '../../stores/fullData';
 import { useSetVisibleZoom, useVisibleZoom } from '../../stores/visibleZoomSection';
 import FullScreenModal from '../FullScreenModal';
-import Loading from '../Loading';
 import styles from './ZoomModal.module.css';
+import { Loading } from 'common';
 
 const GAP = 40; // Title
 const CARD_WIDTH = ZOOM_LEVELS[10][0];
