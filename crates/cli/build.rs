@@ -67,6 +67,10 @@ fn main() -> Result<()> {
 
     println!("build common");
 
+    // Build common
+    run("yarn", &["--cwd", "../../ui/common", "install"])?;
+    run("yarn", &["--cwd", "../../ui/common", "build"])?;
+
     // Build embed
     run("yarn", &["--cwd", "../../ui/embed", "install"])?;
     run("yarn", &["--cwd", "../../ui/embed", "build"])?;
