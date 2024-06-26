@@ -50,5 +50,11 @@ export default defineConfig({
   }],
   preview: {
     port: 8000
-  }
+  },
+  resolve: {
+    dedupe: [
+      "solid-js",
+      "solid-js/web"
+    ]
+  },
 })

@@ -8,8 +8,8 @@ const preset_options: preset.PresetOptions = {
       entry: 'src/index.tsx',
     },
   ],
-  drop_console: false,
-  cjs: false,
+  drop_console: true,
+  cjs: true,
 };
 
 export default defineConfig((config) => {
