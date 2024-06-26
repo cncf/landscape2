@@ -54,9 +54,9 @@ const ModalClass = css`
 `;
 
 const ModalDialog = css`
-  min-height: calc(100% - 6rem) !important;
-  max-height: calc(100% - 6rem) !important;
-  margin: 3em auto !important;
+  min-height: calc(100% - 6rem);
+  max-height: calc(100% - 6rem);
+  margin: 3em auto;
 `;
 
 const BtnCloseWrapper = css`
