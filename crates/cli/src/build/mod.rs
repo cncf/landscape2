@@ -26,8 +26,8 @@ use headless_chrome::{
     Browser, LaunchOptions,
 };
 use landscape2_core::{
-    data::{self, DataSource, LandscapeData},
-    datasets::{Datasets, NewDatasetsInput},
+    data::{self, CrunchbaseData, DataSource, GithubData, Item, LandscapeData},
+    datasets::{embed::EmbedView, full::Full, Datasets, NewDatasetsInput},
     games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
     settings::{self, Analytics, LandscapeSettings, LogosViewbox, Osano, SettingsSource},
@@ -36,7 +36,7 @@ use qrcode::render::svg;
 use reqwest::StatusCode;
 use rust_embed::RustEmbed;
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     ffi::OsStr,
     fs::{self, File},
     io::Write,
@@ -479,6 +479,10 @@ fn generate_datasets(input: &NewDatasetsInput, output_dir: &Path) -> Result<Data
     for (key, view) in &datasets.embed.views {
         let mut embed_file = File::create(datasets_path.join(format!("embed_{key}.json")))?;
         embed_file.write_all(&serde_json::to_vec(&view)?)?;
+
+        let view_full_dataset = prepare_view_full_dataset(&datasets.full, view);
+        let mut embed_full_file = File::create(datasets_path.join(format!("embed_full_{key}.json")))?;
+        embed_full_file.write_all(&serde_json::to_vec(&view_full_dataset)?)?;
     }
 
     // Full
@@ -784,6 +788,50 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
     };
 
     Ok(())
+}
+
+/// Prepare view full dataset creating a stripped down version of the full
+/// dataset with only the data needed for the provided embed view.
+fn prepare_view_full_dataset(full: &Full, view: &EmbedView) -> Full {
+    // Items
+    let mut items: Vec<Item> = vec![];
+    for fi in &full.items {
+        if view.items.iter().any(|vi| vi.id == fi.id) {
+            items.push(fi.clone());
+        }
+    }
+
+    // Crunchbase data
+    let mut crunchbase_data: CrunchbaseData = BTreeMap::new();
+    for (url, org) in &full.crunchbase_data {
+        if items.iter().any(|i| {
+            let Some(crunchbase_url) = &i.crunchbase_url else {
+                return false;
+            };
+            crunchbase_url == url
+        }) {
+            crunchbase_data.insert(url.clone(), org.clone());
+        }
+    }
+
+    // GitHub data
+    let mut github_data: GithubData = BTreeMap::new();
+    for (url, repo_github_data) in &full.github_data {
+        if items.iter().any(|i| {
+            if let Some(repositories) = &i.repositories {
+                return repositories.iter().any(|r| r.url == *url);
+            }
+            false
+        }) {
+            github_data.insert(url.clone(), repo_github_data.clone());
+        }
+    }
+
+    Full {
+        crunchbase_data,
+        github_data,
+        items,
+    }
 }
 
 /// Template for the index document.
