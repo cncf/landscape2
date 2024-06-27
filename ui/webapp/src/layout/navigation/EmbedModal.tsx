@@ -9,6 +9,7 @@ import {
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
+  DEFAULT_DISPLAY_ITEM_MODAL,
   DEFAULT_DISPLAY_ITEM_NAME,
   DEFAULT_ITEM_NAME_SIZE,
   DEFAULT_ITEMS_ALIGNMENT,
@@ -24,6 +25,7 @@ import {
   DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
   DISPLAY_HEADER_CATEGORY_PARAM,
   DISPLAY_HEADER_PARAM,
+  DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
   ITEM_NAME_SIZE_PARAM,
@@ -66,6 +68,7 @@ enum InputType {
   TitleFgColor = TITLE_FGCOLOR_PARAM,
   DisplayItemName = DISPLAY_ITEM_NAME_PARAM,
   ItemNameSize = ITEM_NAME_SIZE_PARAM,
+  DisplayItemModal = DISPLAY_ITEM_MODAL_PARAM,
 }
 
 const SIZES_LEGENDS = {
@@ -122,6 +125,7 @@ const EmbedModal = () => {
   const [itemsSpacingType, setItemsSpacingType] = createSignal<SpacingType>(SpacingType.Default);
   const [displayItemName, setDisplayItemName] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_NAME);
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
+  const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
   const [url, setUrl] = createSignal<string>();
   const [prevHash, setPrevHash] = createSignal<string>('');
   const [prevSearch, setPrevSearch] = createSignal<string>('');
@@ -152,7 +156,7 @@ const EmbedModal = () => {
         itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())
           ? `&${ITEMS_SPACING_PARAM}=${itemsSpacing()}`
           : ''
-      }`;
+      }&${DISPLAY_ITEM_MODAL_PARAM}=${displayItemModal() ? 'true' : 'false'}`;
     }
 
     return url;
@@ -214,6 +218,9 @@ const EmbedModal = () => {
       case InputType.TitleFgColor:
         setFgColor(value);
         break;
+      case InputType.DisplayItemModal:
+        setDisplayItemModal(checked!);
+        break;
       default:
         break;
     }
@@ -263,6 +270,7 @@ const EmbedModal = () => {
       setItemsSpacing(undefined);
       setBgColor(BG_COLOR);
       setFgColor(DEFAULT_TITLE_FG_COLOR);
+      setDisplayItemModal(DEFAULT_DISPLAY_ITEM_MODAL);
     });
   };
 
@@ -539,6 +547,19 @@ const EmbedModal = () => {
                             checked={displayItemName()}
                             onChange={(value: string, checked: boolean) =>
                               onChange(InputType.DisplayItemName, value, checked)
+                            }
+                          />
+                        </div>
+                        <div class="form-check">
+                          <CheckBox
+                            name={InputType.DisplayItemModal}
+                            value="true"
+                            class="ps-0 my-2"
+                            labelClass={`mw-100 text-muted ${styles.label}`}
+                            label="Display item modal"
+                            checked={displayItemModal()}
+                            onChange={(value: string, checked: boolean) =>
+                              onChange(InputType.DisplayItemModal, value, checked)
                             }
                           />
                         </div>

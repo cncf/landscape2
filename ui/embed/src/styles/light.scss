@@ -1,0 +1,64 @@
+[data-theme='light'] {
+  --bs-primary: var(--color1);
+  --bs-secondary: var(--color2);
+  --color-font: #38383f;
+  --color-stats-1: var(--color1);
+
+  --overlay-alert-height: 33px;
+
+  .modal-dialog-scrollable .modal-body {
+    overscroll-behavior: contain;
+    overflow-x: hidden;
+  }
+
+  .text-primary {
+    color: var(--color1) !important;
+  }
+
+  .text-secondary {
+    color: var(--color2) !important;
+  }
+
+  .border-primary {
+    border-color: var(--color1) !important;
+  }
+
+  .btn-outline-primary {
+    border-color: var(--color1);
+    color: var(--color1);
+
+    &:not(.disabled):not(:disabled):not(:active):not(.active):hover {
+      background-color: var(--color1-hover);
+      color: var(--bs-white);
+    }
+
+    &:active,
+    &.active {
+      background-color: var(--color1);
+      color: var(--bs-white);
+    }
+  }
+
+  .btn-secondary {
+    background-color: var(--color2);
+    border-color: var(--color2);
+
+    &:not(.disabled):not(:disabled):hover,
+    &:focus,
+    &:active,
+    &.active {
+      filter: brightness(95%);
+    }
+  }
+
+  .form-check-input:checked {
+    background-color: var(--color2);
+    border-color: var(--color2);
+  }
+
+  .dropdown-item.active,
+  .dropdown-item:active {
+    color: var(--bs-dropdown-link-hover-color);
+    background-color: var(--bs-dropdown-link-hover-bg);
+  }
+}

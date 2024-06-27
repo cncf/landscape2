@@ -10,5 +10,11 @@ export default defineConfig({
       },
     },
   },
-  plugins: [solid()]
+  plugins: [solid()],
+  resolve: {
+    dedupe: [
+      "solid-js",
+      "solid-js/web"
+    ]
+  },
 });

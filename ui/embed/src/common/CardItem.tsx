@@ -10,6 +10,7 @@ import SVGIcon from './SVGIcon';
 interface Props {
   item: BaseItem;
   foundation: string;
+  onClick?: () => void;
 }
 
 const ColClass = css`

@@ -219,6 +219,7 @@ export const ItemModalContent = (props: Props) => {
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
+        console.log('itemInfo ---->>>> ', itemInfo());
         let primaryRepoTmp: Repository | undefined;
         setDescription(props.itemDescription);
         if (!isUndefined(itemInfo()!.repositories)) {

@@ -1,0 +1,155 @@
+:root {
+  --app-height: 100%;
+  --card-size-width: 50px;
+  --card-size-height: 45px;
+  --card-gap: 5px;
+  --mobile-card-size-width: 50px;
+  --mobile-card-size-height: 50px;
+
+  --color1: rgba(0, 107, 204, 1);
+  --color2: rgba(255, 0, 170, 1);
+  --color3: rgba(96, 149, 214, 1);
+  --color4: rgba(0, 42, 81, 0.7);
+  --color5: rgba(19, 17, 24, 0.7);
+  --color6: rgba(80, 142, 191, 0.7);
+  --color7: rgba(180, 219, 255, 1);
+
+  --color-success: #97c639;
+  --color-error: #e83030;
+}
+
+@font-face {
+  font-family: Orbitron;
+  src:
+    url(/fonts/orbitron-medium-webfont.ttf) format('truetype'),
+    url(/fonts/orbitron-medium-webfont.woff) format('woff');
+}
+
+html,
+body {
+  height: 100vh;
+  height: 100%;
+  height: var(--app-height);
+  margin: 0;
+  padding: 0;
+}
+
+button:focus,
+a:focus,
+input:not([type='color']):not(.withShadow):focus,
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 0 transparent !important;
+}
+
+/* Scroll */
+.visibleScroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background-color: var(--bs-white);
+}
+
+.visibleScroll::-webkit-scrollbar-thumb,
+.visibleScroll::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 10px;
+  background-color: var(--bs-gray-500);
+  border: 2px solid var(--bs-white);
+}
+
+.visibleScroll::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+/* Bootstrap */
+.badge {
+  font-weight: 600 !important;
+}
+
+a,
+.btn-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+@media (hover: hover) {
+  a:hover,
+  .btn-link:hover {
+    text-decoration: underline;
+  }
+}
+
+.modal-xxl {
+  max-width: 80%;
+}
+
+@media (min-width: 1920px) {
+  .modal-xxl {
+    max-width: 1700px;
+  }
+}
+
+@media only screen and (max-width: 991.98px) {
+  .btnIconMobile {
+    width: 35px !important;
+    height: 35px !important;
+    font-size: 1rem !important;
+  }
+
+  a:hover,
+  .btn-link:hover {
+    color: inherit !important;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100%;
+    min-height: var(--app-height);
+    overflow: auto;
+  }
+
+  .overlay-active #landscape {
+    height: 100%;
+  }
+
+  .noScroll-sidebar,
+  .noScroll-modal,
+  .noScroll-loading,
+  .noScroll-dropdown {
+    height: 100%;
+    overflow: hidden;
+    overflow-y: hidden !important;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  #landscape {
+    height: 100vh;
+    height: 100%;
+    height: var(--app-height);
+  }
+
+  /* Lazy loading for images are not working properly on body - desktop */
+  body:not(.screenshot) {
+    overflow: hidden;
+  }
+
+  body:not(.screenshot) #landscape {
+    overflow-y: auto;
+  }
+
+  .noScroll-sidebar #landscape,
+  .noScroll-modal #landscape,
+  .noScroll-loading #landscape,
+  .noScroll-dropdown #landscape {
+    height: 100%;
+    overflow: hidden;
+    overflow-y: hidden !important;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .mainPadding {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}

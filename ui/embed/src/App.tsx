@@ -13,6 +13,7 @@ import {
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
+  DEFAULT_DISPLAY_ITEM_MODAL,
   DEFAULT_DISPLAY_ITEM_NAME,
   DEFAULT_ITEM_NAME_SIZE,
   DEFAULT_ITEMS_ALIGNMENT,
@@ -27,6 +28,7 @@ import {
   DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
   DISPLAY_HEADER_CATEGORY_PARAM,
   DISPLAY_HEADER_PARAM,
+  DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
   ITEM_NAME_SIZE_PARAM,
@@ -138,6 +140,7 @@ const App = () => {
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
+  const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
 
   // Sort items by name alphabetically
   const sortItemsByName = (items: BaseItem[]): BaseItem[] => {
@@ -165,6 +168,7 @@ const App = () => {
     const alignmentParam = urlParams.get(ITEMS_ALIGNMENT_PARAM);
     const spacingParam = urlParams.get(ITEMS_SPACING_PARAM);
     const uppercaseParam = urlParams.get(UPPERCASE_TITLE_PARAM);
+    const displayItemModalParam = urlParams.get(DISPLAY_ITEM_MODAL_PARAM);
 
     batch(() => {
       if (keyParam !== null) {
@@ -229,6 +233,14 @@ const App = () => {
           const spacing = parseInt(spacingParam);
           if (spacing >= 0) {
             setItemsSpacing(spacing);
+          }
+        }
+        if (displayItemModalParam !== null) {
+          const displayItemModal = displayItemModalParam === 'true';
+          setDisplayItemModal(displayItemModal);
+          if (displayItemModal) {
+            import('./styles/default.scss');
+            import('./styles/App.css');
           }
         }
         // When size and style are not valid, we don´t save the key
@@ -304,6 +316,8 @@ const App = () => {
             when={displayHeader()}
             fallback={
               <StyleView
+                key={key()!}
+                basePath={basePath()}
                 items={sortItemsByName(data()!.items)}
                 foundation={data()!.foundation}
                 style={itemsStyleView()}
@@ -312,6 +326,7 @@ const App = () => {
                 spacing={itemsSpacing()}
                 displayName={displayItemName()}
                 itemNameSize={itemNameSize()}
+                displayItemModal={displayItemModal()}
               />
             }
           >
@@ -361,6 +376,8 @@ const App = () => {
                       {subcategory.name} ({items.length})
                     </SubcategoryTitle>
                     <StyleView
+                      key={key()!}
+                      basePath={basePath()}
                       items={items}
                       foundation={data()!.foundation}
                       style={itemsStyleView()}
@@ -369,6 +386,7 @@ const App = () => {
                       spacing={itemsSpacing()}
                       displayName={displayItemName()}
                       itemNameSize={itemNameSize()}
+                      displayItemModal={displayItemModal()}
                     />
                   </>
                 );
