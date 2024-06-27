@@ -1,3 +1,5 @@
+import '../styles/App.css';
+
 import { createEffect, createSignal, For, Match, on, Switch } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
@@ -122,10 +124,6 @@ const StyleView = (props: Props) => {
     })
   );
 
-  createEffect(() => {
-    console.log('itemInfo', itemInfo());
-  });
-
   return (
     <>
       <Switch>
@@ -203,7 +201,12 @@ const StyleView = (props: Props) => {
           </div>
         </Match>
       </Switch>
-      <ItemModal activeItemId={activeItemId()} itemInfo={itemInfo()} onClose={() => setActiveItemId(null)} />
+      <ItemModal
+        foundation={props.foundation}
+        activeItemId={activeItemId()}
+        itemInfo={itemInfo()}
+        onClose={() => setActiveItemId(null)}
+      />
     </>
   );
 };

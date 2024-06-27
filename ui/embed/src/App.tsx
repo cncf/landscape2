@@ -235,12 +235,14 @@ const App = () => {
             setItemsSpacing(spacing);
           }
         }
+        console.log('displayItemModalParam -> ', displayItemModalParam);
         if (displayItemModalParam !== null) {
           const displayItemModal = displayItemModalParam === 'true';
           setDisplayItemModal(displayItemModal);
+          // Import Bootstrap styles
           if (displayItemModal) {
+            console.log('display item modal');
             import('./styles/default.scss');
-            import('./styles/App.css');
           }
         }
         // When size and style are not valid, we don´t save the key

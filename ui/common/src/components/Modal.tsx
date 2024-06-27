@@ -1,6 +1,6 @@
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, JSXElement, Show } from 'solid-js';
-import { css } from 'solid-styled-components';
+import { css, keyframes } from 'solid-styled-components';
 
 import { BANNER_ID } from '../data/data';
 import { useBodyScroll, useOutsideClick } from '../hooks';
@@ -23,30 +23,30 @@ interface Props {
   id?: string;
 }
 
-const Active = css`
-  animation-name: fadeIn;
-  animation-duration: 0.15s;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: forwards;
-  z-index: 1080;
-
-  @keyframes fadeIn {
-    from {
+const fadeIn = keyframes`
+   from {
       opacity: 0;
     }
     to {
       opacity: 1;
     }
-  }
+`;
 
-  @keyframes fadeIn50 {
-    from {
+const fadeIn50 = keyframes`
+   from {
       opacity: 0;
     }
     to {
       opacity: 0.5;
     }
-  }
+`;
+
+const Active = css`
+  animation-name: ${fadeIn};
+  animation-duration: 0.15s;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
+  z-index: 1080;
 `;
 
 const ModalClass = css`
@@ -57,12 +57,29 @@ const ModalDialog = css`
   min-height: calc(100% - 6rem);
   max-height: calc(100% - 6rem);
   margin: 3em auto;
+
+  @media only screen and (max-width: 767.98px) {
+    width: 95%;
+    min-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem) !important;
+    margin: 0.75em auto !important;
+  }
+
+  @media (max-width: 1199.98px) {
+    width: 95%;
+    max-width: 95%;
+  }
 `;
 
 const BtnCloseWrapper = css`
   top: 3rem;
   right: 3rem;
   z-index: 1;
+
+  @media only screen and (max-width: 767.98px) {
+    top: 1.5rem;
+    right: 1.5rem;
+  }
 `;
 
 const HeaderContent = css`
@@ -73,10 +90,16 @@ const Content = css`
   border-color: var(--bs-gray-500) !important;
   box-shadow: none !important;
   z-index: 10;
+
+  @media only screen and (max-width: 575.98px) {
+    height: 100%;
+    width: 100%;
+    margin: auto;
+  }
 `;
 
 const ActiveBackdrop = css`
-  animation-name: fadeIn50;
+  animation-name: ${fadeIn50};
   animation-duration: 0.15s;
   animation-timing-function: ease-in-out;
   animation-fill-mode: forwards;

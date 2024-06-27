@@ -118,7 +118,7 @@ const Section = css`
 `;
 
 const BadgeOutlineDark = css`
-  border-color: var(--bs-gray-700) !important;
+  border: 1px solid var(--bs-gray-700);
   color: var(--bs-gray-700);
 `;
 
@@ -215,7 +215,7 @@ export const ItemModalMobileContent = (props: Props) => {
                     <Show when={!isUndefined(itemInfo()!.member_subcategory)}>
                       <div
                         title={`${itemInfo()!.member_subcategory} member`}
-                        class={`badge rounded-0 text-uppercase border me-2 ${BadgeOutlineDark} badgeOutlineDark`}
+                        class={`badge rounded-0 text-uppercase me-2 ${BadgeOutlineDark} badgeOutlineDark`}
                       >
                         {itemInfo()!.member_subcategory} member
                       </div>
@@ -286,7 +286,7 @@ export const ItemModalMobileContent = (props: Props) => {
               {(additional: AdditionalCategory) => {
                 return (
                   <div
-                    class={`badge border rounded-0 text-truncate mb-2 me-2 me-sm-2 mw-100 ${BadgeOutlineDark} badgeOutlineDark`}
+                    class={`badge rounded-0 text-truncate mb-2 me-2 me-sm-2 mw-100 ${BadgeOutlineDark} badgeOutlineDark`}
                   >
                     {additional.category} / {additional.subcategory}
                   </div>
@@ -362,14 +362,14 @@ export const ItemModalMobileContent = (props: Props) => {
           <div class="d-flex flex-row align-items-center">
             <Show when={!isUndefined(itemInfo()!.crunchbase_data!.kind)}>
               <div
-                class={`me-2 badge rounded-0 text-dark text-uppercase border ${BadgeOutlineDark} badgeOutlineDark ${MiniBadge}`}
+                class={`me-2 badge rounded-0 text-dark text-uppercase ${BadgeOutlineDark} badgeOutlineDark ${MiniBadge}`}
               >
                 {itemInfo()!.crunchbase_data!.kind}
               </div>
             </Show>
             <Show when={!isUndefined(itemInfo()!.crunchbase_data!.company_type)}>
               <div
-                class={`me-2 badge rounded-0 text-dark text-uppercase border ${BadgeOutlineDark} badgeOutlineDark ${MiniBadge}`}
+                class={`me-2 badge rounded-0 text-dark text-uppercase ${BadgeOutlineDark} badgeOutlineDark ${MiniBadge}`}
               >
                 {formatProfitLabel(itemInfo()!.crunchbase_data!.company_type!)}
               </div>

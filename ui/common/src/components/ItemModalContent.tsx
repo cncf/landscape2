@@ -82,8 +82,8 @@ const OtherLink = css`
 `;
 
 const BadgeOutlineDark = css`
-  border-color: var(--bs-gray-700) !important;
-  color: var(--bs-gray-700);
+  border: 1px solid var(--bs-gray-700);
+  color: var(--bs-gray-700) !important;
 `;
 
 const TagBadge = css`
@@ -219,7 +219,6 @@ export const ItemModalContent = (props: Props) => {
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
-        console.log('itemInfo ---->>>> ', itemInfo());
         let primaryRepoTmp: Repository | undefined;
         setDescription(props.itemDescription);
         if (!isUndefined(itemInfo()!.repositories)) {
@@ -276,7 +275,7 @@ export const ItemModalContent = (props: Props) => {
                   <MaturityBadge level={itemInfo()!.maturity!} class="mx-2" />
 
                   <Show when={!isUndefined(itemInfo()!.tag)}>
-                    <div class={`badge text-uppercase border rounded-0 me-2 ${BadgeOutlineDark} ${TagBadge}`}>
+                    <div class={`badge text-uppercase rounded-0 me-2 ${BadgeOutlineDark} ${TagBadge}`}>
                       TAG {formatTAGName(itemInfo()!.tag!)}
                     </div>
                   </Show>
@@ -312,8 +311,8 @@ export const ItemModalContent = (props: Props) => {
               </div>
             </Show>
             <div class="d-flex flex-row align-items-center mb-1">
-              <div class={`d-none d-xl-flex badge border rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.category}</div>
-              <div class={`badge border ms-0 ms-xl-2 rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.subcategory}</div>
+              <div class={`d-none d-xl-flex badge rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.category}</div>
+              <div class={`badge ms-0 ms-xl-2 rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.subcategory}</div>
               <Show
                 when={
                   !isUndefined(itemInfo()!.enduser) &&
@@ -322,7 +321,7 @@ export const ItemModalContent = (props: Props) => {
                   props.membersCategory === itemInfo()!.category
                 }
               >
-                <div class={`badge border ms-0 ms-xl-2 me-3 rounded-0 ${BadgeOutlineDark}`}>End user</div>
+                <div class={`badge ms-0 ms-xl-2 me-3 rounded-0 ${BadgeOutlineDark}`}>End user</div>
               </Show>
 
               <div class="ms-auto">
@@ -478,7 +477,7 @@ export const ItemModalContent = (props: Props) => {
             <For each={itemInfo()!.additional_categories}>
               {(additional: AdditionalCategory) => {
                 return (
-                  <div class={`badge border rounded-0 me-2 mb-2 ${BadgeOutlineDark}`}>
+                  <div class={`badge rounded-0 me-2 mb-2 ${BadgeOutlineDark}`}>
                     {additional.category} / {additional.subcategory}
                   </div>
                 );
@@ -563,12 +562,12 @@ export const ItemModalContent = (props: Props) => {
               <div class={`fw-semibold text-truncate fs-6`}>{itemInfo()!.crunchbase_data!.name}</div>
 
               <Show when={!isUndefined(itemInfo()!.crunchbase_data!.kind)}>
-                <div class={`ms-3 badge rounded-0 text-dark text-uppercase border ${BadgeOutlineDark} ${MiniBadge}`}>
+                <div class={`ms-3 badge rounded-0 text-dark text-uppercase ${BadgeOutlineDark} ${MiniBadge}`}>
                   {itemInfo()!.crunchbase_data!.kind}
                 </div>
               </Show>
               <Show when={!isUndefined(itemInfo()!.crunchbase_data!.company_type)}>
-                <div class={`ms-3 badge rounded-0 text-dark text-uppercase border ${BadgeOutlineDark} ${MiniBadge}`}>
+                <div class={`ms-3 badge rounded-0 text-dark text-uppercase ${BadgeOutlineDark} ${MiniBadge}`}>
                   {formatProfitLabel(itemInfo()!.crunchbase_data!.company_type!)}
                 </div>
               </Show>

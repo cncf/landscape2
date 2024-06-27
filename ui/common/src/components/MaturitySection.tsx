@@ -34,7 +34,7 @@ const MaturityBadge = css`
 
 const ActiveMaturityBadge = css`
   position: relative;
-  background-color: var(--color-stats-1);
+  background-color: var(--color-stats-1) !important;
 `;
 
 const StatusLegend = css`

@@ -63,6 +63,13 @@ export class ItemsDataGetter {
     return import.meta.env.MODE === 'development' ? `http://localhost:8000/${logo}` : `../${logo}`;
   }
 
+  private getUrlClomonitorImage(reportSummary?: string): string | undefined {
+    if (reportSummary) {
+      return import.meta.env.MODE === 'development' ? `http://localhost:8000/${reportSummary}` : `../${reportSummary}`;
+    }
+    return;
+  }
+
   // Extend items with crunchbase and github data
   private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
     const itemsList: Item[] = [];
@@ -91,7 +98,7 @@ export class ItemsDataGetter {
           });
           extendedItem.repositories = tmpRepositories;
         }
-        itemsList.push({...extendedItem, logo: this.getUrlLogo(extendedItem.logo)});
+        itemsList.push({...extendedItem, logo: this.getUrlLogo(extendedItem.logo), clomonitor_report_summary: this.getUrlClomonitorImage(extendedItem.clomonitor_report_summary)});
       });
     }
     return itemsList;
