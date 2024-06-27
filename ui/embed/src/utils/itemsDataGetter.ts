@@ -1,7 +1,5 @@
 import { GithubRepository, Item, Organization, Repository } from "common";
 
-import getUrl from "./getUrl";
-
 export interface ItemsDataStatus {
   updateStatus(status: boolean): void;
 }
@@ -36,10 +34,8 @@ export class ItemsDataGetter {
       const url = import.meta.env.MODE === 'development'
       ? `http://localhost:8000/data/embed_full_${key}.json`
       : `${basePath}/data/embed_full_${key}.json`;
-      console.log('url', url);
 
-
-      fetch(import.meta.env.MODE === 'development' ? 'http://localhost:8000/data/full.json' : `${getUrl()}/data/full.json`)
+      fetch(url)
         .then((res) => res.json())
         .then((data: EmbedData) => {
           this.initialDataPreparation(data);
