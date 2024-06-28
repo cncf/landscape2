@@ -11,14 +11,7 @@ interface Props {
 }
 
 const ModalClass = css`
-  min-height: calc(100% - 6rem) !important;
-  max-height: calc(100% - 6rem) !important;
-  margin: 3em auto !important;
-`;
-
-const ModalBodyClass = css`
-  padding: 1.5rem;
-  min-height: 250px;
+  line-height: 1.5;
 `;
 
 const ItemModal = (props: Props) => {
@@ -29,7 +22,7 @@ const ItemModal = (props: Props) => {
 
   return (
     <Show when={activeItemId() !== null}>
-      <Modal size="xl" onClose={props.onClose} modalDialogClass={ModalClass} bodyClass={ModalBodyClass} open>
+      <Modal size="xl" onClose={props.onClose} modalDialogClass={ModalClass} open>
         <Show when={itemInfo()} fallback={<Loading />}>
           <Show
             when={width() > 1200}

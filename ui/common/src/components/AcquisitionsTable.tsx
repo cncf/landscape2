@@ -18,7 +18,7 @@ const TableLayout = css`
 `;
 
 const Thead = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 
   th {
     color: var(--bs-gray-600);
@@ -31,7 +31,7 @@ const Thead = css`
 
 const TableContent = css`
   td {
-    font-size: 0.8rem;
+    font-size: 0.8rem !important;
     line-height: 2;
   }
 
@@ -56,7 +56,7 @@ const MinCol = css`
 `;
 
 const CollapsedBtn = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 `;
 
 export const AcquisitionsTable = (props: Props) => {

@@ -21,8 +21,8 @@ const Wrapper = css`
 
 const MaturityBadge = css`
   width: 80px;
-  font-size: 0.65rem;
-  line-height: 1rem;
+  font-size: 0.65rem !important;
+  line-height: 1rem !important;
   background-color: var(--bs-gray-500);
 `;
 

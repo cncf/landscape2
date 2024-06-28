@@ -1,17 +1,11 @@
-import '../styles/App.css';
-
-import { createEffect, createSignal, For, Match, on, Switch } from 'solid-js';
+import { For, Match, Switch } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
 import { Alignment, BaseItem, Size, Style } from '../types';
-import itemsDataGetter from '../utils/itemsDataGetter';
 import CardItem from './CardItem';
 import GridItem from './GridItem';
-import ItemModal from './ItemModal';
 
 interface Props {
-  key: string;
-  basePath: string;
   style: Style;
   size: Size;
   foundation: string;
@@ -21,6 +15,7 @@ interface Props {
   itemNameSize: number;
   spacing?: number;
   displayItemModal: boolean;
+  setActiveItemId: (id: string | null) => void;
 }
 
 type CardSizes = {
@@ -92,38 +87,6 @@ const CardWrapper = css`
 `;
 
 const StyleView = (props: Props) => {
-  const [activeItemId, setActiveItemId] = createSignal<string | null>(null);
-  const [fullDataReady, setFullDataReady] = createSignal(itemsDataGetter.isReady());
-  const [itemInfo, setItemInfo] = createSignal<BaseItem | null | undefined>(undefined);
-
-  createEffect(() => {
-    itemsDataGetter.subscribe({
-      updateStatus: (currentStatus: boolean) => {
-        setFullDataReady(currentStatus);
-      },
-    });
-  });
-
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady() && activeItemId() !== null) {
-        setItemInfo(itemsDataGetter.getItemById(activeItemId()!));
-      }
-    })
-  );
-
-  createEffect(
-    on(activeItemId, () => {
-      if (activeItemId() !== null) {
-        if (!fullDataReady()) {
-          itemsDataGetter.init(props.key, props.basePath);
-        } else {
-          setItemInfo(itemsDataGetter.getItemById(activeItemId()!));
-        }
-      }
-    })
-  );
-
   return (
     <>
       <Switch>
@@ -138,7 +101,7 @@ const StyleView = (props: Props) => {
                     class={ItemClass}
                     withName={props.displayName}
                     itemNameSize={props.itemNameSize}
-                    onClick={props.displayItemModal ? () => setActiveItemId(item.id) : undefined}
+                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
                     borderless
                   />
                 );
@@ -157,7 +120,7 @@ const StyleView = (props: Props) => {
                     class={ItemClass}
                     withName={props.displayName}
                     itemNameSize={props.itemNameSize}
-                    onClick={props.displayItemModal ? () => setActiveItemId(item.id) : undefined}
+                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
                     borderless={false}
                   />
                 );
@@ -177,7 +140,7 @@ const StyleView = (props: Props) => {
                     withName={props.displayName}
                     itemNameSize={props.itemNameSize}
                     borderless={false}
-                    onClick={props.displayItemModal ? () => setActiveItemId(item.id) : undefined}
+                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
                     withShadow
                   />
                 );
@@ -193,7 +156,7 @@ const StyleView = (props: Props) => {
                   <CardItem
                     item={item}
                     foundation={props.foundation}
-                    onClick={props.displayItemModal ? () => setActiveItemId(item.id) : undefined}
+                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
                   />
                 );
               }}
@@ -201,12 +164,6 @@ const StyleView = (props: Props) => {
           </div>
         </Match>
       </Switch>
-      <ItemModal
-        foundation={props.foundation}
-        activeItemId={activeItemId()}
-        itemInfo={itemInfo()}
-        onClose={() => setActiveItemId(null)}
-      />
     </>
   );
 };

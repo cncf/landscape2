@@ -14,8 +14,8 @@ interface Props {
 }
 
 const FieldsetTitle = css`
-  font-size: 0.8rem;
-  line-height: 0.8rem;
+  font-size: 0.8rem !important;
+  line-height: 0.8rem !important;
   color: var(--color4);
   top: -0.35rem;
   left: 1rem;

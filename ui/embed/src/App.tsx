@@ -1,7 +1,10 @@
+import './styles/App.css';
+
 import { batch, createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
 import { styled } from 'solid-styled-components';
 
 import ExternalLink from './common/ExternalLink';
+import ItemModal from './common/ItemModal';
 import Loading from './common/Loading';
 import NoData from './common/NoData';
 import StyleView from './common/StyleView';
@@ -47,6 +50,7 @@ import {
   UPPERCASE_TITLE_PARAM,
 } from './types';
 import getUrl from './utils/getUrl';
+import itemsDataGetter from './utils/itemsDataGetter';
 
 interface TitleProps {
   isBgTransparent: boolean;
@@ -141,6 +145,9 @@ const App = () => {
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
   const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
+  const [activeItemId, setActiveItemId] = createSignal<string | null>(null);
+  const [fullDataReady, setFullDataReady] = createSignal(itemsDataGetter.isReady());
+  const [itemInfo, setItemInfo] = createSignal<BaseItem | null | undefined>(undefined);
 
   // Sort items by name alphabetically
   const sortItemsByName = (items: BaseItem[]): BaseItem[] => {
@@ -235,14 +242,17 @@ const App = () => {
             setItemsSpacing(spacing);
           }
         }
-        console.log('displayItemModalParam -> ', displayItemModalParam);
         if (displayItemModalParam !== null) {
           const displayItemModal = displayItemModalParam === 'true';
           setDisplayItemModal(displayItemModal);
           // Import Bootstrap styles
           if (displayItemModal) {
-            console.log('display item modal');
             import('./styles/default.scss');
+            itemsDataGetter.subscribe({
+              updateStatus: (currentStatus: boolean) => {
+                setFullDataReady(currentStatus);
+              },
+            });
           }
         }
         // When size and style are not valid, we don´t save the key
@@ -289,6 +299,26 @@ const App = () => {
     })
   );
 
+  createEffect(
+    on(fullDataReady, () => {
+      if (fullDataReady() && activeItemId() !== null) {
+        setItemInfo(itemsDataGetter.getItemById(activeItemId()!));
+      }
+    })
+  );
+
+  createEffect(
+    on(activeItemId, () => {
+      if (activeItemId() !== null) {
+        if (!fullDataReady()) {
+          itemsDataGetter.init(key()!, basePath()!);
+        } else {
+          setItemInfo(itemsDataGetter.getItemById(activeItemId()!));
+        }
+      }
+    })
+  );
+
   return (
     <Content
       fontFamily={titleFontFamily()}
@@ -318,8 +348,6 @@ const App = () => {
             when={displayHeader()}
             fallback={
               <StyleView
-                key={key()!}
-                basePath={basePath()}
                 items={sortItemsByName(data()!.items)}
                 foundation={data()!.foundation}
                 style={itemsStyleView()}
@@ -329,6 +357,7 @@ const App = () => {
                 displayName={displayItemName()}
                 itemNameSize={itemNameSize()}
                 displayItemModal={displayItemModal()}
+                setActiveItemId={setActiveItemId}
               />
             }
           >
@@ -378,8 +407,6 @@ const App = () => {
                       {subcategory.name} ({items.length})
                     </SubcategoryTitle>
                     <StyleView
-                      key={key()!}
-                      basePath={basePath()}
                       items={items}
                       foundation={data()!.foundation}
                       style={itemsStyleView()}
@@ -389,12 +416,21 @@ const App = () => {
                       displayName={displayItemName()}
                       itemNameSize={itemNameSize()}
                       displayItemModal={displayItemModal()}
+                      setActiveItemId={setActiveItemId}
                     />
                   </>
                 );
               }}
             </For>
           </Show>
+        </Show>
+        <Show when={displayItemModal()}>
+          <ItemModal
+            foundation={data()!.foundation}
+            activeItemId={activeItemId()}
+            itemInfo={itemInfo()}
+            onClose={() => setActiveItemId(null)}
+          />
         </Show>
       </Show>
     </Content>

@@ -38,21 +38,22 @@ export class ItemsDataGetter {
       fetch(url)
         .then((res) => res.json())
         .then((data: EmbedData) => {
-          this.initialDataPreparation(data);
+          this.initialDataPreparation(data).then(() => {
+            this.ready = true;
+            if (this.updateStatus) {
+              this.updateStatus.updateStatus(true);
+            }
+          });
         });
     }
   }
 
-  private initialDataPreparation(data: EmbedData) {
-    const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
-    this.landscapeData = {
-      ...data,
-      items: extendedItems,
-    };
-    this.ready = true;
-    if (this.updateStatus) {
-      this.updateStatus.updateStatus(true);
-    }
+  private async initialDataPreparation(data: EmbedData) {
+    await this.extendItemsData(data.items, data.crunchbase_data, data.github_data).then((items) =>
+      this.landscapeData = {
+        ...data,
+        items: items,
+      });
   }
 
   public isReady(): boolean {
@@ -71,7 +72,7 @@ export class ItemsDataGetter {
   }
 
   // Extend items with crunchbase and github data
-  private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
+  private async extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Promise<Item[]> {
     const itemsList: Item[] = [];
 
     if (items) {

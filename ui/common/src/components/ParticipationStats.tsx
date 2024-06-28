@@ -15,19 +15,20 @@ const Chart = css`
 const Bar = css`
   width: 2%;
   background-color: var(--color-stats-1);
+  margin: 0 0.25rem;
 
   @media only screen and (max-width: 767.98px) {
     min-width: 2px;
-    margin: 0 1px !important;
+    margin: 0 1px;
   }
 `;
 
 const Message = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 `;
 
 const Month = css`
-  font-size: 0.7rem;
+  font-size: 0.7rem !important;
 `;
 
 const AxisLegend = css`
@@ -78,9 +79,7 @@ export const ParticipationStats = (props: Props) => {
             >
               <For each={stats()}>
                 {(x: number) => {
-                  return (
-                    <div title={x.toString()} class={`mx-0 mx-md-1 ${Bar}`} style={{ height: `${percentage(x)}%` }} />
-                  );
+                  return <div title={x.toString()} class={Bar} style={{ height: `${percentage(x)}%` }} />;
                 }}
               </For>
             </Show>

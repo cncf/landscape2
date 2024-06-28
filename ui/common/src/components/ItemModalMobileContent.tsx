@@ -52,7 +52,7 @@ const Title = css`
 `;
 
 const Badges = css`
-  font-size: 85%;
+  font-size: 85% !important;
   height: 22px;
 
   .badge:not(.badgeOutlineDark) {
@@ -99,7 +99,7 @@ const Description = css`
 
 const OtherLink = css`
   max-width: calc(100% - 2rem - 15px);
-  font-size: 0.65rem;
+  font-size: 0.65rem !important;
   color: var(--color4);
   line-height: 16px;
 `;
@@ -109,7 +109,7 @@ const Dot = css`
 `;
 
 const Section = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 
   small {
     font-size: 80%;
@@ -123,7 +123,7 @@ const BadgeOutlineDark = css`
 `;
 
 const MiniBadge = css`
-  font-size: 0.65rem;
+  font-size: 0.65rem !important;
 `;
 
 const Location = css`
@@ -145,7 +145,7 @@ const TableLayout = css`
 `;
 
 const Thead = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 
   th {
     color: var(--bs-gray-600);
@@ -154,7 +154,7 @@ const Thead = css`
 
 const TableContent = css`
   td {
-    font-size: 0.7rem;
+    font-size: 0.7rem !important;
     line-height: 2;
   }
 `;
@@ -170,11 +170,11 @@ const SummaryBadge = css`
 `;
 
 const SummaryContent = css`
-  font-size: 0.9rem;
+  font-size: 0.8rem !important;
 `;
 
 const Text = css`
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
 `;
 
 const ClomonitorReport = css`

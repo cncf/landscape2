@@ -26,25 +26,25 @@ interface RepoProps {
 }
 
 const SubtitleInSection = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
   opacity: 0.5;
 `;
 
 const BadgeOutlineDark = css`
-  border-color: var(--bs-gray-700) !important;
-  color: var(--bs-gray-700);
+  border: 1px solid var(--bs-gray-700);
+  color: var(--bs-gray-700) !important;
 `;
 
 const MiniBadge = css`
-  font-size: 0.65rem;
+  font-size: 0.65rem !important;
 `;
 
 const Select = css`
-  width: 500px;
+  width: 500px !important;
   max-width: calc(100% - 0.4rem);
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
   margin: 0 0.2rem;
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 
   &:focus {
     box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
@@ -115,10 +115,10 @@ const RepositoryInfo = (props: RepoProps) => {
           <Show when={props.repository.primary || !isUndefined(props.repository.github_data)}>
             <div class={`d-flex align-items-center flex-wrap flex-md-nowrap mt-2 mt-md-0 ${Badges}`}>
               <Show when={props.repository.primary}>
-                <div class={`me-2 badge border rounded-0 text-uppercase ${BadgeOutlineDark} ${MiniBadge}`}>Primary</div>
+                <div class={`me-2 badge rounded-0 text-uppercase ${BadgeOutlineDark} ${MiniBadge}`}>Primary</div>
               </Show>
               <Show when={!isUndefined(props.repository.github_data)}>
-                <div class={`badge border rounded-0 me-2 ${BadgeOutlineDark} ${MiniBadge}`}>
+                <div class={`badge rounded-0 me-2 ${BadgeOutlineDark} ${MiniBadge}`}>
                   {props.repository.github_data!.license}
                 </div>
               </Show>

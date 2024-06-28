@@ -71,7 +71,7 @@ const Name = css`
 `;
 
 const Description = css`
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
 `;
 
 const OtherLink = css`
@@ -91,7 +91,7 @@ const TagBadge = css`
 `;
 
 const MiniBadge = css`
-  font-size: 0.65rem;
+  font-size: 0.65rem !important;
 `;
 
 const Location = css`
@@ -139,7 +139,7 @@ const TableLayout = css`
 `;
 
 const Thead = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 
   th {
     color: var(--bs-gray-600);
@@ -148,13 +148,13 @@ const Thead = css`
 
 const TableContent = css`
   td {
-    font-size: 0.8rem;
+    font-size: 0.8rem !important;
     line-height: 2;
   }
 `;
 
 const TableLink = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 `;
 
 const AuditsCol = css`
@@ -172,7 +172,7 @@ const Summary = css`
 `;
 
 const SummaryContent = css`
-  font-size: 0.8rem;
+  font-size: 0.8rem !important;
 `;
 
 const SummaryBadge = css`
