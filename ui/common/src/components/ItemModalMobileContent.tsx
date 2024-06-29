@@ -7,7 +7,7 @@ import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-
 import { css } from 'solid-styled-components';
 
 import { AdditionalCategory, Item, SecurityAudit, SVGIconKind } from '../types/types';
-import { cutString } from '../utils';
+import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
 import { prettifyNumber } from '../utils/prettifyNumber';
 import { AcquisitionsTable } from './AcquisitionsTable';
@@ -27,7 +27,6 @@ interface Props {
   item?: Item | null;
   parentInfo?: Item | null;
   foundation: string;
-  itemDescription?: string;
   onClose?: () => void;
 }
 
@@ -188,7 +187,7 @@ export const ItemModalMobileContent = (props: Props) => {
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
-        setDescription(props.itemDescription);
+        setDescription(getItemDescription(itemInfo()!));
       } else {
         setDescription(undefined);
         if (props.onClose) props.onClose();

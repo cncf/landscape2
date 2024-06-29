@@ -1,20 +1,20 @@
 import {
+  cutString,
   ExternalLink,
+  formatTAGName,
   FoundationBadge,
+  getItemDescription,
   Image,
   MaturityBadge,
+  prettifyNumber,
   SVGIcon,
   SVGIconKind,
-  cutString,
-  formatTAGName,
-  prettifyNumber,
 } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
 
 import { FOUNDATION } from '../../../data';
 import { Item, Repository } from '../../../types';
-import getItemDescription from '../../../utils/getItemDescription';
 import styles from './Card.module.css';
 import CardTitle from './CardTitle';
 

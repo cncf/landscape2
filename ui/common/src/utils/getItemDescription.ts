@@ -1,10 +1,10 @@
 import isUndefined from 'lodash/isUndefined';
 
-import { Item, Repository } from '../types';
-import cleanEmojis from './cleanEmojis';
+import { Item, Repository } from '../types/types';
+import { cleanEmojis } from './cleanEmojis';
 
 // Get item's description
-const getItemDescription = (item?: Item | null): string => {
+export const getItemDescription = (item?: Item | null): string => {
   if (item) {
     if (item.description && item.description !== '') {
       return item.description;
@@ -30,5 +30,3 @@ const getItemDescription = (item?: Item | null): string => {
 
   return 'This item does not have a description available yet';
 };
-
-export default getItemDescription;

@@ -7,7 +7,7 @@ import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-
 import { css } from 'solid-styled-components';
 
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../types/types';
-import { cutString } from '../utils';
+import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
 import { formatTAGName } from '../utils/formatTAGName';
 import { prettifyNumber } from '../utils/prettifyNumber';
@@ -29,7 +29,6 @@ import { SVGIcon } from './SVGIcon';
 interface Props {
   item?: Item | null;
   parentInfo?: Item | null;
-  itemDescription?: string;
   foundation: string;
   basePath?: string;
   onClose?: () => void;
@@ -220,7 +219,7 @@ export const ItemModalContent = (props: Props) => {
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
         let primaryRepoTmp: Repository | undefined;
-        setDescription(props.itemDescription);
+        setDescription(getItemDescription(itemInfo()!));
         if (!isUndefined(itemInfo()!.repositories)) {
           itemInfo()!.repositories!.forEach((repo: Repository) => {
             if (repo.primary) {

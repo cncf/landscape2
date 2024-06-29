@@ -1,9 +1,8 @@
-import { Image, Loading } from 'common';
+import { getItemDescription, Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../../types';
-import getItemDescription from '../../../utils/getItemDescription';
 import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
