@@ -169,7 +169,7 @@ const SummaryBadge = css`
 `;
 
 const SummaryContent = css`
-  font-size: 0.8rem !important;
+  font-size: 0.9rem !important;
 `;
 
 const Text = css`

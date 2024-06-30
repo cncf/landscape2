@@ -10,7 +10,7 @@ interface Props {
 
 const Wrapper = css`
   background-color: var(--color3);
-  font-size: 0.7rem;
+  font-size: 0.7rem !important;
   font-weight: 500 !important;
 `;
 

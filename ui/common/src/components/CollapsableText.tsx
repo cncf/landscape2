@@ -34,7 +34,7 @@ const BtnWrapper = css`
 `;
 
 const Btn = css`
-  font-size: 0.7rem;
+  font-size: 0.7rem !important;
   padding: 0;
   padding-left: 2.5rem;
   line-height: 1.25rem;
