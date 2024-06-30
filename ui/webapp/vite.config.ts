@@ -53,6 +53,8 @@ export default defineConfig({
   },
   resolve: {
     dedupe: [
+      "lodash",
+      "moment",
       "solid-js",
       "solid-js/web"
     ]
