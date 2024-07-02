@@ -1,0 +1,49 @@
+.toc {
+  font-size: 0.8rem;
+}
+
+.sticky {
+  width: 270px;
+  max-width: 270px;
+  min-width: 270px;
+  top: 5.5rem;
+  bottom: 1rem;
+  max-height: calc(var(--app-height) - 6.5rem);
+}
+
+.content {
+  overflow-y: auto;
+  max-height: 100%;
+  overscroll-behavior: contain;
+}
+
+.truncateWrapper {
+  min-width: 0;
+}
+
+.subcategories {
+  background-color: var(--bs-gray-100);
+}
+
+.arrow {
+  left: 0.15rem;
+  top: 0.15rem;
+}
+
+.subcategoryBtn {
+  color: var(--bs-body-color);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.selected {
+  color: black !important;
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.035) !important;
+}
+
+.subcategoryBtn:hover {
+  color: inherit;
+  text-decoration: underline;
+  background-color: rgba(0, 0, 0, 0.035);
+}

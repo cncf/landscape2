@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+  </head>
+  <body>
+    <script type="module">
+      import init, { get_overlay_data } from './dist/landscape2_overlay.js';
+
+      async function run() {
+        await init();
+
+        const input = {
+          landscape_url: "http://localhost:8000",
+        };
+        const overlay_data = await get_overlay_data(input);
+        console.log(JSON.parse(overlay_data));
+      }
+
+      run();
+    </script>
+  </body>
+</html>

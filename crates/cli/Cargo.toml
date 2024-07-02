@@ -1,0 +1,63 @@
+[package]
+name = "landscape2-academic"
+description = "Landscape2 CLI tool: Academic Mode"
+repository = "https://github.com/open-neuroscience-foundation/landscape2-academic"
+readme = "../../README.md"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+askama = { workspace = true }
+askama_escape = { workspace = true }
+async-trait = { workspace = true }
+aws-config = { workspace = true }
+aws-sdk-s3 = { workspace = true }
+axum = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+csv = { workspace = true }
+deadpool = { workspace = true }
+dirs = { workspace = true }
+futures = { workspace = true }
+headless_chrome = { workspace = true }
+hex = { workspace = true }
+imagesize = { workspace = true }
+itertools = { workspace = true }
+landscape2-core-academic = { path = "../core" }
+lazy_static = { workspace = true }
+leaky-bucket = { workspace = true }
+md-5 = { workspace = true }
+mime_guess = { workspace = true }
+num_cpus = { workspace = true }
+octorust = { workspace = true }
+parse_link_header = { workspace = true }
+qrcode = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true }
+reqwest_octorust = { workspace = true }
+reqwest-middleware = { workspace = true }
+rust-embed = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+url = { workspace = true }
+usvg = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+mockall = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+which = { workspace = true }

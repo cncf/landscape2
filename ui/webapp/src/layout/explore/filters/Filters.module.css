@@ -1,0 +1,79 @@
+.modal {
+  min-height: calc(100% - 6rem) !important;
+  max-height: calc(100% - 6rem) !important;
+  margin: 3em auto !important;
+}
+
+.title {
+  font-size: 1.25rem;
+  color: var(--color4);
+  margin-bottom: 2rem;
+}
+
+.filterBtn {
+  height: 28px;
+  font-size: 0.8rem;
+}
+
+.fieldset {
+  padding: 1.5rem 1.75rem;
+}
+
+.fieldsetTitle {
+  font-size: 0.8rem;
+  line-height: 0.8rem;
+  color: var(--color4);
+  top: -0.35rem;
+  left: 1rem;
+}
+
+.dot {
+  top: -5px;
+  right: -5px;
+}
+
+.miniSelect {
+  width: 140px;
+}
+
+.selectTitle {
+  font-size: 0.8rem;
+  color: var(--color4);
+}
+
+.section {
+  max-height: 235px;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 1199.98px) {
+  .modal {
+    width: 90%;
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .title {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media only screen and (max-width: 767.98px) {
+  .modal {
+    width: 95%;
+    min-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem) !important;
+    margin: 0.75em auto !important;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .section {
+    border: none !important;
+  }
+}

@@ -1,0 +1,109 @@
+.roundedBtn {
+  height: 2rem;
+  width: 2rem;
+  font-size: 1.5rem;
+  line-height: 0;
+}
+
+.dot {
+  height: 0.8rem;
+  width: 0.8rem;
+  right: -0.4rem;
+  top: -0.4rem;
+}
+
+.btnGroup :global(.btn) {
+  font-size: 0.75rem;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.navLink {
+  min-width: 50px !important;
+}
+
+.active {
+  color: var(--bs-white) !important;
+}
+
+.btnSymbol {
+  position: relative;
+  font-size: 1.25rem;
+  line-height: 0.5rem;
+  margin-top: -2px;
+}
+
+.btnGroupLegend {
+  font-size: 0.75rem;
+}
+
+.container {
+  min-height: 400px;
+}
+
+.loadingContent {
+  min-height: calc(var(--app-height) - 92px - 36px);
+}
+
+.mobileMenuBtn {
+  height: 28px;
+}
+
+.mobileMenuBtn svg {
+  margin-top: -2px;
+}
+
+.desktopSelect {
+  width: 300px;
+  font-size: 0.75rem;
+  min-height: 28px;
+  font-weight: 700;
+}
+
+.miniSelect {
+  width: 125px;
+}
+
+.midSelect {
+  width: 175px;
+}
+
+.select {
+  max-width: 400px;
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
+  margin: 0 0.2rem;
+}
+
+.select:focus {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+}
+
+.mobileToCBtn svg {
+  margin-top: -2px;
+}
+
+.spinner {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  top: -2px;
+  position: relative;
+}
+
+@media (max-width: 1199.98px) {
+  .desktopSelect {
+    width: 210px;
+  }
+
+  .miniSelect,
+  .midSelect {
+    width: 125px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .btnGroup :global(.btn) {
+    font-size: 0.9rem;
+    min-width: 35px;
+    min-height: 35px;
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "embed",
+  "private": true,
+  "version": "0.9.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:diff": "prettier --list-different \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "lint": "eslint src --max-warnings 0",
+    "lint:fix": "eslint src --max-warnings 0 --fix",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "solid-js": "^1.8.17",
+    "solid-styled-components": "^0.28.5"
+  },
+  "devDependencies": {
+    "eslint": "^9.1.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.1.0",
+    "eslint-plugin-solid": "^0.14.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.8.0",
+    "vite": "^5.2.10",
+    "vite-plugin-solid": "^2.10.2"
+  }
+}

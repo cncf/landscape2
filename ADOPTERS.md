@@ -5,11 +5,13 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 *(ordered alphabetically)*
 
 - [Academy Software Foundation](https://aswf.landscape2.io)
+- [Alliance for OpenUSD](https://aousd.landscape2.io)
 - [CAMARA Project](https://camara.landscape2.io)
 - [Cloud Native Computing Foundation](https://landscape.cncf.io)
 - [Continuous Delivery Foundation](https://cdf.landscape2.io)
 - [GraphQL](https://graphql.landscape2.io)
 - [Hyperledger Foundation](https://dlt.landscape2.io)
+- [JSON Schema](https://landscape.json-schema.org)
 - [LF AI & DATA](https://lfai.landscape2.io)
 - [LF Energy](https://lfenergy.landscape2.io)
 - [LF Networking](https://lfnetworking.landscape2.io)

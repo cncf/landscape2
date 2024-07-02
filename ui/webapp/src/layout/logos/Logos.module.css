@@ -1,0 +1,36 @@
+.labelSelect {
+  font-size: 0.8rem;
+}
+
+.select {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
+  margin: 0.5rem 0.2rem 0 0.2rem;
+}
+
+.select:focus {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+}
+
+.grid {
+  --card-size-width: 200px;
+  --card-size-height: 100px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--card-size-width), 1fr));
+  grid-auto-rows: var(--card-size-height);
+  gap: 15px;
+}
+
+.logo {
+  font-size: calc(var(--card-size-height) / 1.5);
+  width: var(--card-size-width);
+  max-height: var(--card-size-height);
+  height: auto;
+}
+
+@media (hover: hover) {
+  .radio:not([disabled]),
+  .radio:not([disabled]) + label {
+    cursor: pointer;
+  }
+}

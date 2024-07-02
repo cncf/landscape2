@@ -1,0 +1,63 @@
+.title {
+  font-size: 0.8rem;
+  min-width: 0;
+}
+
+.section {
+  scroll-margin: 5.5rem;
+}
+
+.categoryTitle {
+  max-width: 50%;
+}
+
+.subcategoryTitle {
+  background-color: var(--bs-gray-100);
+  margin-left: 3px;
+}
+
+.card {
+  height: 237px;
+  font-size: 90%;
+  cursor: pointer;
+}
+
+.archived {
+  border-color: rgba(0, 0, 0, 0.075);
+}
+
+.archived .cardContent {
+  opacity: 0.6;
+}
+
+.archived .logo {
+  filter: grayscale(1);
+}
+
+.card :global(.badge:not(.tagBadge)) {
+  font-size: 0.6rem;
+  border: 1px solid transparent;
+  line-height: 1;
+  height: 18px;
+}
+
+.card :global(.accepted-date) {
+  display: flex !important;
+}
+
+.card:hover {
+  border-color: var(--color1) !important;
+  box-shadow: 0px 0px 5px 0px var(--bs-focus-ring-color);
+}
+
+.btnIcon {
+  line-height: 0.8rem;
+  margin-top: -2px;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .btnIcon:hover {
+    opacity: 0.8;
+  }
+}

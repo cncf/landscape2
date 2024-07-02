@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Landscape</title>
+  </head>
+  <body>
+    <div id="landscape-embeddable-view"></div>
+    <script type="module" src="/src/index.tsx"></script>
+    <script>
+      (() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const resizer = urlParams.get('iframe-resizer');
+        if (typeof resizer !== null && resizer === 'true') {
+          const script = document.createElement('script');
+          script.setAttribute('src', './assets/iframeResizer.contentWindow-v4.3.9.min.js');
+          document.body.appendChild(script);
+        }
+      })();
+    </script>
+  </body>
+</html>

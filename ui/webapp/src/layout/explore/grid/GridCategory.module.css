@@ -1,0 +1,43 @@
+.catTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  width: 3rem;
+  font-size: 0.7rem;
+  line-height: 0.95rem;
+  padding: 1rem 0rem;
+}
+
+.catTitleText {
+  max-height: 130px;
+}
+
+.icon {
+  margin-top: -2px;
+  font-size: 0.9rem;
+}
+
+.subcatTitle {
+  font-size: 0.8rem;
+  height: 2rem;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--card-size-width));
+  grid-auto-rows: var(--card-size-height);
+  gap: var(--card-gap);
+  /* justify-content: center; */
+}
+
+.loading {
+  min-height: calc(var(--app-height) - 92px - 36px);
+}

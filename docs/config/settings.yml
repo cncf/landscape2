@@ -27,6 +27,16 @@ url: https://landscape.cncf.io
 # analytics:
 #   gtm:                            # Google Tag Manager configuration
 #     container_id: <CONTAINER_ID>  # Landscape web application container ID
+#
+
+# Base path (optional)
+#
+# Base path where the landscape will be hosted. By default the generated
+# landscape is prepared to be hosted at the root of the domain. However, if the
+# landscape will be hosted in a subpath, this value must be set accordingly.
+#
+# base_path: /<BASE_PATH>
+#
 
 # Categories (optional)
 #
@@ -231,6 +241,22 @@ images:
   favicon: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/icon/color/cncf-landscape-icon-color.png"
   open_graph: "https://landscape.cncf.io/images/social.jpg"
 
+# Logos viewbox (optional)
+#
+# In order to display the logos as large as possible in the landscape, during
+# the build process we try to update their viewbox if `adjust` is set to true
+# (by default it is when this setting is not provided). However, sometimes this
+# does not help and logos may not be displayed correctly. In those cases, it is
+# possible to exclude some of them from being adjusted by adding the logo(s)
+# file name to the `exclude` list.
+#
+# logos_viewbox:
+#   adjust: true
+#   exclude:
+#     - logo1.svg
+#     - logo2.svg
+#
+
 # Name of the members category (optional)
 #
 # Landscapes usually have a special category dedicated to the members of the
@@ -303,8 +329,8 @@ tags:
     - category: "Wasm"
       subcategories:
         - "Packaging, Registries & Application Delivery"
-  contributor-strategy: []
-  environmental-sustainability: []
+  contributor-strategy: [ ]
+  environmental-sustainability: [ ]
   network:
     - category: "Orchestration & Management"
       subcategories:
@@ -365,9 +391,19 @@ tags:
 #   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
 #   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
 #   details_url: <URL>   # Event details URL (required)
+#
 upcoming_event:
   name: "KubeCon + CloudNativeCon EU 2024"
   start: "2024-03-19"
   end: "2024-03-22"
   banner_url: "https://www.cncf.io/wp-content/uploads/2024/01/kceu24_promo_2400x300.png"
   details_url: "https://events.linuxfoundation.org/kubecon-cloudnativecon-europe/register/?utm_source=landscape&utm_medium=all&utm_campaign=kubeconeu24&utm_content=slim-banner"
+
+# View mode (optional)
+#
+# This section allows customizing the default view mode of the landscape web
+# application. The view mode can be set to either `grid` or `card`. When
+# omitted, the default view mode is `grid`.
+#
+# view_mode: <grid|card>
+#

@@ -1,0 +1,30 @@
+[package]
+name = "landscape2-core-academic"
+description = "Landscape2 Academic Mode core functionality"
+repository = "https://github.com/open-neuroscience-foundation/landscape2-academic"
+readme = "../../README.md"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+itertools = { workspace = true }
+lazy_static = { workspace = true }
+markdown = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+tracing = { workspace = true }
+url = { workspace = true }
+
+[dev-dependencies]
+mockito = { workspace = true }
+pretty_assertions = { workspace = true }
+tokio = { workspace = true }

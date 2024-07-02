@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2024-05-13
+
+### Added
+
+- Experimental overlay (#587)
+- Improve search (#619)
+- New embed card style (#622)
+- Repository selector to item details view (#581)
+- Not open source filter (#583)
+- Repositories good first issues link (#582)
+- Display parent project in item details view (#570, #568)
+- Display loading spinner in controls bar (#579)
+- Display package manager link in item details view (#609, 592)
+- Display other links in item's detail view (#624)
+- Organization region in items details view (#617)
+- Make default view mode configurable (#574, #572)
+- Make logos viewbox adjustments configurable (#577)
+- Hide stats link when there are no stats available (#607)
+- Open item details modal from zoom view (#620)
+- Do not display empty groups in group selector (#606)
+- Collect repositories topics from GitHub (#590)
+- Some more options to logos preview (#594)
+- Some tests to core crate (#613)
+
+### Fixed
+
+- Some issues in mobile devices (#612)
+- Some issues with filters modal (#593)
+- Badge url issue (#608)
+- Participation stats legend in item details view (#616)
+- Use additional categories on embed views (#623)
+- Do not raise errors detecting mime type on deploy (#573)
+
+### Changed
+
+- Check logos checksum while deploying (#578)
+- Use only orgs in data file when processing stats (#589)
+- Use custom octorust client (#615)
+- Upgrade CLI tool dependencies (#605)
+- Upgrade web application and embed dependencies (#610)
+
+## [0.8.1] - 2024-04-11
+
+### Fixed
+
+- Fix iframe resizer script path issue (#566)
+
+## [0.8.0] - 2024-04-11
+
+### Added
+
+- Ability to classify cards by maturity, tag, or even not classify at all (#552)
+- Allow sorting cards by multiple criteria (#552)
+- New virtual group named `all`, that includes the cards from all groups (#552)
+- Categories / subcategories headers now show how many items are on each (#552)
+- Button to jump to the top of the page (#552)
+- Category filter (#552)
+- Display LinkedIn link in item details view (#548, #563)
+- Allow setting web application base path (#557)
+
+### Fixed
+
+- Issue processing additional categories (#562)
+
+### Changed
+
+- Do not cache logos during build (#549)
+- Minor refactoring and some improvements to instrumentation (#543, #547)
+- Upgrade CLI dependencies (#550)
+
 ## [0.7.0] - 2024-03-19
 
 ### Added

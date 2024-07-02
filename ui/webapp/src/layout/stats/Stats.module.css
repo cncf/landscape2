@@ -1,0 +1,38 @@
+.title {
+  font-size: 1.5rem;
+  color: var(--bs-gray-800) !important;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--bs-gray-800) !important;
+}
+
+.table {
+  font-size: 0.9rem;
+  border-color: rgb(209, 209, 209) !important;
+}
+
+.table th {
+  color: var(--bs-gray-700);
+}
+
+.loadingContent {
+  min-height: calc(var(--app-height) - 36px);
+}
+
+.projectsCol {
+  width: 90px;
+  max-width: 90px;
+  min-width: 90px;
+}
+
+@media only screen and (max-width: 575.98px) {
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}

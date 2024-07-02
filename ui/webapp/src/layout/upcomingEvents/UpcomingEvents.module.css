@@ -1,0 +1,42 @@
+.wrapper {
+  max-width: 95%;
+  bottom: 2px;
+  transform: translate(-50%, 150%);
+  transition: transform 0.5s ease-in-out;
+}
+
+.loaded {
+  transform: translate(-50%, 0%);
+  z-index: 1025;
+}
+
+.imageWrapper {
+  background-color: #f8f9fa;
+  border-color: var(--bs-gray-400) !important;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.image {
+  height: 100px;
+}
+
+.closeBtn {
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 20px;
+  height: 20px;
+  font-size: 0.75rem;
+  color: var(--bs-gray-700);
+  border-color: var(--bs-gray-400) !important;
+}
+
+.closeBtn svg {
+  top: -1px;
+}
+
+@media only screen and (max-width: 991.98px) {
+  .image {
+    height: 75px;
+  }
+}

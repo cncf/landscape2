@@ -1,0 +1,64 @@
+.sticky {
+  width: 350px;
+  max-width: 350px;
+  min-width: 350px;
+  top: 4.5rem;
+  bottom: 1rem;
+  max-height: calc(var(--app-height) - 4.5rem);
+}
+
+.wrapper {
+  height: calc(100% - 3rem);
+}
+
+.content {
+  max-height: calc(100% - 57px);
+  overscroll-behavior: contain;
+}
+
+.title {
+  color: var(--color1);
+}
+
+.btn {
+  font-size: 0.9rem;
+}
+
+.level-0 {
+  padding-left: 1.5rem !important;
+}
+
+.level-1 {
+  padding-left: 2.5rem !important;
+  font-size: 0.8rem;
+}
+
+.active {
+  color: var(--color1);
+  background-color: var(--bs-gray-100);
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: calc(50% - 6px);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid var(--color1);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    text-decoration: underline;
+    color: inherit;
+    background-color: var(--bs-gray-100);
+  }
+
+  .active:hover {
+    text-decoration: none;
+    color: var(--color1);
+  }
+}
