@@ -31,6 +31,7 @@ Other differences
 
 ## Notes
 
-- `2024-03-01`, decoupling location from organization since some items do not have organization
-- `2024-02-29`, not using SerpAPI for h-index, since it is expensive
-- `2024-02-29`, not using Crunchbase API for company info, since it requires expensive Enterprise level subscription
+- `2024-03-01` decoupling location from organization since some items do not have organization
+- `2024-02-29` not using SerpAPI for h-index, since it is expensive
+- `2024-02-29` not using Crunchbase API for company info, since it requires expensive Enterprise level subscription
+- `2024-07-02` removed Crunchbase title from item card subtitiles to avoid duplication and padding issue due to location

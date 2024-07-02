@@ -79,7 +79,7 @@ const Card = (props: Props) => {
             </div>
           </Show>
 
-          <Show when={props.item.crunchbase_data && props.item.crunchbase_data.name}>
+          <Show when={props.item.crunchbase_data && props.item.crunchbase_data.name && isUndefined(props.item.name)}>
             <div class={`text-muted text-truncate ${styles.name}`}>
               <small>{props.item.crunchbase_data!.name}</small>
             </div>

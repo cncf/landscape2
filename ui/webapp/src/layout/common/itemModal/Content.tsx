@@ -169,7 +169,7 @@ const Content = (props: Props) => {
               </div>
             </Show>
 
-            <Show when={!isUndefined(itemInfo()!.crunchbase_data) && itemInfo()!.crunchbase_data!.name}>
+            <Show when={!isUndefined(itemInfo()!.crunchbase_data) && itemInfo()!.crunchbase_data!.name && isUndefined(itemInfo()!.name)}>
               <div class={`text-muted text-truncate ${styles.name}`}>
                 <small>{itemInfo()!.crunchbase_data!.name}</small>
               </div>
