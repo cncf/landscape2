@@ -33,6 +33,23 @@
     <% } %>
     <title>{{ datasets.base.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    {% if let Some(analytics) = analytics %}
+      {% if let Some(gtm) = analytics.gtm %}
+        {% if let Some(tag) = gtm.container_id %}
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{tag}}"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '{{tag}}');
+        </script>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    
     <% if (isDev) { %>
     <script>
       fetch("./static/data/base.json")
@@ -49,24 +66,8 @@
       window.statsDS = {{ datasets.stats|json_compact|safe }};
     </script>
     <% } %>
-    <% if (!isDev) { %>
-      {% set gtm_container_id = analytics|get_gtm_container_id %}
-      {% if let Some(gtm_container_id) = gtm_container_id %}
-      <!-- Google Tag Manager -->
-      <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
-      <!-- End Google Tag Manager -->
-      {% endif %}
-    <% } %>
   </head>
   <body>
-    <% if (!isDev) { %>
-      {% if let Some(gtm_container_id) = gtm_container_id %}
-      <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id }}"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->
-      {% endif %}
-    <% } %>
     <div id="landscape"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>

@@ -28,6 +28,7 @@ Other differences
 - no docker
 - updated footer "Powered by" link
 - `CRUNCHBASE_CACHE_TTL` env var, and setting it to 0 causes not refreshing crunchbase
+- basic direct inlining of Google Tags, since CNCF approach does not work since 2024-05-01
 
 ## Notes
 

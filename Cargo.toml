@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/cli", "crates/core", "crates/wasm/overlay"]
 
 [workspace.package]
-version = "0.9.1"
+version = "0.9.2"
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.77"

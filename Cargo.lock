@@ -1863,7 +1863,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-academic"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "anyhow",
  "askama",
@@ -1914,7 +1914,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-core-academic"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1935,7 +1935,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-overlay-academic"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "anyhow",
  "landscape2-core-academic",
