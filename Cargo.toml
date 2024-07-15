@@ -92,7 +92,7 @@ lto = "thin"
 # Allow customization of release workflow
 allow-dirty = ["ci"]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.14.1"
+cargo-dist-version = "0.19.1"
 # CI backends to support
 ci = "github"
 # The installers to generate for each app
@@ -107,3 +107,5 @@ publish-jobs = ["homebrew"]
 pr-run-mode = "skip"
 # Whether to install an updater program
 install-updater = false
+# Path that installers should place binaries in
+install-path = "CARGO_HOME"
