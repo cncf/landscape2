@@ -1,6 +1,6 @@
+import { Loading } from 'common';
 import { lazy, Suspense } from 'solid-js';
 
-import Loading from '../common/Loading';
 import Footer from '../navigation/Footer';
 import styles from './Games.module.css';
 

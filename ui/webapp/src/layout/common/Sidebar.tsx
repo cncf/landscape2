@@ -1,8 +1,7 @@
+import { useBodyScroll, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, JSXElement, on, Show } from 'solid-js';
 
-import { useBodyScroll } from '../../hooks/useBodyScroll';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
 import styles from './Sidebar.module.css';
 
 export interface Props {

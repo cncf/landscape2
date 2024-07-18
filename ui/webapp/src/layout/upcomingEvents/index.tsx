@@ -1,10 +1,8 @@
+import { ExternalLink, SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
-import { SVGIconKind } from '../../types';
-import ExternalLink from '../common/ExternalLink';
-import SVGIcon from '../common/SVGIcon';
 import { useActiveItemId } from '../stores/activeItem';
 import { useEventContent, useEventVisibleContent, useSetEventHiddenContent } from '../stores/upcomingEventData';
 import styles from './UpcomingEvents.module.css';

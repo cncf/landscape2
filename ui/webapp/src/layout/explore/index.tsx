@@ -1,4 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { Loading, NoData, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import difference from 'lodash/difference';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
@@ -20,7 +21,6 @@ import {
   VIEW_MODE_PARAM,
   ZOOM_LEVELS,
 } from '../../data';
-import useBreakpointDetect from '../../hooks/useBreakpointDetect';
 import {
   ActiveFilters,
   BaseData,
@@ -32,7 +32,6 @@ import {
   SortDirection,
   SortOption,
   StateContent,
-  SVGIconKind,
   ViewMode,
 } from '../../types';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
@@ -40,9 +39,6 @@ import getNormalizedName from '../../utils/getNormalizedName';
 import itemsDataGetter, { ClassifyAndSortOptions, GroupData } from '../../utils/itemsDataGetter';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
-import Loading from '../common/Loading';
-import NoData from '../common/NoData';
-import SVGIcon from '../common/SVGIcon';
 import Footer from '../navigation/Footer';
 import { useFullDataReady } from '../stores/fullData';
 import { useSetGridWidth } from '../stores/gridWidth';

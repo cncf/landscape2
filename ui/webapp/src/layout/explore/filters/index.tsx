@@ -1,3 +1,4 @@
+import { Loading, Modal, NoData, SVGIcon, SVGIconKind } from 'common';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
@@ -16,16 +17,11 @@ import {
   Item,
   SortDirection,
   SortOption,
-  SVGIconKind,
   ViewMode,
 } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
 import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
-import Loading from '../../common/Loading';
-import Modal from '../../common/Modal';
-import NoData from '../../common/NoData';
 import Section from '../../common/Section';
-import SVGIcon from '../../common/SVGIcon';
 import { useViewMode } from '../../stores/viewMode';
 import styles from './Filters.module.css';
 import SearchbarSection from './SearchbarSection';

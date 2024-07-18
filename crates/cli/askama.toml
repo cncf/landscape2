@@ -1,2 +1,6 @@
 [general]
-dirs = ["templates", "../../ui/webapp/dist"]
+dirs = [
+    "templates",
+    "../../ui/embed-item/dist",
+    "../../ui/webapp/dist"
+]

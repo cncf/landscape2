@@ -30,11 +30,11 @@ use landscape2_core::{
     datasets::{embed::EmbedView, full::Full, Datasets, NewDatasetsInput},
     games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
-    settings::{self, Analytics, LandscapeSettings, LogosViewbox, Osano, SettingsSource},
+    settings::{self, Analytics, Colors, LandscapeSettings, LogosViewbox, Osano, SettingsSource},
 };
 use qrcode::render::svg;
 use reqwest::StatusCode;
-use rust_embed::RustEmbed;
+use rust_embed::{EmbeddedFile, RustEmbed};
 use std::{
     collections::{BTreeMap, HashMap},
     ffi::OsStr,
@@ -90,6 +90,12 @@ const PREPARE_LOGOS_MAX_CONCURRENCY: usize = 20;
 #[derive(RustEmbed)]
 #[folder = "../../ui/embed/dist"]
 struct EmbedAssets;
+
+/// Embed landscape embeddable views (item details) assets into binary.
+/// (these assets will be built automatically from the build script)
+#[derive(RustEmbed)]
+#[folder = "../../ui/embed-item/dist"]
+struct EmbedItemAssets;
 
 /// Embed web application assets into binary.
 /// (these assets will be built automatically from the build script)
@@ -212,8 +218,9 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
         &args.output_dir,
     )?;
 
-    // Render index file and write it to the output directory
-    render_index(&settings.analytics, &datasets, &settings.osano, &args.output_dir)?;
+    // Render index and embed-item html files and write them to the output dir
+    render_index_html(&settings.analytics, &datasets, &settings.osano, &args.output_dir)?;
+    render_embed_item_html(&settings.colors, &args.output_dir)?;
 
     // Copy embed and web application assets files to the output directory
     copy_embed_assets(&args.output_dir)?;
@@ -382,14 +389,28 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
 fn copy_embed_assets(output_dir: &Path) -> Result<()> {
     debug!("copying embed assets to output directory");
 
-    for asset_path in EmbedAssets::iter() {
-        if let Some(embedded_file) = EmbedAssets::get(&asset_path) {
-            let path = Path::new(EMBED_PATH).join(asset_path.as_ref());
-            if let Some(parent_path) = path.parent() {
-                fs::create_dir_all(output_dir.join(parent_path))?;
-            }
-            let mut file = File::create(output_dir.join(path))?;
-            file.write_all(&embedded_file.data)?;
+    let copy_embed_asset = |path: &str, embedded_file: EmbeddedFile| -> Result<()> {
+        let path = Path::new(EMBED_PATH).join(path);
+        if let Some(parent_path) = path.parent() {
+            fs::create_dir_all(output_dir.join(parent_path))?;
+        }
+        let mut file = File::create(output_dir.join(path))?;
+        file.write_all(&embedded_file.data)?;
+        Ok(())
+    };
+
+    for path in EmbedAssets::iter() {
+        if let Some(embedded_file) = EmbedAssets::get(&path) {
+            copy_embed_asset(&path, embedded_file)?;
+        }
+    }
+    for path in EmbedItemAssets::iter() {
+        if path == "embed-item.html" {
+            // This file is a template that will be rendered later on
+            continue;
+        }
+        if let Some(embedded_file) = EmbedItemAssets::get(&path) {
+            copy_embed_asset(&path, embedded_file)?;
         }
     }
 
@@ -401,18 +422,17 @@ fn copy_embed_assets(output_dir: &Path) -> Result<()> {
 fn copy_webapp_assets(output_dir: &Path) -> Result<()> {
     debug!("copying web application assets to output directory");
 
-    for asset_path in WebappAssets::iter() {
-        // The index document is a template that we'll render, so we don't want
-        // to copy it as is.
-        if asset_path == "index.html" || asset_path == ".keep" {
+    for path in WebappAssets::iter() {
+        if path == "index.html" || path == ".keep" {
+            // This file is a template that will be rendered later on
             continue;
         }
 
-        if let Some(embedded_file) = WebappAssets::get(&asset_path) {
-            if let Some(parent_path) = Path::new(asset_path.as_ref()).parent() {
+        if let Some(embedded_file) = WebappAssets::get(&path) {
+            if let Some(parent_path) = Path::new(path.as_ref()).parent() {
                 fs::create_dir_all(output_dir.join(parent_path))?;
             }
-            let mut file = File::create(output_dir.join(asset_path.as_ref()))?;
+            let mut file = File::create(output_dir.join(path.as_ref()))?;
             file.write_all(&embedded_file.data)?;
         }
     }
@@ -834,18 +854,18 @@ fn prepare_view_full_dataset(full: &Full, view: &EmbedView) -> Full {
     }
 }
 
-/// Template for the index document.
+/// Template for the index html document.
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
-struct Index<'a> {
+struct IndexHtml<'a> {
     analytics: &'a Option<Analytics>,
     datasets: &'a Datasets,
     osano: &'a Option<Osano>,
 }
 
-/// Render index file and write it to the output directory.
+/// Render index html file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_index(
+fn render_index_html(
     analytics: &Option<Analytics>,
     datasets: &Datasets,
     osano: &Option<Osano>,
@@ -853,13 +873,32 @@ fn render_index(
 ) -> Result<()> {
     debug!("rendering index.html file");
 
-    let index = Index {
+    let html = IndexHtml {
         analytics,
         datasets,
         osano,
     }
     .render()?;
-    File::create(output_dir.join("index.html"))?.write_all(index.as_bytes())?;
+    File::create(output_dir.join("index.html"))?.write_all(html.as_bytes())?;
+
+    Ok(())
+}
+
+/// Template for the embed item html document.
+#[derive(Debug, Clone, Template)]
+#[template(path = "embed-item.html", escape = "none")]
+struct EmbedItemHtml<'a> {
+    colors: &'a Option<Colors>,
+}
+
+/// Render embed item html file and write it to the output directory.
+#[instrument(skip_all, err)]
+fn render_embed_item_html(colors: &Option<Colors>, output_dir: &Path) -> Result<()> {
+    debug!("rendering embed-item.html file");
+
+    let path = output_dir.join(EMBED_PATH).join("embed-item.html");
+    let html = EmbedItemHtml { colors }.render()?;
+    File::create(path)?.write_all(html.as_bytes())?;
 
     Ok(())
 }
@@ -879,6 +918,7 @@ fn setup_output_dir(output_dir: &Path) -> Result<()> {
         API_PATH,
         DATASETS_PATH,
         DOCS_PATH,
+        EMBED_PATH,
         IMAGES_PATH,
         LOGOS_PATH,
         SOURCES_PATH,

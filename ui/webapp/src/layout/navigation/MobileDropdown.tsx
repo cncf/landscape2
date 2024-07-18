@@ -1,13 +1,10 @@
 import { A } from '@solidjs/router';
+import { ExternalLink, SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createSignal, Show } from 'solid-js';
 
 import { EXPLORE_PATH, GAMES_PATH, GUIDE_PATH, STATS_PATH } from '../../data';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
-import { SVGIconKind } from '../../types';
-import ExternalLink from '../common/ExternalLink';
-import SVGIcon from '../common/SVGIcon';
 import styles from './MobileDropdown.module.css';
 
 interface Props {

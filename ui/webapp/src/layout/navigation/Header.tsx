@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
+import { ExternalLink, Image, SVGIcon, SVGIconKind } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createMemo, Show } from 'solid-js';
@@ -12,16 +13,12 @@ import {
   SCREENSHOTS_PATH,
   STATS_PATH,
 } from '../../data';
-import { SVGIconKind } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 import scrollToTop from '../../utils/scrollToTop';
 import DownloadDropdown from '../common/DownloadDropdown';
-import ExternalLink from '../common/ExternalLink';
-import Image from '../common/Image';
 import Searchbar from '../common/Searchbar';
-import SVGIcon from '../common/SVGIcon';
 import { useSetGroupActive } from '../stores/groupActive';
 import { useSetViewMode } from '../stores/viewMode';
 import EmbedModal from './EmbedModal';

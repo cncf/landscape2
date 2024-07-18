@@ -1,10 +1,10 @@
+import { cutString } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { DEFAULT_ZOOM_LEVELS, ZOOM_LEVELS } from '../../data';
 import { BaseItem, Breakpoint } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
-import cutString from '../../utils/cutString';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,

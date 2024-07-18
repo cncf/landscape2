@@ -1,3 +1,4 @@
+import { Loading } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { For, Match, Show, Switch } from 'solid-js';
@@ -10,7 +11,6 @@ import { CategoriesData } from '../../../utils/itemsDataGetter';
 import sortItems from '../../../utils/sortItems';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
-import Loading from '../../common/Loading';
 import { Sidebar } from '../../common/Sidebar';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useGroupActive } from '../../stores/groupActive';

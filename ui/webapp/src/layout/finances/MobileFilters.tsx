@@ -1,10 +1,10 @@
+import { SVGIcon, SVGIconKind } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import { Accessor, createSignal, For, JSXElement, Show } from 'solid-js';
 
-import { ActiveFilters, FilterCategory, FilterSection, SVGIconKind } from '../../types';
+import { ActiveFilters, FilterCategory, FilterSection } from '../../types';
 import Section from '../common/Section';
 import { Sidebar } from '../common/Sidebar';
-import SVGIcon from '../common/SVGIcon';
 import styles from './MobileFilters.module.css';
 
 interface Props {

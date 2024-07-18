@@ -1,24 +1,15 @@
 import { A } from '@solidjs/router';
+import { SVGIcon, SVGIconKind } from 'common';
 import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS, GUIDE_PATH } from '../../../data';
-import {
-  BaseItem,
-  Category,
-  ClassifyOption,
-  Item,
-  SortDirection,
-  SortOption,
-  Subcategory,
-  SVGIconKind,
-} from '../../../types';
+import { BaseItem, Category, ClassifyOption, Item, SortDirection, SortOption, Subcategory } from '../../../types';
 import getNormalizedName from '../../../utils/getNormalizedName';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import sortItems from '../../../utils/sortItems';
 import sortMaturityStatusTitles from '../../../utils/sortMenuOptions';
-import SVGIcon from '../../common/SVGIcon';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import Card from './Card';
 import styles from './Content.module.css';

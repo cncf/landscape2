@@ -1,9 +1,9 @@
+import { sortObjectByValue } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyBytes from '../../utils/prettifyBytes';
-import sortObjectByValue from '../../utils/sortObjectByValue';
 import styles from './HorizontalBarChart.module.css';
 
 interface Props {

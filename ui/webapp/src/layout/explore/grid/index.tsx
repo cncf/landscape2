@@ -1,7 +1,7 @@
+import { cutString } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import cutString from '../../../utils/cutString';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';

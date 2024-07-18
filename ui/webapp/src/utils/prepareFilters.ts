@@ -1,23 +1,12 @@
-import { REGEX_DASH } from '../data';
+import { capitalizeFirstLetter, formatTAGName } from 'common';
+
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
-import capitalizeFirstLetter from './capitalizeFirstLetter';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import itemsDataGetter from './itemsDataGetter';
 
 const cleanValue = (t: string): string => {
   // return encodeURIComponent(t);
   return t;
-};
-
-export const formatTAGName = (t: string): string => {
-  const tag = t.replace(REGEX_DASH, ' ');
-  const words = tag.split(' ');
-
-  for (let i = 0; i < words.length; i++) {
-    words[i] = capitalizeFirstLetter(words[i]);
-  }
-
-  return words.join(' ');
 };
 
 export interface FiltersPerGroup {

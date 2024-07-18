@@ -13,6 +13,7 @@ import {
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
+  DEFAULT_DISPLAY_ITEM_MODAL,
   DEFAULT_DISPLAY_ITEM_NAME,
   DEFAULT_ITEM_NAME_SIZE,
   DEFAULT_ITEMS_ALIGNMENT,
@@ -27,6 +28,7 @@ import {
   DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
   DISPLAY_HEADER_CATEGORY_PARAM,
   DISPLAY_HEADER_PARAM,
+  DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
   ITEM_NAME_SIZE_PARAM,
@@ -138,6 +140,9 @@ const App = () => {
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
+  const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
+  const [activeItemId, setActiveItemId] = createSignal<string | null>(null);
+  const origin = () => (import.meta.env.MODE === 'development' ? `http://localhost:8000` : `${basePath()}`);
 
   // Sort items by name alphabetically
   const sortItemsByName = (items: BaseItem[]): BaseItem[] => {
@@ -165,6 +170,7 @@ const App = () => {
     const alignmentParam = urlParams.get(ITEMS_ALIGNMENT_PARAM);
     const spacingParam = urlParams.get(ITEMS_SPACING_PARAM);
     const uppercaseParam = urlParams.get(UPPERCASE_TITLE_PARAM);
+    const displayItemModalParam = urlParams.get(DISPLAY_ITEM_MODAL_PARAM);
 
     batch(() => {
       if (keyParam !== null) {
@@ -231,6 +237,10 @@ const App = () => {
             setItemsSpacing(spacing);
           }
         }
+        if (displayItemModalParam !== null) {
+          const displayItemModal = displayItemModalParam === 'true';
+          setDisplayItemModal(displayItemModal);
+        }
         // When size and style are not valid, we don´t save the key
         if (isValidSize && isValidStyle) {
           setBasePath(basePathParam || '');
@@ -248,11 +258,7 @@ const App = () => {
     on(key, () => {
       async function fetchData() {
         try {
-          fetch(
-            import.meta.env.MODE === 'development'
-              ? `http://localhost:8000/data/embed_${key()}.json`
-              : `${basePath()}/data/embed_${key()}.json`
-          )
+          fetch(`${origin()}/data/embed_${key()}.json`)
             .then((res) => {
               if (res.ok) {
                 return res.json();
@@ -271,6 +277,24 @@ const App = () => {
       }
       if (typeof key() !== 'undefined') {
         fetchData();
+      }
+    })
+  );
+
+  createEffect(
+    on(activeItemId, () => {
+      if (activeItemId() !== null) {
+        window.parent.postMessage(
+          {
+            type: 'showItemDetails',
+            itemId: activeItemId(),
+            key: key(),
+            foundation: data()!.foundation,
+            basePath: origin(),
+          },
+          '*'
+        );
+        setActiveItemId(null);
       }
     })
   );
@@ -312,6 +336,8 @@ const App = () => {
                 spacing={itemsSpacing()}
                 displayName={displayItemName()}
                 itemNameSize={itemNameSize()}
+                displayItemModal={displayItemModal()}
+                setActiveItemId={setActiveItemId}
               />
             }
           >
@@ -369,6 +395,8 @@ const App = () => {
                       spacing={itemsSpacing()}
                       displayName={displayItemName()}
                       itemNameSize={itemNameSize()}
+                      displayItemModal={displayItemModal()}
+                      setActiveItemId={setActiveItemId}
                     />
                   </>
                 );

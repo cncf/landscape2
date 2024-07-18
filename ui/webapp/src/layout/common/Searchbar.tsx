@@ -1,19 +1,14 @@
+import { FoundationBadge, Image, MaturityBadge, SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { SearchResult } from 'minisearch';
 import { batch, createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
 
-import { BANNER_ID } from '../../data';
-import { useOutsideClick } from '../../hooks/useOutsideClick';
-import { SVGIconKind } from '../../types';
+import { BANNER_ID, FOUNDATION } from '../../data';
 import searchEngine from '../../utils/search';
 import { useUpdateActiveItemId } from '../stores/activeItem';
-import FoundationBadge from './FoundationBadge';
 import HoverableItem from './HoverableItem';
-import Image from './Image';
-import MaturityBadge from './MaturityBadge';
 import styles from './Searchbar.module.css';
-import SVGIcon from './SVGIcon';
 
 interface Props {
   searchBarClass?: string;
@@ -287,7 +282,10 @@ const Searchbar = (props: Props) => {
                               <span class={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
                               <Show when={!isUndefined(item.maturity)}>
                                 <div class={`d-flex flex-nowrap position-relative ${styles.badges}`}>
-                                  <FoundationBadge class={`d-none d-xxl-flex ms-2 ${styles.badge}`} />
+                                  <FoundationBadge
+                                    foundation={FOUNDATION}
+                                    class={`d-none d-xxl-flex ms-2 ${styles.badge}`}
+                                  />
                                   <MaturityBadge level={item.maturity!} class={`ms-2 ${styles.badge}`} />
                                 </div>
                               </Show>

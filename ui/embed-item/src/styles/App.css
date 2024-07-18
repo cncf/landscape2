@@ -1,0 +1,147 @@
+:root {
+  --color1: rgba(0, 107, 204, 1);
+  --color2: rgba(255, 0, 170, 1);
+  --color3: rgba(96, 149, 214, 1);
+  --color4: rgba(0, 42, 81, 0.7);
+  --color-stats-1: var(--color1);
+}
+
+body {
+  background-color: transparent !important;
+}
+
+button:focus,
+a:focus,
+input:not([type='color']):not(.withShadow):focus,
+select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 0 transparent !important;
+}
+
+/* Bootstrap */
+.badge {
+  font-weight: 600 !important;
+}
+
+a,
+.btn-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.modal-dialog-scrollable .modal-body {
+  overscroll-behavior: contain;
+  overflow-x: hidden;
+}
+
+.text-primary {
+  color: var(--color1) !important;
+}
+
+.text-secondary {
+  color: var(--color2) !important;
+}
+
+.border-primary {
+  border-color: var(--color1) !important;
+}
+
+.btn-outline-primary {
+  border-color: var(--color1);
+  color: var(--color1);
+
+  &:not(.disabled):not(:disabled):not(:active):not(.active):hover {
+    background-color: var(--color1-hover);
+    color: var(--bs-white);
+  }
+
+  &:active,
+  &.active {
+    background-color: var(--color1);
+    color: var(--bs-white);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--color2);
+  border-color: var(--color2);
+
+  &:not(.disabled):not(:disabled):hover,
+  &:focus,
+  &:active,
+  &.active {
+    filter: brightness(95%);
+  }
+}
+
+.form-check-input:checked {
+  background-color: var(--color2);
+  border-color: var(--color2);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+@media (hover: hover) {
+  a:hover,
+  .btn-link:hover {
+    text-decoration: underline;
+  }
+}
+
+.modal-xxl {
+  max-width: 80%;
+}
+
+@media (min-width: 1920px) {
+  .modal-xxl {
+    max-width: 1700px;
+  }
+}
+
+@media only screen and (max-width: 991.98px) {
+  .btnIconMobile {
+    width: 35px !important;
+    height: 35px !important;
+    font-size: 1rem !important;
+  }
+
+  a:hover,
+  .btn-link:hover {
+    color: inherit !important;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100%;
+    min-height: var(--app-height);
+    overflow: auto;
+  }
+
+  .overlay-active #landscape {
+    height: 100%;
+  }
+
+  .noScroll-sidebar,
+  .noScroll-modal,
+  .noScroll-loading,
+  .noScroll-dropdown {
+    height: 100%;
+    overflow: hidden;
+    overflow-y: hidden !important;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .noScroll-sidebar #landscape,
+  .noScroll-modal #landscape,
+  .noScroll-loading #landscape,
+  .noScroll-dropdown #landscape {
+    height: 100%;
+    overflow: hidden;
+    overflow-y: hidden !important;
+  }
+}

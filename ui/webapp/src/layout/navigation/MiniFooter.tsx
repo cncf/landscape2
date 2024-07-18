@@ -1,7 +1,7 @@
+import { ExternalLink } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { Show } from 'solid-js';
 
-import ExternalLink from '../common/ExternalLink';
 import styles from './Footer.module.css';
 
 const MiniFooter = () => {

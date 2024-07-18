@@ -1,4 +1,5 @@
 import { createElementSize } from '@solid-primitives/resize-observer';
+import { Loading } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, For, on, Show, untrack } from 'solid-js';
@@ -13,7 +14,6 @@ import GridItem from '../../explore/grid/GridItem';
 import { useFullDataReady } from '../../stores/fullData';
 import { useSetVisibleZoom, useVisibleZoom } from '../../stores/visibleZoomSection';
 import FullScreenModal from '../FullScreenModal';
-import Loading from '../Loading';
 import styles from './ZoomModal.module.css';
 
 const GAP = 40; // Title

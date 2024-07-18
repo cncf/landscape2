@@ -1,11 +1,11 @@
+import { SVGIcon, SVGIconKind } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
 import { Accessor, createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
-import { ActiveFilters, FilterCategory, FilterOption, FilterSection, SVGIconKind } from '../../../types';
+import { ActiveFilters, FilterCategory, FilterOption, FilterSection } from '../../../types';
 import CheckBox from '../../common/Checkbox';
-import SVGIcon from '../../common/SVGIcon';
 import styles from './SearchbarSection.module.css';
 
 export interface Props {
