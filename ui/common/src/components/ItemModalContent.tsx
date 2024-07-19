@@ -429,6 +429,12 @@ export const ItemModalContent = (props: Props) => {
                     </ExternalLink>
                   </Show>
 
+                  <Show when={!isUndefined(itemInfo()!.documentation_url)}>
+                    <ExternalLink title="Documenation" class={`ms-3 ${Link}`} href={itemInfo()!.documentation_url!}>
+                      <SVGIcon kind={SVGIconKind.Book} />
+                    </ExternalLink>
+                  </Show>
+
                   <Show when={!isUndefined(itemInfo()!.package_manager_url)}>
                     <ExternalLink
                       title="Package manager"
