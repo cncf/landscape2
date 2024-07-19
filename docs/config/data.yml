@@ -152,6 +152,9 @@ categories:
                 # Docker URL (optional).
                 docker_url: https://docker.url
 
+                # Documentation URL (optional).
+                documentation_url: https://documentation.url
+
                 # GitHub discussions URL (optional).
                 github_discussions_url: https://github.discussions.url
 
