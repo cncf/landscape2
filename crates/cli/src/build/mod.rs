@@ -643,8 +643,8 @@ async fn prepare_items_logos(
                 }
             };
 
-            // Copy logo to output dir using the digest(+.svg) as filename
-            let file_name = format!("{}.svg", logo.digest);
+            // Copy logo to output dir using the digest(+.extenstion) as filename
+            let file_name = format!("{}.{}", logo.digest, logo.extension);
             let mut file = match File::create(output_dir.join(LOGOS_PATH).join(&file_name)) {
                 Ok(file) => file,
                 Err(err) => {
@@ -652,7 +652,7 @@ async fn prepare_items_logos(
                     return (item.id.clone(), None);
                 }
             };
-            if let Err(err) = file.write_all(&logo.svg_data) {
+            if let Err(err) = file.write_all(&logo.data) {
                 error!(?err, ?file_name, "error writing logo to file in output dir");
             };
 
