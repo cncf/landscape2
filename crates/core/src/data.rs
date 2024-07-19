@@ -424,6 +424,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.devstats_url = extra.dev_stats_url;
                         item.discord_url = extra.discord_url;
                         item.docker_url = extra.docker_url;
+                        item.documentation_url = extra.documentation_url;
                         item.github_discussions_url = extra.github_discussions_url;
                         item.gitter_url = extra.gitter_url;
                         item.graduated_at = extra.graduated;
@@ -571,6 +572,9 @@ pub struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub docker_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub documentation_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enduser: Option<bool>,
@@ -1371,6 +1375,7 @@ mod tests {
                             dev_stats_url: Some("dev_stats_url".to_string()),
                             discord_url: Some("discord_url".to_string()),
                             docker_url: Some("docker_url".to_string()),
+                            documentation_url: Some("documentation_url".to_string()),
                             github_discussions_url: Some("github_discussions_url".to_string()),
                             gitter_url: Some("gitter_url".to_string()),
                             graduated: Some(date),
@@ -1450,6 +1455,7 @@ mod tests {
                 devstats_url: Some("dev_stats_url".to_string()),
                 discord_url: Some("discord_url".to_string()),
                 docker_url: Some("docker_url".to_string()),
+                documentation_url: Some("documentation_url".to_string()),
                 enduser: Some(false),
                 featured: None,
                 github_discussions_url: Some("github_discussions_url".to_string()),

@@ -158,6 +158,7 @@ pub(super) struct ItemExtra {
     pub dev_stats_url: Option<String>,
     pub discord_url: Option<String>,
     pub docker_url: Option<String>,
+    pub documentation_url: Option<String>,
     pub github_discussions_url: Option<String>,
     pub gitter_url: Option<String>,
     pub graduated: Option<NaiveDate>,
@@ -223,8 +224,11 @@ fn validate_urls(item: &Item) -> Result<()> {
             ("dev_stats", &extra.dev_stats_url),
             ("discord", &extra.discord_url),
             ("docker", &extra.docker_url),
+            ("documentation", &extra.documentation_url),
             ("github_discussions", &extra.github_discussions_url),
+            ("gitter", &extra.gitter_url),
             ("linkedin", &extra.linkedin_url),
+            ("package_manager", &extra.package_manager_url),
             ("mailing_list", &extra.mailing_list_url),
             ("slack", &extra.slack_url),
             ("stack_overflow", &extra.stack_overflow_url),
@@ -239,6 +243,14 @@ fn validate_urls(item: &Item) -> Result<()> {
             for a in audits {
                 let audit_url = Some(a.url.clone());
                 validate_url("audit", &audit_url)?;
+            }
+        }
+
+        // Other links
+        if let Some(other_links) = &extra.other_links {
+            for link in other_links {
+                let link_url = Some(link.url.clone());
+                validate_url("other_link", &link_url)?;
             }
         }
     };
