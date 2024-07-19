@@ -13,6 +13,7 @@ import {
   GAMES_PATH,
   GUIDE_PATH,
   LOGOS_PREVIEW_PATH,
+  PROJECTS_PATH,
   SCREENSHOTS_PATH,
   STATS_PATH,
 } from './data';
@@ -23,6 +24,7 @@ import Games from './layout/games';
 import Guide from './layout/guide';
 import Logos from './layout/logos';
 import NotFound from './layout/notFound';
+import Projects from './layout/projects';
 import Screenshots from './layout/screenshots';
 import Stats from './layout/stats';
 import { BaseData } from './types';
@@ -176,6 +178,7 @@ const App = () => {
           <Route path={STATS_PATH} component={Stats} />
           <Route path={GAMES_PATH} component={Games} />
           <Route path={FINANCES_PATH} component={Finances} />
+          <Route path={PROJECTS_PATH} component={Projects} />
           <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
           <Route path="*" component={NotFound} />
           <Route path={SCREENSHOTS_PATH} component={() => <Screenshots initialData={data()!} />} />

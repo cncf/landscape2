@@ -61,6 +61,9 @@ const FiltersPerCategoryList = (props: FiltersProps) => {
                     <Match when={props.category === FilterCategory.Maturity && c === `non-${getFoundationNameLabel()}`}>
                       <span class="text-uppercase">Not {getFoundationNameLabel()} project</span>
                     </Match>
+                    <Match when={props.category === FilterCategory.ProjectMaturity}>
+                      <>{startCase(c)}</>
+                    </Match>
                   </Switch>
                 </span>
               </div>

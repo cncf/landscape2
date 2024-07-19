@@ -1,0 +1,95 @@
+.tableLayout {
+  table-layout: fixed;
+}
+
+.thead {
+  font-size: 0.8rem;
+}
+
+.thead th {
+  color: var(--bs-gray-600);
+}
+
+.tableContent td {
+  font-size: 0.8rem;
+  line-height: 2;
+}
+
+.projectNameCell {
+  width: 18%;
+}
+
+.logoWrapper {
+  height: 20px;
+  width: 18px;
+  min-width: 18px;
+}
+
+.logo {
+  font-size: 1rem;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.title {
+  font-size: 0.9rem;
+}
+
+.select {
+  border-color: #ced4da !important;
+  font-size: 0.75rem;
+  min-width: 175px;
+}
+
+@media (max-width: 1199.98px) {
+  .select {
+    width: 150px;
+  }
+
+  .thead {
+    font-size: 0.6rem;
+  }
+
+  .tableContent td {
+    font-size: 0.65rem;
+    line-height: 2;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .projectNameCell {
+    width: 23%;
+  }
+
+  .projectBtn {
+    font-size: 0.8rem;
+  }
+
+  .maturity {
+    font-size: 90%;
+  }
+}
+
+@media only screen and (max-width: 575.98px) {
+  .thead {
+    font-size: 0.5rem;
+  }
+
+  .tableContent td {
+    font-size: 0.6rem;
+    line-height: 1.75;
+  }
+
+  .projectNameCell {
+    width: 30%;
+  }
+
+  .projectBtn {
+    font-size: 0.7rem;
+  }
+
+  .maturity {
+    font-size: 80%;
+  }
+}

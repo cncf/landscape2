@@ -22,6 +22,7 @@ export const EMBED_SETUP_PATH = `${BASE_PATH}/embed-setup`;
 export const STATS_PATH = `${BASE_PATH}/stats`;
 export const GUIDE_PATH = `${BASE_PATH}/guide`;
 export const FINANCES_PATH = `${BASE_PATH}/finances`;
+export const PROJECTS_PATH = `${BASE_PATH}/projects`;
 export const GAMES_PATH = `${BASE_PATH}/games`;
 export const LOGOS_PREVIEW_PATH = `${BASE_PATH}/logos-preview`;
 export const SCREENSHOTS_PATH = '/screenshot';

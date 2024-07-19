@@ -1,4 +1,5 @@
 import { capitalizeFirstLetter } from 'common';
+import { uniqBy } from 'lodash';
 import compact from 'lodash/compact';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
@@ -574,6 +575,17 @@ export class ItemsDataGetter {
   public getItemsByMaturity(level: string): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.maturity === level);
+    }
+  }
+
+  // Get items with defined maturity status
+  public getItemsWithMaturity(): Item[] | undefined {
+    if (this.ready && this.landscapeData && this.landscapeData.items) {
+      // Unique items by name with maturity status
+      return uniqBy(
+        this.landscapeData.items.filter((i: Item) => !isUndefined(i.maturity) && !isUndefined(i.accepted_at)),
+        'name'
+      );
     }
   }
 
