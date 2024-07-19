@@ -9,7 +9,10 @@ use regex::bytes::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 use usvg::{NodeExt, Rect, TreeParsing};
 
 lazy_static! {
@@ -36,50 +39,64 @@ pub struct LogosSource {
 /// Represents some information about an item's logo.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Logo {
-    pub svg_data: Vec<u8>,
+    pub data: Vec<u8>,
+    pub extension: String,
     pub digest: String,
 }
 
-/// Get SVG logo from the source provided and apply some modifications to it.
+/// Get logo from the source provided and apply some modifications to it when
+/// applicable.
 pub(crate) async fn prepare_logo(
     http_client: reqwest::Client,
     logos_source: &LogosSource,
     logos_viewbox: &LogosViewbox,
     file_name: &str,
 ) -> Result<Logo> {
-    // Get SVG logo from the source provided
-    let mut svg_data = get_svg(http_client.clone(), logos_source, file_name).await?;
+    // Get logo from the source provided
+    let mut logo_data = get_logo(http_client.clone(), logos_source, file_name).await?;
 
-    // Remove title if present (some identical logos are using a different
-    // title, so we do this before computing the digest)
-    svg_data = SVG_TITLE.replace(&svg_data, b"").into_owned();
+    // Apply some modifications to the logo if it is an SVG file
+    let extension = Path::new(file_name)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or_default()
+        .to_lowercase();
+    if extension == "svg" {
+        // Remove title if present (some identical logos are using a different
+        // title, so we do this before computing the digest)
+        logo_data = SVG_TITLE.replace(&logo_data, b"").into_owned();
 
-    // Update viewbox to the smallest rectangle in which the object fits
-    if logos_viewbox.adjust && !logos_viewbox.exclude.contains(&file_name.to_string()) {
-        if let Ok(Some(bounding_box)) = get_svg_bounding_box(&svg_data) {
-            if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
-                let new_viewbox_bounds = format!(
-                    "{} {} {} {}",
-                    bounding_box.left(),
-                    bounding_box.top(),
-                    bounding_box.right() - bounding_box.left(),
-                    bounding_box.bottom() - bounding_box.top()
-                );
-                let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
-                svg_data = SVG_VIEWBOX.replace(&svg_data, new_viewbox.as_bytes()).into_owned();
+        // Update viewbox to the smallest rectangle in which the object fits
+        if logos_viewbox.adjust && !logos_viewbox.exclude.contains(&file_name.to_string()) {
+            if let Ok(Some(bounding_box)) = get_svg_bounding_box(&logo_data) {
+                if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
+                    let new_viewbox_bounds = format!(
+                        "{} {} {} {}",
+                        bounding_box.left(),
+                        bounding_box.top(),
+                        bounding_box.right() - bounding_box.left(),
+                        bounding_box.bottom() - bounding_box.top()
+                    );
+                    let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
+                    logo_data = SVG_VIEWBOX.replace(&logo_data, new_viewbox.as_bytes()).into_owned();
+                }
             }
         }
     }
 
     // Calculate digest
-    let digest = hex::encode(Sha256::digest(&svg_data));
+    let digest = hex::encode(Sha256::digest(&logo_data));
 
-    Ok(Logo { svg_data, digest })
+    Ok(Logo {
+        data: logo_data,
+        extension,
+        digest,
+    })
 }
 
-/// Get SVG logo content from the corresponding source.
+/// Get logo content from the corresponding source.
 #[allow(clippy::similar_names)]
-async fn get_svg(
+async fn get_logo(
     http_client: reqwest::Client,
     logos_source: &LogosSource,
     file_name: &str,
