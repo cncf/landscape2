@@ -25,7 +25,8 @@ const Screenshots = (props: Props) => {
   onMount(() => {
     // This class enables scroll in body to capture the full screenshot
     document.body.classList.add('screenshot');
-    setGroupsData(itemsDataGetter.getGridData(false));
+    // Get grid data with all option when groups are not defined
+    setGroupsData(itemsDataGetter.getGridData(props.initialData.groups ? false : true));
   });
 
   onCleanup(() => {
