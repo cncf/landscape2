@@ -104,6 +104,7 @@ export interface Item extends BaseItem {
   github_discussions_url?: string;
   graduated_at?: string;
   incubating_at?: string;
+  archived_at?: string;
   joined_at?: string;
   mailing_list_url?: string;
   package_manager_url?: string;
@@ -340,6 +341,7 @@ export enum FilterCategory {
   InvestmentType = 'investment-type',
   Category = 'category',
   Extra = 'extra',
+  ProjectMaturity = 'maturity',
 }
 
 export interface Stats {

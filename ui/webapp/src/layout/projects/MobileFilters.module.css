@@ -1,0 +1,20 @@
+.filterBtn {
+  height: 28px;
+  font-size: 0.8rem;
+}
+
+.dot {
+  height: 0.8rem;
+  width: 0.8rem;
+  left: 1.8rem;
+  top: -0.4rem;
+}
+
+.checksList {
+  max-height: 300px;
+}
+
+.title {
+  font-size: 0.8rem;
+  color: var(--color4);
+}
