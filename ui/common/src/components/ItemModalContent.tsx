@@ -250,7 +250,7 @@ export const ItemModalContent = (props: Props) => {
                 <th class={`text-center ${AuditsCol}`} scope="col">
                 Clicks</th>
                 <th class={`text-center ${AuditsCol}`} scope="col">Updated At</th>
-                  <th scope="col">Url</th>
+                  <th class="text-center" scope="col">Url</th>
                 </tr>
               </thead>
               <tbody>
@@ -539,7 +539,7 @@ export const ItemModalContent = (props: Props) => {
             </div>
           </div>
         </div>
-               
+
         {/* Description */}
         <div class={`mt-4 text-muted ${Description}`}>{description()}</div>
 
