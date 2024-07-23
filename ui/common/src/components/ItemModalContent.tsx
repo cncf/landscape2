@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import { createEffect, createSignal, For, Match, on, Show, Switch } from 'solid-js';
+import { createEffect,createResource, createSignal, For, Match, on, Show, Switch } from 'solid-js';
 import { css } from 'solid-styled-components';
 
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../types/types';
@@ -210,11 +210,94 @@ const getPackageManagerIcon = (url: string): SVGIconKind => {
   return icon;
 };
 
+
+
 export const ItemModalContent = (props: Props) => {
   const itemInfo = () => props.item;
   const [description, setDescription] = createSignal<string>();
   const [primaryRepo, setPrimaryRepo] = createSignal<Repository>();
-
+  const [totalCount,setTotalCount] = createSignal<number>(0);
+  
+  const fetchBlueprints = async (primaryRepoUrl: string) => {
+    
+    const repoName = primaryRepoUrl.split('/').pop();
+    const response = await fetch(
+      `https://meshery.layer5.io/api/catalog/content/pattern?technology=${repoName}&page=0&pagesize=3&search=&order=&metrics=true`
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch blueprints');
+    }
+    const data = await response.json();
+    setTotalCount(data.total_count); 
+        return data.patterns;
+  };
+  
+  const [blueprints, { refetch }] = createResource(
+    () => primaryRepo()?.url,
+    fetchBlueprints
+    
+  );
+  const BlueprintSection = () => {
+    return (
+    <Show when={!isUndefined(blueprints()) && totalCount() > 0}>
+              <div class={`position-relative border ${Fieldset}`}>
+          <div class={`position-absolute px-2 bg-white fw-semibold  ${FieldsetTitle}`}>Reference Architecture</div>
+          <div class="w-100">
+            <table class={`table table-sm table-striped table-bordered mt-3 ${TableLayout}`}>
+              <thead class={`text-uppercase text-muted ${Thead}`}>
+                <tr>
+                <th class={`text-center ${AuditsColMd}`} scope="col">Name</th>
+                <th class={`text-center ${AuditsCol}`} scope="col">
+                Clicks</th>
+                <th class={`text-center ${AuditsCol}`} scope="col">Updated At</th>
+                  <th scope="col">Url</th>
+                </tr>
+              </thead>
+              <tbody>
+                <For each={blueprints()}>
+                  {(pattern) => {
+                    const href = `https://meshery.layer5.io/catalog/content/catalog/${pattern.name.toLowerCase().replace(/\s+/g, '-')}-${pattern.id}`;
+                    return (
+                      <tr class={TableContent}>
+                         <td class="px-3 text-center text-nowrap">
+                         <div class="w-100 text-truncate">
+                          {pattern.name}
+                          </div></td>
+                         <td class="px-3 text-center text-nowrap">{`${pattern.view_count}`}</td>
+                         <td class="px-3 text-center text-nowrap">{new Date(pattern.updated_at).toLocaleDateString()}</td>
+                        <td class="px-3">
+                        <div class="w-100">
+                          <ExternalLink
+                            title="View Pattern"
+                            href={href}
+                            class={`text-muted text-truncate d-block text-decoration-underline ${TableLink}`}
+                          >
+                            {href}
+                          </ExternalLink>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }}
+                </For>
+              </tbody>
+            </table>
+            <div class="text-center mt-3">
+              <ExternalLink
+                title="Show More"
+                href={`https://meshery.layer5.io/catalog?technology=${primaryRepo()?.url.split('/').pop()}`}
+                class="btn btn-primary"
+              >
+                Show More 
+              </ExternalLink>
+            </div>
+          </div>
+        </div>
+      </Show>
+    );
+  };
+  
+  
   createEffect(
     on(itemInfo, () => {
       if (!isUndefined(itemInfo()) && !isNull(itemInfo())) {
@@ -240,7 +323,13 @@ export const ItemModalContent = (props: Props) => {
       }
     })
   );
-
+  createEffect(
+    on(primaryRepo, () => {
+      if (primaryRepo()) {
+        refetch();
+      }
+    })
+  );
   const getLinkedInUrl = (): string | null => {
     if (itemInfo()) {
       if (itemInfo()!.linkedin_url) {
@@ -256,6 +345,7 @@ export const ItemModalContent = (props: Props) => {
 
   return (
     <>
+    
       <Show when={!isUndefined(props.basePath)}>
         <ItemDropdown itemId={itemInfo()!.id} foundation={props.foundation} basePath={props.basePath!} />
       </Show>
@@ -449,6 +539,7 @@ export const ItemModalContent = (props: Props) => {
             </div>
           </div>
         </div>
+               
         {/* Description */}
         <div class={`mt-4 text-muted ${Description}`}>{description()}</div>
 
@@ -508,6 +599,9 @@ export const ItemModalContent = (props: Props) => {
           class={`border ${Fieldset}`}
           titleClass={`position-absolute px-2 bg-white fw-semibold ${FieldsetTitle}`}
         />
+    <Show when={!isUndefined(blueprints()) && totalCount()>0}>
+            <BlueprintSection />
+    </Show>
         {/* Security audits */}
         <Show when={!isUndefined(itemInfo()!.audits) && !isEmpty(itemInfo()!.audits)}>
           <div class={`position-relative border ${Fieldset}`}>
