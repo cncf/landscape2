@@ -250,7 +250,7 @@ export const ItemModalContent = (props: Props) => {
                 <th class={`text-center ${AuditsCol}`} scope="col">
                 Clicks</th>
                 <th class={`text-center ${AuditsCol}`} scope="col">Updated At</th>
-                  <th class="text-center" scope="col">Url</th>
+                  <th class={`text-center`} scope="col">Url</th>
                 </tr>
               </thead>
               <tbody>
