@@ -20,7 +20,7 @@
     "add": "^2.0.6",
     "apexcharts": "^3.49.1",
     "bootstrap": "^5.3.3",
-    "common": "file:../common",
+    "common": "link:../common",
     "lodash": "^4.17.21",
     "minisearch": "^6.3.0",
     "moment": "^2.30.1",
