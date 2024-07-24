@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2024-07-24
+
+### Added
+
+- Item details modal to embed view (#664, #656)
+- Quiz game (#641)
+- Projects page (#666)
+- Document landscape data file (#631)
+- Allow setting end user flag automatically (#646)
+- End user filter (#647)
+- Documentation url link (#665, #669)
+
+### Fixed
+
+- Duplicate active filter when specification is selected (#633)
+- Duplicated date on item details view (#634)
+- Active filters list issue (#638)
+- Issue preparing screenshots with no groups (#668)
+
+### Changed
+
+- Improve Twitter url validation (#637)
+- Do not require logos to be in SVG format (#667)
+- Upgrade CLI tool dependencies (#674)
+- Upgrade web application and embed dependencies (#655)
+
 ## [0.9.0] - 2024-05-13
 
 ### Added
