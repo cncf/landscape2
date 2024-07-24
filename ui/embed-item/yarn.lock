@@ -869,14 +869,9 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
-"common@file:../common":
+"common@link:../common":
   version "0.0.0"
-  dependencies:
-    "@solid-primitives/resize-observer" "^2.0.25"
-    lodash "^4.17.21"
-    moment "^2.30.1"
-    solid-js "^1.8.15"
-    solid-styled-components "^0.28.5"
+  uid ""
 
 concat-map@0.0.1:
   version "0.0.1"
