@@ -98,16 +98,7 @@ const Projects = () => {
         return orderBy(items, [(i: Item) => i.name.toLowerCase()], [direction]);
 
       case 'sandbox_at':
-        return orderBy(
-          items,
-          [
-            (i: Item) =>
-              getValue(
-                i.accepted_at !== i.incubating_at && i.accepted_at !== i.graduated_at ? i.accepted_at : undefined
-              ),
-          ],
-          []
-        );
+        return orderBy(items, [(i: Item) => getValue(getSandboxDate(i))], [direction]);
 
       case 'num_audits':
         return orderBy(items, [(i: Item) => (i.audits ? i.audits.length : 0)], [direction]);
@@ -159,6 +150,17 @@ const Projects = () => {
       } else {
         return audits[0].date;
       }
+    }
+    return undefined;
+  };
+
+  const getSandboxDate = (project: Item): string | undefined => {
+    if (
+      project.accepted_at &&
+      project.accepted_at !== project.incubating_at &&
+      project.accepted_at !== project.graduated_at
+    ) {
+      return project.accepted_at;
     }
     return undefined;
   };
@@ -415,13 +417,8 @@ const Projects = () => {
                         {formatDatesForDevices(project.accepted_at!)}
                       </td>
                       <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={!isUndefined(project.accepted_at)} fallback={'-'}>
-                          {project.accepted_at === project.incubating_at ||
-                          project.accepted_at === project.graduated_at ? (
-                            '-'
-                          ) : (
-                            <>{formatDatesForDevices(project.accepted_at!)}</>
-                          )}
+                        <Show when={getSandboxDate(project)} fallback={'-'}>
+                          <>{formatDatesForDevices(getSandboxDate(project)!)}</>
                         </Show>
                       </td>
                       <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
