@@ -48,10 +48,13 @@ const UpcomingEvents = () => {
           />
         </ExternalLink>
         <button
-          class={`position-absolute btn btn-link btn-sm border p-0 bg-white rounded-circle ${styles.closeBtn}`}
+          class={`position-absolute btn btn-link btn-sm border-0 ${styles.closeBtn}`}
           onClick={() => setHiddenEvent(true)}
+          aria-label='Close "Upcoming events" banner'
         >
-          <SVGIcon class="position-relative" kind={SVGIconKind.Close} />
+          <div class={`border p-0 bg-white rounded-circle w-100 h-100`}>
+            <SVGIcon class="position-relative" kind={SVGIconKind.Close} />
+          </div>
         </button>
       </div>
     </Show>

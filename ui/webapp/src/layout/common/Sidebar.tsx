@@ -58,7 +58,7 @@ export const Sidebar = (props: Props) => {
           onClick={() => {
             openStatusChange(true);
           }}
-          aria-label="Open sidebar"
+          aria-label={`Open ${props.buttonTitle || ''} sidebar`}
           aria-expanded={openStatus()}
         >
           <div class="d-flex align-items-center justify-content-center">

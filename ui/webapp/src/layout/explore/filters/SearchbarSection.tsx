@@ -141,6 +141,7 @@ const SearchbarSection = (props: Props) => {
               <button
                 class={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
                 onClick={() => props.resetFilter(props.section?.value as FilterCategory)}
+                aria-label="Reset filters"
               >
                 (reset)
               </button>
@@ -152,6 +153,7 @@ const SearchbarSection = (props: Props) => {
             >
               <input
                 ref={setInputEl}
+                id={`searchbar-${props.title || props.section!.title}`}
                 class={`flex-grow-1 border-0 shadow-none bg-transparent lh-base ps-2 ${styles.input}`}
                 placeholder={props.placeholder || 'Search'}
                 type="text"

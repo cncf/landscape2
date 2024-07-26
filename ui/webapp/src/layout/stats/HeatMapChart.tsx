@@ -130,7 +130,7 @@ const HeatMapChart = (props: Props) => {
   return (
     <Show when={Object.keys(props.data).length > 0}>
       <div class="card rounded-0">
-        <div class="card-body">
+        <div class="card-body" aria-hidden={true}>
           <SolidApexCharts
             options={getHeatMapChartConfig()}
             series={prepareHeatMapData()}

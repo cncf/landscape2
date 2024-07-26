@@ -58,6 +58,7 @@ export const ItemDropdown = (props: Props) => {
             e.stopPropagation();
             setVisibleDropdown(!visibleDropdown());
           }}
+          aria-label="Open dropdown"
         >
           <SVGIcon kind={SVGIconKind.ThreeBars} />
         </button>
@@ -73,6 +74,7 @@ export const ItemDropdown = (props: Props) => {
                 setVisibleDropdown(false);
                 setOpenStatus(true);
               }}
+              aria-label="Get badge"
             >
               Get badge
             </button>

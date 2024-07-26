@@ -118,6 +118,7 @@ const GridItem = (props: Props) => {
       when={activeDropdown()}
       fallback={
         <div
+          role="listitem"
           style={props.item.featured && props.item.featured.label ? { border: `2px solid ${props.borderColor}` } : {}}
           class={`card rounded-0 position-relative p-0 ${styles.card}`}
           classList={{
@@ -153,6 +154,7 @@ const GridItem = (props: Props) => {
       }
     >
       <div
+        role="listitem"
         style={props.item.featured && props.item.featured.label ? { border: `2px solid ${props.borderColor}` } : {}}
         class={`card rounded-0 position-relative p-0 ${styles.card}`}
         classList={{
@@ -161,6 +163,7 @@ const GridItem = (props: Props) => {
           whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
           archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
         }}
+        aria-label={props.item.name}
       >
         <div class="position-absolute opacity-100">
           <Show when={visibleDropdown()}>
@@ -210,8 +213,6 @@ const GridItem = (props: Props) => {
             }}
             aria-label={`${props.item.name} info`}
             aria-expanded={visibleDropdown()}
-            aria-hidden="true"
-            tabIndex={-1}
           >
             <Image
               name={props.item.name}
@@ -224,6 +225,7 @@ const GridItem = (props: Props) => {
               <div
                 class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                 style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
+                aria-label={props.item.featured!.label}
               >
                 {props.item.featured!.label}
               </div>

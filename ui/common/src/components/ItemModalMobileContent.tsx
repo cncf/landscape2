@@ -201,7 +201,7 @@ export const ItemModalMobileContent = (props: Props) => {
         <div class="d-flex flex-column">
           <div class="d-flex flex-row align-items-center justify-content-between">
             <div class={`d-flex align-items-center justify-content-center ${LogoWrapper}`}>
-              <Image name={itemInfo()!.name} class={`m-auto ${Logo}`} logo={itemInfo()!.logo} enableLazyLoad />
+              <Image class={`m-auto ${Logo}`} logo={itemInfo()!.logo} enableLazyLoad />
             </div>
 
             <div class={`p-3 ${ItemInfo}`}>
@@ -404,6 +404,7 @@ export const ItemModalMobileContent = (props: Props) => {
                   : '-'
               }
               legend="Funding"
+              description="Funding"
             />
 
             <Box
@@ -448,11 +449,22 @@ export const ItemModalMobileContent = (props: Props) => {
                 </Switch>
               }
               legend="Employees"
+              description="Employees number"
             />
 
-            <Box class="col-6" value={itemInfo()!.crunchbase_data!.stock_exchange! || '-'} legend="Stock exchange" />
+            <Box
+              class="col-6"
+              value={itemInfo()!.crunchbase_data!.stock_exchange! || '-'}
+              legend="Stock exchange"
+              description="Stock exchange"
+            />
 
-            <Box class="col-6" value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
+            <Box
+              class="col-6"
+              value={itemInfo()!.crunchbase_data!.ticker || '-'}
+              legend="Ticker"
+              description="Ticker"
+            />
           </div>
 
           {/* Funding rounds */}

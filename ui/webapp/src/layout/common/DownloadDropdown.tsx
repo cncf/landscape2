@@ -97,6 +97,7 @@ const DownloadDropdown = () => {
           e.stopPropagation();
           setVisibleDropdown(!visibleDropdown());
         }}
+        aria-label="Open dropdown"
       >
         <SVGIcon kind={SVGIconKind.Download} />
       </button>
@@ -120,6 +121,7 @@ const DownloadDropdown = () => {
 
                 downloadFile(DocType.Landscape, Format.PDF);
               }}
+              aria-label="Download landscape in PDF format"
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
@@ -155,6 +157,7 @@ const DownloadDropdown = () => {
 
                 downloadFile(DocType.Landscape, Format.PNG);
               }}
+              aria-label="Download landscape in PNG format"
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
@@ -192,6 +195,7 @@ const DownloadDropdown = () => {
 
                 downloadFile(DocType.Items, Format.CSV);
               }}
+              aria-label="Download items in CSV format"
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">
@@ -222,6 +226,7 @@ const DownloadDropdown = () => {
 
                 downloadFile(DocType.Projects, Format.CSV);
               }}
+              aria-label="Download projects in CSV format"
             >
               <div class="d-flex flex-row align-items-start">
                 <div class="me-3 position-relative">

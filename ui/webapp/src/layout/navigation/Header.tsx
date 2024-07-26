@@ -60,6 +60,7 @@ const Header = (props: Props) => {
                 });
                 scrollToTop(false);
               }}
+              aria-label='Go to "Explore" page'
             >
               <Image class={styles.logo} logo={logo()!} name="Landscape logo" height={48} />
             </button>
@@ -89,6 +90,7 @@ const Header = (props: Props) => {
                   scrollToTop(false);
                 }
               }}
+              aria-label='Go to "Explore" page'
             >
               Explore
             </button>
@@ -107,6 +109,7 @@ const Header = (props: Props) => {
                     scrollToTop(false);
                   }
                 }}
+                aria-label='Go to "Guide" page'
               >
                 Guide
               </button>
@@ -126,6 +129,7 @@ const Header = (props: Props) => {
                     scrollToTop(false);
                   }
                 }}
+                aria-label='Go to "Stats" page'
               >
                 Stats
               </button>
@@ -134,7 +138,7 @@ const Header = (props: Props) => {
 
           <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
             <div class="position-relative me-4 w-100">
-              <Searchbar searchBarClass={`${styles.searchBar}`} />
+              <Searchbar searchBarClass={`${styles.searchBar}`} device="desktop" />
             </div>
 
             <div class={`d-flex align-items-center ${styles.icons}`}>
@@ -149,6 +153,7 @@ const Header = (props: Props) => {
                     });
                     scrollToTop(false);
                   }}
+                  aria-label='Go to "Games" page'
                 >
                   <SVGIcon kind={SVGIconKind.Games} class={`position-relative ${styles.linkIcon}`} />
                 </button>

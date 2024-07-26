@@ -65,7 +65,7 @@ export const Tabs = (props: TabsProps) => {
                     setActiveTab(tab.name);
                     setVisibleContent(tab.content);
                   }}
-                  aria-label={`Open tab ${tab.name}`}
+                  aria-label={`Open tab ${tab.title}`}
                 >
                   <span class="d-none d-sm-block">{tab.title}</span>
                   <span class="d-block d-sm-none">{tab.shortTitle || tab.title}</span>

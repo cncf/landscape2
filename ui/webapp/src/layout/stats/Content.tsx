@@ -45,7 +45,7 @@ const Content = () => {
                 Distribution by maturity
               </div>
               <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
-                <Box data={stats()!.projects!.projects} label="Total" />
+                <Box data={stats()!.projects!.projects} label="Total" description="Number total of projects" />
 
                 <Show when={!isEmpty(stats()!.projects!.maturity)}>
                   <For each={sortObjectByValue(stats()!.projects!.maturity, 'asc')}>
@@ -55,7 +55,12 @@ const Content = () => {
 
                       return (
                         <Show when={!isUndefined(num) && !isUndefined(total)}>
-                          <Box data={num} legend={`(${((num * 100) / total).toFixed(2)}%)`} label={maturity} />
+                          <Box
+                            data={num}
+                            legend={`(${((num * 100) / total).toFixed(2)}%)`}
+                            label={maturity}
+                            description={`Number of ${maturity} projects`}
+                          />
                         </Show>
                       );
                     }}
@@ -170,7 +175,7 @@ const Content = () => {
                 Distribution by category
               </div>
               <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
-                <Box data={stats()!.members!.members} label="Total" />
+                <Box data={stats()!.members!.members} label="Total" description="Number total of members" />
 
                 <Show when={!isEmpty(stats()!.members!.subcategories)}>
                   <For each={sortObjectByValue(stats()!.members!.subcategories, 'asc')}>
@@ -180,7 +185,12 @@ const Content = () => {
 
                       return (
                         <Show when={!isUndefined(num) && !isUndefined(total)}>
-                          <Box data={num} legend={`(${((num * 100) / total).toFixed(2)}%)`} label={subcategory} />
+                          <Box
+                            data={num}
+                            legend={`(${((num * 100) / total).toFixed(2)}%)`}
+                            label={subcategory}
+                            description={`Number of ${subcategory} members`}
+                          />
                         </Show>
                       );
                     }}
@@ -212,10 +222,26 @@ const Content = () => {
                 Repositories
               </div>
               <div class="d-flex flex-row justify-content-center flex-wrap w-100 pt-4">
-                <Box data={stats()!.repositories!.repositories} label="Repositories" />
-                <Box data={prettifyNumber(stats()!.repositories!.contributors, 1)} label="Contributors" />
-                <Box data={prettifyNumber(stats()!.repositories!.stars, 1)} label="Stars" />
-                <Box data={prettifyBytes(stats()!.repositories!.bytes, 0)} label="Source code" />
+                <Box
+                  data={stats()!.repositories!.repositories}
+                  label="Repositories"
+                  description="Number of repositories"
+                />
+                <Box
+                  data={prettifyNumber(stats()!.repositories!.contributors, 1)}
+                  label="Contributors"
+                  description="Number os contributors"
+                />
+                <Box
+                  data={prettifyNumber(stats()!.repositories!.stars, 1)}
+                  label="Stars"
+                  description="Number of stars"
+                />
+                <Box
+                  data={prettifyBytes(stats()!.repositories!.bytes, 0)}
+                  label="Source code"
+                  description="Source code bytes"
+                />
               </div>
 
               <Show
@@ -254,7 +280,7 @@ const Content = () => {
                 <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Activity</div>
                 <div class="py-4">
                   <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center">
-                    <div class="col-12">
+                    <div class="col-12" aria-hidden={true}>
                       <TimestampLineChart
                         tooltipTitle="Commits number"
                         name="Number of weekly commits during the last year"
@@ -327,7 +353,7 @@ const Content = () => {
             <div class="py-4">
               <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                 <Show when={!isEmpty(stats()!.organizations!.funding_rounds)}>
-                  <div class="col-12 col-sm-6">
+                  <div class="col-12 col-sm-6" aria-hidden={true}>
                     <VerticalBarChart
                       name="Number of funding rounds per year"
                       data={stats()!.organizations!.funding_rounds}
@@ -336,7 +362,7 @@ const Content = () => {
                 </Show>
 
                 <Show when={!isEmpty(stats()!.organizations!.funding_rounds_money_raised)}>
-                  <div class="col-12 col-sm-6">
+                  <div class="col-12 col-sm-6" aria-hidden={true}>
                     <VerticalBarChart
                       name="Amount raised in funding rounds per year (excluding undisclosed)"
                       shortName="Amount raised in funding rounds per year"
@@ -353,7 +379,7 @@ const Content = () => {
             <div class="pt-4">
               <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                 <Show when={!isEmpty(stats()!.organizations!.acquisitions)}>
-                  <div class="col-12 col-sm-6">
+                  <div class="col-12 col-sm-6" aria-hidden={true}>
                     <VerticalBarChart
                       name="Number of acquisitions per year"
                       data={stats()!.organizations!.acquisitions}
@@ -362,7 +388,7 @@ const Content = () => {
                 </Show>
 
                 <Show when={!isEmpty(stats()!.organizations!.acquisitions_price)}>
-                  <div class="col-12 col-sm-6">
+                  <div class="col-12 col-sm-6" aria-hidden={true}>
                     <VerticalBarChart
                       name="Acquisitions cost per year (excluding undisclosed)"
                       shortName="Acquisitions cost per year"

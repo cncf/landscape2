@@ -88,6 +88,7 @@ const ZoomModal = () => {
         initialRefs={!isUndefined(modal()) ? [modal as Accessor<HTMLDivElement>] : undefined}
         excludedIds={[ITEM_VIEW]}
         onClose={() => updateActiveSection()}
+        title={`${visibleZoomSection()!.category} / ${visibleZoomSection()!.subcategory}`}
       >
         <div class="h-100" ref={setContainer}>
           <Show

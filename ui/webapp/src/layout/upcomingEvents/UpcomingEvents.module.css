@@ -22,10 +22,11 @@
 }
 
 .closeBtn {
-  top: -0.5rem;
-  right: -0.5rem;
-  width: 20px;
-  height: 20px;
+  top: -1.25rem;
+  right: -1.25rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0.85rem;
   font-size: 0.75rem;
   color: var(--bs-gray-700);
   border-color: var(--bs-gray-400) !important;

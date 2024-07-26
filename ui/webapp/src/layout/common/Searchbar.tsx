@@ -12,6 +12,7 @@ import styles from './Searchbar.module.css';
 
 interface Props {
   searchBarClass?: string;
+  device: string;
 }
 
 const SEARCH_DELAY = 3 * 100; // 300ms
@@ -199,8 +200,11 @@ const Searchbar = (props: Props) => {
       <div
         class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass} search`}
       >
+        <label for={`searchbar-${props.device}`} class="visually-hidden">
+          Search items
+        </label>
         <input
-          id="searchbar"
+          id={`searchbar-${props.device}`}
           ref={setInputEl}
           class={`flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base ${styles.input}`}
           type="text"
@@ -264,7 +268,7 @@ const Searchbar = (props: Props) => {
                         onClick={() => {
                           openItemModal(item.id);
                         }}
-                        aria-label={`Open ${item.name} detail`}
+                        aria-label={`Open ${item.name} info`}
                         role="option"
                         aria-selected={index() === highlightedItem()}
                         id={`sl-opt${index()}`}

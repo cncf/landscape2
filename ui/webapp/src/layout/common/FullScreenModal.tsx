@@ -7,6 +7,7 @@ import { BANNER_ID } from '../../data';
 import styles from './FullScreenModal.module.css';
 
 interface Props {
+  title: string;
   children: JSXElement | JSXElement[];
   open?: boolean;
   onClose?: () => void;
@@ -53,7 +54,14 @@ const FullScreenModal = (props: Props) => {
   return (
     <Show when={openStatus()}>
       <Portal>
-        <div class={`position-fixed overflow-hidden p-3 top-0 bottom-0 start-0 end-0 ${styles.modal}`} role="dialog">
+        <div
+          class={`position-fixed overflow-hidden p-3 top-0 bottom-0 start-0 end-0 ${styles.modal}`}
+          role="dialog"
+          tabIndex={-1}
+          aria-label={`${props.title} modal`}
+          aria-modal={true}
+          aria-hidden={true}
+        >
           <div class={`position-absolute ${styles.closeWrapper}`}>
             <button
               type="button"

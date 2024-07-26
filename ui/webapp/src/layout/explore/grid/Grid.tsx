@@ -177,6 +177,7 @@ const Grid = (props: Props) => {
                               })}`}
                               state={{ from: 'explore' }}
                               class={`btn btn-link text-white ps-2 pe-1 ${styles.btnIcon}`}
+                              aria-label={`Open ${subcat.subcategoryName} section on guide page`}
                             >
                               <SVGIcon kind={SVGIconKind.Guide} />
                             </A>
@@ -194,6 +195,7 @@ const Grid = (props: Props) => {
                                 });
                               }}
                               class={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
+                              aria-label={`Open ${subcat.subcategoryName} section on modal`}
                             >
                               <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
                             </button>
@@ -205,7 +207,7 @@ const Grid = (props: Props) => {
                         <Show
                           when={featuredItems > 0 && featuredItems < sortedItems.length}
                           fallback={
-                            <div class={styles.items}>
+                            <div class={styles.items} role="list">
                               <For each={sortedItems}>
                                 {(item: BaseItem | Item) => {
                                   return (
@@ -221,7 +223,7 @@ const Grid = (props: Props) => {
                             </div>
                           }
                         >
-                          <div class={styles.items}>
+                          <div class={styles.items} role="list">
                             <ItemsList
                               borderColor={props.backgroundColor}
                               items={sortedItems}

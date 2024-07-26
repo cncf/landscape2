@@ -36,6 +36,7 @@ export const BadgeModal = (props: Props) => {
 
   return (
     <Modal
+      title="Badge"
       header="Item badge"
       onClose={props.onCloseModal}
       open={openStatus()}

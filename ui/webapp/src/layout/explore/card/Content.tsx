@@ -36,11 +36,11 @@ const CardList = (props: ListProps) => {
   const items = () => sortItems(itemsList(), props.sorted, props.direction);
 
   return (
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4" role="list">
       <For each={items()}>
         {(item: Item) => {
           return (
-            <div class="col-12 col-lg-6 col-xxl-4 col-xxxl-3">
+            <div class="col-12 col-lg-6 col-xxl-4 col-xxxl-3" role="listitem">
               <div
                 class={`card rounded-0 p-3 ${styles.card}`}
                 onClick={() => updateActiveItemId(item.id)}
@@ -131,6 +131,7 @@ const Content = (props: Props) => {
                                         href={`${GUIDE_PATH}#${getNormalizedName({ title: title })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
+                                        aria-label={`Open section ${subtitle} on guide page`}
                                       >
                                         <SVGIcon kind={SVGIconKind.Guide} />
                                       </A>
@@ -153,6 +154,7 @@ const Content = (props: Props) => {
                                         })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link p-0 pe-2 ${styles.btnIcon}`}
+                                        aria-label={`Open section ${title}/${subtitle} on guide page`}
                                       >
                                         <SVGIcon kind={SVGIconKind.Guide} />
                                       </A>

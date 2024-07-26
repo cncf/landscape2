@@ -262,7 +262,7 @@ export const ItemModalContent = (props: Props) => {
       <div class="d-flex flex-column p-3">
         <div class="d-flex flex-row align-items-center">
           <div class={`d-flex align-items-center justify-content-center ${LogoWrapper}`}>
-            <Image name={itemInfo()!.name} class={`m-auto ${Logo}`} logo={itemInfo()!.logo} />
+            <Image class={`m-auto ${Logo}`} logo={itemInfo()!.logo} />
           </div>
 
           <div class={`d-flex flex-column justify-content-between ms-3 ${ItemInfo}`}>
@@ -624,6 +624,7 @@ export const ItemModalContent = (props: Props) => {
                     : '-'
                 }
                 legend="Funding"
+                description="Funding"
               />
 
               <Box
@@ -667,11 +668,16 @@ export const ItemModalContent = (props: Props) => {
                   </Switch>
                 }
                 legend="Employees"
+                description="Employees number"
               />
 
-              <Box value={itemInfo()!.crunchbase_data!.stock_exchange! || '-'} legend="Stock exchange" />
+              <Box
+                value={itemInfo()!.crunchbase_data!.stock_exchange! || '-'}
+                legend="Stock exchange"
+                description="Stock exchange"
+              />
 
-              <Box value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" />
+              <Box value={itemInfo()!.crunchbase_data!.ticker || '-'} legend="Ticker" description="Ticker" />
             </div>
 
             {/* Funding rounds */}

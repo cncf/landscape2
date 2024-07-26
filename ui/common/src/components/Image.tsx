@@ -6,12 +6,13 @@ import { SVGIconKind } from '../types/types';
 import { SVGIcon } from './SVGIcon';
 
 interface Props {
-  name: string;
+  name?: string;
   logo: string;
   class?: string;
   enableLazyLoad?: boolean;
   width?: string | number;
   height?: string | number;
+  ariaHidden?: boolean;
 }
 
 export const Image = (props: Props) => {
@@ -32,13 +33,14 @@ export const Image = (props: Props) => {
         <SVGIcon kind={SVGIconKind.NotImage} class={`opacity-25 ${props.class}`} />
       ) : (
         <img
-          alt={`${props.name} logo`}
+          alt={!isUndefined(props.name) ? `${props.name} logo` : ''}
           class={props.class}
           src={url()}
           onError={() => setError(true)}
           loading={!isUndefined(props.enableLazyLoad) && props.enableLazyLoad ? 'lazy' : undefined}
           width={props.width || 'auto'}
           height={props.height || 'auto'}
+          aria-hidden={props.ariaHidden || undefined}
         />
       )}
     </Show>

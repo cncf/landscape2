@@ -49,12 +49,14 @@ const Legend = css`
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   word-wrap: normal;
   max-height: 38px;
   line-height: 1.15rem;
 
   @media only screen and (max-width: 991.98px) {
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     max-height: 57px;
   }
 `;

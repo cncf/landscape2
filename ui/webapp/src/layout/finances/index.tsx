@@ -287,7 +287,7 @@ const Finances = () => {
       id="order"
       class={`form-select form-select-sm rounded-0 ${styles.select}`}
       value={`${selectedSortOption().by}-${selectedSortOption().direction}`}
-      aria-label="Order"
+      aria-label="Order options"
       onChange={(e) => {
         const options = e.target.value.split('-');
         const selectedOption = { by: options[0], direction: options[1] as 'asc' | 'desc' };
@@ -392,6 +392,7 @@ const Finances = () => {
                             });
                           }
                         }}
+                        aria-label={`Open ${kind}`}
                       >
                         {kind}
                       </button>

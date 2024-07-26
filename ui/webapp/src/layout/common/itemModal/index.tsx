@@ -46,6 +46,7 @@ const ItemModal = () => {
   return (
     <Show when={!isUndefined(visibleItemId())}>
       <Modal
+        title="Item details"
         size="xl"
         open
         modalDialogClass={visibleEventContent() ? styles.visibleUpcomingEvent : ''}

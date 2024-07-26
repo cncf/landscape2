@@ -24,7 +24,7 @@ const CollapsableTable = (props: Props) => {
 
   return (
     <div>
-      <table class={`table table-bordered mb-0 mb-lg-2 ${styles.table}`}>
+      <table class={`table table-bordered mb-0 mb-lg-2 ${styles.table}`} role="treegrid">
         <thead>
           <tr>
             <th class={`border-end-0 ${styles.caretCol}`} />
@@ -53,13 +53,16 @@ const CollapsableTable = (props: Props) => {
                       }
                     }}
                     class={`${styles.grayCell} ${styles.clickable}`}
+                    aria-expanded={isExpanded()}
                   >
                     <td class="border-end-0">
                       <Show when={isExpanded()} fallback={<SVGIcon kind={SVGIconKind.CaretDown} />}>
                         <SVGIcon kind={SVGIconKind.CaretUp} />
                       </Show>
                     </td>
-                    <td class="border-start-0">{cat}</td>
+                    <td class="border-start-0" role="gridcell">
+                      {cat}
+                    </td>
                     <td class="text-end">{props.data[cat].projects}</td>
                   </tr>
                   <Show when={isExpanded()}>

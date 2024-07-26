@@ -6,6 +6,7 @@ interface Props {
   legend: string;
   class?: string;
   fillBgPercentage?: number;
+  description?: string;
 }
 
 const Highlighted = css`
@@ -64,7 +65,7 @@ export const Box = (props: Props) => {
         </style>
       </Show>
 
-      <div class={props.class || 'col'}>
+      <div class={props.class || 'col'} aria-description={props.description}>
         <div
           class={`position-relative text-center p-2 p-md-3 h-100 d-flex flex-column justify-content-center filledBox ${Highlighted}`}
           classList={{ [`filledBox filledBox-${randomId}`]: fillPercentage() > 0 }}

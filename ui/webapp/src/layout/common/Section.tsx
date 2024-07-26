@@ -115,6 +115,7 @@ const Section = (props: Props) => {
                 <button
                   class={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
                   onClick={() => props.resetFilter!(props.section?.value as FilterCategory)}
+                  aria-label="Reset filter"
                 >
                   (reset)
                 </button>

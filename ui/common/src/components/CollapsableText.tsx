@@ -67,7 +67,11 @@ export const CollapsableText = (props: Props) => {
         classList={{ [Truncate]: !collapsable() }}
         style={
           !collapsable()
-            ? { '-webkit-line-clamp': linesNumber(), 'max-height': `${LINE_HEIGHT * linesNumber()}px` }
+            ? {
+                '-webkit-line-clamp': linesNumber(),
+                'line-clamp': linesNumber(),
+                'max-height': `${LINE_HEIGHT * linesNumber()}px`,
+              }
             : {}
         }
       >
@@ -78,6 +82,7 @@ export const CollapsableText = (props: Props) => {
           <button
             class={`btn btn-sm btn-link fst-italic text-muted ${Btn}`}
             onClick={() => setCollapsable((prev) => !prev)}
+            aria-label="Show more"
           >
             Show more
           </button>

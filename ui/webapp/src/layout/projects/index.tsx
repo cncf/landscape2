@@ -249,7 +249,7 @@ const Projects = () => {
       id="order"
       class={`form-select form-select-sm rounded-0 ${styles.select}`}
       value={`${selectedSortOption().by}-${selectedSortOption().direction}`}
-      aria-label="Order"
+      aria-label="Order options"
       onChange={(e) => {
         const options = e.target.value.split('-');
         const selectedOption = { by: options[0], direction: options[1] as 'asc' | 'desc' };
@@ -399,6 +399,7 @@ const Projects = () => {
                         <button
                           class={`btn btn-sm p-0 btn-link fw-semibold w-100 text-start ${styles.projectBtn}`}
                           onClick={() => updateActiveItemId(project.id)}
+                          aria-label={`Open ${project.name} details`}
                         >
                           <div class="d-flex flex-row align-items-center">
                             <div

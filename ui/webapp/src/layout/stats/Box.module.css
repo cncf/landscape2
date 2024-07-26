@@ -15,12 +15,12 @@
 
 .legend {
   font-size: 0.8rem;
-  color: var(--bs-gray-600);
+  color: var(--bs-gray-700);
   height: 1.75rem;
 }
 
 .label {
-  color: var(--bs-gray-600);
+  color: var(--bs-gray-700);
   line-height: 0.7rem;
   padding-bottom: 0.75rem;
 }

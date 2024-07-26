@@ -141,6 +141,7 @@ const Footer = () => {
           <button
             class={`btn btn-link btn-lg ${styles.cookieBtn}`}
             onClick={() => window.Osano.cm.showDrawer('osano-cm-dom-info-dialog-open')}
+            aria-label='Open "Cookie Preferences" dialog'
           >
             <SVGIcon kind={SVGIconKind.OsanoCookie} />
           </button>

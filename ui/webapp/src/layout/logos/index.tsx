@@ -237,6 +237,7 @@ const Logos = () => {
                     <input
                       onInput={() => setHiddenNonPublicOrgs(!hiddenNonPublicOrgs())}
                       checked={hiddenNonPublicOrgs()}
+                      aria-checked={hiddenNonPublicOrgs()}
                       class="form-check-input"
                       type="checkbox"
                       role="switch"
@@ -249,11 +250,11 @@ const Logos = () => {
                 </div>
                 <div class="position-relative mt-5">
                   <Show when={!isUndefined(items())}>
-                    <div class={styles.grid}>
+                    <div class={styles.grid} role="list">
                       <For each={items()}>
                         {(item) => {
                           return (
-                            <div class="d-flex align-items-center justify-content-center">
+                            <div class="d-flex align-items-center justify-content-center" role="listitem">
                               <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} />
                             </div>
                           );

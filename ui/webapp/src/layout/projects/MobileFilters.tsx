@@ -25,6 +25,7 @@ const MobileFilters = (props: Props) => {
           title="Filters"
           class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-md-4 ${styles.filterBtn} btnIconMobile me-3`}
           onClick={() => setOpenSidebar(true)}
+          aria-label="Open sidebar"
         >
           <div class="d-flex flex-row align-items-center">
             <SVGIcon kind={SVGIconKind.Filters} />

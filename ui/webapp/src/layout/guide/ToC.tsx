@@ -35,6 +35,7 @@ const ToCOption = (props: OptionProps) => {
         onClick={() => {
           props.updateActiveTitle(props.option.id);
         }}
+        aria-label={`Open ${props.option.title} section`}
       >
         {props.option.title}
       </button>

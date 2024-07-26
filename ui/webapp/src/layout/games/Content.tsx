@@ -49,7 +49,7 @@ const Content = () => {
   });
 
   return (
-    <div class={`d-flex flex-column h-100 ${styles.wrapper}`}>
+    <div class={`d-flex flex-column h-100 ${styles.wrapper}`} aria-relevant="all" aria-live="assertive">
       <div
         style={{ 'background-image': `url(${pattern})` }}
         class={`d-flex flex-column border flex-grow-1 mt-3 ${styles.game}`}
@@ -61,15 +61,28 @@ const Content = () => {
           <div class="col">
             <Show when={!isUndefined(quizState())}>
               <div class="d-flex flex-row justify-content-between justify-content-xl-start text-light">
-                <div class="fw-semibold">
+                <div
+                  class="fw-semibold"
+                  aria-label={`question ${quizState()!.current_question.index + 1} of ${activeQuiz()!.questions().length}`}
+                >
                   {quizState()!.current_question.index + 1} / {activeQuiz()!.questions().length}
                 </div>
                 <div class="d-flex flex-row align-items-center ms-4 ms-xl-5">
                   <div class={`border border-2 border-light ${styles.dot} ${styles.dotCorrect}`} />
-                  <div class={`ms-2 fw-semibold ${styles.score}`}>{quizState()!.score.correct}</div>
+                  <div
+                    class={`ms-2 fw-semibold ${styles.score}`}
+                    aria-label={`${quizState()!.score.correct} correct guesses`}
+                  >
+                    {quizState()!.score.correct}
+                  </div>
 
-                  <div class={`ms-3 ms-xl-4 border border-2 border-light  ${styles.dot} ${styles.dotWrong}`} />
-                  <div class={`ms-2 fw-semibold ${styles.score}`}>{quizState()!.score.wrong}</div>
+                  <div class={`ms-3 ms-xl-4 border border-2 border-light ${styles.dot} ${styles.dotWrong}`} />
+                  <div
+                    class={`ms-2 fw-semibold ${styles.score}`}
+                    aria-label={`${quizState()!.score.correct} wrong guesses`}
+                  >
+                    {quizState()!.score.wrong}
+                  </div>
                 </div>
               </div>
             </Show>
@@ -82,6 +95,7 @@ const Content = () => {
               <button
                 class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
                 onClick={startNewGame}
+                aria-label="Start new game"
               >
                 New game
               </button>
@@ -102,6 +116,7 @@ const Content = () => {
             <button
               class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
               onClick={() => setQuizState(activeQuiz()!.state())}
+              aria-label="Start game"
             >
               New game
             </button>
@@ -141,6 +156,7 @@ const Content = () => {
                           setSelectedAnswer(index());
                           setQuizState(activeQuiz()!.check_player_guess(index()));
                         }}
+                        role="button"
                       >
                         <div class={`d-flex align-items-center ${styles.logoContent}`}>
                           <div
@@ -152,7 +168,7 @@ const Content = () => {
                                 <SVGIcon kind={SVGIconKind.NotImage} class={`opacity-25 m-auto w-100 ${styles.logo}`} />
                               }
                             >
-                              <Image name={option.item} logo={logo!} class={`m-auto w-100 ${styles.logo}`} />
+                              <Image logo={logo!} class={`m-auto w-100 ${styles.logo}`} ariaHidden={true} />
                             </Show>
                           </div>
                         </div>
@@ -171,23 +187,27 @@ const Content = () => {
             <div
               class={`position-relative d-flex flex-row justify-content-between mt-auto py-2 py-xl-4 ${styles.buttons}`}
             >
+              {/* Start new game */}
               <Show when={!isUndefined(quizState()) && !quizState()!.current_question.is_last}>
                 <div class="d-block d-xl-none">
                   <button
                     class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
                     onClick={startNewGame}
+                    aria-label="Start new game"
                   >
                     New game
                   </button>
                 </div>
               </Show>
 
+              {/* Play again */}
               <Show when={quizState()!.game_over}>
                 <div class="w-100 text-center">
                   <button
                     class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
                     disabled={!quizState()!.current_question.answered}
                     onClick={startNewGame}
+                    aria-label="Play again"
                   >
                     Play again
                   </button>
@@ -204,6 +224,7 @@ const Content = () => {
                       setSelectedAnswer(null);
                       setQuizState(activeQuiz()!.next_question());
                     }}
+                    aria-label="Next question"
                   >
                     Next
                   </button>

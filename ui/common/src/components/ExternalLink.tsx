@@ -59,7 +59,7 @@ export const ExternalLink = (props: Props) => {
           }}
           aria-label={props.label || 'Open external link'}
           aria-hidden={props.ariaHidden}
-          tabIndex={-1}
+          tabIndex={0}
         >
           {getData()}
         </button>
@@ -77,7 +77,7 @@ export const ExternalLink = (props: Props) => {
           }}
           aria-label={props.label || 'Open external link'}
           aria-hidden={props.ariaHidden}
-          tabIndex={-1}
+          tabIndex={0}
         >
           {getData()}
         </a>
