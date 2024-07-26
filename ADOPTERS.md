@@ -19,6 +19,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [Open Neuroscience Foundation](https://neuroscience-landscape.com)
 - [Open Source Program Offices](https://landscape.todogroup.org)
 - [OpenSSF](https://openssf.landscape2.io)
+- [Post-Quantum Cryptography Alliance](https://pqca.landscape2.io)
 - [Presto](https://presto.landscape2.io)
 - [RISC-V](https://riscv.landscape2.io)
 - [SPDX](https://spdx.landscape2.io)
