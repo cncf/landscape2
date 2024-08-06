@@ -60,6 +60,34 @@ const CARD_SIZES: CardSizes = {
   },
 };
 
+const MOBILE_CARD_SIZES: CardSizes = {
+  [Size.XSmall]: {
+    width: '40px',
+    height: '36px',
+    gap: '3px',
+  },
+  [Size.Small]: {
+    width: '50px',
+    height: '45px',
+    gap: '5px',
+  },
+  [Size.Medium]: {
+    width: '70px',
+    height: '63px',
+    gap: '7px',
+  },
+  [Size.Large]: {
+    width: '90px',
+    height: '81px',
+    gap: '10px',
+  },
+  [Size.XLarge]: {
+    width: '105px',
+    height: '94px',
+    gap: '12px',
+  },
+};
+
 const Grid = styled('div')`
   --card-size-width: ${(props: GridProps) => CARD_SIZES[props.size].width};
   --card-size-height: ${(props: GridProps) => CARD_SIZES[props.size].height};
@@ -70,6 +98,13 @@ const Grid = styled('div')`
   gap: ${(props: GridProps) =>
     typeof props.spacing !== 'undefined' ? `${props.spacing}px` : CARD_SIZES[props.size].gap};
   justify-content: ${(props: GridProps) => props.alignment};
+
+  @media only screen and (max-width: 767.98px) {
+    --card-size-width: ${(props: GridProps) => MOBILE_CARD_SIZES[props.size].width};
+    --card-size-height: ${(props: GridProps) => MOBILE_CARD_SIZES[props.size].height};
+    gap: ${(props: GridProps) =>
+      typeof props.spacing !== 'undefined' ? `${props.spacing}px` : MOBILE_CARD_SIZES[props.size].gap};
+  }
 `;
 
 const ItemClass = css`
