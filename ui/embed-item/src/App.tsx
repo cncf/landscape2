@@ -52,7 +52,10 @@ const App = () => {
   onMount(() => {
     // Listen for messages from the parent frame
     window.addEventListener('message', (event) => {
-      setCurrentItem(event.data);
+      // If the message is to show the item details
+      if (event.data.type === 'showItemDetails') {
+        setCurrentItem(event.data);
+      }
     });
     // Subscribe to the itemsDataGetter to get the available keys
     itemsDataGetter.subscribe({
