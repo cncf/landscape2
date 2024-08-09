@@ -22,6 +22,7 @@ const MobileGrid = (props: Props) => {
 
   return (
     <div
+      role="list"
       class={styles.items}
       style={
         isMobile()
@@ -44,34 +45,32 @@ const MobileGrid = (props: Props) => {
             />
           }
         >
-          <div class="grid">
-            <For each={items()}>
-              {(item: BaseItem | Item) => {
-                return (
-                  <div
-                    role="listitem"
-                    style={item.featured && item.featured.label ? { border: `2px solid ${props.bgColor}` } : {}}
-                    class={`card rounded-0 position-relative p-0 ${styles.card}`}
-                    classList={{
-                      whithoutRepo: isUndefined(item.oss) || !item.oss,
-                      archived: !isUndefined(item.maturity) && item.maturity === 'archived',
+          <For each={items()}>
+            {(item: BaseItem | Item) => {
+              return (
+                <div
+                  role="listitem"
+                  style={item.featured && item.featured.label ? { border: `2px solid ${props.bgColor}` } : {}}
+                  class={`card rounded-0 position-relative p-0 ${styles.card}`}
+                  classList={{
+                    whithoutRepo: isUndefined(item.oss) || !item.oss,
+                    archived: !isUndefined(item.maturity) && item.maturity === 'archived',
+                  }}
+                >
+                  <button
+                    class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      updateActiveItemId(item.id);
                     }}
+                    aria-label={`Open ${item.name} info`}
                   >
-                    <button
-                      class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        updateActiveItemId(item.id);
-                      }}
-                      aria-label={`Open ${item.name} info`}
-                    >
-                      <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} enableLazyLoad />
-                    </button>
-                  </div>
-                );
-              }}
-            </For>
-          </div>
+                    <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} enableLazyLoad />
+                  </button>
+                </div>
+              );
+            }}
+          </For>
         </Show>
       </Show>
     </div>
