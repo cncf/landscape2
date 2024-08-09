@@ -37,7 +37,7 @@ const ExternalLink = (props: Props) => {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={props.label || 'Open external link'}
-      tabIndex={-1}
+      tabIndex={0}
       paddingBottom={props.paddingBottom}
     >
       {props.children}

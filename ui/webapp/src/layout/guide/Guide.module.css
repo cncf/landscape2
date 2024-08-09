@@ -16,6 +16,10 @@
   border-left: 3px solid var(--bs-gray-300);
 }
 
+.guide blockquote :is(h1, h2, h3, h4, h5, h6) {
+  font-size: 1.25rem;
+}
+
 .guide img {
   max-width: 100%;
 }
@@ -33,13 +37,14 @@
   font-weight: 400;
 }
 
-.guide *:not(blockquote) > :is(h4, h5, h6) {
+.guide *:not(blockquote) > :is(h3, h4, h5, h6) {
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
 
 .guide a:not(:global(.link)) {
   color: var(--color1);
+  font-weight: 600;
 }
 
 .catSection {

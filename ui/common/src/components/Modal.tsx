@@ -8,6 +8,7 @@ import { SVGIconKind } from '../types/types';
 import { SVGIcon } from './SVGIcon';
 
 interface Props {
+  title: string;
   open: boolean;
   header?: string | JSXElement;
   headerClass?: string;
@@ -141,9 +142,17 @@ export const Modal = (props: Props) => {
         <div class={`modal-backdrop ${ActiveBackdrop}`} />
       </Show>
 
-      <div class={`modal d-block ${ModalClass} ${Active}`} role="dialog" aria-modal={true}>
+      <div
+        class={`modal d-block ${ModalClass} ${Active}`}
+        role="dialog"
+        tabIndex={-1}
+        aria-label={`${props.title} modal`}
+        aria-modal={true}
+        aria-hidden={true}
+      >
         <div
           ref={setRef}
+          role="document"
           class={`modal-dialog modal-${props.size || 'lg'} ${ModalDialog}`}
           classList={{
             'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,

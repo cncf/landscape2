@@ -38,7 +38,7 @@ const Filters = (props: FiltersProps) => {
           class={`btn btn-md btn-light text-decoration-none rounded-0 text-truncate text-start w-100 ${styles.btn}`}
           type="button"
           onClick={() => setVisibleDropdown(!visibleDropdown())}
-          aria-label="Filters button"
+          aria-label={`${props.section.title} filters`}
           aria-expanded={visibleDropdown()}
         >
           {props.section.title}

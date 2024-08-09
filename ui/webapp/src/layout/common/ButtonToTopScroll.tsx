@@ -35,6 +35,7 @@ const ButtonToTopScroll = () => {
             e.preventDefault();
             scrollToTop(onSmallDevice);
           }}
+          aria-label="Scroll to top"
         >
           <SVGIcon kind={SVGIconKind.ArrowTop} class={`position-relative ${styles.btnTopIcon}`} />
         </button>

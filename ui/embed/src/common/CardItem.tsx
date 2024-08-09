@@ -186,6 +186,7 @@ const DescriptionClass = css`
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   word-wrap: normal;
   max-height: 36px;
 `;

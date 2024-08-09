@@ -97,7 +97,7 @@ export const ButtonCopyToClipboard = (props: Props) => {
           }
         }}
         disabled={props.disabled}
-        aria-label={props.label || 'Copy to clipboard'}
+        aria-label={props.contentBtn || props.label || 'Copy to clipboard'}
       >
         <div class="d-flex flex-row align-items-center" aria-hidden="true">
           <Show when={!isUndefined(props.visibleBtnText) && props.visibleBtnText && props.contentBtn}>

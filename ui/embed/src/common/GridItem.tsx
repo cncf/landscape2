@@ -129,6 +129,7 @@ const GridItem = (props: Props) => {
           onClick={() => props.onClick!()}
           style={{ 'padding-bottom': `${props.withName ? props.itemNameSize + 8 : 0}px` }}
           class={`${LinkClass} ${ButtonClass}`}
+          aria-label={`${props.item.name} info`}
         >
           <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
           <Show when={props.withName}>

@@ -122,7 +122,7 @@ const VerticalBarChart = (props: Props) => {
   return (
     <Show when={series().length > 0}>
       <div class="card rounded-0">
-        <div class={`card-body ${styles.chart}`}>
+        <div class={`card-body ${styles.chart}`} aria-hidden={true}>
           <SolidApexCharts
             options={getBarChartConfig()}
             series={[{ name: props.name, data: series() }]}

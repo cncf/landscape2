@@ -174,6 +174,7 @@ const Filters = (props: Props) => {
           class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-lg-4 ${styles.filterBtn} btnIconMobile`}
           classList={{ disabled: disabledBtn() }}
           onClick={() => setVisibleFiltersModal(true)}
+          aria-label="Open filters"
         >
           <div class="d-flex flex-row align-items-center">
             <SVGIcon kind={SVGIconKind.Filters} />
@@ -187,22 +188,25 @@ const Filters = (props: Props) => {
         </Show>
       </div>
       <Modal
+        title="Filters"
         modalDialogClass={styles.modal}
         header={
           <div class="d-flex flex-row align-items-baseline">
             <div>Filters</div>
-            <button
-              type="button"
-              title="Reset filters"
-              class="btn btn-sm btn-link text-muted py-0"
-              onClick={(e) => {
-                e.preventDefault();
-                setTmpActiveFilters({});
-              }}
-              aria-label="Reset filters"
-            >
-              (reset all)
-            </button>
+            <Show when={!isEmpty(props.initialActiveFilters())}>
+              <button
+                type="button"
+                title="Reset filters"
+                class="btn btn-sm btn-link text-muted py-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTmpActiveFilters({});
+                }}
+                aria-label="Reset all filters"
+              >
+                (reset all)
+              </button>
+            </Show>
           </div>
         }
         footer={
@@ -240,7 +244,7 @@ const Filters = (props: Props) => {
               </div>
             }
           >
-            <div class="d-flex d-lg-none">
+            <div class="d-flex d-lg-none" role="search">
               <Show when={viewMode() === ViewMode.Card}>
                 <div class="d-flex flex-row mb-4">
                   <div class="d-flex flex-column align-items-start">
@@ -251,7 +255,7 @@ const Filters = (props: Props) => {
                       id="classify"
                       class={`form-select form-select-sm text-muted rounded-0 me-4 ${styles.miniSelect}`}
                       value={props.classify}
-                      aria-label="Classify"
+                      aria-label="Classify options"
                       onChange={(e) => {
                         const classifyOpt = e.currentTarget.value as ClassifyOption;
                         props.setClassify(classifyOpt);
@@ -274,7 +278,7 @@ const Filters = (props: Props) => {
                       id="sorted"
                       class={`form-select form-select-sm text-muted rounded-0 ${styles.miniSelect}`}
                       value={`${props.sorted}_${props.sortDirection}`}
-                      aria-label="Sort"
+                      aria-label="Sort options"
                       onChange={(e) => {
                         const sortValue = e.currentTarget.value;
                         const sortOpt = sortValue.split('_');

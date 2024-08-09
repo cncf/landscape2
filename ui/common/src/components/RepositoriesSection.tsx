@@ -142,24 +142,32 @@ const RepositoryInfo = (props: RepoProps) => {
       </div>
       <Show when={!isUndefined(props.repository.github_data)}>
         <div class="row g-4 my-0 mb-2 justify-content-center justify-md-content-start">
-          <Box class={props.boxClass} value={prettifyNumber(props.repository.github_data!.stars, 1)} legend="Stars" />
+          <Box
+            class={props.boxClass}
+            value={prettifyNumber(props.repository.github_data!.stars, 1)}
+            legend="Stars"
+            description="Stars number"
+          />
 
           <Box
             class={props.boxClass}
             value={prettifyNumber(props.repository.github_data!.contributors.count)}
             legend="Contributors"
+            description="Contributors number"
           />
 
           <Box
             class={props.boxClass}
             value={formatDate(props.repository.github_data!.first_commit.ts)}
             legend="First commit"
+            description="First commit date"
           />
 
           <Box
             class={props.boxClass}
             value={formatDate(props.repository.github_data!.latest_commit.ts)}
             legend="Latest commit"
+            description="Latest commit date"
           />
 
           <Box
@@ -170,6 +178,7 @@ const RepositoryInfo = (props: RepoProps) => {
                 : '-'
             }
             legend="Latest release"
+            description="Latest release date"
           />
         </div>
 
@@ -217,12 +226,11 @@ export const RepositoriesSection = (props: Props) => {
     <Show when={repositoriesList().length > 0}>
       <div class={`position-relative ${props.class}`}>
         <div class={` ${props.titleClass}`}>Repositories</div>
-
         <select
           id="repo-select"
           class={`form-select form-select-md border-0 rounded-0 my-3 ${Select}`}
           value={selectedRepo() ? selectedRepo()!.url : undefined}
-          aria-label="Repository select"
+          aria-label="Repositories select"
           onChange={(e) => {
             const repo = repositoriesList().find((r) => r.url === e.currentTarget.value);
             setSelectedRepo(repo);

@@ -97,7 +97,7 @@ const Card = (props: Props) => {
           <Switch>
             <Match when={!isUndefined(stars())}>
               <div class="d-flex flex-row align-items-baseline">
-                <small class="me-1 text-black-50">GitHub stars:</small>
+                <small class={`me-1 ${styles.legend}`}>GitHub stars:</small>
                 <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
               </div>
             </Match>
@@ -109,7 +109,7 @@ const Card = (props: Props) => {
                 props.item.crunchbase_data.funding > 0
               }
             >
-              <small class="me-1 text-black-50">Funding:</small>
+              <small class={`me-1 ${styles.legend}`}>Funding:</small>
               <div class="fw-semibold">{prettifyNumber(props.item.crunchbase_data!.funding!)}</div>
             </Match>
           </Switch>

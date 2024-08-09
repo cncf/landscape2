@@ -29,7 +29,7 @@ const ItemModal = (props: Props) => {
 
   return (
     <Show when={activeItemId() !== null}>
-      <Modal size="xl" onClose={props.onClose} modalDialogClass={ModalClass} open>
+      <Modal title="Embeddable item details" size="xl" onClose={props.onClose} modalDialogClass={ModalClass} open>
         <Show
           when={itemInfo()}
           fallback={

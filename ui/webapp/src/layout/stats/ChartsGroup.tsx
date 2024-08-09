@@ -141,7 +141,7 @@ const ChartsGroup = (props: Props) => {
         <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
           <div class="col-12 col-sm-6 col-xl-8">
             <div class="card rounded-0">
-              <div class="card-body">
+              <div class="card-body" aria-hidden={true}>
                 <SolidApexCharts
                   options={getAreaChartConfig()}
                   series={[{ name: props.name, data: areaSeries() }]}

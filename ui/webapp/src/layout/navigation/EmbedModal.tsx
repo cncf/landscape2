@@ -166,7 +166,7 @@ const EmbedModal = () => {
 
   const getExtraCode = () => {
     if (displayItemModal()) {
-      return `\n<!-- Landscape embed item details view -->\n<!-- NOTE: the script and the iframe below should only be added once, even when adding multiple embed views to the page -->\n<script src="${embedOrigin()}/embed-item.js"></script>\n<iframe id="embed-item" src="${embedOrigin()}/embed-item.html" style="width:100%;height:100%;display:block;border:none;position:fixed;top:0;bottom:0;left:0;right:0;z-index:999999999;display:none;"></iframe>`;
+      return `\n<!-- Landscape embed item details view -->\n<!-- NOTE: the script and the iframe below should only be added once, even when adding multiple embed views to the page -->\n<script src="${embedOrigin()}/embed-item.js"></script>\n<iframe id="embed-item" src="${embedOrigin()}/embed-item.html" style="width:100%;height:100%;display:block;border:none;position:fixed;top:0;bottom:0;left:0;right:0;z-index:2147483647;display:none;"></iframe>`;
     }
     return '';
   };
@@ -333,12 +333,14 @@ const EmbedModal = () => {
               replace: true,
             });
           }}
+          aria-label='Open "Embeddable view setup" modal'
         >
           <SVGIcon kind={SVGIconKind.Embed} />
         </button>
       </div>
       <Show when={visibleModal()}>
         <Modal
+          title="Embeddable view setup"
           size="xxl"
           open
           bodyClass={styles.modalBody}
@@ -372,7 +374,7 @@ const EmbedModal = () => {
                           id="categories"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedCategory()}
-                          aria-label="Categories"
+                          aria-label="Categories list"
                           onChange={(e) => {
                             updateCategory(e.currentTarget.value);
                           }}
@@ -392,7 +394,7 @@ const EmbedModal = () => {
                           id="subcategories"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedSubcategory() || subcategoriesList()[0].normalized_name}
-                          aria-label="Subcategories"
+                          aria-label="Subcategories list"
                           onChange={(e) => {
                             const value = e.currentTarget.value;
                             setSelectedSubcategory(value);
@@ -501,7 +503,7 @@ const EmbedModal = () => {
                             id="fontFamily"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={titleFontFamily()}
-                            aria-label="Font family"
+                            aria-label="Font family options"
                             onChange={(e) => {
                               setTitleFontFamily(e.currentTarget.value as FontFamily);
                             }}
@@ -520,6 +522,7 @@ const EmbedModal = () => {
                           <div>
                             <input
                               type="number"
+                              id="titleSize"
                               class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
                               min={10}
                               max={60}
@@ -538,7 +541,7 @@ const EmbedModal = () => {
                           id="alignment"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={titleAlignment()}
-                          aria-label="Styles"
+                          aria-label="Title aligment options"
                           onChange={(e) => {
                             setTitleAlignment(e.currentTarget.value as Alignment);
                           }}
@@ -590,6 +593,7 @@ const EmbedModal = () => {
                             <div>
                               <input
                                 type="number"
+                                id="itemNameSize"
                                 class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
                                 min={10}
                                 max={40}
@@ -610,7 +614,7 @@ const EmbedModal = () => {
                           id="styles"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedStyle()}
-                          aria-label="Styles"
+                          aria-label="Style options"
                           onChange={(e) => {
                             setSelectedStyle(e.currentTarget.value as Style);
                           }}
@@ -630,7 +634,7 @@ const EmbedModal = () => {
                             id="sizes"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={selectedSize()}
-                            aria-label="Sizes"
+                            aria-label="Size options"
                             onChange={(e) => {
                               setSelectedSize(e.currentTarget.value as Size);
                             }}
@@ -648,7 +652,7 @@ const EmbedModal = () => {
                             id="alignment"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={itemsAlignment()}
-                            aria-label="Styles"
+                            aria-label="Items aligment options"
                             onChange={(e) => {
                               setItemsAlignment(e.currentTarget.value as Alignment);
                             }}
@@ -694,6 +698,7 @@ const EmbedModal = () => {
                           <Show when={itemsSpacingType() === SpacingType.Custom}>
                             <input
                               type="number"
+                              id="itemsSpacing"
                               min={0}
                               class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
                               value={itemsSpacing()}
@@ -714,10 +719,11 @@ const EmbedModal = () => {
                       </div>
                       <Show when={!isUndefined(url())}>
                         <div class="p-4 pt-2 flex-grow-1">
-                          <iframe src={url()} class="d-block w-100 h-100 border-0 scroll-auto" />
+                          <iframe title="Embed grid" src={url()} class="d-block w-100 h-100 border-0 scroll-auto" />
                           <Show when={displayItemModal() && embedScriptLoaded()}>
                             <iframe
                               id="embed-item"
+                              title="Embed item details view"
                               src={`${embedOrigin()}/embed-item.html`}
                               style={{
                                 width: '100%',
@@ -729,7 +735,7 @@ const EmbedModal = () => {
                                 bottom: '0',
                                 left: '0',
                                 right: '0',
-                                'z-index': '999999999',
+                                'z-index': '2147483647',
                               }}
                             />
                           </Show>

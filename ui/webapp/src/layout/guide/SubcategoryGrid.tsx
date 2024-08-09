@@ -42,11 +42,12 @@ const SubcategoryGrid = (props: Props) => {
 
   return (
     <Show when={!isUndefined(props.items)}>
-      <div class={`d-grid d-sm-none justify-content-start ${styles.mobileItems}`}>
+      <div class={`d-grid d-sm-none justify-content-start ${styles.mobileItems}`} role="list">
         <For each={props.items}>
           {(item: BaseItem | Item) => {
             return (
               <div
+                role="listitem"
                 style={item.featured && item.featured.label ? { border: `2px solid ${COLORS[0]}` } : {}}
                 class={`card rounded-0 position-relative p-0 ${styles.card}`}
                 classList={{
@@ -59,6 +60,7 @@ const SubcategoryGrid = (props: Props) => {
                     e.preventDefault();
                     updateActiveItemId(item.id);
                   }}
+                  aria-label="Open item details"
                 >
                   <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} />
                 </button>
@@ -68,7 +70,7 @@ const SubcategoryGrid = (props: Props) => {
         </For>
       </div>
       <div class="d-none d-sm-block ">
-        <div ref={setContainer} class={`my-4 justify-content-start ${styles.grid}`}>
+        <div ref={setContainer} class={`my-4 justify-content-start ${styles.grid}`} role="list">
           {(() => {
             const items = [];
             const itemsPerRow = calculateGridItemsPerRow(100, containerWidth(), 75, true);

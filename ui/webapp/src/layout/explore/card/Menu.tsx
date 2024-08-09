@@ -85,6 +85,7 @@ const Menu = (props: Props) => {
                               }
                               updateRoute(hash);
                             }}
+                            aria-label={subtitle === 'undefined' ? 'None' : subtitle}
                           >
                             <Show when={`#${hash}` === location.hash}>
                               <div class={`position-absolute ${styles.arrow}`}>

@@ -124,7 +124,7 @@ const Loading = (props: Props) => {
     <Wrapper>
       <SpinnerWrapper>
         <div>
-          <Spinner bgColor={props.bgColor} />
+          <Spinner bgColor={props.bgColor} aria-hidden="true" />
         </div>
       </SpinnerWrapper>
     </Wrapper>

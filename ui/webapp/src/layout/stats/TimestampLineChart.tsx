@@ -121,7 +121,7 @@ const TimestampLineChart = (props: Props) => {
   return (
     <Show when={series().length > 0}>
       <div class="card rounded-0">
-        <div class="card-body">
+        <div class="card-body" aria-hidden={true}>
           <SolidApexCharts
             options={getChartConfig()}
             series={[{ name: props.name, data: series() }]}

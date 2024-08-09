@@ -29,6 +29,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   word-wrap: normal;
   max-height: 36px;
 }
@@ -37,7 +38,7 @@
   font-size: 0.75rem;
 }
 
-.additionalInfo small {
+.legend {
   font-size: 0.7rem;
 }
 

@@ -120,6 +120,7 @@ export const AcquisitionsTable = (props: Props) => {
             <button
               class={`btn btn-link btn-sm text-muted text-decoration-underline pe-0 ${CollapsedBtn}`}
               onClick={() => setCollapsed(!collapsed())}
+              aria-label={`Show ${collapsed() ? 'more' : 'less'} acquisitions`}
             >
               Show {collapsed() ? 'more' : 'less'}
             </button>

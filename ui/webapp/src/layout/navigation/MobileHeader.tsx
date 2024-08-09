@@ -47,6 +47,7 @@ const MobileHeader = (props: Props) => {
               title="Index"
               class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 p-0 ${styles.mobileBtn}`}
               onClick={() => openMenu(true)}
+              aria-label='Open "Table of contents"'
             >
               <SVGIcon kind={SVGIconKind.ToC} />
             </button>
@@ -54,7 +55,7 @@ const MobileHeader = (props: Props) => {
         </div>
         <div>
           <Show when={!isUndefined(logo())}>
-            <button class="btn btn-link" onClick={() => scrollToTop(true)}>
+            <button class="btn btn-link" onClick={() => scrollToTop(true)} aria-label="Scroll to top">
               <Image logo={logo()!} class={styles.stickyLogo} name="Landscape logo" height={35} />
             </button>
           </Show>
@@ -67,7 +68,7 @@ const MobileHeader = (props: Props) => {
         <div class="container-fluid d-flex flex-column flex-lg-row align-items-center p-3 p-lg-4 mainPadding">
           <div class={`d-flex flex-row justify-content-between align-items-center ${styles.logoWrapper}`}>
             <Show when={!isUndefined(logo())}>
-              <A href={EXPLORE_PATH} class="me-4 me-xl-5">
+              <A href={EXPLORE_PATH} class="me-4 me-xl-5" aria-label="Go to Explore page">
                 <Image class={styles.logo} logo={logo()!} name="Landscape logo" height={48} />
               </A>
             </Show>
@@ -86,7 +87,7 @@ const MobileHeader = (props: Props) => {
           >
             <div class={`d-flex flex-row align-items-center mt-3 mt-md-4 ${styles.searchWrapper}`}>
               <div class="position-relative w-100">
-                <Searchbar />
+                <Searchbar device="mobile" />
               </div>
               <div class="d-none d-lg-flex align-items-center">
                 <DownloadDropdown />

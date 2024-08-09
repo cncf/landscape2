@@ -39,6 +39,7 @@ export const LanguagesStats = (props: Props) => {
               value={`${Number.isInteger(value()) ? value() : value().toFixed(2)}%`}
               legend={lang}
               fillBgPercentage={value()}
+              description={`${lang} language percentage`}
             />
           );
         }}

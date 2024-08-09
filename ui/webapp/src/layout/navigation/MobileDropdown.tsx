@@ -44,6 +44,7 @@ const MobileDropdown = (props: Props) => {
             activeClass="activeLink"
             href={EXPLORE_PATH}
             onClick={closeDropdown}
+            aria-label="Go to Explore page"
             end
           >
             Explore
