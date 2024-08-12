@@ -29,6 +29,8 @@ const ItemModal = () => {
           if (!isUndefined(parentItem)) {
             setParentInfo(parentItem);
           }
+        } else {
+          setParentInfo(undefined);
         }
         setItemInfo(itemTmp);
       } catch {
