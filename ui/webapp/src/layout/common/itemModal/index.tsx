@@ -19,7 +19,6 @@ const ItemModal = () => {
   const [itemInfo, setItemInfo] = createSignal<Item | null | undefined>(undefined);
   const [parentInfo, setParentInfo] = createSignal<Item>();
   const { point } = useBreakpointDetect();
-  const membersCategory = () => window.baseDS.members_category;
 
   createEffect(() => {
     async function fetchItemInfo() {
@@ -81,7 +80,6 @@ const ItemModal = () => {
               foundation={FOUNDATION}
               basePath={BASE_PATH}
               parentInfo={parentInfo()}
-              membersCategory={membersCategory()}
               onClose={() => updateActiveItemId()}
             />
           </Show>

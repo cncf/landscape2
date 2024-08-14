@@ -592,7 +592,7 @@ export class ItemsDataGetter {
   // Get items by end user
   public getItemsByEndUser(): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.filter((i: Item) => i.enduser && window.baseDS.members_category === i.category);
+      return this.landscapeData.items.filter((i: Item) => i.enduser);
     }
   }
 
