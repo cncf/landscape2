@@ -32,7 +32,6 @@ interface Props {
   foundation: string;
   basePath?: string;
   onClose?: () => void;
-  membersCategory?: string;
 }
 
 const LogoWrapper = css`
@@ -312,14 +311,7 @@ export const ItemModalContent = (props: Props) => {
             <div class="d-flex flex-row align-items-center mb-1">
               <div class={`d-none d-xl-flex badge rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.category}</div>
               <div class={`badge ms-0 ms-xl-2 rounded-0 ${BadgeOutlineDark}`}>{itemInfo()!.subcategory}</div>
-              <Show
-                when={
-                  !isUndefined(itemInfo()!.enduser) &&
-                  itemInfo()!.enduser &&
-                  !isUndefined(props.membersCategory) &&
-                  props.membersCategory === itemInfo()!.category
-                }
-              >
+              <Show when={!isUndefined(itemInfo()!.enduser) && itemInfo()!.enduser}>
                 <div class={`badge ms-0 ms-xl-2 me-3 rounded-0 ${BadgeOutlineDark}`}>End user</div>
               </Show>
 
