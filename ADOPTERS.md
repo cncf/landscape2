@@ -15,6 +15,7 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [LF AI & DATA](https://lfai.landscape2.io)
 - [LF Energy](https://lfenergy.landscape2.io)
 - [LF Networking](https://lfnetworking.landscape2.io)
+- [Open 3D Foundation](https://o3df.landscape2.io)
 - [Open Mainframe Project](https://omp.landscape2.io)
 - [Open Neuroscience Foundation](https://neuroscience-landscape.com)
 - [Open Source Program Offices](https://landscape.todogroup.org)

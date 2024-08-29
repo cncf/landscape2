@@ -38,9 +38,9 @@ pub fn new(args: &NewArgs) -> Result<()> {
     for file_path in TemplateFiles::iter() {
         if let Some(embedded_file) = TemplateFiles::get(&file_path) {
             if let Some(parent_path) = Path::new(file_path.as_ref()).parent() {
-                fs::create_dir_all(&args.output_dir.join(parent_path))?;
+                fs::create_dir_all(args.output_dir.join(parent_path))?;
             }
-            let mut file = File::create(&args.output_dir.join(file_path.as_ref()))?;
+            let mut file = File::create(args.output_dir.join(file_path.as_ref()))?;
             file.write_all(&embedded_file.data)?;
         }
     }
