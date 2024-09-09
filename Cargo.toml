@@ -16,17 +16,17 @@ authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 homepage = "https://github.com/cncf/landscape2"
 
 [workspace.dependencies]
-anyhow = "1.0.86"
+anyhow = "1.0.87"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
-async-trait = "0.1.81"
-aws-config = "1.5.4"
-aws-sdk-s3 = "1.42.0"
+async-trait = "0.1.82"
+aws-config = "1.5.5"
+aws-sdk-s3 = "1.43.0"
 axum = "0.7.5"
 base64 = "0.22.1"
 cached = { version = "0.53.1", default-features = false, features = ["async", "proc_macro"] }
 chrono = { version = "0.4.38", features = ["serde"] }
-clap = { version = "4.5.10", features = ["derive"] }
+clap = { version = "4.5.17", features = ["derive"] }
 csv = "1.3.0"
 deadpool = "0.12.1"
 dirs = "5.0.1"
@@ -43,24 +43,24 @@ markdown = "1.0.0-alpha.18"
 md-5 = "0.10.6"
 mime_guess = "2.0.5"
 mockall = "0.13.0"
-mockito = "1.4.0"
+mockito = "1.5.0"
 num_cpus = "1.16.0"
 octorust = "0.7.0"
 parse_link_header = "0.3.3"
 pretty_assertions = "1.4.0"
 qrcode = "0.14.1"
 rand = "0.8.5"
-regex = "1.10.5"
-reqwest = { version = "0.12.5", features = ["json", "native-tls-vendored"] }
+regex = "1.10.6"
+reqwest = { version = "0.12.7", features = ["json", "native-tls-vendored"] }
 reqwest_octorust = { package = "reqwest", version = "0.11.14", default-features = false, features = ["json", "multipart"] }
 reqwest-middleware = "0.2.2"
 rust-embed = "8.5.0"
-serde = { version = "1.0.204", features = ["derive"] }
-serde_json = "1.0.120"
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.10.8"
-tokio = { version = "1.39.1", features = [
+tokio = { version = "1.40.0", features = [
     "macros",
     "process",
     "rt-multi-thread",
@@ -74,10 +74,10 @@ tower-http = { version = "0.5.2", features = ["fs", "set-header"] }
 url = "2.5.2"
 usvg = "0.37.0"
 walkdir = "2.5.0"
-wasm-bindgen = "0.2.92"
-wasm-bindgen-futures = "0.4.42"
-web-sys = { version = "0.3.69", features = ["console"] }
-which = "6.0.1"
+wasm-bindgen = "0.2.93"
+wasm-bindgen-futures = "0.4.43"
+web-sys = { version = "0.3.70", features = ["console"] }
+which = "6.0.3"
 
 [profile.release]
 lto = true
