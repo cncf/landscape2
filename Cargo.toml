@@ -11,7 +11,7 @@ members = [
 version = "0.10.0"
 license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.77"
+rust-version = "1.81"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 homepage = "https://github.com/cncf/landscape2"
 
