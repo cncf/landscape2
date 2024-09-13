@@ -37,7 +37,7 @@ updates:
           - "*"
 
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/crates/cli"
     schedule:
       interval: "weekly"
     groups:
