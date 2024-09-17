@@ -16,7 +16,7 @@ authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 homepage = "https://github.com/cncf/landscape2"
 
 [workspace.dependencies]
-anyhow = "1.0.88"
+anyhow = "1.0.89"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.82"
@@ -47,7 +47,7 @@ mockito = "1.5.0"
 num_cpus = "1.16.0"
 octorust = "0.7.0"
 parse_link_header = "0.4.0"
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
 rand = "0.8.5"
 regex = "1.10.6"
