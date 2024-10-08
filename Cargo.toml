@@ -20,17 +20,17 @@ anyhow = "1.0.89"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.83"
-aws-config = "1.5.7"
-aws-sdk-s3 = "1.52.0"
+aws-config = "1.5.8"
+aws-sdk-s3 = "1.54.0"
 axum = "0.7.7"
 base64 = "0.22.1"
 cached = { version = "0.53.1", default-features = false, features = ["async", "proc_macro"] }
 chrono = { version = "0.4.38", features = ["serde"] }
-clap = { version = "4.5.18", features = ["derive"] }
+clap = { version = "4.5.19", features = ["derive"] }
 csv = "1.3.0"
 deadpool = "0.12.1"
 dirs = "5.0.1"
-futures = "0.3.30"
+futures = "0.3.31"
 gloo-console = "0.3.0"
 gloo-net = { version = "0.6.0", default-features = false, features = ["http", "json"] }
 headless_chrome = { git = "https://github.com/rust-headless-chrome/rust-headless-chrome", rev = "973ebea" }
