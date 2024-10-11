@@ -8,6 +8,7 @@ use chrono::NaiveDate;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 lazy_static! {
     /// TAG name regular expression.
@@ -147,6 +148,7 @@ pub(super) struct Item {
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(super) struct ItemExtra {
     pub accepted: Option<NaiveDate>,
+    pub annotations: Option<HashMap<String, String>>,
     pub archived: Option<NaiveDate>,
     pub audits: Option<Vec<ItemAudit>>,
     pub annual_review_date: Option<NaiveDate>,
