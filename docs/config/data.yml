@@ -101,6 +101,14 @@ categories:
               # Format: 'YYYY-MM-DD'.
               accepted: "2024-05-14"
 
+              # List of user-defined annotations (optional). Annotations can be used to add custom
+              # metadata to landscape items. Annotations are not used by the landscape itself, but
+              # they can be used by external tools that consume the landscape data. Both keys and
+              # values are expected to be strings.
+              annotations:
+                key1: value1
+                key2: value2
+
               # Date at which the project was archived (optional). This field is only expected on
               # items that represent a foundation's project. Format: 'YYYY-MM-DD'.
               archived: "2020-05-14"

@@ -415,6 +415,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                     // Additional information in extra field
                     if let Some(extra) = legacy_item.extra {
                         item.accepted_at = extra.accepted;
+                        item.annotations = extra.annotations;
                         item.archived_at = extra.archived;
                         item.artwork_url = extra.artwork_url;
                         item.audits = extra.audits;
@@ -533,6 +534,9 @@ pub struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub additional_categories: Option<Vec<AdditionalCategory>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub annotations: Option<HashMap<String, String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archived_at: Option<NaiveDate>,
@@ -1359,6 +1363,7 @@ mod tests {
                         enduser: Some(false),
                         extra: Some(legacy::ItemExtra {
                             accepted: Some(date),
+                            annotations: Some(HashMap::from([("key".to_string(), "value".to_string())])),
                             archived: Some(date),
                             audits: Some(vec![ItemAudit {
                                 date,
@@ -1437,6 +1442,7 @@ mod tests {
                     category: "category2".to_string(),
                     subcategory: "subcategory2.1".to_string(),
                 }]),
+                annotations: Some(HashMap::from([("key".to_string(), "value".to_string())])),
                 archived_at: Some(date),
                 artwork_url: Some("artwork_url".to_string()),
                 audits: Some(vec![ItemAudit {

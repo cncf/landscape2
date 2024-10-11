@@ -208,6 +208,9 @@ pub(crate) struct Item {
     pub additional_categories: Option<Vec<AdditionalCategory>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub annotations: Option<HashMap<String, String>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub archived_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -304,6 +307,7 @@ impl Item {
         Self {
             accepted_at: item.accepted_at,
             additional_categories: item.additional_categories.clone(),
+            annotations: item.annotations.clone(),
             archived_at: item.archived_at,
             artwork_url: item.artwork_url.clone(),
             audits: item.audits.clone(),
