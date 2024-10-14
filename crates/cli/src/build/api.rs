@@ -262,6 +262,12 @@ pub(crate) struct Item {
     pub joined_at: Option<NaiveDate>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_annual_review_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_annual_review_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -328,6 +334,8 @@ impl Item {
             id: item.id.clone(),
             incubating_at: item.incubating_at,
             joined_at: item.joined_at,
+            latest_annual_review_at: item.latest_annual_review_at,
+            latest_annual_review_url: item.latest_annual_review_url.clone(),
             logo_url: format!(
                 "{}/{}",
                 landscape_url.strip_suffix('/').unwrap_or(landscape_url),
