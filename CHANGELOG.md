@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2024-10-14
+
+### Added
+
+- Improved accessibility support (#685)
+- Annotations field to item extra section (#721)
+- Return items annual review details from API (#722)
+
+### Fixed
+
+- Order by sandbox date on projects page (#677)
+- Issue closing embed item modal (#682)
+- Issue displaying parent project in details modal (#689)
+- Regression in grid mode on mobile devices (#687)
+- Regression displaying end user label in details view (#690)
+- Typo in sample data file (#703)
+- Do not cache quiz questions during tests (#719)
+
+### Changed
+
+- Adjust items sizes on embed for mobile devices (#683)
+- Do not rely on members category to display end user label (#692)
+- Bump Alpine to 3.20.3 (#707)
+- Bump Rust to 1.81 (#706)
+- Upgrade CLI tool dependencies
+- Upgrade web application and embed dependencies
+
 ## [0.10.0] - 2024-07-24
 
 ### Added
