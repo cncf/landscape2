@@ -443,8 +443,41 @@ export class ItemsDataGetter {
         }
       });
     }
-    return data;
+
+    return this.sortSubcategoriesInGridData(data);
   }
+
+  private sortSubcategoriesInGridData = (data: GroupData): GroupData => {
+    const sortedData: GroupData = {};
+
+    Object.keys(data).forEach((group: string) => {
+      sortedData[group] = {};
+      Object.keys(data[group]).forEach((category: string) => {
+        const isOverriden =
+          !isUndefined(window.baseDS.categories_overridden) && window.baseDS.categories_overridden.includes(category);
+        if (!isOverriden) {
+          sortedData[group][category] = data[group][category];
+        } else {
+          const currentCategory = window.baseDS.categories.find((c: Category) => c.name === category);
+          if (currentCategory && currentCategory.subcategories) {
+            const subcategories = currentCategory.subcategories.map((s: Subcategory) => s.name);
+            const sortedSubcategories: { [key: string]: SubcategoryData } = {};
+            subcategories.forEach((subcat: string) => {
+              if (data[group][category][subcat]) {
+                sortedSubcategories[subcat] = data[group][category][subcat];
+              }
+            });
+            sortedData[group][category] = sortedSubcategories;
+          } else {
+            sortedData[group][category] = data[group][category];
+          }
+        }
+      });
+    });
+
+    console.log(sortedData);
+    return sortedData;
+  };
 
   public getGridData(withAllOption: boolean): GroupData {
     return this.prepareGridData(this.getGroupedData(), withAllOption);
