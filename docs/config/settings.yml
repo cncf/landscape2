@@ -47,9 +47,14 @@ url: https://landscape.cncf.io
 # specific order within a category (this happens often in the Members category).
 # In those cases, it is possible to define that order by overriding a category.
 #
-# This option can also be used to not display one or more subcategories in the
-# landscape. To achieve that, we only need to exclude the subcategory from the
-# subcategories list when overriding a category.
+# This option can also be used to not display one or more subcategories in some
+# sections of the landscape [*]. To achieve that, we only need to exclude the
+# subcategory from the subcategories list when overriding a category.
+#
+# [*]
+#   - Grid mode: excluded subcategories won't be displayed
+#   - Card mode: items in excluded subcategories won't be displayed when
+#     filtering by group or classifying by category
 #
 # categories:
 #   - name: <CATEGORY_NAME>
@@ -205,6 +210,9 @@ grid_items_size: small
 # different tab in the landscape web application. Each entry must contain the
 # name of the group (it will be displayed as is) and a list with the categories
 # (as defined in the landscape.yml data file) that will be part of this group.
+#
+# When groups are used, categories not listed in any group won't be displayed
+# in the grid mode.
 #
 # groups:
 #   - name: <GROUP_NAME>
