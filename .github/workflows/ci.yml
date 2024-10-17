@@ -9,15 +9,10 @@ on:
 jobs:
   lint-and-test-cli-tool:
     runs-on:
-      labels: equinix-4cpu-16gb
+      labels: ubuntu-latest-8-cores
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Install Yarn
-        run: npm install -g yarn
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@master
         with:
@@ -34,17 +29,12 @@ jobs:
 
   lint-and-test-webapp:
     runs-on:
-      labels: equinix-4cpu-16gb
+      labels: ubuntu-latest-8-cores
     env:
       NODE_OPTIONS: --max_old_space_size=4096
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Install Yarn
-        run: npm install -g yarn
       - name: Install dependencies
         working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
@@ -57,17 +47,12 @@ jobs:
 
   lint-and-test-embed:
     runs-on:
-      labels: equinix-4cpu-16gb
+      labels: ubuntu-latest-8-cores
     env:
       NODE_OPTIONS: --max_old_space_size=4096
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Install Yarn
-        run: npm install -g yarn
       - name: Install dependencies
         working-directory: ./ui/embed
         run: yarn install --network-concurrency 1
