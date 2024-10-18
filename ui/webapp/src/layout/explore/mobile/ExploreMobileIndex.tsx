@@ -23,7 +23,7 @@ import MobileGrid from './MobileGrid';
 interface Props {
   openMenuStatus: boolean;
   closeMenuStatus: () => void;
-  data: CategoriesData;
+  data?: CategoriesData;
   cardData: unknown;
   menu?: CardMenu;
   categories_overridden?: string[];
@@ -90,7 +90,7 @@ const ExploreMobileIndex = (props: Props) => {
 
       <Switch>
         <Match when={selectedViewMode() === ViewMode.Grid}>
-          <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+          <Show when={!isUndefined(data()) && !isUndefined(menu()) && !isEmpty(menu())}>
             <For each={Object.keys(menu()!)}>
               {(title) => {
                 return (
@@ -106,7 +106,7 @@ const ExploreMobileIndex = (props: Props) => {
                     <For each={menu()![title]}>
                       {(subtitle: string) => {
                         const items = () =>
-                          data()[title] && data()[title][subtitle] ? data()[title][subtitle]!.items : [];
+                          data()![title] && data()![title][subtitle] ? data()![title][subtitle]!.items : [];
                         if (items().length === 0) return null;
 
                         const id = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
