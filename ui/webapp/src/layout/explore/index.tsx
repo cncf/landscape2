@@ -610,7 +610,7 @@ const Explore = (props: Props) => {
             </Show>
 
             <div class="d-none d-lg-flex align-items-center">
-              <Show when={props.initialData.groups}>
+              <Show when={viewMode() === ViewMode.Card || (activeGroups() && activeGroups()!.length > 1)}>
                 <div class={styles.btnGroupLegend}>
                   <small class="text-muted me-2">GROUP:</small>
                 </div>
@@ -618,7 +618,12 @@ const Explore = (props: Props) => {
                   ref={setControlsGroupWrapper}
                   classList={{ 'd-flex': !visibleSelectForGroups(), 'd-none': visibleSelectForGroups() }}
                 >
-                  <div class={`btn-group btn-group-sm me-4 ${styles.btnGroup}`}>
+                  <div
+                    class={`btn-group btn-group-sm ${styles.btnGroup}`}
+                    classList={{
+                      'me-4': viewMode() === ViewMode.Card || (activeGroups() && activeGroups()!.length > 1),
+                    }}
+                  >
                     <For each={props.initialData.groups}>
                       {(group: Group) => {
                         if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name))
@@ -651,7 +656,9 @@ const Explore = (props: Props) => {
                         title="All"
                         class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
                         classList={{
-                          [`active ${styles.active}`]: !isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup(),
+                          [`active ${styles.active}`]:
+                            (!isUndefined(selectedGroup()) && ALL_OPTION === selectedGroup()) ||
+                            (activeGroups() && activeGroups()!.length === 0),
                         }}
                         onClick={() => {
                           setVisibleLoading(true);
@@ -669,34 +676,36 @@ const Explore = (props: Props) => {
                   </div>
                 </div>
                 {/* Only visible when btn grouped for groups overflows wrapper */}
-                <div classList={{ 'd-none': !visibleSelectForGroups(), 'd-flex': visibleSelectForGroups() }}>
-                  <select
-                    id="desktop-group"
-                    class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect}`}
-                    value={selectedGroup()}
-                    aria-label="Groups list"
-                    onChange={(e) => {
-                      setVisibleLoading(true);
-                      const group = e.currentTarget.value;
+                <Show when={viewMode() === ViewMode.Card || (activeGroups() && activeGroups()!.length > 1)}>
+                  <div classList={{ 'd-none': !visibleSelectForGroups(), 'd-flex': visibleSelectForGroups() }}>
+                    <select
+                      id="desktop-group"
+                      class={`form-select form-select-sm border-primary text-primary rounded-0 me-4 ${styles.desktopSelect}`}
+                      value={activeGroups() && activeGroups()!.length == 0 ? ALL_OPTION : selectedGroup()}
+                      aria-label="Groups list"
+                      onChange={(e) => {
+                        setVisibleLoading(true);
+                        const group = e.currentTarget.value;
 
-                      setTimeout(() => {
-                        setSelectedGroup(group);
-                        updateQueryString(GROUP_PARAM, group);
-                      }, DELAY_ACTIONS);
-                    }}
-                  >
-                    <For each={props.initialData.groups}>
-                      {(group: Group) => {
-                        if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name))
-                          return null;
-                        return <option value={group.normalized_name}>{group.name}</option>;
+                        setTimeout(() => {
+                          setSelectedGroup(group);
+                          updateQueryString(GROUP_PARAM, group);
+                        }, DELAY_ACTIONS);
                       }}
-                    </For>
-                    <Show when={viewMode() === ViewMode.Card}>
-                      <option value={ALL_OPTION}>All</option>
-                    </Show>
-                  </select>
-                </div>
+                    >
+                      <For each={props.initialData.groups}>
+                        {(group: Group) => {
+                          if (!isUndefined(activeGroups()) && !activeGroups()!.includes(group.normalized_name))
+                            return null;
+                          return <option value={group.normalized_name}>{group.name}</option>;
+                        }}
+                      </For>
+                      <Show when={viewMode() === ViewMode.Card}>
+                        <option value={ALL_OPTION}>All</option>
+                      </Show>
+                    </select>
+                  </div>
+                </Show>
               </Show>
             </div>
             <div class={`d-none d-md-block ms-0 ms-md-auto ms-lg-0 ${styles.btnGroupLegend}`}>
@@ -846,7 +855,7 @@ const Explore = (props: Props) => {
               </div>
             </Show>
           </div>
-          <Show when={!isUndefined(props.initialData.groups)}>
+          <Show when={!isUndefined(props.initialData.groups) && activeGroups() && activeGroups()!.length > 1}>
             <div class="d-flex d-lg-none align-items-center mt-3 mt-md-4 mt-lg-0 mb-2 mb-md-3 mb-lg-0">
               <div class={`d-none d-md-block ${styles.btnGroupLegend}`}>
                 <small class="text-muted me-2">GROUP:</small>
@@ -923,7 +932,13 @@ const Explore = (props: Props) => {
                   <ExploreMobileIndex
                     openMenuStatus={openMenuStatus()}
                     closeMenuStatus={closeMenuStatus}
-                    data={{ ...groupsData() }[selectedGroup() || ALL_OPTION]}
+                    data={
+                      isUndefined(props.initialData.groups)
+                        ? { ...groupsData() }[ALL_OPTION]
+                        : selectedGroup()
+                          ? { ...groupsData() }[selectedGroup()!]
+                          : undefined
+                    }
                     cardData={{ ...cardData() }[selectedGroup() || ALL_OPTION]}
                     menu={!isUndefined(cardMenu()) ? cardMenu()![selectedGroup() || ALL_OPTION] : undefined}
                     categories_overridden={props.initialData.categories_overridden}
@@ -946,17 +961,34 @@ const Explore = (props: Props) => {
                 >
                   <Show when={readyData()}>
                     <Show
-                      when={!isUndefined(props.initialData.groups)}
+                      when={activeGroups() && activeGroups()!.length > 0}
                       fallback={
-                        <Content
-                          data={{ ...groupsData() }[ALL_OPTION]}
-                          cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
-                          menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
-                          categories_overridden={props.initialData.categories_overridden}
-                          classify={classify()}
-                          sorted={sorted()}
-                          direction={sortDirection()}
-                        />
+                        <Show
+                          when={isUndefined(props.initialData.groups)}
+                          fallback={
+                            <Content
+                              data={{}}
+                              initialSelectedGroup={ALL_OPTION}
+                              group={ALL_OPTION}
+                              cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
+                              menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
+                              categories_overridden={props.initialData.categories_overridden}
+                              classify={classify()}
+                              sorted={sorted()}
+                              direction={sortDirection()}
+                            />
+                          }
+                        >
+                          <Content
+                            data={{ ...groupsData() }[ALL_OPTION]}
+                            cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
+                            menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
+                            categories_overridden={props.initialData.categories_overridden}
+                            classify={classify()}
+                            sorted={sorted()}
+                            direction={sortDirection()}
+                          />
+                        </Show>
                       }
                     >
                       <div
@@ -972,15 +1004,15 @@ const Explore = (props: Props) => {
                           direction={sortDirection()}
                         />
                       </div>
-                      <For each={props.initialData.groups}>
-                        {(group: Group) => {
+                      <For each={activeGroups()}>
+                        {(group: string) => {
                           return (
                             <Content
-                              group={group.normalized_name}
+                              group={group}
                               initialSelectedGroup={selectedGroup()}
-                              data={{ ...groupsData() }[group.normalized_name]}
-                              cardData={!isUndefined(cardData()) ? cardData()![group.normalized_name] : undefined}
-                              menu={!isUndefined(cardMenu()) ? cardMenu()![group.normalized_name] : undefined}
+                              data={{ ...groupsData() }[group]}
+                              cardData={!isUndefined(cardData()) ? cardData()![group] : undefined}
+                              menu={!isUndefined(cardMenu()) ? cardMenu()![group] : undefined}
                               categories_overridden={props.initialData.categories_overridden}
                               classify={classify()}
                               sorted={sorted()}
