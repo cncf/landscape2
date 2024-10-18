@@ -20,7 +20,7 @@ import {
   ViewMode,
 } from '../../../types';
 import getFoundationNameLabel from '../../../utils/getFoundationNameLabel';
-import getFiltersPerGroup, { FiltersPerGroup } from '../../../utils/prepareFilters';
+import getFiltersPerGroup, { FiltersOptions, FiltersPerGroup } from '../../../utils/prepareFilters';
 import Section from '../../common/Section';
 import { useViewMode } from '../../stores/viewMode';
 import styles from './Filters.module.css';
@@ -51,6 +51,10 @@ const Filters = (props: Props) => {
   const [filtersFromData, setFiltersFromData] = createSignal<FiltersPerGroup | undefined>();
   const [filters, setFilters] = createSignal<FilterSection[]>([]);
   const [visibleTitles, setVisibleTitles] = createSignal<FilterTitle[]>([]);
+  const [filtersOptions, setFiltersOptions] = createSignal<FiltersOptions>({
+    itemsWithoutMaturity: true,
+    itemsWithoutLicense: true,
+  });
 
   // Keep only available filters in selected group filters
   const cleanInitialActiveFilters = (): ActiveFilters => {
@@ -80,7 +84,8 @@ const Filters = (props: Props) => {
           const f = getFiltersPerGroup();
           if (!isEmpty(f)) {
             setFiltersFromData(f);
-            setFilters(f[props.initialSelectedGroup() || ALL_OPTION]);
+            setFilters(f[props.initialSelectedGroup() || ALL_OPTION].filters);
+            setFiltersOptions(f[props.initialSelectedGroup() || ALL_OPTION].options);
           }
         }
         setTmpActiveFilters(cleanInitialActiveFilters());
@@ -99,7 +104,8 @@ const Filters = (props: Props) => {
   createEffect(
     on(props.initialSelectedGroup, () => {
       if (!isUndefined(filtersFromData())) {
-        setFilters(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION]);
+        setFilters(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION].filters);
+        setFiltersOptions(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION].options);
       }
     })
   );
@@ -137,8 +143,17 @@ const Filters = (props: Props) => {
     return;
   };
 
-  const getSectionInPredefinedFilters = (id: FilterCategory): FilterSection | undefined => {
-    const section = FILTERS.find((sec: FilterSection) => sec.value === id);
+  const getSectionInPredefinedFilters = (id: FilterCategory, visibleNonOption?: boolean): FilterSection | undefined => {
+    const originalSection = FILTERS.find((sec: FilterSection) => sec.value === id);
+    let section;
+    if (!isUndefined(originalSection)) {
+      if (!isUndefined(visibleNonOption) && !visibleNonOption) {
+        const options = originalSection.options.filter((opt: FilterOption) => !opt.value.startsWith('non-'));
+        section = { ...originalSection, options: options } as FilterSection;
+      } else {
+        section = originalSection;
+      }
+    }
     let availableExtraOptions: boolean = true;
     if ([FilterCategory.Maturity, FilterCategory.OrgType, FilterCategory.License].includes(id)) {
       const activeOpts = getSection(id);
@@ -318,7 +333,10 @@ const Filters = (props: Props) => {
               <div class="row g-4 g-lg-5 mb-4 mb-lg-5">
                 <Section
                   title="Status"
-                  section={getSectionInPredefinedFilters(FilterCategory.Maturity)}
+                  section={getSectionInPredefinedFilters(
+                    FilterCategory.Maturity,
+                    filtersOptions().itemsWithoutMaturity
+                  )}
                   extraOptions={{ [getFoundationNameLabel()]: getSection(FilterCategory.Maturity) }}
                   activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
                   updateActiveFilters={updateActiveFilters}
@@ -336,7 +354,10 @@ const Filters = (props: Props) => {
                 <Show when={!isUndefined(getSection(FilterCategory.License))}>
                   <Section
                     title="License"
-                    section={getSectionInPredefinedFilters(FilterCategory.License)}
+                    section={getSectionInPredefinedFilters(
+                      FilterCategory.License,
+                      filtersOptions().itemsWithoutLicense
+                    )}
                     extraOptions={{ oss: getSection(FilterCategory.License)! }}
                     activeFilters={{ ...tmpActiveFilters() }[FilterCategory.License]}
                     updateActiveFilters={updateActiveFilters}
