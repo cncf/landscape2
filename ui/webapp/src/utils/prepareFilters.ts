@@ -1,4 +1,5 @@
 import { capitalizeFirstLetter, formatTAGName } from 'common';
+import isUndefined from 'lodash/isUndefined';
 
 import { FilterCategory, FilterSection, Item, Repository } from '../types';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
@@ -10,7 +11,17 @@ const cleanValue = (t: string): string => {
 };
 
 export interface FiltersPerGroup {
-  [key: string]: FilterSection[];
+  [key: string]: PreparedFilters;
+}
+
+export interface FiltersOptions {
+  itemsWithoutMaturity: boolean;
+  itemsWithoutLicense: boolean;
+}
+
+interface PreparedFilters {
+  filters: FilterSection[];
+  options: FiltersOptions;
 }
 
 const getFiltersPerGroup = () => {
@@ -18,13 +29,13 @@ const getFiltersPerGroup = () => {
 
   const groupedItems = itemsDataGetter.getGroupedData();
   Object.keys(groupedItems).forEach((group: string) => {
-    groups[group] = prepareFilters(groupedItems[group], group);
+    groups[group] = { ...prepareFilters(groupedItems[group], group) };
   });
 
   return groups;
 };
 
-const prepareFilters = (items: Item[], group: string): FilterSection[] => {
+const prepareFilters = (items: Item[], group: string): PreparedFilters => {
   const filters: FilterSection[] = [];
 
   const maturityTypes: string[] = [];
@@ -36,10 +47,14 @@ const prepareFilters = (items: Item[], group: string): FilterSection[] => {
   const extraTypes: string[] = [];
   const categories: string[] = [];
   let industry: string[] = [];
+  let itemsWithoutMaturity: boolean = false;
+  let nonOss: boolean = false;
 
   items.forEach((i: Item) => {
     if (i.maturity) {
       maturityTypes.push(i.maturity);
+    } else {
+      itemsWithoutMaturity = true;
     }
 
     if (i.tag) {
@@ -90,6 +105,10 @@ const prepareFilters = (items: Item[], group: string): FilterSection[] => {
           licenses.push(r.github_data.license);
         }
       });
+    }
+
+    if (isUndefined(i.oss)) {
+      nonOss = true;
     }
   });
 
@@ -207,7 +226,7 @@ const prepareFilters = (items: Item[], group: string): FilterSection[] => {
     }
   }
 
-  return filters;
+  return { filters: filters, options: { itemsWithoutMaturity: itemsWithoutMaturity, itemsWithoutLicense: nonOss } };
 };
 
 export default getFiltersPerGroup;

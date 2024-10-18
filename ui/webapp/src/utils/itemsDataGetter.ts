@@ -474,6 +474,7 @@ export class ItemsDataGetter {
         }
       });
     });
+
     return sortedData;
   };
 
