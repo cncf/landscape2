@@ -200,9 +200,6 @@ const Searchbar = (props: Props) => {
       <div
         class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass} search`}
       >
-        <label for={`searchbar-${props.device}`} class="visually-hidden">
-          Search items
-        </label>
         <input
           id={`searchbar-${props.device}`}
           ref={setInputEl}
