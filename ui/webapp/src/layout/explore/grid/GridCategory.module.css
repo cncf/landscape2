@@ -1,15 +1,34 @@
-.catTitle {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
+.catTitleTextWrapper {
   width: 3rem;
+  min-height: 137px;
   font-size: 0.7rem;
   line-height: 0.95rem;
   padding: 1rem 0rem;
 }
 
-.catTitleText {
-  max-height: 130px;
+.catTitle {
+  top: 0.5rem;
+  left: 7px;
+  height: 110px;
+  width: 30px;
+  -moz-transform: scale(-1, -1);
+  -webkit-transform: scale(-1, -1);
+  -o-transform: scale(-1, -1);
+  -ms-transform: scale(-1, -1);
+  transform: scale(-1, -1);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.safariTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  width: 30px;
+  overflow: hidden;
+  height: 110px;
+  position: relative;
+  align-content: center;
+  padding-bottom: 9px;
 }
 
 .icon {
@@ -28,6 +47,7 @@
   -webkit-line-clamp: 2;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  padding-bottom: 9px;
 }
 
 .items {

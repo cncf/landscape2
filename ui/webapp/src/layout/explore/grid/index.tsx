@@ -1,7 +1,7 @@
-import { cutString } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
+import detectIfSafari from '../../../utils/detectIfSafari';
 import generateColorsArray from '../../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../../utils/gridCategoryLayout';
@@ -22,6 +22,7 @@ interface CatProps {
   categoryName: string;
   isOverriden: boolean;
   content: CategoryData;
+  isSafari: boolean;
 }
 
 const Category = (props: CatProps) => {
@@ -29,6 +30,7 @@ const Category = (props: CatProps) => {
 
   createEffect(
     () => {
+      console.log('isSafari ---->>>> ', props.isSafari);
       if (!isUndefined(props.content)) {
         const subcategoriesTmp: SubcategoryDetails[] = [];
         Object.keys(props.content).forEach((subcat: string) => {
@@ -51,14 +53,25 @@ const Category = (props: CatProps) => {
     <Show when={!isUndefined(subcategories()) && subcategories()!.length > 0}>
       <div class="d-flex flex-row">
         <div
-          class={`text-white border border-3 border-white fw-medium border-end-0 d-flex flex-row align-items-center justify-content-end ${styles.catTitle}`}
+          class={`text-white border border-3 border-white fw-medium border-start-0 d-flex flex-row align-items-center justify-content-end position-relative ${styles.catTitleTextWrapper}`}
           classList={{
-            'border-bottom-0': props.index !== 0,
-            'border-top-0': props.index === props.catSectionNumber,
+            'border-top-0': props.index !== 0,
+            'border-bottom-0': props.index === props.catSectionNumber,
           }}
           style={{ 'background-color': props.bgColor }}
         >
-          <div class={`text-center ${styles.catTitleText}`}>{cutString(props.categoryName, 30)}</div>
+          <Show
+            when={!props.isSafari}
+            fallback={
+              <div class={`position-absolute text-end ${styles.catTitle} ${styles.ellipsis}`}>
+                <div class={`${styles.safariTitle}`}>{props.categoryName}</div>
+              </div>
+            }
+          >
+            <div class={`position-absolute text-end d-flex justify-content-end align-items-center ${styles.catTitle}`}>
+              <div class={`${styles.ellipsis}`}>{props.categoryName}</div>
+            </div>
+          </Show>
         </div>
 
         <div class="d-flex flex-column w-100 align-items-stretch">
@@ -82,6 +95,7 @@ const GridCategory = (props: Props) => {
   const [isVisible, setIsVisible] = createSignal<boolean>(false);
   const [catWithItems, setCatWithItems] = createSignal<string[]>([]);
   const data = () => props.data;
+  const isSafari = () => detectIfSafari();
 
   createEffect(() => {
     if (props.initialIsVisible !== isVisible()) {
@@ -115,6 +129,7 @@ const GridCategory = (props: Props) => {
               bgColor={[...colorsList()][index()]}
               catSectionNumber={Object.keys(data()).length - 1}
               content={data()[cat]}
+              isSafari={isSafari()}
             />
           );
         }}
