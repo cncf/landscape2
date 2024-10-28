@@ -16,11 +16,11 @@ authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 homepage = "https://github.com/cncf/landscape2"
 
 [workspace.dependencies]
-anyhow = "1.0.90"
+anyhow = "1.0.91"
 askama = { version = "0.12.1", features = ["serde-json"] }
 askama_escape = { version = "0.10.3", features = ["json"] }
 async-trait = "0.1.83"
-aws-config = "1.5.8"
+aws-config = "1.5.9"
 aws-sdk-s3 = "1.54.0"
 axum = "0.7.7"
 base64 = "0.22.1"
@@ -50,17 +50,17 @@ parse_link_header = "0.4.0"
 pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
 rand = "0.8.5"
-regex = "1.11.0"
-reqwest = { version = "0.12.8", features = ["json", "native-tls-vendored"] }
+regex = "1.11.1"
+reqwest = { version = "0.12.9", features = ["json", "native-tls-vendored"] }
 reqwest_octorust = { package = "reqwest", version = "0.11.14", default-features = false, features = ["json", "multipart"] }
 reqwest-middleware = "0.2.5"
 rust-embed = "8.5.0"
-serde = { version = "1.0.210", features = ["derive"] }
+serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.10.8"
-tokio = { version = "1.40.0", features = [
+tokio = { version = "1.41.0", features = [
     "macros",
     "process",
     "rt-multi-thread",
