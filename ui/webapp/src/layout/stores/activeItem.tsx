@@ -1,4 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import isArray from 'lodash/isArray';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
@@ -9,7 +10,9 @@ function useActiveItemProvider() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [activeItemId, setActiveItemId] = createSignal<string | undefined>(searchParams[ITEM_PARAM]);
+  const [activeItemId, setActiveItemId] = createSignal<string | undefined>(
+    searchParams[ITEM_PARAM] && !isArray(searchParams[ITEM_PARAM]) ? searchParams[ITEM_PARAM] : undefined
+  );
 
   const updateActiveItem = (itemId?: string) => {
     const updatedSearchParams = new URLSearchParams(searchParams as unknown as URLSearchParams);

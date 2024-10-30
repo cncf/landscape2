@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from '@solidjs/router';
+import isArray from 'lodash/isArray';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
@@ -8,7 +9,7 @@ import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
 
-const getInitialGroupName = (groupParam: string | null): string | undefined => {
+const getInitialGroupName = (groupParam: string | string[] | null): string | undefined => {
   const navigate = useNavigate();
   const groups = itemsDataGetter.getGroups();
 
@@ -16,7 +17,7 @@ const getInitialGroupName = (groupParam: string | null): string | undefined => {
     return undefined;
   } else {
     const firstGroup = groups[0];
-    if (isNull(groupParam)) {
+    if (isNull(groupParam) || isArray(groupParam)) {
       return firstGroup;
     } else {
       const isValidGroup = groups.includes(groupParam);
