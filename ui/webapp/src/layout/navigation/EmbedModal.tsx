@@ -6,6 +6,7 @@ import { batch, createEffect, createMemo, createSignal, For, on, onMount, Show }
 
 import {
   Alignment,
+  BASE_PATH_PARAM,
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
@@ -136,6 +137,11 @@ const EmbedModal = () => {
   const getIFrameUrl = () => {
     const embedUrl = new URL(`${embedOrigin()}/embed.html`);
     const embedParams = new URLSearchParams();
+
+    if (!isUndefined(BASE_PATH)) {
+      embedParams.append(BASE_PATH_PARAM, BASE_PATH);
+    }
+
     embedParams.append(KEY_PARAM, key() || categoriesList()[0].normalized_name);
     embedParams.append(DISPLAY_HEADER_PARAM, displayHeader() ? 'true' : 'false');
     embedParams.append(DISPLAY_HEADER_CATEGORY_PARAM, displayCategoryTitle() ? 'true' : 'false');
