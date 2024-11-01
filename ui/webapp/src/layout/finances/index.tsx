@@ -9,6 +9,7 @@ import moment from 'moment';
 import { batch, createEffect, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
 
 import {
+  ACQUISITIONS_PATH,
   DEFAULT_FINANCES_KIND,
   FINANCES_KIND_PARAM,
   FOUNDATION,
@@ -100,12 +101,14 @@ const filterFinances = (
 const Finances = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  // When the location is .../acquisitions, the default kind is FinancesKind.Acquisitions
+  const DEFAULT_KIND = location.pathname === ACQUISITIONS_PATH ? FinancesKind.Acquisitions : DEFAULT_FINANCES_KIND;
   const fullDataReady = useFullDataReady();
   const financesData = useFinancesDataContent();
   const setFinancesData = useSetFinancesDataContent();
   const [data, setData] = createSignal<FinancesData | null>();
   const [visibleData, setVisibleData] = createSignal<FundingData[] | AcquisitionData[]>();
-  const [selectedKind, setSelectedKind] = createSignal<FinancesKind>(DEFAULT_FINANCES_KIND);
+  const [selectedKind, setSelectedKind] = createSignal<FinancesKind>(DEFAULT_KIND);
   const [selectedSortOption, setSelectedSortOption] = createSignal<SortOption>({
     by: DEFAULT_SORT_BY,
     direction: DEFAULT_SORT_DIRECTION,
@@ -119,7 +122,7 @@ const Finances = () => {
   const prepareQuery = () => {
     if (location.search === '') {
       navigate(
-        `${location.pathname}?${FINANCES_KIND_PARAM}=${DEFAULT_FINANCES_KIND}&${PAGE_PARAM}=1&${SORT_BY_PARAM}=${DEFAULT_SORT_BY}&${SORT_DIRECTION_PARAM}=${DEFAULT_SORT_DIRECTION}`,
+        `${location.pathname}?${FINANCES_KIND_PARAM}=${DEFAULT_KIND}&${PAGE_PARAM}=1&${SORT_BY_PARAM}=${DEFAULT_SORT_BY}&${SORT_DIRECTION_PARAM}=${DEFAULT_SORT_DIRECTION}`,
         {
           replace: true,
           scroll: true, // default
@@ -142,9 +145,7 @@ const Finances = () => {
       batch(() => {
         setActiveFilters(currentFilters);
         setSelectedKind(
-          !isNull(params.get(FINANCES_KIND_PARAM))
-            ? (params.get(FINANCES_KIND_PARAM) as FinancesKind)
-            : DEFAULT_FINANCES_KIND
+          !isNull(params.get(FINANCES_KIND_PARAM)) ? (params.get(FINANCES_KIND_PARAM) as FinancesKind) : DEFAULT_KIND
         );
         setPageNumber(!isNull(params.get(PAGE_PARAM)) ? parseInt(params.get(PAGE_PARAM)!) : 1);
         setOffset(
