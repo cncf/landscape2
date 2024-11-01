@@ -7,9 +7,11 @@ import { batch, createEffect, createSignal, on, onMount, Show } from 'solid-js';
 
 import styles from './App.module.css';
 import {
+  ACQUISITIONS_PATH,
   EMBED_SETUP_PATH,
   EXPLORE_PATH,
   FINANCES_PATH,
+  FUNDING_PATH,
   GAMES_PATH,
   GUIDE_PATH,
   LOGOS_PREVIEW_PATH,
@@ -178,6 +180,8 @@ const App = () => {
           <Route path={STATS_PATH} component={Stats} />
           <Route path={GAMES_PATH} component={Games} />
           <Route path={FINANCES_PATH} component={Finances} />
+          <Route path={FUNDING_PATH} component={Finances} />
+          <Route path={ACQUISITIONS_PATH} component={Finances} />
           <Route path={PROJECTS_PATH} component={Projects} />
           <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
           <Route path="*" component={NotFound} />
