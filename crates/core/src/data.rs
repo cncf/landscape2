@@ -364,7 +364,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         let mut additional_categories = vec![];
                         for entry in second_path {
                             // Extract category/subcategory from second path entry
-                            let parts: Vec<&str> = entry.split('/').collect();
+                            let parts: Vec<&str> = entry.split(" / ").collect();
                             if parts.len() != 2 {
                                 warn!("invalid second path entry ({entry}), ignoring it");
                                 continue;
@@ -1412,7 +1412,7 @@ mod tests {
                         joined: Some(date),
                         project: Some("graduated".to_string()),
                         repo_url: Some("repo_url".to_string()),
-                        second_path: Some(vec!["category2/subcategory2.1".to_string()]),
+                        second_path: Some(vec!["category2 / subcategory2.1".to_string()]),
                         twitter: Some("twitter_url".to_string()),
                         url_for_bestpractices: Some("url_for_bestpractices".to_string()),
                         unnamed_organization: Some(false),
