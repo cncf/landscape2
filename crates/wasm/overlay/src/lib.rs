@@ -82,19 +82,27 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
         .map_err(to_str)?;
 
     // Get landscape guide
-    let default_guide_url = format!("{}/{}", input.landscape_url, DEFAULT_GUIDE_PATH);
-    let guide_url = input.guide_url.unwrap_or(default_guide_url);
-    let guide_src = GuideSource::new_from_url(guide_url);
-    let guide = LandscapeGuide::new(&guide_src).await.context("error fetching guide").map_err(to_str)?;
+    let guide = if let Some(guide_url) = input.guide_url {
+        let guide_src = GuideSource::new_from_url(guide_url.clone());
+        LandscapeGuide::new(&guide_src).await.context("error fetching guide").map_err(to_str)?
+    } else {
+        let default_guide_url = format!("{}/{}", input.landscape_url, DEFAULT_GUIDE_PATH);
+        let guide_src = GuideSource::new_from_url(default_guide_url);
+        LandscapeGuide::new(&guide_src).await.ok().flatten()
+    };
 
     // Get landscape games data
-    let default_games_url = format!("{}/{}", input.landscape_url, DEFAULT_GAMES_PATH);
-    let games_url = input.games_url.unwrap_or(default_games_url);
-    let games_src = GamesSource::new_from_url(games_url);
-    let games = LandscapeGames::new(&games_src)
-        .await
-        .context("error fetching games data")
-        .map_err(to_str)?;
+    let games = if let Some(games_url) = input.games_url {
+        let games_src = GamesSource::new_from_url(games_url);
+        LandscapeGames::new(&games_src)
+            .await
+            .context("error fetching games data")
+            .map_err(to_str)?
+    } else {
+        let default_games_url = format!("{}/{}", input.landscape_url, DEFAULT_GAMES_PATH);
+        let games_src = GamesSource::new_from_url(default_games_url);
+        LandscapeGames::new(&games_src).await.ok().flatten()
+    };
 
     // Get Crunchbase and GitHub data from deployed full dataset
     let deployed_full_dataset = get_full_dataset(&input.landscape_url).await.map_err(to_str)?;
