@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { GRID_SIZE, GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
+import { GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
 import getNormalizedName from '../../../utils/getNormalizedName';
@@ -110,7 +110,6 @@ export const ItemsList = (props: ItemsListProps) => {
 };
 
 const Grid = (props: Props) => {
-  const gridItemsSize = GRID_SIZE;
   const zoom = useZoomLevel();
   const updateActiveSection = useSetVisibleZoom();
   const [grid, setGrid] = createSignal<GridCategoryLayout | undefined>();
@@ -184,24 +183,23 @@ const Grid = (props: Props) => {
                           </div>
                         </Show>
 
-                        <Show when={isUndefined(gridItemsSize) || gridItemsSize !== 'large'}>
-                          <div>
-                            <button
-                              onClick={() => {
-                                updateActiveSection({
-                                  category: props.categoryName,
-                                  subcategory: subcat.subcategoryName,
-                                  bgColor: props.backgroundColor,
-                                });
-                              }}
-                              class={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
-                              aria-label={`Open ${subcat.subcategoryName} section on modal`}
-                            >
-                              <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
-                            </button>
-                          </div>
-                        </Show>
+                        <div>
+                          <button
+                            onClick={() => {
+                              updateActiveSection({
+                                category: props.categoryName,
+                                subcategory: subcat.subcategoryName,
+                                bgColor: props.backgroundColor,
+                              });
+                            }}
+                            class={`btn btn-link text-white ps-1 pe-2 ${styles.btnIcon}`}
+                            aria-label={`Open ${subcat.subcategoryName} section on modal`}
+                          >
+                            <SVGIcon kind={SVGIconKind.MagnifyingGlass} />
+                          </button>
+                        </div>
                       </div>
+
                       <div class={`flex-grow-1 ${styles.itemsContainer}`}>
                         {/* Use ItemsList when subcategory has featured and no featured items */}
                         <Show
