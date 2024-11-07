@@ -30,7 +30,6 @@ const Category = (props: CatProps) => {
 
   createEffect(
     () => {
-      console.log('isSafari ---->>>> ', props.isSafari);
       if (!isUndefined(props.content)) {
         const subcategoriesTmp: SubcategoryDetails[] = [];
         Object.keys(props.content).forEach((subcat: string) => {
