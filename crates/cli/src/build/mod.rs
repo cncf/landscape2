@@ -46,7 +46,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
-use tracing::{debug, error, info, instrument, warn};
+use tracing::{debug, error, info, instrument, trace, warn};
 use url::Url;
 
 mod api;
@@ -705,7 +705,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     });
 
     // Setup headless browser and navigate to screenshot url
-    const TIMEOUT: Duration = Duration::from_secs(180);
+    const TIMEOUT: Duration = Duration::from_secs(300);
     let options = LaunchOptions {
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),
@@ -722,6 +722,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     tab.set_default_timeout(TIMEOUT);
     let screenshot_url = format!("http://{svr_addr}/screenshot");
     tab.navigate_to(&screenshot_url)?.wait_until_navigated()?;
+    trace!("navigated to screenshot url");
 
     // Take screenshot in PNG format and save it to a file
     let png_b64_data = tab
@@ -731,29 +732,34 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
             clip: None,
             from_surface: None,
             capture_beyond_viewport: Some(true),
-        })?
+        })
+        .context("error generating screenshot in png format")?
         .data;
     let png_data = b64.decode(png_b64_data)?;
     let png_path = output_dir.join(DOCS_PATH).join("landscape.png");
     File::create(&png_path)?.write_all(&png_data)?;
+    trace!("screenshot in png format ready");
 
     // Take screenshot in PDF format and save it to a file
     // We use the dimensions of the screenshot in PNG format to calculate the
     // dimensions of the PDF paper, converting from pixels to inches.
-    let png_size = imagesize::size(&png_path)?;
-    let pdf_data = tab.print_to_pdf(Some(PrintToPdfOptions {
-        margin_bottom: Some(0.0),
-        margin_left: Some(0.0),
-        margin_right: Some(0.0),
-        margin_top: Some(0.0),
-        page_ranges: Some("1".to_string()),
-        paper_height: Some((png_size.height + 10) as f64 / 2.0 * 0.010_416_666_7),
-        paper_width: Some(png_size.width as f64 / 2.0 * 0.010_416_666_7),
-        print_background: Some(true),
-        ..Default::default()
-    }))?;
+    let png_size = imagesize::size(&png_path).context("error getting screenshot in png format dimensions")?;
+    let pdf_data = tab
+        .print_to_pdf(Some(PrintToPdfOptions {
+            margin_bottom: Some(0.0),
+            margin_left: Some(0.0),
+            margin_right: Some(0.0),
+            margin_top: Some(0.0),
+            page_ranges: Some("1".to_string()),
+            paper_height: Some((png_size.height + 10) as f64 / 2.0 * 0.010_416_666_7),
+            paper_width: Some(png_size.width as f64 / 2.0 * 0.010_416_666_7),
+            print_background: Some(true),
+            ..Default::default()
+        }))
+        .context("error generating screenshot in pdf format")?;
     let pdf_path = output_dir.join(DOCS_PATH).join("landscape.pdf");
     File::create(pdf_path)?.write_all(&pdf_data)?;
+    trace!("screenshot in pdf format ready");
 
     // Stop server
     server.abort();
