@@ -247,6 +247,9 @@ pub(crate) struct Item {
     pub enduser: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub facebook_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub github_discussions_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -278,6 +281,12 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub oss: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pinterest_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reddit_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,
@@ -327,6 +336,7 @@ impl Item {
             discord_url: item.discord_url.clone(),
             docker_url: item.docker_url.clone(),
             enduser: item.enduser,
+            facebook_url: item.facebook_url.clone(),
             github_discussions_url: item.github_discussions_url.clone(),
             gitter_url: item.gitter_url.clone(),
             graduated_at: item.graduated_at,
@@ -346,6 +356,8 @@ impl Item {
             name: item.name.clone(),
             openssf_best_practices_url: item.openssf_best_practices_url.clone(),
             oss: item.oss,
+            pinterest_url: item.pinterest_url.clone(),
+            reddit_url: item.reddit_url.clone(),
             repositories: item.repositories.as_ref().map(|repos| repos.iter().map(Into::into).collect()),
             slack_url: item.slack_url.clone(),
             specification: item.specification,

@@ -75,6 +75,8 @@ pub(crate) fn validate_url(kind: &str, url: &Option<String>) -> Result<()> {
             "github" => return check_domains(&["github.com"]),
             "instagram" => return check_domains(&["instagram.com"]),
             "linkedin" => return check_domains(&["linkedin.com"]),
+            "pinterest" => return check_domains(&["pinterest.com"]),
+            "reddit" => return check_domains(&["reddit.com"]),
             "stack_overflow" => return check_domains(&["stackoverflow.com"]),
             "twitch" => return check_domains(&["twitch.tv"]),
             "twitter" => return check_domains(&["twitter.com", "x.com"]),

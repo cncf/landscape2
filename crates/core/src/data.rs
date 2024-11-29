@@ -426,6 +426,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.discord_url = extra.discord_url;
                         item.docker_url = extra.docker_url;
                         item.documentation_url = extra.documentation_url;
+                        item.facebook_url = extra.facebook_url;
                         item.github_discussions_url = extra.github_discussions_url;
                         item.gitter_url = extra.gitter_url;
                         item.graduated_at = extra.graduated;
@@ -437,6 +438,8 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.other_links = extra.other_links;
                         item.package_manager_url = extra.package_manager_url;
                         item.parent_project = extra.parent_project;
+                        item.pinterest_url = extra.pinterest_url;
+                        item.reddit_url = extra.reddit_url;
                         item.slack_url = extra.slack_url;
                         item.specification = extra.specification;
                         item.stack_overflow_url = extra.stack_overflow_url;
@@ -584,6 +587,9 @@ pub struct Item {
     pub enduser: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub facebook_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub featured: Option<ItemFeatured>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -633,6 +639,12 @@ pub struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parent_project: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pinterest_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reddit_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repositories: Option<Vec<Repository>>,
@@ -1381,6 +1393,7 @@ mod tests {
                             discord_url: Some("discord_url".to_string()),
                             docker_url: Some("docker_url".to_string()),
                             documentation_url: Some("documentation_url".to_string()),
+                            facebook_url: Some("facebook_url".to_string()),
                             github_discussions_url: Some("github_discussions_url".to_string()),
                             gitter_url: Some("gitter_url".to_string()),
                             graduated: Some(date),
@@ -1393,6 +1406,8 @@ mod tests {
                             }]),
                             package_manager_url: Some("package_manager_url".to_string()),
                             parent_project: Some("parent_project".to_string()),
+                            pinterest_url: Some("pinterest_url".to_string()),
+                            reddit_url: Some("reddit_url".to_string()),
                             slack_url: Some("slack_url".to_string()),
                             specification: Some(false),
                             stack_overflow_url: Some("stack_overflow_url".to_string()),
@@ -1463,6 +1478,7 @@ mod tests {
                 docker_url: Some("docker_url".to_string()),
                 documentation_url: Some("documentation_url".to_string()),
                 enduser: Some(false),
+                facebook_url: Some("facebook_url".to_string()),
                 featured: None,
                 github_discussions_url: Some("github_discussions_url".to_string()),
                 gitter_url: Some("gitter_url".to_string()),
@@ -1483,6 +1499,8 @@ mod tests {
                 }]),
                 package_manager_url: Some("package_manager_url".to_string()),
                 parent_project: Some("parent_project".to_string()),
+                pinterest_url: Some("pinterest_url".to_string()),
+                reddit_url: Some("reddit_url".to_string()),
                 repositories: Some(vec![
                     Repository {
                         url: "repo_url".to_string(),

@@ -163,6 +163,9 @@ categories:
               # Documentation URL (optional).
               documentation_url: https://documentation.url
 
+              # Facebook URL (optional).
+              facebook_url: https://facebook.url
+
               # GitHub discussions URL (optional).
               github_discussions_url: https://github.discussions.url
 
@@ -203,6 +206,12 @@ categories:
               # highlighted in the item's details view. The parent project must be listed in the
               # landscape and the name must match exactly.
               parent_project: "Project name"
+
+              # Pinterest URL (optional).
+              pinterest_url: https://pinterest.url
+
+              # Reddit URL (optional).
+              reddit_url: https://reddit.url
 
               # Slack URL (optional).
               slack_url: https://slack.url

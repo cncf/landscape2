@@ -436,6 +436,18 @@ export const ItemModalContent = (props: Props) => {
                       <SVGIcon kind={getPackageManagerIcon(itemInfo()!.package_manager_url!)} />
                     </ExternalLink>
                   </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.pinterest_url)}>
+                    <ExternalLink title="Pinterest" class={`ms-3 ${Link}`} href={itemInfo()!.pinterest_url!}>
+                      <SVGIcon kind={SVGIconKind.Pinterest} />
+                    </ExternalLink>
+                  </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.reddit_url)}>
+                    <ExternalLink title="Reddit" class={`ms-3 ${Link}`} href={itemInfo()!.reddit_url!}>
+                      <SVGIcon kind={SVGIconKind.Reddit} />
+                    </ExternalLink>
+                  </Show>
                 </div>
               </div>
             </div>
