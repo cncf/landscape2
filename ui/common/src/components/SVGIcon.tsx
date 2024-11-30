@@ -523,6 +523,23 @@ const Flutter = (props: IconProps) => (
   </svg>
 );
 
+const Forums = (props: IconProps) => (
+  <svg
+    class={props.class}
+    stroke="currentColor"
+    fill="currentColor"
+    stroke-width="0"
+    viewBox="0 0 24 24"
+    height="1em"
+    width="1em"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <title>Forums icon</title>
+    <path fill="none" d="M0 0h24v24H0z" />
+    <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z" />
+  </svg>
+);
+
 const Games = (props: IconProps) => (
   <svg
     class={props.class}
@@ -1293,6 +1310,7 @@ const icons: ValidComponent[] = [
   Filters,
   Flickr,
   Flutter,
+  Forums,
   Games,
   GitHub,
   GitHubCircle,

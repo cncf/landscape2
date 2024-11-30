@@ -31,6 +31,7 @@ export interface FooterContent {
   links?: {
     facebook?: string;
     flickr?: string;
+    forums?: string;
     homepage?: string;
     github?: string;
     instagram?: string;
@@ -434,6 +435,7 @@ export type ZoomLevelsPerSize = {
 export enum SocialNetwork {
   Facebook = 'facebook',
   Flickr = 'flickr',
+  Forums = 'forums',
   GitHub = 'github',
   Instagram = 'instagram',
   LinkedIn = 'linkedin',

@@ -191,6 +191,7 @@ export enum SVGIconKind {
   Filters,
   Flickr,
   Flutter,
+  Forums,
   Games,
   GitHub,
   GitHubCircle,
