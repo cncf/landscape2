@@ -68,6 +68,11 @@ const Footer = () => {
               <SVGIcon kind={SVGIconKind.Slack} />
             </ExternalLink>
           </Show>
+          <Show when={!isUndefined(links!.forums)}>
+            <ExternalLink class={`me-3 me-lg-0 ms-0 ms-lg-3 ps-0 pe-2 ${styles.link}`} href={links!.forums as string}>
+              <SVGIcon kind={SVGIconKind.Forums} />
+            </ExternalLink>
+          </Show>
         </div>
       </Show>
     );

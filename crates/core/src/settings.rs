@@ -335,6 +335,7 @@ impl LandscapeSettings {
             let urls = [
                 ("facebook", &links.facebook),
                 ("flickr", &links.flickr),
+                ("forums", &links.forums),
                 ("github", &links.github),
                 ("homepage", &links.homepage),
                 ("instagram", &links.instagram),
@@ -571,6 +572,9 @@ pub struct FooterLinks {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flickr: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub forums: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub github: Option<String>,
