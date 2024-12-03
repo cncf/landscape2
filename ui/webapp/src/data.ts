@@ -135,7 +135,7 @@ export const COMMON_FILTERS: FilterSection[] = [
     options: [
       {
         value: 'non-oss',
-        name: 'Not Open Source',
+        name: 'Non Open Source',
       },
       {
         value: 'oss',
@@ -154,7 +154,7 @@ export const COMMON_FILTERS: FilterSection[] = [
       },
       {
         value: 'non_profit',
-        name: 'Not profit',
+        name: 'Non profit',
       },
     ],
   },
@@ -185,7 +185,7 @@ export let FILTERS: FilterSection[] = [
       },
       {
         value: `non-${getFoundationNameLabel()}`,
-        name: `Not ${FOUNDATION} Projects`,
+        name: `Non ${FOUNDATION} Projects`,
       },
     ],
   },
@@ -244,7 +244,7 @@ export const overrideSettings = (values: SettingsValue) => {
         },
         {
           value: `non-${getFoundationNameLabel()}`,
-          name: `Not ${FOUNDATION} Projects`,
+          name: `Non ${FOUNDATION} Projects`,
         },
       ],
     },
