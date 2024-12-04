@@ -56,10 +56,10 @@ const FiltersPerCategoryList = (props: FiltersProps) => {
                       <>{startCase(c.replace(REGEX_UNDERSCORE, ' '))}</>
                     </Match>
                     <Match when={props.category === FilterCategory.License && c === 'non-oss'}>
-                      <span class="text-uppercase">Not open source</span>
+                      <span class="text-uppercase">Non open source</span>
                     </Match>
                     <Match when={props.category === FilterCategory.Maturity && c === `non-${getFoundationNameLabel()}`}>
-                      <span class="text-uppercase">Not {getFoundationNameLabel()} project</span>
+                      <span class="text-uppercase">Non {getFoundationNameLabel()} project</span>
                     </Match>
                     <Match when={props.category === FilterCategory.ProjectMaturity}>
                       <>{startCase(c)}</>
