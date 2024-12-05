@@ -209,14 +209,14 @@ fn validate_urls(item: &Item) -> Result<()> {
         ("twitter", &item.twitter),
     ];
     for (name, url) in urls {
-        validate_url(name, url)?;
+        validate_url(name, url.as_ref())?;
     }
 
     // Check additional repositories
     if let Some(additional_repos) = &item.additional_repos {
         for r in additional_repos {
             let repo_url = Some(r.repo_url.clone());
-            validate_url("additional_repository", &repo_url)?;
+            validate_url("additional_repository", repo_url.as_ref())?;
         }
     }
 
@@ -243,14 +243,14 @@ fn validate_urls(item: &Item) -> Result<()> {
             ("youtube", &extra.youtube_url),
         ];
         for (name, url) in urls {
-            validate_url(name, url)?;
+            validate_url(name, url.as_ref())?;
         }
 
         // Check audits urls
         if let Some(audits) = &extra.audits {
             for a in audits {
                 let audit_url = Some(a.url.clone());
-                validate_url("audit", &audit_url)?;
+                validate_url("audit", audit_url.as_ref())?;
             }
         }
 
@@ -258,7 +258,7 @@ fn validate_urls(item: &Item) -> Result<()> {
         if let Some(other_links) = &extra.other_links {
             for link in other_links {
                 let link_url = Some(link.url.clone());
-                validate_url("other_link", &link_url)?;
+                validate_url("other_link", link_url.as_ref())?;
             }
         }
     };

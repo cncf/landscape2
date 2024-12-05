@@ -177,9 +177,9 @@ async fn collect_organization_data(cb: DynCB, cb_url: &str) -> Result<Organizati
     Ok(Organization {
         generated_at: Utc::now(),
         acquisitions,
-        city: get_location_value(&cb_org.cards.headquarters_address, "city"),
+        city: get_location_value(cb_org.cards.headquarters_address.as_ref(), "city"),
         company_type: cb_org.properties.company_type,
-        country: get_location_value(&cb_org.cards.headquarters_address, "country"),
+        country: get_location_value(cb_org.cards.headquarters_address.as_ref(), "country"),
         description: cb_org.properties.short_description,
         funding: cb_org.properties.funding_total.as_ref().and_then(|f| f.value_usd),
         funding_rounds,
@@ -190,7 +190,7 @@ async fn collect_organization_data(cb: DynCB, cb_url: &str) -> Result<Organizati
         name: cb_org.properties.name,
         num_employees_max,
         num_employees_min,
-        region: get_location_value(&cb_org.cards.headquarters_address, "region"),
+        region: get_location_value(cb_org.cards.headquarters_address.as_ref(), "region"),
         stock_exchange: cb_org.properties.stock_exchange_symbol,
         ticker: cb_org.properties.stock_symbol.and_then(|v| v.value),
         twitter_url: cb_org.properties.twitter.and_then(|v| v.value),
@@ -357,7 +357,7 @@ struct CBMoneyRaised {
 }
 
 /// Return the location value for the location type provided if available.
-fn get_location_value(headquarters_address: &Option<Vec<CBAddress>>, location_type: &str) -> Option<String> {
+fn get_location_value(headquarters_address: Option<&Vec<CBAddress>>, location_type: &str) -> Option<String> {
     headquarters_address
         .as_ref()
         .and_then(|addresses| addresses.iter().next())

@@ -148,7 +148,7 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
     setup_output_dir(&args.output_dir)?;
 
     // Setup cache
-    let cache = Cache::new(&args.cache_dir)?;
+    let cache = Cache::new(args.cache_dir.as_ref())?;
 
     // Get landscape data from the source provided
     let mut landscape_data = LandscapeData::new(&args.data_source).await?;
@@ -219,8 +219,13 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
     )?;
 
     // Render index and embed-item html files and write them to the output dir
-    render_index_html(&settings.analytics, &datasets, &settings.osano, &args.output_dir)?;
-    render_embed_item_html(&settings.colors, &args.output_dir)?;
+    render_index_html(
+        settings.analytics.as_ref(),
+        &datasets,
+        settings.osano.as_ref(),
+        &args.output_dir,
+    )?;
+    render_embed_item_html(settings.colors.as_ref(), &args.output_dir)?;
 
     // Copy embed and web application assets files to the output directory
     copy_embed_assets(&args.output_dir)?;
@@ -333,7 +338,7 @@ async fn collect_clomonitor_reports(
 #[instrument(skip_all, err)]
 async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<()> {
     // Helper function to copy the data source file provided
-    async fn copy(src_file: &Option<PathBuf>, src_url: &Option<String>, dst_file: PathBuf) -> Result<()> {
+    async fn copy(src_file: Option<&PathBuf>, src_url: Option<&String>, dst_file: PathBuf) -> Result<()> {
         if let Some(src_file) = src_file {
             fs::copy(src_file, dst_file)?;
         } else if let Some(src_url) = src_url {
@@ -348,8 +353,8 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
     // Landscape data
     let landscape_data_file = output_dir.join(SOURCES_PATH).join("data.yml");
     copy(
-        &args.data_source.data_file,
-        &args.data_source.data_url,
+        args.data_source.data_file.as_ref(),
+        args.data_source.data_url.as_ref(),
         landscape_data_file,
     )
     .await?;
@@ -357,8 +362,8 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
     // Settings
     let settings_file = output_dir.join(SOURCES_PATH).join("settings.yml");
     copy(
-        &args.settings_source.settings_file,
-        &args.settings_source.settings_url,
+        args.settings_source.settings_file.as_ref(),
+        args.settings_source.settings_url.as_ref(),
         settings_file,
     )
     .await?;
@@ -366,8 +371,8 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
     // Guide
     let guide_file = output_dir.join(SOURCES_PATH).join("guide.yml");
     copy(
-        &args.guide_source.guide_file,
-        &args.guide_source.guide_url,
+        args.guide_source.guide_file.as_ref(),
+        args.guide_source.guide_url.as_ref(),
         guide_file,
     )
     .await?;
@@ -375,8 +380,8 @@ async fn copy_data_sources_files(args: &BuildArgs, output_dir: &Path) -> Result<
     // Games data
     let games_file = output_dir.join(SOURCES_PATH).join("games.yml");
     copy(
-        &args.games_source.games_file,
-        &args.games_source.games_url,
+        args.games_source.games_file.as_ref(),
+        args.games_source.games_url.as_ref(),
         games_file,
     )
     .await?;
@@ -773,7 +778,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 #[instrument(skip_all, err)]
 async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &Path) -> Result<()> {
     // Helper function to process the image provided
-    async fn process_image(url: &Option<String>, output_dir: &Path) -> Result<Option<String>> {
+    async fn process_image(url: Option<&String>, output_dir: &Path) -> Result<Option<String>> {
         let Some(url) = url else {
             return Ok(None);
         };
@@ -800,17 +805,17 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
 
     // Header
     if let Some(header) = &mut settings.header {
-        header.logo = process_image(&header.logo, output_dir).await?;
+        header.logo = process_image(header.logo.as_ref(), output_dir).await?;
     };
 
     // Footer
     if let Some(footer) = &mut settings.footer {
-        footer.logo = process_image(&footer.logo, output_dir).await?;
+        footer.logo = process_image(footer.logo.as_ref(), output_dir).await?;
     };
 
     // Other images
     if let Some(images) = &mut settings.images {
-        images.favicon = process_image(&images.favicon, output_dir).await?;
+        images.favicon = process_image(images.favicon.as_ref(), output_dir).await?;
     };
 
     Ok(())
@@ -864,17 +869,17 @@ fn prepare_view_full_dataset(full: &Full, view: &EmbedView) -> Full {
 #[derive(Debug, Clone, Template)]
 #[template(path = "index.html", escape = "none")]
 struct IndexHtml<'a> {
-    analytics: &'a Option<Analytics>,
+    analytics: Option<&'a Analytics>,
     datasets: &'a Datasets,
-    osano: &'a Option<Osano>,
+    osano: Option<&'a Osano>,
 }
 
 /// Render index html file and write it to the output directory.
 #[instrument(skip_all, err)]
 fn render_index_html(
-    analytics: &Option<Analytics>,
+    analytics: Option<&Analytics>,
     datasets: &Datasets,
-    osano: &Option<Osano>,
+    osano: Option<&Osano>,
     output_dir: &Path,
 ) -> Result<()> {
     debug!("rendering index.html file");
@@ -894,12 +899,12 @@ fn render_index_html(
 #[derive(Debug, Clone, Template)]
 #[template(path = "embed-item.html", escape = "none")]
 struct EmbedItemHtml<'a> {
-    colors: &'a Option<Colors>,
+    colors: Option<&'a Colors>,
 }
 
 /// Render embed item html file and write it to the output directory.
 #[instrument(skip_all, err)]
-fn render_embed_item_html(colors: &Option<Colors>, output_dir: &Path) -> Result<()> {
+fn render_embed_item_html(colors: Option<&Colors>, output_dir: &Path) -> Result<()> {
     debug!("rendering embed-item.html file");
 
     let path = output_dir.join(EMBED_PATH).join("embed-item.html");
@@ -950,8 +955,12 @@ mod filters {
 
     /// Filter to get the Google Tag Manager container ID from the analytics
     /// instance provided.
-    #[allow(clippy::unnecessary_wraps)]
-    pub(crate) fn get_gtm_container_id(analytics: &Option<Analytics>) -> askama::Result<Option<String>> {
+    #[allow(
+        clippy::unnecessary_wraps,
+        clippy::trivially_copy_pass_by_ref,
+        clippy::ref_option_ref
+    )]
+    pub(crate) fn get_gtm_container_id(analytics: &Option<&Analytics>) -> askama::Result<Option<String>> {
         Ok(analytics.as_ref().and_then(|a| a.gtm.as_ref()).and_then(|gtm| gtm.container_id.clone()))
     }
 

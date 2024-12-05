@@ -15,7 +15,7 @@ pub(crate) struct Cache {
 
 impl Cache {
     /// Create a new Cache instance.
-    pub(crate) fn new(cache_dir: &Option<PathBuf>) -> Result<Self> {
+    pub(crate) fn new(cache_dir: Option<&PathBuf>) -> Result<Self> {
         // Try to use user's cache directory if no cache_dir has been provided
         let cache_dir = match cache_dir {
             Some(cache_dir) => Some(cache_dir.clone()),
