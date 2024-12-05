@@ -200,7 +200,7 @@ impl LandscapeSettings {
         }
 
         // Check url is valid
-        validate_url("landscape", &Some(self.url.clone()))?;
+        validate_url("landscape", Some(self.url.clone()).as_ref())?;
 
         self.validate_base_path()?;
         self.validate_categories()?;
@@ -347,12 +347,12 @@ impl LandscapeSettings {
                 ("youtube", &links.youtube),
             ];
             for (name, url) in urls {
-                validate_url(name, url)?;
+                validate_url(name, url.as_ref())?;
             }
         }
 
         // Logo
-        validate_url("footer logo", &footer.logo)?;
+        validate_url("footer logo", footer.logo.as_ref())?;
 
         // Text
         if let Some(text) = &footer.text {
@@ -399,12 +399,12 @@ impl LandscapeSettings {
         if let Some(links) = &header.links {
             let urls = [("github", &links.github)];
             for (name, url) in urls {
-                validate_url(name, url)?;
+                validate_url(name, url.as_ref())?;
             }
         }
 
         // Logo
-        validate_url("header logo", &header.logo)?;
+        validate_url("header logo", header.logo.as_ref())?;
 
         Ok(())
     }
@@ -415,7 +415,7 @@ impl LandscapeSettings {
 
         let urls = [("favicon", &images.favicon), ("open_graph", &images.open_graph)];
         for (name, url) in urls {
-            validate_url(name, url)?;
+            validate_url(name, url.as_ref())?;
         }
 
         Ok(())
