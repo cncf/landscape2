@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2024-12-11
+
+### Added
+
+- Some more fields to item extra (#759)
+- Forums link to landscape footer (#760)
+- Display magnifying glass for all items sizes (#747)
+- Alias to finances page (#743)
+
+### Changed
+
+- Minor improvement processing items second path (#744)
+- Improve how title ellipsis is displayed on grid view (#735)
+- Hide filters options that produce no results (#729)
+- Update settings file reference documentation (#727)
+- Bump Alpine to 3.21.0 (#768)
+- Bump Rust to 1.83 (#768)
+- Upgrade CLI tool dependencies (#768)
+- Upgrade web application and embed dependencies (#770)
+
+### Fixed
+
+- Issue sorting overriden categories on grid (#725)
+- Issue when defined groups are empty (#728)
+- Regression displaying search results on Safari (#733)
+- Add missing base-path to embed url when required (#742)
+- Issue loading overlay without guide or games (#746)
+- Typo in filters and org type labels (#763, #761)
+
 ## [0.11.0] - 2024-10-14
 
 ### Added
