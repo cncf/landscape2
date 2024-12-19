@@ -598,8 +598,9 @@ export class ItemsDataGetter {
   public getItemsBySection(activeSection: ActiveSection): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
-        (i: Item) => activeSection.subcategory === i.subcategory && activeSection.category === i.category
-      );
+        (i: Item) => (activeSection.subcategory === i.subcategory && activeSection.category === i.category)
+          || i.additional_categories?.some((ac: AdditionalCategory) => ac.category === activeSection.category && ac.subcategory === activeSection.subcategory
+          ));
     }
   }
 
