@@ -3,7 +3,7 @@ import trim from 'lodash/trim';
 import { createSignal, For, onMount, Show } from 'solid-js';
 
 import { FOUNDATION } from '../../data';
-import { BaseItem, Item } from '../../types';
+import { AdditionalCategory, BaseItem, Item } from '../../types';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
 import styles from './SubcategoryExtended.module.css';
 import SubcategoryGrid from './SubcategoryGrid';
@@ -21,7 +21,11 @@ const SubcategoryExtended = (props: Props) => {
 
   onMount(() => {
     const itemsInSubcategory = window.baseDS.items.filter(
-      (i: Item) => props.subcategory === i.subcategory && props.category === i.category
+      (i: Item) =>
+        (props.subcategory === i.subcategory && props.category === i.category) ||
+        i.additional_categories?.some(
+          (ac: AdditionalCategory) => ac.category === props.category && ac.subcategory === props.subcategory
+        )
     );
 
     if (!isUndefined(itemsInSubcategory) && itemsInSubcategory.length > 0) {
