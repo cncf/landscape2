@@ -19,6 +19,17 @@
   margin: 0.4rem 0;
 }
 
+.desktopPlaceholder {
+  color: darkgray;
+  left: 1rem;
+  pointer-events: none;
+}
+
+.desktopPlaceholderIcon {
+  font-size: 70%;
+  padding: 0.15rem 0.5rem;
+}
+
 /* Dropdown */
 .dropdown {
   margin-top: 0.5rem;
