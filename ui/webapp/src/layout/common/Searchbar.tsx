@@ -2,7 +2,7 @@ import { FoundationBadge, Image, MaturityBadge, SVGIcon, SVGIconKind, useOutside
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { SearchResult } from 'minisearch';
-import { batch, createEffect, createSignal, For, on, onCleanup, Show } from 'solid-js';
+import { batch, createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
 import { BANNER_ID, FOUNDATION } from '../../data';
 import searchEngine from '../../utils/search';
@@ -189,9 +189,33 @@ const Searchbar = (props: Props) => {
     })
   );
 
+  // This function is used to focus the input when the user presses the '/' key
+  const docKeyDown = (e: KeyboardEvent) => {
+    // We check if the body is the active element to avoid focusing the input when the focus
+    // is on a different element (e.g. a input, a select, etc.)
+    const isBodyElementActive = document.body === document.activeElement;
+    if (isBodyElementActive) {
+      if (e.key === '/') {
+        e.preventDefault();
+        forceFocus();
+      }
+    }
+  };
+
+  onMount(() => {
+    // We add the event listener to the document to listen to the '/' key only on desktop
+    if (props.device === 'desktop') {
+      document.addEventListener('keydown', docKeyDown, false);
+    }
+  });
+
   onCleanup(() => {
     if (!isNull(dropdownTimeout())) {
       clearTimeout(dropdownTimeout()!);
+    }
+    // We remove the event listener when the component is unmounted
+    if (props.device === 'desktop') {
+      document.removeEventListener('keydown', docKeyDown);
     }
   });
 
@@ -210,10 +234,18 @@ const Searchbar = (props: Props) => {
           autocorrect="off"
           autocapitalize="none"
           spellcheck={false}
-          placeholder="Search items"
+          placeholder={props.device === 'desktop' ? '' : 'Search items'}
           onKeyDown={onKeyDown}
           onInput={(e) => setValue(e.target.value)}
         />
+
+        {props.device === 'desktop' && (
+          <Show when={value() == ''}>
+            <div class={`position-absolute d-flex align-items-center ${styles.desktopPlaceholder}`}>
+              Type <small class={`rounded border mx-1 ${styles.desktopPlaceholderIcon}`}>/</small> to search items
+            </div>
+          </Show>
+        )}
 
         <Show when={value() !== ''}>
           <button
