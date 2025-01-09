@@ -127,8 +127,8 @@ impl From<&data::Item> for Item {
         }
 
         // Tag
-        if let Some(tag) = &di.tag {
-            item.tag = Some(tag.clone());
+        if let Some(tags) = &di.tag {
+            item.tag = Some(tags.join(","));
         }
 
         // GitHub values

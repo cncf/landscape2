@@ -39,9 +39,8 @@ pub(crate) fn collect_projects(landscape_data: &LandscapeData) -> Vec<Project> {
         .iter()
         .cloned()
         .filter_map(|item| {
-            // Prepare maturity and tag
+            // Prepare maturity (projects must have it)
             let maturity = item.maturity?;
-            let tag = item.tag?;
 
             // Prepare sandbox date
             let sandbox_at = if item.accepted_at == item.incubating_at {
@@ -66,7 +65,7 @@ pub(crate) fn collect_projects(landscape_data: &LandscapeData) -> Vec<Project> {
                 num_security_audits: num_security_audits.unwrap_or_default().to_string(),
                 last_security_audit: fmt_date(&last_security_audit),
                 sandbox_at: fmt_date(&sandbox_at),
-                tag: tag.to_string(),
+                tag: item.tag.unwrap_or_default().join(","),
             };
             Some(project)
         })

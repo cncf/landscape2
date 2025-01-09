@@ -266,7 +266,7 @@ impl LandscapeData {
 
         // Iterate over items and set TAG when found
         for item in &mut self.items {
-            // Only projects should be owned by a TAG
+            // Only projects should be associated to a TAG
             if item.maturity.is_none() {
                 continue;
             }
@@ -278,7 +278,7 @@ impl LandscapeData {
 
             // Try to find the appropriate TAG based on the settings
             if let Some(tag) = find_tag(item) {
-                item.tag = Some(tag);
+                item.tag = Some(vec![tag]);
             }
         }
     }
@@ -662,7 +662,7 @@ pub struct Item {
     pub summary: Option<ItemSummary>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tag: Option<String>,
+    pub tag: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub training_certifications: Option<String>,
@@ -1202,7 +1202,7 @@ mod tests {
         };
 
         landscape_data.add_tags(&settings);
-        assert_eq!(landscape_data.items[0].tag, Some("tag1".to_string()));
+        assert_eq!(landscape_data.items[0].tag, Some(vec!["tag1".to_string()]));
     }
 
     #[test]
@@ -1229,7 +1229,7 @@ mod tests {
         };
 
         landscape_data.add_tags(&settings);
-        assert_eq!(landscape_data.items[0].tag, Some("tag1".to_string()));
+        assert_eq!(landscape_data.items[0].tag, Some(vec!["tag1".to_string()]));
     }
 
     #[test]
@@ -1263,7 +1263,7 @@ mod tests {
         landscape_data.items.push(Item {
             category: "Category".to_string(),
             maturity: Some("graduated".to_string()),
-            tag: Some("tag2".to_string()),
+            tag: Some(vec!["tag2".to_string()]),
             ..Default::default()
         });
 
@@ -1281,7 +1281,7 @@ mod tests {
         };
 
         landscape_data.add_tags(&settings);
-        assert_eq!(landscape_data.items[0].tag, Some("tag2".to_string()));
+        assert_eq!(landscape_data.items[0].tag, Some(vec!["tag2".to_string()]));
     }
 
     #[test]
@@ -1419,7 +1419,7 @@ mod tests {
                             summary_release_rate: Some("summary_release_rate".to_string()),
                             summary_tags: Some("tag1,tag2".to_string()),
                             summary_use_case: Some("summary_use_case".to_string()),
-                            tag: Some("tag".to_string()),
+                            tag: Some(vec!["tag".to_string()]),
                             training_certifications: Some("training_certifications".to_string()),
                             training_type: Some("training_type".to_string()),
                             youtube_url: Some("youtube_url".to_string()),
@@ -1528,7 +1528,7 @@ mod tests {
                     tags: Some(vec!["tag1".to_string(), "tag2".to_string()]),
                     use_case: Some("summary_use_case".to_string()),
                 }),
-                tag: Some("tag".to_string()),
+                tag: Some(vec!["tag".to_string()]),
                 training_certifications: Some("training_certifications".to_string()),
                 training_type: Some("training_type".to_string()),
                 twitter_url: Some("twitter_url".to_string()),

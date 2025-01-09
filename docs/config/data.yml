@@ -257,11 +257,12 @@ categories:
               # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
               summary_use_case: "Provides security for the software supply chain"
 
-              # Technical Advisory Group (TAG) this item belongs to (optional). When the
-              # automatic TAG mapping feature is enabled in the landscape settings, the TAG name
-              # used here must match exactly one of the TAGs listed in the landscape settings
+              # Technical Advisory Groups (TAG) this item is associated to (optional). When the
+              # automatic TAG mapping feature is enabled in the landscape settings, the TAG names
+              # used here must match exactly any of the TAGs listed in the landscape settings
               # (provided it refers to the same TAG).
-              tag: security
+              tag:
+                - security
 
               # YouTube URL (optional).
               youtube_url: https://youtube.com/url

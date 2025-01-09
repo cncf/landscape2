@@ -301,7 +301,7 @@ pub(crate) struct Item {
     pub stack_overflow_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tag: Option<String>,
+    pub tag: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub training_certifications: Option<String>,

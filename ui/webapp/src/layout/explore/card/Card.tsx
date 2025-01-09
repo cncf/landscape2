@@ -4,6 +4,7 @@ import {
   formatTAGName,
   FoundationBadge,
   getItemDescription,
+  getMainTag,
   Image,
   MaturityBadge,
   prettifyNumber,
@@ -171,11 +172,11 @@ const Card = (props: Props) => {
           </Switch>
         </div>
 
-        <Show when={!isUndefined(props.item.tag)}>
+        <Show when={!isUndefined(props.item.tag) && props.item.tag!.length > 0}>
           <div
             class={`badge border rounded-0 tagBadge ms-4 mw-100 text-truncate text-uppercase ${styles.badgeOutlineDark}`}
           >
-            TAG {formatTAGName(props.item.tag!)}
+            TAG {formatTAGName(getMainTag(props.item.tag!))}
           </div>
         </Show>
       </div>

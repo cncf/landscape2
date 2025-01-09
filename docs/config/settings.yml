@@ -326,7 +326,7 @@ screenshot_width: 3000
 
 # TAGs (optional)
 #
-# Projects items can specify which TAG owns them in the `landscape.yml` file
+# Projects items can specify which TAGs owns them in the `landscape.yml` file
 # (by using the `tag` field in the `extra` item's section). However, sometimes
 # this information is not available at the item level. This configuration
 # section provides a mechanism to automatically asign a TAG to projects items

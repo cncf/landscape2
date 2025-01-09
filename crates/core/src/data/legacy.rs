@@ -88,13 +88,15 @@ impl LandscapeData {
                             }
                         }
 
-                        // Check tag name
-                        if let Some(tag) = &extra.tag {
-                            if !TAG_NAME.is_match(tag) {
-                                return Err(format_err!(
-                                    "invalid tag (must use only lowercase letters and hyphens)"
-                                ))
-                                .context(ctx);
+                        // Check TAGs names
+                        if let Some(tags) = &extra.tag {
+                            for tag in tags {
+                                if !TAG_NAME.is_match(tag) {
+                                    return Err(format_err!(
+                                        "invalid tag (must use only lowercase letters and hyphens)"
+                                    ))
+                                    .context(ctx);
+                                }
                             }
                         }
                     }
@@ -184,7 +186,7 @@ pub(super) struct ItemExtra {
     pub summary_release_rate: Option<String>,
     pub summary_tags: Option<String>,
     pub summary_use_case: Option<String>,
-    pub tag: Option<String>,
+    pub tag: Option<Vec<String>>,
     pub training_certifications: Option<String>,
     pub training_type: Option<String>,
     pub youtube_url: Option<String>,
@@ -475,7 +477,7 @@ mod tests {
                     homepage_url: "https://example.com".to_string(),
                     logo: "logo".to_string(),
                     extra: Some(ItemExtra {
-                        tag: Some("Invalid Tag".to_string()),
+                        tag: Some(vec!["Invalid Tag".to_string()]),
                         ..Default::default()
                     }),
                     ..Default::default()

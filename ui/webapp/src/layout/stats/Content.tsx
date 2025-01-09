@@ -22,10 +22,6 @@ const Content = () => {
   const [stats, setStats] = createSignal<Stats>();
   const from = () => (state() as StateContent).from || undefined;
 
-  const sumValues = (numbers: number[]): number => {
-    return numbers.reduce((a, b) => a + b, 0);
-  };
-
   onMount(() => {
     setStats(window.statsDS);
     if (from() === 'header') {
@@ -154,10 +150,6 @@ const Content = () => {
                               );
                             }}
                           </For>
-                          <tr>
-                            <td class="fw-semibold text-uppercase">Total</td>
-                            <td class="text-end fw-semibold">{sumValues(Object.values(stats()!.projects!.tag!))}</td>
-                          </tr>
                         </tbody>
                       </table>
                     </div>
