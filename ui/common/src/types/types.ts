@@ -8,7 +8,7 @@ export interface BaseItem {
   description?: string;
   featured?: Featured;
   maturity?: string;
-  tag?: string;
+  tag?: string[];
   additional_categories?: AdditionalCategory[];
 }
 

@@ -10,6 +10,7 @@ import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from
 import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
 import { formatTAGName } from '../utils/formatTAGName';
+import { getMainTag } from '../utils/getMainTag';
 import { prettifyNumber } from '../utils/prettifyNumber';
 import { AcquisitionsTable } from './AcquisitionsTable';
 import { Badge } from './Badge';
@@ -272,9 +273,9 @@ export const ItemModalContent = (props: Props) => {
                   <FoundationBadge foundation={props.foundation} />
                   <MaturityBadge level={itemInfo()!.maturity!} class="mx-2" />
 
-                  <Show when={!isUndefined(itemInfo()!.tag)}>
+                  <Show when={!isUndefined(itemInfo()!.tag) && itemInfo()!.tag!.length > 0}>
                     <div class={`badge text-uppercase rounded-0 me-2 ${BadgeOutlineDark} ${TagBadge}`}>
-                      TAG {formatTAGName(itemInfo()!.tag!)}
+                      TAG {formatTAGName(getMainTag(itemInfo()!.tag!))}
                     </div>
                   </Show>
 
@@ -489,6 +490,24 @@ export const ItemModalContent = (props: Props) => {
                   <div class={`badge rounded-0 me-2 mb-2 ${BadgeOutlineDark}`}>
                     {additional.category} / {additional.subcategory}
                   </div>
+                );
+              }}
+            </For>
+          </div>
+        </Show>
+        {/* Additional tags */}
+        <Show when={!isUndefined(itemInfo()!.tag) && itemInfo()!.tag!.length > 1}>
+          <div class={`fw-bold text-uppercase mt-4 mb-3 ${TitleInSection}`}>Additional tags</div>
+          <div class="d-flex flex-row flex-wrap align-items-center mb-2">
+            <For each={itemInfo()!.tag!}>
+              {(tag, index) => {
+                return (
+                  // Do not show the first tag as it is already displayed in the main section
+                  <Show when={index() > 0}>
+                    <div class={`badge rounded-0 me-2 mb-2 text-truncate text-uppercase ${BadgeOutlineDark}`}>
+                      TAG {formatTAGName(tag)}
+                    </div>
+                  </Show>
                 );
               }}
             </For>

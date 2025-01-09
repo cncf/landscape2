@@ -18,6 +18,7 @@ export {
   formatProfitLabel,
   formatTAGName,
   getItemDescription,
+  getMainTag,
   prettifyNumber,
   sortObjectByValue,
 } from './utils';

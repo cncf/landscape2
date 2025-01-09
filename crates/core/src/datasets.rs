@@ -238,7 +238,7 @@ pub mod base {
         pub oss: Option<bool>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub tag: Option<String>,
+        pub tag: Option<Vec<String>>,
     }
 
     impl From<&data::Item> for Item {
@@ -629,7 +629,7 @@ mod tests {
             name: "Item".to_string(),
             oss: Some(true),
             subcategory: "Subcategory 1".to_string(),
-            tag: Some("tag1".to_string()),
+            tag: Some(vec!["tag1".to_string()]),
             ..Default::default()
         };
 
@@ -650,7 +650,7 @@ mod tests {
             name: "Item".to_string(),
             oss: Some(true),
             subcategory: "Subcategory 1".to_string(),
-            tag: Some("tag1".to_string()),
+            tag: Some(vec!["tag1".to_string()]),
         };
         pretty_assertions::assert_eq!(item, expected_item);
     }

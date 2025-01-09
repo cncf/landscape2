@@ -1,3 +1,4 @@
+import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 
 import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
@@ -94,7 +95,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.TAG]) {
         if (isUndefined(item.tag)) {
           return false;
-        } else if (!activeFilters[FilterCategory.TAG].includes(item.tag)) {
+        } else if (intersection(activeFilters[FilterCategory.TAG], item.tag).length === 0) {
           return false;
         }
       }

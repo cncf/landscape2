@@ -58,7 +58,9 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
     }
 
     if (i.tag) {
-      tags.push(i.tag);
+      i.tag.forEach((t) => {
+        tags.push(t);
+      });
     }
 
     if (i.specification) {

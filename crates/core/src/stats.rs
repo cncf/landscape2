@@ -301,8 +301,10 @@ impl ProjectsStats {
                 }
 
                 // Number of projects per TAG
-                if let Some(tag) = &item.tag {
-                    increment(&mut stats.tag, tag, 1);
+                if let Some(tags) = &item.tag {
+                    for tag in tags {
+                        increment(&mut stats.tag, tag, 1);
+                    }
                 }
             }
         }
@@ -646,7 +648,7 @@ mod tests {
                     accepted_at: NaiveDate::from_ymd_opt(2024, 4, 2),
                     incubating_at: NaiveDate::from_ymd_opt(2024, 4, 2),
                     graduated_at: NaiveDate::from_ymd_opt(2024, 4, 2),
-                    tag: Some("tag1".to_string()),
+                    tag: Some(vec!["tag1".to_string()]),
                     audits: Some(vec![ItemAudit {
                         date: NaiveDate::from_ymd_opt(2024, 4, 2).unwrap(),
                         ..Default::default()
@@ -661,7 +663,7 @@ mod tests {
                     homepage_url: "https://project2.com".to_string(),
                     accepted_at: NaiveDate::from_ymd_opt(2024, 5, 1),
                     incubating_at: NaiveDate::from_ymd_opt(2024, 5, 2),
-                    tag: Some("tag1".to_string()),
+                    tag: Some(vec!["tag1".to_string()]),
                     audits: Some(vec![ItemAudit {
                         date: NaiveDate::from_ymd_opt(2024, 5, 2).unwrap(),
                         ..Default::default()
