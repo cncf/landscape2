@@ -1,4 +1,4 @@
-import { Loading } from 'common';
+import { formatTAGName, Loading } from 'common';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import { For, Match, Show, Switch } from 'solid-js';
@@ -118,7 +118,9 @@ const ExploreMobileIndex = (props: Props) => {
                                 class="d-flex flex-row align-items-center p-2 w-100"
                                 style={{ 'background-color': COLORS[0] }}
                               >
-                                <div class="text-white text-nowrap text-truncate">{subtitle}</div>
+                                <div class="text-white text-nowrap text-truncate">
+                                  {props.classify === ClassifyOption.TAG ? formatTAGName(subtitle) : subtitle}
+                                </div>
                               </div>
                             </div>
                             <MobileGrid items={sortItemsByOrderValue(items())} bgColor={COLORS[0]} />
@@ -209,6 +211,48 @@ const ExploreMobileIndex = (props: Props) => {
                                   style={{ 'background-color': COLORS[0] }}
                                 >
                                   <div class="text-white text-nowrap text-truncate text-uppercase">{subtitle}</div>
+                                </div>
+                              </div>
+                              <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                            </>
+                          );
+                        }}
+                      </For>
+                    );
+                  }}
+                </For>
+              </Show>
+            </Match>
+            <Match when={props.classify === ClassifyOption.TAG}>
+              <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
+                <For each={Object.keys(menu()!)}>
+                  {(title) => {
+                    return (
+                      <For each={menu()![title]}>
+                        {(subtitle: string) => {
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const items = () => ((cardData() as any)[subtitle] ? (cardData() as any)[subtitle] : []);
+                          if (items().length === 0) return null;
+
+                          const id = getNormalizedName({
+                            title: ClassifyOption.TAG,
+                            subtitle: subtitle,
+                            grouped: true,
+                          });
+
+                          return (
+                            <>
+                              <div
+                                id={`card_${id}`}
+                                class={`d-flex flex-row fw-semibold mb-2 ${styles.title} ${styles.section}`}
+                              >
+                                <div
+                                  class="d-flex flex-row align-items-center p-2 w-100"
+                                  style={{ 'background-color': COLORS[0] }}
+                                >
+                                  <div class="text-white text-nowrap text-truncate text-uppercase">
+                                    {formatTAGName(subtitle)}
+                                  </div>
                                 </div>
                               </div>
                               <CardsList items={items()} sorted={props.sorted} direction={props.direction} />

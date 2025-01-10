@@ -43,7 +43,7 @@ const CardCategory = (props: Props) => {
       } else {
         return false;
       }
-    } else if (props.classify === ClassifyOption.Tag) {
+    } else if (props.classify === ClassifyOption.TAG) {
       const tagOpt = selection.split('--')[1];
       if (!isUndefined(menu()) && !isUndefined(menu()!.Tag) && menu()!.Tag.includes(tagOpt)) {
         return true;

@@ -1,5 +1,5 @@
 import { capitalizeFirstLetter } from 'common';
-import { uniqBy } from 'lodash';
+import { flatten, uniqBy } from 'lodash';
 import compact from 'lodash/compact';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
@@ -274,8 +274,8 @@ export class ItemsDataGetter {
     if (some(items, (i: Item) => !isUndefined(i.maturity))) {
       classify.push(ClassifyOption.Maturity);
     }
-    if (some(items, (i: Item) => !isUndefined(i.tag))) {
-      classify.push(ClassifyOption.Tag);
+    if (some(items, (i: Item) => !isUndefined(i.tag) && i.tag.length > 0)) {
+      classify.push(ClassifyOption.TAG);
     }
 
     if (some(items, (i: Item) => !isUndefined(i.repositories))) {
@@ -372,7 +372,7 @@ export class ItemsDataGetter {
         return this.classifyItemsByCatAndSub(items, group, activeCategoryFilters);
       case ClassifyOption.Maturity:
         return groupBy(items, 'maturity');
-      case ClassifyOption.Tag:
+      case ClassifyOption.TAG:
         return groupBy(items, 'tag');
     }
   }
@@ -527,7 +527,7 @@ export class ItemsDataGetter {
       case ClassifyOption.Maturity:
         options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
         return options.length > 0 ? { Maturity: options } : {};
-      case ClassifyOption.Tag:
+      case ClassifyOption.TAG:
         options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
         return options.length > 0 ? { Tag: options } : {};
     }
@@ -637,6 +637,12 @@ export class ItemsDataGetter {
   public getMaturityOptions(): string[] {
     const maturity = window.baseDS.items.map((i: Item) => i.maturity);
     return uniq(compact(maturity)) || [];
+  }
+
+  // Get tag options
+  public getTagOptions(): string[] {
+    const tags = window.baseDS.items.map((i: Item) => i.tag);
+    return uniq(compact(flatten(tags))) || [];
   }
 
   // Get license options

@@ -1,5 +1,5 @@
 import { A } from '@solidjs/router';
-import { SVGIcon, SVGIconKind } from 'common';
+import { formatTAGName, SVGIcon, SVGIconKind } from 'common';
 import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, For, Match, Show, Switch } from 'solid-js';
@@ -161,7 +161,8 @@ const Content = (props: Props) => {
                                     </div>
                                   </Show>
                                   <div class="flex-grow-1 text-truncate">
-                                    {subtitle} ({items().length})
+                                    {props.classify === ClassifyOption.TAG ? formatTAGName(subtitle) : subtitle} (
+                                    {items().length})
                                   </div>
                                 </div>
                               </div>
@@ -181,7 +182,12 @@ const Content = (props: Props) => {
                         <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                           <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                             <div class="flex-grow-1 text-truncate text-capitalize">
-                              {title === 'undefined' ? 'None' : title} ({(content() as (BaseItem | Item)[]).length})
+                              {title === 'undefined'
+                                ? 'None'
+                                : props.classify === ClassifyOption.TAG
+                                  ? formatTAGName(title)
+                                  : title}{' '}
+                              ({(content() as (BaseItem | Item)[]).length})
                             </div>
                           </div>
                         </div>

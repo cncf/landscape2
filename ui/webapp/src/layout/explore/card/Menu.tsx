@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import { SVGIcon, SVGIconKind } from 'common';
+import { formatTAGName, SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 
@@ -49,11 +49,12 @@ const Menu = (props: Props) => {
         <div ref={setRef}>
           <For each={Object.keys(props.menu)}>
             {(title, index) => {
+              const isTAG = title === 'Tag';
               return (
                 <div>
                   <div
                     class="text-white border border-3 border-bottom-0 border-white fw-semibold p-2 text-truncate"
-                    classList={{ 'border-top-0': index() === 0 }}
+                    classList={{ 'border-top-0': index() === 0, 'text-uppercase': isTAG }}
                     style={{ 'background-color': bgColor }}
                   >
                     {title}
@@ -92,7 +93,7 @@ const Menu = (props: Props) => {
                                 <SVGIcon kind={SVGIconKind.ArrowRight} />
                               </div>
                             </Show>
-                            {subtitle === 'undefined' ? 'None' : subtitle}
+                            {subtitle === 'undefined' ? 'None' : isTAG ? formatTAGName(subtitle) : subtitle}
                           </button>
                         );
                       }}
