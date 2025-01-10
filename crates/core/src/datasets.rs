@@ -270,9 +270,14 @@ pub mod embed {
     use crate::{
         data::{self, AdditionalCategory, Category, LandscapeData},
         settings::LandscapeSettings,
+        util::normalize_name,
     };
+
     use serde::{Deserialize, Serialize};
-    use std::collections::HashMap;
+    use std::{
+        collections::{BTreeMap, HashMap},
+        vec,
+    };
 
     /// Embed dataset information.
     #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -283,15 +288,30 @@ pub mod embed {
 
     impl Embed {
         /// Create a new Embed instance from the data provided.
+        #[must_use]
         pub fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
             let mut views = HashMap::new();
+            views.extend(Self::prepare_category_views(landscape_data, &settings.foundation));
+            views.extend(Self::prepare_maturity_views(landscape_data, &settings.foundation));
+            views.extend(Self::prepare_tag_views(landscape_data, &settings.foundation));
+
+            Self { views }
+        }
+
+        /// Prepare views for the category classification.
+        fn prepare_category_views(
+            landscape_data: &LandscapeData,
+            foundation: &str,
+        ) -> HashMap<EmbedKey, EmbedView> {
+            let mut views = HashMap::new();
+            let key_prefix = "category";
 
             for category in &landscape_data.categories {
-                // Full category view
-                let key = category.normalized_name.clone();
+                // Category view (includes items from all subcategories)
+                let key = format!("{}_{}", key_prefix, category.normalized_name);
                 let view = EmbedView {
-                    foundation: settings.foundation.clone(),
-                    category: category.clone(),
+                    classification: Classification::Category(category.clone()),
+                    foundation: foundation.to_string(),
                     items: landscape_data
                         .items
                         .iter()
@@ -299,7 +319,7 @@ pub mod embed {
                             i.category == category.name
                                 || i.additional_categories
                                     .as_ref()
-                                    .map_or(false, |ac| ac.iter().any(|ac| ac.category == category.name))
+                                    .is_some_and(|ac| ac.iter().any(|ac| ac.category == category.name))
                         })
                         .map(Item::from)
                         .collect(),
@@ -308,20 +328,23 @@ pub mod embed {
 
                 // Subcategories views
                 for subcategory in &category.subcategories {
-                    let key = format!("{}--{}", category.normalized_name, subcategory.normalized_name,);
+                    let key = format!(
+                        "{}_{}--{}",
+                        key_prefix, category.normalized_name, subcategory.normalized_name,
+                    );
                     let view = EmbedView {
-                        foundation: settings.foundation.clone(),
-                        category: Category {
+                        classification: Classification::Category(Category {
                             name: category.name.clone(),
                             normalized_name: category.normalized_name.clone(),
                             subcategories: vec![subcategory.clone()],
-                        },
+                        }),
+                        foundation: foundation.to_string(),
                         items: landscape_data
                             .items
                             .iter()
                             .filter(|i| {
                                 (i.category == category.name && i.subcategory == *subcategory.name)
-                                    || i.additional_categories.as_ref().map_or(false, |ac| {
+                                    || i.additional_categories.as_ref().is_some_and(|ac| {
                                         ac.iter().any(|ac| {
                                             ac.category == category.name
                                                 && ac.subcategory == *subcategory.name
@@ -335,7 +358,104 @@ pub mod embed {
                 }
             }
 
-            Self { views }
+            views
+        }
+
+        /// Prepare views for the maturity classification.
+        fn prepare_maturity_views(
+            landscape_data: &LandscapeData,
+            foundation: &str,
+        ) -> HashMap<EmbedKey, EmbedView> {
+            // Group items by maturity
+            let mut items_by_maturity = BTreeMap::new();
+            for item in &landscape_data.items {
+                if let Some(maturity) = &item.maturity {
+                    items_by_maturity.entry(maturity.clone()).or_insert_with(Vec::new).push(item.clone());
+                }
+            }
+
+            Self::prepare_classification_views(foundation, "maturity", &items_by_maturity)
+        }
+
+        /// Prepare views for the TAG classification.
+        fn prepare_tag_views(
+            landscape_data: &LandscapeData,
+            foundation: &str,
+        ) -> HashMap<EmbedKey, EmbedView> {
+            // Group items by TAG
+            let mut items_by_tag = BTreeMap::new();
+            for item in &landscape_data.items {
+                if let Some(tags) = &item.tag {
+                    for tag in tags {
+                        items_by_tag.entry(tag.clone()).or_insert_with(Vec::new).push(item.clone());
+                    }
+                }
+            }
+
+            Self::prepare_classification_views(foundation, "tag", &items_by_tag)
+        }
+
+        /// Prepare views for the classification provided.
+        fn prepare_classification_views(
+            foundation: &str,
+            classification: &str,
+            grouped_items: &BTreeMap<String, Vec<data::Item>>,
+        ) -> HashMap<EmbedKey, EmbedView> {
+            let mut views = HashMap::new();
+
+            // Prepare view for all options
+            let all_options = grouped_items
+                .keys()
+                .map(|o| ClassificationOption {
+                    name: o.clone(),
+                    normalized_name: normalize_name(o),
+                })
+                .collect();
+            let mut all_options_view = EmbedView {
+                classification: match classification {
+                    "maturity" => Classification::Maturity(all_options),
+                    "tag" => Classification::Tag(all_options),
+                    _ => panic!("invalid embed classification: {classification}"),
+                },
+                foundation: foundation.to_string(),
+                items: vec![],
+            };
+
+            // Prepare view for each option
+            for (option_name, items) in grouped_items {
+                let option = ClassificationOption {
+                    name: option_name.clone(),
+                    normalized_name: normalize_name(option_name),
+                };
+                let option_key = format!("{}_{}", classification, option.normalized_name);
+                let option_view = EmbedView {
+                    classification: match classification {
+                        "maturity" => Classification::Maturity(vec![option]),
+                        "tag" => Classification::Tag(vec![option]),
+                        _ => panic!("invalid embed classification: {classification}"),
+                    },
+                    foundation: foundation.to_string(),
+                    items: items.iter().map(Item::from).collect(),
+                };
+
+                // Add option view to the views map
+                views.insert(option_key, option_view);
+
+                // Add option view items to the all options view
+                all_options_view.items.extend(items.iter().map(Item::from));
+            }
+
+            // Add the all options view to the views map if there are any items
+            if !all_options_view.items.is_empty() {
+                // Clean up duplicated items
+                all_options_view.items.sort_by_key(|i| i.id.clone());
+                all_options_view.items.dedup_by_key(|i| i.id.clone());
+
+                let all_options_key = format!("{classification}_all");
+                views.insert(all_options_key, all_options_view);
+            }
+
+            views
         }
     }
 
@@ -343,13 +463,29 @@ pub mod embed {
     pub type EmbedKey = String;
 
     /// Embed view information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
     pub struct EmbedView {
-        pub category: Category,
+        pub classification: Classification,
         pub foundation: String,
 
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
         pub items: Vec<Item>,
+    }
+
+    /// Embed classification.
+    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+    #[serde(rename_all = "snake_case")]
+    pub enum Classification {
+        Category(Category),
+        Maturity(Vec<ClassificationOption>),
+        Tag(Vec<ClassificationOption>),
+    }
+
+    /// Embed classification option.
+    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+    pub struct ClassificationOption {
+        pub name: String,
+        pub normalized_name: String,
     }
 
     /// Embed dataset item information.
@@ -379,6 +515,9 @@ pub mod embed {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub primary_repository_url: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub tag: Option<Vec<String>>,
     }
 
     impl From<&data::Item> for Item {
@@ -395,6 +534,7 @@ pub mod embed {
                 organization_name: data_item.crunchbase_data.as_ref().and_then(|org| org.name.clone()),
                 primary_repository_url: data_item.primary_repository().map(|r| r.url.clone()),
                 subcategory: data_item.subcategory.clone(),
+                tag: data_item.tag.clone(),
                 website: data_item.website.clone(),
             }
         }
@@ -452,6 +592,7 @@ mod tests {
         settings::{self, *},
     };
     use chrono::{NaiveDate, Utc};
+    use embed::Classification;
     use tests::embed::EmbedView;
 
     #[test]
@@ -699,34 +840,40 @@ mod tests {
         let embed = Embed::new(&landscape_data, &settings);
         let expected_embed_view_c1 = EmbedView {
             foundation: "Foundation".to_string(),
-            category: data::Category {
+            classification: Classification::Category(data::Category {
                 name: "Category 1".to_string(),
                 normalized_name: "category-1".to_string(),
                 subcategories: vec![Subcategory {
                     name: "Subcategory 1".to_string(),
                     normalized_name: "subcategory-1".to_string(),
                 }],
-            },
+            }),
             items: vec![(&item).into()],
         };
         let expected_embed_view_c2 = EmbedView {
             foundation: "Foundation".to_string(),
-            category: data::Category {
+            classification: Classification::Category(data::Category {
                 name: "Category 2".to_string(),
                 normalized_name: "category-2".to_string(),
                 subcategories: vec![Subcategory {
                     name: "Subcategory 2".to_string(),
                     normalized_name: "subcategory-2".to_string(),
                 }],
-            },
+            }),
             items: vec![(&item).into()],
         };
         let expected_embed = embed::Embed {
             views: vec![
-                ("category-1".to_string(), expected_embed_view_c1.clone()),
-                ("category-1--subcategory-1".to_string(), expected_embed_view_c1),
-                ("category-2".to_string(), expected_embed_view_c2.clone()),
-                ("category-2--subcategory-2".to_string(), expected_embed_view_c2),
+                ("category_category-1".to_string(), expected_embed_view_c1.clone()),
+                (
+                    "category_category-1--subcategory-1".to_string(),
+                    expected_embed_view_c1,
+                ),
+                ("category_category-2".to_string(), expected_embed_view_c2.clone()),
+                (
+                    "category_category-2--subcategory-2".to_string(),
+                    expected_embed_view_c2,
+                ),
             ]
             .into_iter()
             .collect(),
@@ -758,6 +905,7 @@ mod tests {
                 ..Default::default()
             }]),
             subcategory: "Subcategory 1".to_string(),
+            tag: Some(vec!["tag1".to_string()]),
             website: "https://homepage.url".to_string(),
             ..Default::default()
         };
@@ -778,6 +926,7 @@ mod tests {
             organization_name: Some("Organization".to_string()),
             primary_repository_url: Some("https://repository.url".to_string()),
             subcategory: "Subcategory 1".to_string(),
+            tag: Some(vec!["tag1".to_string()]),
             website: "https://homepage.url".to_string(),
         };
         pretty_assertions::assert_eq!(item, expected_item);

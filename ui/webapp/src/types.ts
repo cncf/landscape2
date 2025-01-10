@@ -461,7 +461,7 @@ export enum ClassifyOption {
   None = 'none',
   Category = 'category',
   Maturity = 'maturity',
-  Tag = 'tag',
+  TAG = 'tag',
 }
 
 export enum SortOption {

@@ -27,16 +27,17 @@ export class ItemsDataGetter {
     this.updateStatus = updateStatus;
   }
 
-  public fetchItems(key: string, basePath: string) {
+  public fetchItems(classifyBy: string, key: string, basePath: string) {
+    const name = `${classifyBy}_${key}`;
     const url =
       import.meta.env.MODE === 'development'
-        ? `http://localhost:8000/data/embed_full_${key}.json`
-        : `${basePath}/data/embed_full_${key}.json`;
+        ? `http://localhost:8000/data/embed_full_${name}.json`
+        : `${basePath}/data/embed_full_${name}.json`;
 
     fetch(url)
       .then((res) => res.json())
       .then((data: EmbedData) => {
-        this.initialDataPreparation(data, key).then(() => {
+        this.initialDataPreparation(data, name).then(() => {
           if (this.updateStatus) {
             this.updateStatus.updateStatus(true);
           }
@@ -44,10 +45,10 @@ export class ItemsDataGetter {
       });
   }
 
-  private async initialDataPreparation(data: EmbedData, key: string) {
+  private async initialDataPreparation(data: EmbedData, name: string) {
     await this.extendItemsData(data.items, data.crunchbase_data, data.github_data).then(
       (items) =>
-        (this.landscapeData[key] = {
+        (this.landscapeData[name] = {
           ...data,
           items: items,
         })
@@ -58,8 +59,8 @@ export class ItemsDataGetter {
     return Object.keys(this.landscapeData);
   }
 
-  public isReady(key: string): boolean {
-    return !!this.landscapeData[key];
+  public isReady(name: string): boolean {
+    return !!this.landscapeData[name];
   }
 
   private getUrlLogo(logo: string): string {
@@ -112,9 +113,10 @@ export class ItemsDataGetter {
   }
 
   // Get item by id
-  public getItemById(key: string, id: string): Item | undefined {
-    if (this.isReady(key) && this.landscapeData[key].items) {
-      return this.landscapeData[key]!.items!.find((i: Item) => id === i.id);
+  public getItemById(classifyBy: string, key: string, id: string): Item | undefined {
+    const name = `${classifyBy}_${key}`;
+    if (this.isReady(name) && this.landscapeData[name].items) {
+      return this.landscapeData[name]!.items!.find((i: Item) => id === i.id);
     }
   }
 }

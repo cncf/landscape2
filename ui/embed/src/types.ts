@@ -1,4 +1,5 @@
 export const KEY_PARAM = 'key';
+export const CLASSIFY_BY_PARAM = 'classify';
 export const DISPLAY_HEADER_PARAM = 'headers';
 export const DISPLAY_HEADER_CATEGORY_PARAM = 'category-header';
 export const DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM = 'category-in-subcategory';
@@ -19,8 +20,21 @@ export const DISPLAY_ITEM_MODAL_PARAM = 'item-modal';
 
 export interface Data {
   foundation: string;
+  classification: CategoryClassification | MaturityClassification | TagClassification;
   category: Category;
   items: BaseItem[];
+}
+
+export interface CategoryClassification {
+  category: Category;
+}
+
+export interface MaturityClassification {
+  maturity: Maturity[];
+}
+
+export interface TagClassification {
+  tag: Tag[];
 }
 
 export interface Category {
@@ -34,6 +48,16 @@ export interface Subcategory {
   normalized_name: string;
 }
 
+export interface Maturity {
+  name: string;
+  normalized_name: string;
+}
+
+export interface Tag {
+  name: string;
+  normalized_name: string;
+}
+
 export interface BaseItem {
   additional_categories?: AdditionalCategory[];
   description?: string;
@@ -42,6 +66,7 @@ export interface BaseItem {
   logo: string;
   name: string;
   maturity?: string;
+  tag?: string[];
   member_subcategory?: string;
   organization_name?: string;
   subcategory: string;
@@ -86,6 +111,12 @@ export enum SVGIconKind {
   World,
 }
 
+export enum ClassifyType {
+  Category = 'category',
+  Maturity = 'maturity',
+  TAG = 'tag',
+}
+
 export const DEFAULT_DISPLAY_HEADER = true;
 export const DEFAULT_DISPLAY_CATEGORY_HEADER = true;
 export const DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY = false;
@@ -102,3 +133,4 @@ export const DEFAULT_ITEMS_SPACING = 15;
 export const DEFAULT_TITLE_BG_COLOR = '#323437';
 export const DEFAULT_TITLE_FG_COLOR = '#ffffff';
 export const DEFAULT_DISPLAY_ITEM_MODAL = false;
+export const DEFAULT_CLASSIFY_TYPE = ClassifyType.Category;

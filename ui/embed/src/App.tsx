@@ -1,4 +1,5 @@
-import { batch, createEffect, createSignal, For, on, onMount, Show } from 'solid-js';
+import { capitalizeFirstLetter, formatTAGName } from 'common';
+import { batch, createEffect, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
 import { styled } from 'solid-styled-components';
 
 import ExternalLink from './common/ExternalLink';
@@ -9,7 +10,11 @@ import {
   Alignment,
   BASE_PATH_PARAM,
   BaseItem,
+  CategoryClassification,
+  CLASSIFY_BY_PARAM,
+  ClassifyType,
   Data,
+  DEFAULT_CLASSIFY_TYPE,
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
@@ -37,8 +42,10 @@ import {
   ITEMS_SPACING_PARAM,
   ITEMS_STYLE_PARAM,
   KEY_PARAM,
+  MaturityClassification,
   Size,
   Style,
+  TagClassification,
   TITLE_ALIGNMENT_PARAM,
   TITLE_BGCOLOR_PARAM,
   TITLE_FGCOLOR_PARAM,
@@ -83,7 +90,7 @@ const Content = styled('div')`
   }
 `;
 
-const CategoryTitle = styled('div')`
+const Title = styled('div')`
   background-color: var(--bg-color);
   color: var(--fg-color);
   padding: ${(props: TitleProps) => (props.isBgTransparent ? '0.5rem 0' : '0.5rem 0.75rem')};
@@ -98,7 +105,7 @@ const CategoryTitle = styled('div')`
   white-space: nowrap;
 `;
 
-const SubcategoryTitle = styled('div')`
+const Subtitle = styled('div')`
   background-color: var(--bg-color);
   color: var(--fg-color);
   padding: ${(props: TitleProps) => (props.isBgTransparent ? '0.5rem 0' : '0.5rem 0.75rem')};
@@ -120,6 +127,7 @@ const SubcategoryTitle = styled('div')`
 
 const App = () => {
   const [basePath, setBasePath] = createSignal<string>('');
+  const [classifyBy, setClassifyBy] = createSignal<string>(DEFAULT_CLASSIFY_TYPE);
   const [key, setKey] = createSignal<string>();
   const [data, setData] = createSignal<Data | null>();
   const [displayHeader, setDisplayHeader] = createSignal<boolean>(DEFAULT_DISPLAY_HEADER);
@@ -154,6 +162,7 @@ const App = () => {
   onMount(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const basePathParam = urlParams.get(BASE_PATH_PARAM);
+    const classifyByParam = urlParams.get(CLASSIFY_BY_PARAM);
     const keyParam = urlParams.get(KEY_PARAM);
     const displayHeaderParam = urlParams.get(DISPLAY_HEADER_PARAM);
     const styleParam = urlParams.get(ITEMS_STYLE_PARAM);
@@ -176,6 +185,9 @@ const App = () => {
       if (keyParam !== null) {
         let isValidSize = true;
         let isValidStyle = true;
+        if (classifyByParam !== null) {
+          setClassifyBy(classifyByParam);
+        }
         setDisplayHeader(displayHeaderParam === 'true');
         if (displayCategoryParam !== null) {
           setDisplayCategoryTitle(displayCategoryParam === 'true');
@@ -258,7 +270,7 @@ const App = () => {
     on(key, () => {
       async function fetchData() {
         try {
-          fetch(`${origin()}/data/embed_${key()}.json`)
+          fetch(`${origin()}/data/embed_${classifyBy()}_${key()}.json`)
             .then((res) => {
               if (res.ok) {
                 return res.json();
@@ -284,10 +296,12 @@ const App = () => {
   createEffect(
     on(activeItemId, () => {
       if (activeItemId() !== null) {
+        // Send message to parent to show the item details
         window.parent.postMessage(
           {
             type: 'showItemDetails',
             itemId: activeItemId(),
+            classifyBy: classifyBy(),
             key: key(),
             foundation: data()!.foundation,
             basePath: origin(),
@@ -341,67 +355,148 @@ const App = () => {
               />
             }
           >
-            <Show when={displayCategoryTitle()}>
-              <CategoryTitle
-                isBgTransparent={isBgTransparent()}
-                size={titleSize()}
-                alignment={titleAlignment()}
-                uppercase={uppercaseTitle()}
-              >
-                {data()!.category.name}
-              </CategoryTitle>
-            </Show>
-            <For each={data()!.category.subcategories}>
-              {(subcategory, index) => {
-                const items = sortItemsByName(
-                  data()!.items.filter((item: BaseItem) => {
-                    let inAdditionalCategory = false;
-                    // Check if category/subcategory is in additional_categories
-                    if (item.additional_categories) {
-                      inAdditionalCategory = item.additional_categories.some((additionalCategory) => {
+            <Switch>
+              <Match when={classifyBy() === ClassifyType.Category}>
+                <Show when={displayCategoryTitle()}>
+                  <Title
+                    isBgTransparent={isBgTransparent()}
+                    size={titleSize()}
+                    alignment={titleAlignment()}
+                    uppercase={uppercaseTitle()}
+                  >
+                    {(data()!.classification as CategoryClassification).category.name}
+                  </Title>
+                </Show>
+                <For each={(data()!.classification as CategoryClassification).category.subcategories}>
+                  {(subcategory, index) => {
+                    const items = sortItemsByName(
+                      data()!.items.filter((item: BaseItem) => {
+                        let inAdditionalCategory = false;
+                        // Check if category/subcategory is in additional_categories
+                        if (item.additional_categories) {
+                          inAdditionalCategory = item.additional_categories.some((additionalCategory) => {
+                            return (
+                              additionalCategory.category ===
+                                (data()!.classification as CategoryClassification).category.name &&
+                              additionalCategory.subcategory === subcategory.name
+                            );
+                          });
+                        }
+
                         return (
-                          additionalCategory.category === data()!.category.name &&
-                          additionalCategory.subcategory === subcategory.name
+                          (item.category === (data()!.classification as CategoryClassification).category.name &&
+                            item.subcategory === subcategory.name) ||
+                          inAdditionalCategory
                         );
-                      });
-                    }
+                      })
+                    );
 
                     return (
-                      (item.category === data()!.category.name && item.subcategory === subcategory.name) ||
-                      inAdditionalCategory
+                      <>
+                        <Subtitle
+                          isBgTransparent={isBgTransparent()}
+                          size={titleSize()}
+                          alignment={titleAlignment()}
+                          uppercase={uppercaseTitle()}
+                          firstTitle={index() === 0}
+                          spacing={itemsSpacing()}
+                        >
+                          <Show when={displayCategoryInSubcategory()}>
+                            {(data()!.classification as CategoryClassification).category.name} -{' '}
+                          </Show>
+                          {subcategory.name} ({items.length})
+                        </Subtitle>
+                        <StyleView
+                          items={items}
+                          foundation={data()!.foundation}
+                          style={itemsStyleView()}
+                          size={itemsSize()}
+                          alignment={itemsAlignment()}
+                          spacing={itemsSpacing()}
+                          displayName={displayItemName()}
+                          itemNameSize={itemNameSize()}
+                          displayItemModal={displayItemModal()}
+                          setActiveItemId={setActiveItemId}
+                        />
+                      </>
                     );
-                  })
-                );
+                  }}
+                </For>
+              </Match>
 
-                return (
-                  <>
-                    <SubcategoryTitle
-                      isBgTransparent={isBgTransparent()}
-                      size={titleSize()}
-                      alignment={titleAlignment()}
-                      uppercase={uppercaseTitle()}
-                      firstTitle={index() === 0}
-                      spacing={itemsSpacing()}
-                    >
-                      <Show when={displayCategoryInSubcategory()}>{data()!.category.name} - </Show>
-                      {subcategory.name} ({items.length})
-                    </SubcategoryTitle>
-                    <StyleView
-                      items={items}
-                      foundation={data()!.foundation}
-                      style={itemsStyleView()}
-                      size={itemsSize()}
-                      alignment={itemsAlignment()}
-                      spacing={itemsSpacing()}
-                      displayName={displayItemName()}
-                      itemNameSize={itemNameSize()}
-                      displayItemModal={displayItemModal()}
-                      setActiveItemId={setActiveItemId}
-                    />
-                  </>
-                );
-              }}
-            </For>
+              <Match when={classifyBy() === ClassifyType.Maturity}>
+                <For each={(data()!.classification as MaturityClassification).maturity}>
+                  {(maturity, index) => {
+                    const items = sortItemsByName(
+                      data()!.items.filter((item: BaseItem) => item.maturity === maturity.name)
+                    );
+
+                    return (
+                      <>
+                        <Subtitle
+                          isBgTransparent={isBgTransparent()}
+                          size={titleSize()}
+                          alignment={titleAlignment()}
+                          uppercase={uppercaseTitle()}
+                          firstTitle={index() === 0}
+                          spacing={itemsSpacing()}
+                        >
+                          {capitalizeFirstLetter(maturity.name)} ({items.length})
+                        </Subtitle>
+                        <StyleView
+                          items={items}
+                          foundation={data()!.foundation}
+                          style={itemsStyleView()}
+                          size={itemsSize()}
+                          alignment={itemsAlignment()}
+                          spacing={itemsSpacing()}
+                          displayName={displayItemName()}
+                          itemNameSize={itemNameSize()}
+                          displayItemModal={displayItemModal()}
+                          setActiveItemId={setActiveItemId}
+                        />
+                      </>
+                    );
+                  }}
+                </For>
+              </Match>
+              <Match when={classifyBy() === ClassifyType.TAG}>
+                <For each={(data()!.classification as TagClassification).tag}>
+                  {(tag, index) => {
+                    const items = sortItemsByName(
+                      data()!.items.filter((item: BaseItem) => item.tag && item.tag.includes(tag.name))
+                    );
+
+                    return (
+                      <>
+                        <Subtitle
+                          isBgTransparent={isBgTransparent()}
+                          size={titleSize()}
+                          alignment={titleAlignment()}
+                          uppercase={uppercaseTitle()}
+                          firstTitle={index() === 0}
+                          spacing={itemsSpacing()}
+                        >
+                          {formatTAGName(tag.name)} ({items.length})
+                        </Subtitle>
+                        <StyleView
+                          items={items}
+                          foundation={data()!.foundation}
+                          style={itemsStyleView()}
+                          size={itemsSize()}
+                          alignment={itemsAlignment()}
+                          spacing={itemsSpacing()}
+                          displayName={displayItemName()}
+                          itemNameSize={itemNameSize()}
+                          displayItemModal={displayItemModal()}
+                          setActiveItemId={setActiveItemId}
+                        />
+                      </>
+                    );
+                  }}
+                </For>
+              </Match>
+            </Switch>
           </Show>
         </Show>
       </Show>

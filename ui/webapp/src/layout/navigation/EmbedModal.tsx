@@ -1,12 +1,23 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import { capitalizeFirstLetter, CodeBlock, Modal, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
+import {
+  capitalizeFirstLetter,
+  CodeBlock,
+  formatTAGName,
+  Modal,
+  SVGIcon,
+  SVGIconKind,
+  useBreakpointDetect,
+} from 'common';
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import { batch, createEffect, createMemo, createSignal, For, on, onMount, Show } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
 
 import {
   Alignment,
   BASE_PATH_PARAM,
+  CLASSIFY_BY_PARAM,
+  ClassifyType,
+  DEFAULT_CLASSIFY_TYPE,
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
   DEFAULT_DISPLAY_HEADER,
@@ -105,6 +116,7 @@ const EmbedModal = () => {
     // eslint-disable-next-line solid/reactivity
     `${categoriesList()[0].normalized_name}--${subcategoriesList()[0].normalized_name}`
   );
+  const [selectedClassifyBy, setSelectedClassifyBy] = createSignal<string>(DEFAULT_CLASSIFY_TYPE);
   const [selectedCategory, setSelectedCategory] = createSignal<string>(categoriesList()[0].normalized_name);
   // eslint-disable-next-line solid/reactivity
   const [selectedSubcategory, setSelectedSubcategory] = createSignal<string>(subcategoriesList()[0].normalized_name);
@@ -133,6 +145,10 @@ const EmbedModal = () => {
   const [embedScriptLoaded, setEmbedScriptLoaded] = createSignal<boolean>(false);
   const embedOrigin = () =>
     `${import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin}${BASE_PATH}/embed`;
+  const maturityOptions = itemsDataGetter.getMaturityOptions().sort();
+  const TAGOptions = itemsDataGetter.getTagOptions().sort();
+  const [selectedMaturity, setSelectedMaturity] = createSignal<string>(maturityOptions[0] || 'all');
+  const [selectedTag, setSelectedTag] = createSignal<string>(TAGOptions[0] || 'all');
 
   const getIFrameUrl = () => {
     const embedUrl = new URL(`${embedOrigin()}/embed.html`);
@@ -142,7 +158,15 @@ const EmbedModal = () => {
       embedParams.append(BASE_PATH_PARAM, BASE_PATH);
     }
 
-    embedParams.append(KEY_PARAM, key() || categoriesList()[0].normalized_name);
+    embedParams.append(CLASSIFY_BY_PARAM, selectedClassifyBy());
+    // Append key based on the selected classify by option
+    if (selectedClassifyBy() === ClassifyType.Category) {
+      embedParams.append(KEY_PARAM, key() || categoriesList()[0].normalized_name);
+    } else if (selectedClassifyBy() === ClassifyType.Maturity) {
+      embedParams.append(KEY_PARAM, selectedMaturity());
+    } else if (selectedClassifyBy() === ClassifyType.TAG) {
+      embedParams.append(KEY_PARAM, selectedTag());
+    }
     embedParams.append(DISPLAY_HEADER_PARAM, displayHeader() ? 'true' : 'false');
     embedParams.append(DISPLAY_HEADER_CATEGORY_PARAM, displayCategoryTitle() ? 'true' : 'false');
     embedParams.append(DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM, displayCategoryInSubcategory() ? 'true' : 'false');
@@ -268,6 +292,9 @@ const EmbedModal = () => {
       setSubcategoriesList(subcategories);
       setSelectedCategory(categoriesList()[0].normalized_name);
       setSelectedSubcategory(subcategories[0].normalized_name);
+      setSelectedMaturity(maturityOptions[0] || 'all');
+      setSelectedTag(TAGOptions[0] || 'all');
+      setSelectedClassifyBy(DEFAULT_CLASSIFY_TYPE);
       setKey(`${categoriesList()[0].normalized_name}--${subcategories[0].normalized_name}`);
       setSelectedSize(DEFAULT_ITEMS_SIZE);
       setSelectedStyle(DEFAULT_ITEMS_STYLE_VIEW);
@@ -375,46 +402,117 @@ const EmbedModal = () => {
                   <div class="col-4 col-xxl-3 overflow-auto h-100 visibleScroll">
                     <div class={`p-4 ${styles.configWrapper}`}>
                       <div>
-                        <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Category</div>
+                        <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Classify</div>
                         <select
-                          id="categories"
+                          id="classifyEmbed"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                          value={selectedCategory()}
-                          aria-label="Categories list"
+                          value={selectedClassifyBy()}
+                          aria-label="Classification options"
                           onChange={(e) => {
-                            updateCategory(e.currentTarget.value);
+                            setSelectedClassifyBy(e.currentTarget.value);
                           }}
                         >
-                          <For each={categoriesList()}>
-                            {(cat: Category) => {
-                              return <option value={cat.normalized_name}>{cat.name}</option>;
-                            }}
-                          </For>
+                          <option value={ClassifyType.Category}>Category</option>
+                          <Show when={maturityOptions.length > 0}>
+                            <option value={ClassifyType.Maturity}>Maturity</option>
+                          </Show>
+                          <Show when={TAGOptions.length > 0}>
+                            <option value={ClassifyType.TAG}>TAG</option>
+                          </Show>
                         </select>
                       </div>
-                      <div class="mt-4">
-                        <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
-                          Subcategory
-                        </div>
-                        <select
-                          id="subcategories"
-                          class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                          value={selectedSubcategory() || subcategoriesList()[0].normalized_name}
-                          aria-label="Subcategories list"
-                          onChange={(e) => {
-                            const value = e.currentTarget.value;
-                            setSelectedSubcategory(value);
-                            setKey(`${selectedCategory()}${value !== 'all' ? `--${value}` : ''}`);
-                          }}
-                        >
-                          <option value="all">All</option>
-                          <For each={sortBy(subcategoriesList(), ['name'])}>
-                            {(subcat: Subcategory) => {
-                              return <option value={subcat.normalized_name}>{subcat.name}</option>;
-                            }}
-                          </For>
-                        </select>
-                      </div>
+                      <Switch>
+                        <Match when={selectedClassifyBy() === ClassifyType.Category}>
+                          <div class="mt-4">
+                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
+                              Category
+                            </div>
+                            <select
+                              id="categories"
+                              class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                              value={selectedCategory()}
+                              aria-label="Categories list"
+                              onChange={(e) => {
+                                updateCategory(e.currentTarget.value);
+                              }}
+                            >
+                              <For each={categoriesList()}>
+                                {(cat: Category) => {
+                                  return <option value={cat.normalized_name}>{cat.name}</option>;
+                                }}
+                              </For>
+                            </select>
+                          </div>
+                          <div class="mt-4">
+                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
+                              Subcategory
+                            </div>
+                            <select
+                              id="subcategories"
+                              class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                              value={selectedSubcategory() || subcategoriesList()[0].normalized_name}
+                              aria-label="Subcategories list"
+                              onChange={(e) => {
+                                const value = e.currentTarget.value;
+                                setSelectedSubcategory(value);
+                                setKey(`${selectedCategory()}${value !== 'all' ? `--${value}` : ''}`);
+                              }}
+                            >
+                              <option value="all">All</option>
+                              <For each={sortBy(subcategoriesList(), ['name'])}>
+                                {(subcat: Subcategory) => {
+                                  return <option value={subcat.normalized_name}>{subcat.name}</option>;
+                                }}
+                              </For>
+                            </select>
+                          </div>
+                        </Match>
+                        <Match when={selectedClassifyBy() === ClassifyType.Maturity}>
+                          <div class="mt-4">
+                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
+                              Maturity
+                            </div>
+                            <select
+                              id="maturity"
+                              class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                              value={selectedMaturity()}
+                              aria-label="Maturity options"
+                              onChange={(e) => {
+                                setSelectedMaturity(e.currentTarget.value);
+                              }}
+                            >
+                              <option value="all">All</option>
+                              <For each={maturityOptions}>
+                                {(m: string) => {
+                                  return <option value={m}>{capitalizeFirstLetter(m)}</option>;
+                                }}
+                              </For>
+                            </select>
+                          </div>
+                        </Match>
+                        <Match when={selectedClassifyBy() === ClassifyType.TAG}>
+                          <div class="mt-4">
+                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>TAG</div>
+                            <select
+                              id="tag"
+                              class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
+                              value={selectedTag()}
+                              aria-label="TAG options"
+                              onChange={(e) => {
+                                setSelectedTag(e.currentTarget.value);
+                              }}
+                            >
+                              <option value="all">All</option>
+                              <For each={TAGOptions}>
+                                {(t: string) => {
+                                  return <option value={t}>{formatTAGName(t)}</option>;
+                                }}
+                              </For>
+                            </select>
+                          </div>
+                        </Match>
+                      </Switch>
+
                       <div class="mt-4">
                         <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Header</div>
                         <div class="form-check">
@@ -430,32 +528,34 @@ const EmbedModal = () => {
                             }
                           />
                         </div>
-                        <div class="form-check">
-                          <CheckBox
-                            name={InputType.DisplayCategoryTitle}
-                            value="true"
-                            class="ps-0 my-2"
-                            labelClass={`mw-100 text-muted ${styles.label}`}
-                            label="Include category header"
-                            checked={displayCategoryTitle()}
-                            onChange={(value: string, checked: boolean) =>
-                              onChange(InputType.DisplayCategoryTitle, value, checked)
-                            }
-                          />
-                        </div>
-                        <div class="form-check">
-                          <CheckBox
-                            name={InputType.DisplayCategoryInSubcategory}
-                            value="true"
-                            class="ps-0 my-2"
-                            labelClass={`mw-100 text-muted ${styles.label}`}
-                            label="Include category in subcategory header"
-                            checked={displayCategoryInSubcategory()}
-                            onChange={(value: string, checked: boolean) =>
-                              onChange(InputType.DisplayCategoryInSubcategory, value, checked)
-                            }
-                          />
-                        </div>
+                        <Show when={selectedClassifyBy() === ClassifyType.Category}>
+                          <div class="form-check">
+                            <CheckBox
+                              name={InputType.DisplayCategoryTitle}
+                              value="true"
+                              class="ps-0 my-2"
+                              labelClass={`mw-100 text-muted ${styles.label}`}
+                              label="Include category header"
+                              checked={displayCategoryTitle()}
+                              onChange={(value: string, checked: boolean) =>
+                                onChange(InputType.DisplayCategoryTitle, value, checked)
+                              }
+                            />
+                          </div>
+                          <div class="form-check">
+                            <CheckBox
+                              name={InputType.DisplayCategoryInSubcategory}
+                              value="true"
+                              class="ps-0 my-2"
+                              labelClass={`mw-100 text-muted ${styles.label}`}
+                              label="Include category in subcategory header"
+                              checked={displayCategoryInSubcategory()}
+                              onChange={(value: string, checked: boolean) =>
+                                onChange(InputType.DisplayCategoryInSubcategory, value, checked)
+                              }
+                            />
+                          </div>
+                        </Show>
                         <div class="form-check">
                           <CheckBox
                             name={InputType.UppercaseTitle}

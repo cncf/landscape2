@@ -12,6 +12,7 @@ import itemsDataGetter from './utils/itemsDataGetter';
 interface CurrrentItem {
   foundation: string;
   basePath: string;
+  classifyBy: string;
   key: string;
   itemId: string;
 }
@@ -54,6 +55,7 @@ const App = () => {
     window.addEventListener('message', (event) => {
       // If the message is to show the item details
       if (event.data.type === 'showItemDetails') {
+        // Set the current item
         setCurrentItem(event.data);
       }
     });
@@ -72,12 +74,14 @@ const App = () => {
     on(currentItem, () => {
       // When the currentItem is set
       if (currentItem() !== null) {
-        if (!availableKeys().includes(currentItem()!.key)) {
+        if (!availableKeys().includes(`${currentItem()!.classifyBy}_${currentItem()!.key}`)) {
           // Fetch the items data
-          itemsDataGetter.fetchItems(currentItem()!.key, currentItem()!.basePath);
+          itemsDataGetter.fetchItems(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.basePath);
         } else {
           // If the item is already available, set the item info
-          setItemInfo(itemsDataGetter.getItemById(currentItem()!.key, currentItem()!.itemId));
+          setItemInfo(
+            itemsDataGetter.getItemById(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.itemId)
+          );
         }
       }
     })
@@ -88,8 +92,11 @@ const App = () => {
       // When the available keys are updated and the currentItem is set,
       // set the item info
       if (currentItem() !== null && itemInfo() === undefined) {
-        if (availableKeys().includes(currentItem()!.key)) {
-          setItemInfo(itemsDataGetter.getItemById(currentItem()!.key, currentItem()!.itemId));
+        const name = `${currentItem()!.classifyBy}_${currentItem()!.key}`;
+        if (availableKeys().includes(name)) {
+          setItemInfo(
+            itemsDataGetter.getItemById(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.itemId)
+          );
         }
       }
     })
