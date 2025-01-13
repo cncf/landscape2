@@ -391,6 +391,10 @@ const App = () => {
                       })
                     );
 
+                    if (items.length === 0) {
+                      return null;
+                    }
+
                     return (
                       <>
                         <Subtitle
