@@ -1,0 +1,66 @@
+{
+  "title": "Landscape games JSON schema",
+  "description": "The games file allows defining the content of the landscape games",
+  "type": "object",
+  "properties": {
+    "quiz": {
+      "title": "Quiz game content",
+      "type": "object",
+      "properties": {
+        "questions": {
+          "title": "List of questions",
+          "description": "A subset of these questions will be randomly picked up for each quiz game",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "title": "Question title",
+                "type": "string",
+                "examples": ["Which of the following projects provides an open source container orchestration engine for automating deployment, scaling, and management of containerized applications?"]
+              },
+              "options": {
+                "title": "Answer options",
+                "description": "At least two options must be provided. Options will be shuffled on every quiz game, so the order used here is not important",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "item": {
+                      "title": "Name of the landscape item this option refers to",
+                      "description": "It must match the name of the item in the landscape.yml file",
+                      "type": "string",
+                      "examples": ["Kubernetes", "gRPC", "Cilium"]
+                    },
+                    "category": {
+                      "title": "Category of the item in the landscape",
+                      "description": "This field can be used when the item is not unique across the landscape to avoid ambiguity",
+                      "type": "string",
+                      "examples": ["Orchestration & Management"]
+                    },
+                    "subcategory": {
+                      "title": "Subcategory of the item in the landscape",
+                      "description": "This field can be used when the item is not unique across the landscape to avoid ambiguity",
+                      "type": "string",
+                      "examples": ["Scheduling & Orchestration"]
+                    },
+                    "correct": {
+                      "title": "Whether this option is correct",
+                      "description": "It can be omitted if this not the correct option. Only one option can be marked as correct",
+                      "type": "boolean",
+                      "examples": [true, false]
+                    }
+                  },
+                  "required": ["item"]
+                },
+                "minItems": 2
+              }
+            },
+            "required": ["title", "options"]
+          }
+        }
+      }
+    }
+  },
+  "required": ["quiz"]
+}
