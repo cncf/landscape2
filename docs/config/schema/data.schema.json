@@ -116,13 +116,13 @@
                         "title": "Crunchbase URL of the organization this item belongs to",
                         "type": "string",
                         "format": "uri",
-                        "pattern": "^https://(www\\.)?crunchbase.com/organization/.*",
+                        "pattern": "^https?://(www\\.)?crunchbase.com/organization/.*",
                         "examples": ["https://www.crunchbase.com/organization/org-name"]
                       },
                       "twitter": {
                         "title": "Twitter URL",
                         "type": "string",
-                        "pattern": "^https://(twitter|x).com/.*",
+                        "pattern": "^https?://(twitter|x).com/.*",
                         "examples": ["https://twitter.com/org-name", "https://x.com/org-name"]
                       },
                       "url_for_bestpractices": {
@@ -256,7 +256,7 @@
                             "title": "Facebook URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://(www\\.)?facebook.com/.*"
+                            "pattern": "^https?://(www\\.)?facebook.com/.*"
                           },
                           "github_discussions_url": {
                             "title": "GitHub discussions URL",
@@ -288,7 +288,7 @@
                             "title": "LinkedIn URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://(www\\.)?linkedin.com/.*",
+                            "pattern": "^https?://(www\\.)?linkedin.com/.*",
                             "examples": ["https://www.linkedin.com/url"]
                           },
                           "mailing_list_url": {
@@ -323,7 +323,7 @@
                             "description": "Link to the package manager where the item is available",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "https?://.*"
+                            "pattern": "^https?://.*"
                           },
                           "parent_project": {
                             "title": "Name of the parent project",
@@ -335,20 +335,21 @@
                             "title": "Pinterest URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://(www\\.)?pinterest.com/.*",
+                            "pattern": "^https?://(www\\.)?pinterest.com/.*",
                             "examples": ["https://www.pinterest.com/url"]
                           },
                           "reddit_url": {
                             "title": "Reddit URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://(www\\.)?reddit.com/.*",
+                            "pattern": "^https?://(www\\.)?reddit.com/.*",
                             "examples": ["https://www.reddit.com/url"]
                           },
                           "slack_url": {
                             "title": "Slack URL",
                             "type": "string",
                             "format": "uri",
+                            "pattern": "^https?://.*",
                             "examples": ["https://slack.url"]
                           },
                           "specification": {
@@ -359,7 +360,7 @@
                             "title": "Stack Overflow URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://stackoverflow.com/.*"
+                            "pattern": "^https?://stackoverflow.com/.*"
                           },
                           "summary_business_use_case": {
                             "title": "Description of the business use case",
@@ -422,7 +423,7 @@
                             "title": "YouTube URL",
                             "type": "string",
                             "format": "uri",
-                            "pattern": "^https://(www\\.)?youtube.com/.*",
+                            "pattern": "^https?://(www\\.)?youtube.com/.*",
                             "examples": ["https://www.youtube.com/url"]
                           }
                         }

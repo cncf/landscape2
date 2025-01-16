@@ -28,7 +28,7 @@
             "container_id": {
               "title": "Landscape web application container ID",
               "type": "string",
-              "pattern": "GTM-[A-Z0-9]{6,7}",
+              "pattern": "^GTM-.*",
               "examples": ["GTM-XXXXX"]
             }
           }
@@ -209,21 +209,21 @@
               "title": "Facebook URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?facebook.com/.*",
+              "pattern": "^https?://(www\\.)?facebook.com/.*",
               "examples": ["https://www.facebook.com/url"]
             },
             "flickr": {
               "title": "Flickr URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?flickr.com/.*",
+              "pattern": "^https?://(www\\.)?flickr.com/.*",
               "examples": ["https://www.flickr.com/url"]
             },
             "github": {
               "title": "GitHub URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?github.com/.*",
+              "pattern": "^https?://(www\\.)?github.com/.*",
               "examples": ["https://github.com/owner/repo"]
             },
             "homepage": {
@@ -237,49 +237,49 @@
               "title": "Instagram URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?instagram.com/.*",
+              "pattern": "^https?://(www\\.)?instagram.com/.*",
               "examples": ["https://www.instagram.com/url"]
             },
             "linkedin": {
               "title": "LinkedIn URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?linkedin.com/.*",
+              "pattern": "^https?://(www\\.)?linkedin.com/.*",
               "examples": ["https://www.linkedin.com/url"]
             },
             "slack": {
               "title": "Slack URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://.*",
+              "pattern": "^https?://.*",
               "examples": ["https://example.slack.com"]
             },
             "twitch": {
               "title": "Twitch URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?twitch.tv/.*",
+              "pattern": "^https?://(www\\.)?twitch.tv/.*",
               "examples": ["https://www.twitch.tv/url"]
             },
             "twitter": {
               "title": "Twitter URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?(twitter|x).com/.*",
+              "pattern": "^https?://(www\\.)?(twitter|x).com/.*",
               "examples": ["https://www.twitter.com/url", "https://x.com/url"]
             },
             "wechat": {
               "title": "WeChat URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://.*",
+              "pattern": "^https?://.*",
               "examples": ["https://example.com"]
             },
             "youtube": {
               "title": "YouTube URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?youtube.com/.*",
+              "pattern": "^https?://(www\\.)?youtube.com/.*",
               "examples": ["https://www.youtube.com/url"]
             }
           }
@@ -343,7 +343,7 @@
               "title": "GitHub URL",
               "type": "string",
               "format": "uri",
-              "pattern": "^https://(www\\.)?github.com/.*",
+              "pattern": "^https?://(www\\.)?github.com/.*",
               "examples": ["https://github.com/owner/repo"]
             }
           }
