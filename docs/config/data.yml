@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/data.schema.json
+
 # Landscape2 data
 #
 # This file contains the data that will be used to generate the landscape. The landscape data is a
@@ -164,7 +166,7 @@ categories:
               documentation_url: https://documentation.url
 
               # Facebook URL (optional).
-              facebook_url: https://facebook.url
+              facebook_url: https://facebook.com/url
 
               # GitHub discussions URL (optional).
               github_discussions_url: https://github.discussions.url
@@ -208,10 +210,10 @@ categories:
               parent_project: "Project name"
 
               # Pinterest URL (optional).
-              pinterest_url: https://pinterest.url
+              pinterest_url: https://pinterest.com/url
 
               # Reddit URL (optional).
-              reddit_url: https://reddit.url
+              reddit_url: https://reddit.com/url
 
               # Slack URL (optional).
               slack_url: https://slack.url
