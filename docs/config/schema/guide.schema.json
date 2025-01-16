@@ -41,7 +41,7 @@
             }
           }
         },
-        "required": ["category", "content"]
+        "required": ["category"]
       }
     }
   },
