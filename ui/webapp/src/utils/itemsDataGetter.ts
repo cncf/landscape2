@@ -173,7 +173,18 @@ export class ItemsDataGetter {
       } else {
         list[i.category] = [i.subcategory];
       }
+      // Add additional categories
+      if (i.additional_categories) {
+        i.additional_categories.forEach((ac: AdditionalCategory) => {
+          if (list[ac.category]) {
+            list[ac.category].push(ac.subcategory);
+          } else {
+            list[ac.category] = [ac.subcategory];
+          }
+        });
+      }
     });
+
     const categories: Category[] = [];
     window.baseDS.categories.forEach((c: Category) => {
       if (list[c.name]) {
