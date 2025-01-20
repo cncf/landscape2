@@ -108,7 +108,7 @@ const EmbedModal = () => {
   const isVisible = createMemo(() => isExploreSection(location.pathname));
   const isEmbedSetupActive = () => location.pathname === EMBED_SETUP_PATH;
   const [visibleModal, setVisibleModal] = createSignal<boolean>(isEmbedSetupActive());
-  const categoriesList = () => sortBy(itemsDataGetter.getCategoriesAndSubcategoriesList(), ['name']);
+  const categoriesList = () => sortBy(itemsDataGetter.getCategoriesAndSubcategoriesWithItems(), ['name']);
   const [subcategoriesList, setSubcategoriesList] = createSignal<Subcategory[]>(
     sortBy(categoriesList()[0].subcategories, ['name'])
   );
