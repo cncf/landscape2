@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2025-01-24
+
+### Added
+
+- JSON schema for data and config files (#785)
+- Allow classifying by maturity and TAG on embed (#781)
+- Allow associating projects with multiple TAGs (#780)
+- Search keyboard shortcut (#779)
+
+### Fixed
+
+- Issue with additional categories on embed view (#787)
+- Empty subcategory on embed view (#782)
+- Additional categories ignored in zoom item modal and guide (#773)
+
 ## [0.12.0] - 2024-12-11
 
 ### Added
