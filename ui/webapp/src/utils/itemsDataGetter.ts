@@ -191,7 +191,9 @@ export class ItemsDataGetter {
 
     const categoriesWithItems: Category[] = [];
     window.baseDS.categories.forEach((c: Category) => {
-      if (categoriesToKeep[c.name]) {
+      // Check if the category is in the list of valid categories
+      // and if it has subcategories
+      if (categoriesToKeep[c.name] && c.subcategories.length > 0) {
         const subcategoriesWithItems: Subcategory[] = [];
         c.subcategories.forEach((s: Subcategory) => {
           if (categoriesToKeep[c.name].includes(s.name)) {
