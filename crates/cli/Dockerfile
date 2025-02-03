@@ -9,7 +9,7 @@ WORKDIR /landscape2/crates/cli
 RUN cargo build --release
 
 # Final stage
-FROM alpine:3.21.0
+FROM alpine:3.21.2
 RUN addgroup -S landscape2 && adduser -S landscape2 -G landscape2
 RUN apk --no-cache add bash chromium font-ubuntu
 USER landscape2
