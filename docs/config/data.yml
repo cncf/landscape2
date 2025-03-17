@@ -144,6 +144,9 @@ categories:
               # Blog URL (optional).
               blog_url: https://blog.url
 
+              # Bluesky URL (optional).
+              bluesky_url: https://https://bsky.app/profile/you.com
+
               # Channel to discuss topics related to this item (optional).
               chat_channel: "#channel"
 

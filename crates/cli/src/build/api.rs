@@ -223,6 +223,9 @@ pub(crate) struct Item {
     pub blog_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub bluesky_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_channel: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -327,6 +330,7 @@ impl Item {
             artwork_url: item.artwork_url.clone(),
             audits: item.audits.clone(),
             blog_url: item.blog_url.clone(),
+            bluesky_url: item.bluesky_url.clone(),
             category: item.category.clone(),
             chat_channel: item.chat_channel.clone(),
             country: item.crunchbase_data.as_ref().and_then(|cb| cb.country.clone()),

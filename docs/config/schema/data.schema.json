@@ -12,7 +12,10 @@
             "title": "Name of the category",
             "type": "string",
             "minLength": 1,
-            "examples": ["Category 1", "Category 2"]
+            "examples": [
+              "Category 1",
+              "Category 2"
+            ]
           },
           "subcategories": {
             "title": "List of subcategories in this category",
@@ -24,7 +27,10 @@
                   "title": "Name of the subcategory",
                   "type": "string",
                   "minLength": 1,
-                  "examples": ["Subcategory 1", "Subcategory 2"]
+                  "examples": [
+                    "Subcategory 1",
+                    "Subcategory 2"
+                  ]
                 },
                 "items": {
                   "title": "List of items in this subcategory",
@@ -35,26 +41,35 @@
                       "name": {
                         "title": "Name of the item",
                         "type": "string",
-                        "examples": ["Item 1", "Item 2"]
+                        "examples": [
+                          "Item 1",
+                          "Item 2"
+                        ]
                       },
                       "homepage_url": {
                         "title": "Homepage URL",
                         "type": "string",
                         "format": "uri",
-                        "examples": ["https://homepage.url"]
+                        "examples": [
+                          "https://homepage.url"
+                        ]
                       },
                       "logo": {
                         "title": "File name of the logo",
                         "description": "The provided logo file is expected to be located in the landscape logos path (i.e. `hosted-logos`). URLs are not supported, it must be a file name. The logo file must be an SVG file.",
                         "type": "string",
                         "pattern": "^.*\\.(svg|gif|jpe?g|tiff?|png|webp|bmp)$",
-                        "examples": ["logo.svg"]
+                        "examples": [
+                          "logo.svg"
+                        ]
                       },
                       "description": {
                         "title": "Description of the item",
                         "description": "When the description is not provided, the primary repository's description or the organization's description from Crunchbase will be used (in that order). This description will be indexed to power the search feature.",
                         "type": "string",
-                        "examples": ["This is the description of item"]
+                        "examples": [
+                          "This is the description of item"
+                        ]
                       },
                       "second_path": {
                         "title": "Alternative `category / subcategory` where this item should be listed in",
@@ -63,33 +78,48 @@
                         "items": {
                           "type": "string",
                           "pattern": "^.* / .*$",
-                          "examples": ["Category 2 / Subcategory 2-1", "Category 2 / Subcategory 2-2"]
+                          "examples": [
+                            "Category 2 / Subcategory 2-1",
+                            "Category 2 / Subcategory 2-2"
+                          ]
                         }
                       },
                       "project": {
                         "title": "Maturity of the project",
                         "description": "This field is only expected on items that represent a project that belongs to the foundation. The maturity can be any string, but there are some values that have a special meaning: `graduated, incubating, sandbox` -> when used in combination with the date they moved to that state (set in `extra` field), a special progress bar will be displayed in the item's details view, or `archived` ->  items in this state will be grayed out",
                         "type": "string",
-                        "examples": ["graduated", "incubating", "sandbox", "archived"]
+                        "examples": [
+                          "graduated",
+                          "incubating",
+                          "sandbox",
+                          "archived"
+                        ]
                       },
                       "joined": {
                         "title": "Date at which the member joined the foundation",
                         "description": "This field is only expected on items that represent a foundation's member",
                         "type": "string",
                         "format": "date",
-                        "examples": ["2025-01-01"]
+                        "examples": [
+                          "2025-01-01"
+                        ]
                       },
                       "repo_url": {
                         "title": "URL of the primary repository",
                         "description": "Some extra information will be collected for repositories hosted in GitHub.",
-                       "type": "string",
+                        "type": "string",
                         "format": "uri",
-                        "examples": ["https://github.com/owner/repo"]
+                        "examples": [
+                          "https://github.com/owner/repo"
+                        ]
                       },
                       "branch": {
                         "title": "Branch to use when collecting information for the primary repository",
                         "type": "string",
-                        "examples": ["main", "master"]
+                        "examples": [
+                          "main",
+                          "master"
+                        ]
                       },
                       "additional_repos": {
                         "title": "List of additional repositories",
@@ -101,15 +131,22 @@
                               "title": "URL of the repository",
                               "type": "string",
                               "format": "uri",
-                              "examples": ["https://github.com/owner/repo"]
+                              "examples": [
+                                "https://github.com/owner/repo"
+                              ]
                             },
                             "branch": {
                               "title": "Branch to use when collecting information for the repository",
                               "type": "string",
-                              "examples": ["main", "master"]
+                              "examples": [
+                                "main",
+                                "master"
+                              ]
                             }
                           },
-                          "required": ["repo_url"]
+                          "required": [
+                            "repo_url"
+                          ]
                         }
                       },
                       "crunchbase": {
@@ -117,19 +154,26 @@
                         "type": "string",
                         "format": "uri",
                         "pattern": "^https?://(www\\.)?crunchbase.com/organization/.*",
-                        "examples": ["https://www.crunchbase.com/organization/org-name"]
+                        "examples": [
+                          "https://www.crunchbase.com/organization/org-name"
+                        ]
                       },
                       "twitter": {
                         "title": "Twitter URL",
                         "type": "string",
                         "pattern": "^https?://(twitter|x).com/.*",
-                        "examples": ["https://twitter.com/org-name", "https://x.com/org-name"]
+                        "examples": [
+                          "https://twitter.com/org-name",
+                          "https://x.com/org-name"
+                        ]
                       },
                       "url_for_bestpractices": {
                         "title": "OpenSSF best practices URL",
                         "type": "string",
                         "format": "uri",
-                        "examples": ["https://www.bestpractices.dev/en/projects/1234"]
+                        "examples": [
+                          "https://www.bestpractices.dev/en/projects/1234"
+                        ]
                       },
                       "enduser": {
                         "title": "Indicate if the item corresponds to an end user",
@@ -144,7 +188,9 @@
                             "description": "This field is only expected on items that represent a foundation's project",
                             "type": "string",
                             "format": "date",
-                            "examples": ["2025-01-01"]
+                            "examples": [
+                              "2025-01-01"
+                            ]
                           },
                           "annotations": {
                             "title": "List of user-defined annotations",
@@ -157,7 +203,9 @@
                             "description": "This field is only expected on items that represent a foundation's project",
                             "type": "string",
                             "format": "date",
-                            "examples": ["2025-01-01"]
+                            "examples": [
+                              "2025-01-01"
+                            ]
                           },
                           "audits": {
                             "title": "List of security audits the projet has undergone",
@@ -169,26 +217,39 @@
                                   "title": "Date of the audit",
                                   "type": "string",
                                   "format": "date",
-                                  "examples": ["2025-01-01"]
+                                  "examples": [
+                                    "2025-01-01"
+                                  ]
                                 },
                                 "type": {
                                   "title": "Audit type",
                                   "type": "string",
-                                  "examples": ["fuzzing"]
+                                  "examples": [
+                                    "fuzzing"
+                                  ]
                                 },
                                 "url": {
                                   "title": "URL of the audit report",
                                   "type": "string",
                                   "format": "uri",
-                                  "examples": ["https://audit.report.url"]
+                                  "examples": [
+                                    "https://audit.report.url"
+                                  ]
                                 },
                                 "vendor": {
                                   "title": "Name of the vendor who did the audit",
                                   "type": "string",
-                                  "examples": ["Vendor name"]
+                                  "examples": [
+                                    "Vendor name"
+                                  ]
                                 }
                               },
-                              "required": ["date", "type", "url", "vendor"]
+                              "required": [
+                                "date",
+                                "type",
+                                "url",
+                                "vendor"
+                              ]
                             }
                           },
                           "annual_review_date": {
@@ -196,61 +257,89 @@
                             "description": "This field is only expected on items that represent a foundation's project",
                             "type": "string",
                             "format": "date",
-                            "examples": ["2025-01-01"]
+                            "examples": [
+                              "2025-01-01"
+                            ]
                           },
                           "annual_review_url": {
                             "title": "URL of the last annual review presented by this project",
                             "description": "This field is only expected on items that represent a foundation's project",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://annual.review.url"]
+                            "examples": [
+                              "https://annual.review.url"
+                            ]
                           },
                           "artwork_url": {
                             "title": "Artwork URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://artwork.url"]
+                            "examples": [
+                              "https://artwork.url"
+                            ]
                           },
                           "blog_url": {
                             "title": "Blog URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://blog.url"]
+                            "examples": [
+                              "https://blog.url"
+                            ]
+                          },
+                          "bluesky_url": {
+                            "title": "Bluesky URL",
+                            "type": "string",
+                            "pattern": "^https?://bsky.app/profile/.*",
+                            "examples": [
+                              "https://bsky.app/profile/org-name"
+                            ]
                           },
                           "chat_channel": {
                             "title": "Channel to discuss topics related to this item",
                             "type": "string",
-                            "examples": ["#channel"]
+                            "examples": [
+                              "#channel"
+                            ]
                           },
                           "clomonitor_name": {
                             "title": "The name of a project listed in CLOMonitor that matches this item",
                             "description": "This reference is used to pull the CLOMonitor report for this item and display it in the item's details view. CLOMonitor is only enabled for a small number of foundations, so this field won't be used in most cases",
                             "type": "string",
-                            "examples": ["project-name"]
+                            "examples": [
+                              "project-name"
+                            ]
                           },
                           "dev_stats_url": {
                             "title": "Dev stats URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://dev.stats.url"]
+                            "examples": [
+                              "https://dev.stats.url"
+                            ]
                           },
                           "discord_url": {
                             "title": "Discord URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://discord.url"]
+                            "examples": [
+                              "https://discord.url"
+                            ]
                           },
                           "docker_url": {
                             "title": "Docker URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://docker.url"]
+                            "examples": [
+                              "https://docker.url"
+                            ]
                           },
                           "documentation_url": {
                             "title": "Documentation URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://documentation.url"]
+                            "examples": [
+                              "https://documentation.url"
+                            ]
                           },
                           "facebook_url": {
                             "title": "Facebook URL",
@@ -262,40 +351,52 @@
                             "title": "GitHub discussions URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://github.discussions.url"]
+                            "examples": [
+                              "https://github.discussions.url"
+                            ]
                           },
                           "gitter_url": {
                             "title": "Gitter URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://gitter.url"]
+                            "examples": [
+                              "https://gitter.url"
+                            ]
                           },
                           "graduated": {
                             "title": "Date at which the project moved to graduated",
                             "description": "This field is only expected on items that represent a foundation's project, and should only be used when adhering to the graduated/incubating/sandbox maturities",
                             "type": "string",
                             "format": "date",
-                            "examples": ["2025-01-01"]
+                            "examples": [
+                              "2025-01-01"
+                            ]
                           },
                           "incubating": {
                             "title": "Date at which the project moved to incubating",
                             "description": "This field is only expected on items that represent a foundation's project, and should only be used when adhering to the graduated/incubating/sandbox maturities",
                             "type": "string",
                             "format": "date",
-                            "examples": ["2025-01-01"]
+                            "examples": [
+                              "2025-01-01"
+                            ]
                           },
                           "linkedin_url": {
                             "title": "LinkedIn URL",
                             "type": "string",
                             "format": "uri",
                             "pattern": "^https?://(www\\.)?linkedin.com/.*",
-                            "examples": ["https://www.linkedin.com/url"]
+                            "examples": [
+                              "https://www.linkedin.com/url"
+                            ]
                           },
                           "mailing_list_url": {
                             "title": "Mailing list URL",
                             "type": "string",
                             "format": "uri",
-                            "examples": ["https://mailing.list.url"]
+                            "examples": [
+                              "https://mailing.list.url"
+                            ]
                           },
                           "other_links": {
                             "title": "List of links to feature in the item's details view",
@@ -306,16 +407,23 @@
                                 "name": {
                                   "title": "Name of the link",
                                   "type": "string",
-                                  "examples": ["Link name"]
+                                  "examples": [
+                                    "Link name"
+                                  ]
                                 },
                                 "url": {
                                   "title": "URL of the link",
                                   "type": "string",
                                   "format": "uri",
-                                  "examples": ["https://link.url"]
+                                  "examples": [
+                                    "https://link.url"
+                                  ]
                                 }
                               },
-                              "required": ["name", "url"]
+                              "required": [
+                                "name",
+                                "url"
+                              ]
                             }
                           },
                           "package_manager_url": {
@@ -329,28 +437,36 @@
                             "title": "Name of the parent project",
                             "description": "The parent of a project will be highlighted in the item's details view. The parent project must be listed in the landscape and the name must match exactly",
                             "type": "string",
-                            "examples": ["Project name"]
+                            "examples": [
+                              "Project name"
+                            ]
                           },
                           "pinterest_url": {
                             "title": "Pinterest URL",
                             "type": "string",
                             "format": "uri",
                             "pattern": "^https?://(www\\.)?pinterest.com/.*",
-                            "examples": ["https://www.pinterest.com/url"]
+                            "examples": [
+                              "https://www.pinterest.com/url"
+                            ]
                           },
                           "reddit_url": {
                             "title": "Reddit URL",
                             "type": "string",
                             "format": "uri",
                             "pattern": "^https?://(www\\.)?reddit.com/.*",
-                            "examples": ["https://www.reddit.com/url"]
+                            "examples": [
+                              "https://www.reddit.com/url"
+                            ]
                           },
                           "slack_url": {
                             "title": "Slack URL",
                             "type": "string",
                             "format": "uri",
                             "pattern": "^https?://.*",
-                            "examples": ["https://slack.url"]
+                            "examples": [
+                              "https://slack.url"
+                            ]
                           },
                           "specification": {
                             "title": "Indicate whether this item is a specification",
@@ -366,49 +482,65 @@
                             "title": "Description of the business use case",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Reduce operational risks associated with software supply chain"]
+                            "examples": [
+                              "Reduce operational risks associated with software supply chain"
+                            ]
                           },
                           "summary_integration": {
                             "title": "Comma separated list of other projects this item integrates with",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Project 1, Project 2"]
+                            "examples": [
+                              "Project 1, Project 2"
+                            ]
                           },
                           "summary_integrations": {
                             "title": "Alternative field for `summary_integration`",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Project 1, Project 2"]
+                            "examples": [
+                              "Project 1, Project 2"
+                            ]
                           },
                           "summary_intro_url": {
                             "tirle": "Video URL of the item's pitch",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["https://summary.intro.url"]
+                            "examples": [
+                              "https://summary.intro.url"
+                            ]
                           },
                           "summary_personas": {
                             "title": "List of target users this item is intended for",
                             "description": "Entries must be separated by commas. More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Cloud Architects, Platform Engineers"]
+                            "examples": [
+                              "Cloud Architects, Platform Engineers"
+                            ]
                           },
                           "summary_release_rate": {
                             "title": "Describes how often a new version of the item is released",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Every 3 months"]
+                            "examples": [
+                              "Every 3 months"
+                            ]
                           },
                           "summary_tags": {
                             "title": "Keywords that describe the item",
                             "description": "The keywords must be separated by commas. These keywords will be indexed to power the search feature. More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["security, networking, cloud"]
+                            "examples": [
+                              "security, networking, cloud"
+                            ]
                           },
                           "summary_use_case": {
                             "title": "Description of the technical problem this item solves",
                             "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "examples": ["Provides security for the software supply chain"]
+                            "examples": [
+                              "Provides security for the software supply chain"
+                            ]
                           },
                           "tag": {
                             "title": "Technical Advisory Groups (TAG) this item is associated to",
@@ -416,7 +548,10 @@
                             "type": "array",
                             "items": {
                               "type": "string",
-                              "examples": ["security", "storage"]
+                              "examples": [
+                                "security",
+                                "storage"
+                              ]
                             }
                           },
                           "youtube_url": {
@@ -424,20 +559,35 @@
                             "type": "string",
                             "format": "uri",
                             "pattern": "^https?://(www\\.)?youtube.com/.*",
-                            "examples": ["https://www.youtube.com/url"]
+                            "examples": [
+                              "https://www.youtube.com/url"
+                            ]
                           }
                         }
                       }
                     },
-                    "required": ["name", "homepage_url", "logo"]
+                    "required": [
+                      "name",
+                      "homepage_url",
+                      "logo"
+                    ]
                   }
                 }
               },
-              "required": ["name", "items"],
-              "examples": ["Subcategory 1", "Subcategory 2"]
+              "required": [
+                "name",
+                "items"
+              ],
+              "examples": [
+                "Subcategory 1",
+                "Subcategory 2"
+              ]
             },
             "minItems": 1,
-            "required": ["name", "subcategories"]
+            "required": [
+              "name",
+              "subcategories"
+            ]
           }
         }
       },
@@ -445,8 +595,16 @@
     }
   },
   "oneOf": [
-    { "required": ["categories"] },
-    { "required": ["landscape"] }
+    {
+      "required": [
+        "categories"
+      ]
+    },
+    {
+      "required": [
+        "landscape"
+      ]
+    }
   ],
   "additionalProperties": false
 }
