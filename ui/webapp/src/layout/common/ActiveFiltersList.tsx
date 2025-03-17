@@ -187,7 +187,11 @@ const FiltersPerCategory = (props: FiltersPerCategoryProps) => {
         </For>
       </Match>
       <Match when={![FilterCategory.Maturity, FilterCategory.License, FilterCategory.Extra].includes(props.category)}>
-        <FiltersPerCategoryList category={props.category} filters={props.filters} removeFilter={props.removeFilter} />{' '}
+        <FiltersPerCategoryList
+          category={props.category}
+          filters={props.filters}
+          removeFilter={props.removeFilter}
+        />{' '}
       </Match>
     </Switch>
   );
