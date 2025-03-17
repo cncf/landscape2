@@ -420,6 +420,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.artwork_url = extra.artwork_url;
                         item.audits = extra.audits;
                         item.blog_url = extra.blog_url;
+                        item.bluesky_url = extra.bluesky_url;
                         item.chat_channel = extra.chat_channel;
                         item.clomonitor_name = extra.clomonitor_name;
                         item.devstats_url = extra.dev_stats_url;
@@ -552,6 +553,9 @@ pub struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub blog_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bluesky_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chat_channel: Option<String>,
@@ -1387,6 +1391,7 @@ mod tests {
                             annual_review_url: Some("annual_review_url".to_string()),
                             artwork_url: Some("artwork_url".to_string()),
                             blog_url: Some("blog_url".to_string()),
+                            bluesky_url: Some("bluesky_url".to_string()),
                             chat_channel: Some("chat_channel".to_string()),
                             clomonitor_name: Some("clomonitor_name".to_string()),
                             dev_stats_url: Some("dev_stats_url".to_string()),
@@ -1467,6 +1472,7 @@ mod tests {
                     vendor: "vendor".to_string(),
                 }]),
                 blog_url: Some("blog_url".to_string()),
+                bluesky_url: Some("bluesky_url".to_string()),
                 chat_channel: Some("chat_channel".to_string()),
                 clomonitor_name: Some("clomonitor_name".to_string()),
                 clomonitor_report_summary: None,

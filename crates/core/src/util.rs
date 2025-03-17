@@ -65,6 +65,7 @@ pub(crate) fn validate_url(kind: &str, url: Option<&String>) -> Result<()> {
             invalid_url(&format!("expecting https://{}/...", domains.join("|")))
         };
         match kind {
+            "bluesky" => return check_domains(&["bsky.app"]),
             "crunchbase" => {
                 if !CRUNCHBASE_URL.is_match(url.as_str()) {
                     return invalid_url(&format!("expecting: {}", CRUNCHBASE_URL.as_str()));
