@@ -25,10 +25,10 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-solid": "^0.14.5",
     "prettier": "^3.5.3",
-    "sass": "^1.85.1",
+    "sass": "1.82.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
-    "vite": "6.2.2",
+    "vite": "5.4.11",
     "vite-plugin-ejs": "^1.7.0",
     "vite-plugin-solid": "^2.11.6"
   }
