@@ -449,6 +449,12 @@ export const ItemModalContent = (props: Props) => {
                       <SVGIcon kind={SVGIconKind.Reddit} />
                     </ExternalLink>
                   </Show>
+
+                  <Show when={!isUndefined(itemInfo()!.bluesky_url)}>
+                    <ExternalLink title="Bluesky" class={`ms-3 ${Link}`} href={itemInfo()!.bluesky_url!}>
+                      <SVGIcon kind={SVGIconKind.Bluesky} />
+                    </ExternalLink>
+                  </Show>
                 </div>
               </div>
             </div>

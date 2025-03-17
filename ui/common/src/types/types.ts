@@ -23,6 +23,7 @@ export interface Item extends BaseItem {
   homepage_url?: string;
   artwork_url?: string;
   blog_url?: string;
+  bluesky_url?: string;
   chat_channel?: string;
   clomonitor_name?: string;
   clomonitor_report_summary?: string;
@@ -165,6 +166,7 @@ export enum SVGIconKind {
   ArrowTop,
   Artwork,
   Blog,
+  Bluesky,
   Book,
   Calendar,
   CaretDown,
