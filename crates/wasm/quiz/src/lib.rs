@@ -197,7 +197,7 @@ async fn pick_questions(landscape_url: String) -> Result<Vec<Question>, String> 
 }
 
 /// Fetch the questions available for the quiz.
-#[cfg_attr(not(test), cached(result = true, sync_writes = true))]
+#[cfg_attr(not(test), cached(result = true, sync_writes = "default"))]
 async fn fetch_questions(landscape_url: String) -> Result<Vec<Question>, String> {
     let url = format!("{}/{}", landscape_url.trim_end_matches('/'), QUIZ_DATA_PATH);
 

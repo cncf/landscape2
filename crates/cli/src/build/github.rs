@@ -212,7 +212,7 @@ impl GHApi {
         let gh_client = octorust::Client::custom(
             user_agent.clone(),
             Credentials::Token(token.to_string()),
-            reqwest_middleware::ClientBuilder::new(reqwest_octorust::Client::builder().build()?).build(),
+            reqwest_middleware::ClientBuilder::new(reqwest::Client::builder().build()?).build(),
         );
 
         // Setup HTTP client ready to make requests to the GitHub API

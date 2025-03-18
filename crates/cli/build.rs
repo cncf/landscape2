@@ -30,7 +30,7 @@ fn main() -> Result<()> {
         bail!("yarn not found in PATH (required to build the web application)");
     }
 
-    // Build overlay wasm module
+    // Prepare wasm profile and target directory
     let mut wasm_profile = "--dev";
     if let Ok(profile) = std::env::var("PROFILE") {
         if profile == "release" {
@@ -38,6 +38,8 @@ fn main() -> Result<()> {
         }
     };
     let wasm_target_dir = workspace_dir()?.join("target-wasm").to_string_lossy().to_string();
+
+    // Build overlay wasm module
     run(
         "wasm-pack",
         &[
