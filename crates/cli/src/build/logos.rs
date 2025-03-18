@@ -13,7 +13,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use usvg::Rect;
+use usvg::{NodeExt, Rect, TreeParsing};
 
 lazy_static! {
     /// Regular expression used to remove the SVG logos' title.
@@ -68,7 +68,7 @@ pub(crate) async fn prepare_logo(
 
         // Update viewbox to the smallest rectangle in which the object fits
         if logos_viewbox.adjust && !logos_viewbox.exclude.contains(&file_name.to_string()) {
-            if let Ok(bounding_box) = get_svg_bounding_box(&logo_data) {
+            if let Ok(Some(bounding_box)) = get_svg_bounding_box(&logo_data) {
                 if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
                     let new_viewbox_bounds = format!(
                         "{} {} {} {}",
@@ -121,10 +121,10 @@ async fn get_logo(
 }
 
 /// Get SVG bounding box (smallest rectangle in which the object fits).
-fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Rect> {
+fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(svg_data, &opt)?;
-    let bounding_box = tree.root().abs_bounding_box();
+    let bounding_box = tree.root.calculate_bbox();
 
     Ok(bounding_box)
 }
