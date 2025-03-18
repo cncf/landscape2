@@ -40,7 +40,6 @@ parse_link_header = { workspace = true }
 qrcode = { workspace = true }
 regex = { workspace = true }
 reqwest = { workspace = true }
-reqwest_octorust = { workspace = true }
 reqwest-middleware = { workspace = true }
 rust-embed = { workspace = true }
 serde = { workspace = true }

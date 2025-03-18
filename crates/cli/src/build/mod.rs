@@ -737,6 +737,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
             clip: None,
             from_surface: None,
             capture_beyond_viewport: Some(true),
+            optimize_for_speed: None,
         })
         .context("error generating screenshot in png format")?
         .data;
