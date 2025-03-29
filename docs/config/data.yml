@@ -115,7 +115,7 @@ categories:
               # items that represent a foundation's project. Format: 'YYYY-MM-DD'.
               archived: "2020-05-14"
 
-              # List of security audits the projet has undergone (optional). The structure for
+              # List of security audits the project has undergone (optional). The structure for
               # each audit is as follows:
               #
               # audits:
