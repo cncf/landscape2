@@ -200,7 +200,10 @@ export class ItemsDataGetter {
             subcategoriesWithItems.push(s);
           }
         });
-        categoriesWithItems.push({ ...c, subcategories: subcategoriesWithItems });
+        // Check if the category has subcategories with items
+        if (subcategoriesWithItems.length > 0) {
+          categoriesWithItems.push({ ...c, subcategories: subcategoriesWithItems });
+        }
       }
     });
 
