@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <% if (!isDev) { %>
-      {% if let Some(images) = datasets.base.images %}
+    {% if let Some(images) = datasets.base.images %}
       {% if let Some(favicon) = images.favicon %}
-      <link rel="shortcut icon" href="{{ favicon }}" />
-      <link rel="apple-touch-icon" href="{{ favicon }}" />
+        <link rel="shortcut icon" href="{{ favicon }}" />
+        <link rel="apple-touch-icon" href="{{ favicon }}" />
       {% endif %}
       {% if let Some(open_graph) = images.open_graph %}
-      <meta property="og:image" content="{{ open_graph }}">
-      <meta name="twitter:image:src" content="{{ open_graph }}" />
+        <meta property="og:image" content="{{ open_graph }}">
+        <meta name="twitter:image:src" content="{{ open_graph }}" />
       {% endif %}
-      {% endif %}
-
-      {% if let Some(osano) = osano %}
-      <script defer src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
-      {% endif %}
+    {% endif %}
+    {% if let Some(osano) = osano %}
+      <script defer
+              src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
+    {% endif %}
     <% } %>
     <title>{{ datasets.base.foundation }} Landscape</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,27 +33,30 @@
     </script>
     <% } else { %>
     <script>
-      window.baseDS = {{ datasets.base|json_compact|safe }};
-      window.statsDS = {{ datasets.stats|json_compact|safe }};
+      window.baseDS = {{ datasets.base|json|safe }};
+      window.statsDS = {{ datasets.stats|json|safe }};
     </script>
     <% } %>
     <% if (!isDev) { %>
-      {% set gtm_container_id = analytics|get_gtm_container_id %}
-      {% if let Some(gtm_container_id) = gtm_container_id %}
+    {% set gtm_container_id = analytics|get_gtm_container_id %}
+    {% if let Some(gtm_container_id) = gtm_container_id %}
       <!-- Google Tag Manager -->
       <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
       <!-- End Google Tag Manager -->
-      {% endif %}
+    {% endif %}
     <% } %>
   </head>
   <body>
     <% if (!isDev) { %>
-      {% if let Some(gtm_container_id) = gtm_container_id %}
+    {% if let Some(gtm_container_id) = gtm_container_id %}
       <!-- Google Tag Manager (noscript) -->
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id }}"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        height="0"
+        width="0"
+        style="display:none;
+               visibility:hidden"></iframe></noscript>
       <!-- End Google Tag Manager (noscript) -->
-      {% endif %}
+    {% endif %}
     <% } %>
     <div id="landscape"></div>
     <script type="module" src="/src/index.tsx"></script>

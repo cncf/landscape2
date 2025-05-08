@@ -1,15 +1,18 @@
 //! This module defines some types used to represent the some landscape stats,
 //! as well as the functionality used to prepare them.
 
+use std::collections::{BTreeMap, HashSet};
+
+use chrono::{Datelike, Utc};
+use itertools::Itertools;
+use serde::{Deserialize, Serialize};
+
+use crate::data::LandscapeData;
+
 use super::{
     data::{CategoryName, SubcategoryName},
     settings::{LandscapeSettings, TagName},
 };
-use crate::data::LandscapeData;
-use chrono::{Datelike, Utc};
-use itertools::Itertools;
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashSet};
 
 /// Format used to represent a date as year-month.
 pub const YEAR_MONTH_FORMAT: &str = "%Y-%m";
@@ -488,12 +491,14 @@ fn calculate_running_total(map: &BTreeMap<YearMonth, u64>) -> BTreeMap<YearMonth
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use chrono::NaiveDate;
+
     use crate::data::{
         Acquisition, Contributors, FundingRound, Item, ItemAudit, Organization, Repository,
         RepositoryGithubData,
     };
-    use chrono::NaiveDate;
+
+    use super::*;
 
     #[test]
     fn stats_new() {

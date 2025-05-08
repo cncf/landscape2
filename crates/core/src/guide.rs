@@ -1,14 +1,15 @@
 //! This module defines the types used to represent the landscape guide content
 //! that must be provided from a YAML file (guide.yml).
 
-use anyhow::{bail, format_err, Context, Result};
-use clap::Args;
-use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+use anyhow::{bail, format_err, Context, Result};
+use clap::Args;
+use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 
 /// Landscape guide source.
@@ -50,13 +51,13 @@ impl LandscapeGuide {
         if let Some(file) = &src.guide_file {
             debug!(?file, "getting landscape guide from file");
             return Ok(Some(LandscapeGuide::new_from_file(file)?));
-        };
+        }
 
         // Try from url
         if let Some(url) = &src.guide_url {
             debug!(?url, "getting landscape guide from url");
             return Ok(Some(LandscapeGuide::new_from_url(url).await?));
-        };
+        }
 
         Ok(None)
     }

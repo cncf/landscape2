@@ -1,7 +1,8 @@
 //! This module defines the cache used to cache files across builds.
 
-use anyhow::{bail, Result};
 use std::{fs, io::Write, path::PathBuf, time::SystemTime};
+
+use anyhow::{bail, Result};
 use tracing::instrument;
 
 /// Path where the cache files will be written to inside the cache directory.

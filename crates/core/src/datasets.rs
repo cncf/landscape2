@@ -6,7 +6,6 @@
 //! that they can be fetched when needed. These datasets are not meant to be
 //! consumed by other applications, as they can change at any time.
 
-use self::{base::Base, embed::Embed, full::Full};
 use crate::{
     data::{CrunchbaseData, GithubData, LandscapeData},
     games::LandscapeGames,
@@ -14,6 +13,8 @@ use crate::{
     settings::LandscapeSettings,
     stats::Stats,
 };
+
+use self::{base::Base, embed::Embed, full::Full};
 
 /// Input used to create a new Datasets instance.
 #[derive(Debug, Clone)]
@@ -583,7 +584,10 @@ pub mod full {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use chrono::{NaiveDate, Utc};
+    use embed::Classification;
+    use tests::embed::EmbedView;
+
     use crate::{
         data::{self, *},
         datasets::base,
@@ -591,9 +595,8 @@ mod tests {
         guide::{self, LandscapeGuide},
         settings::{self, *},
     };
-    use chrono::{NaiveDate, Utc};
-    use embed::Classification;
-    use tests::embed::EmbedView;
+
+    use super::*;
 
     #[test]
     fn datasets_new() {

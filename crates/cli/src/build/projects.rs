@@ -1,12 +1,13 @@
 //! This module defines the functionality to generate the `projects.md` and
 //! `projects.csv` files from the information available in the landscape.
 
+use std::fs::File;
+
 use anyhow::Result;
 use askama::Template;
 use chrono::NaiveDate;
 use landscape2_core::data::{LandscapeData, DATE_FORMAT};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
 
 /// Project information used to generate the projects.md and projects.csv files.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

@@ -1,13 +1,14 @@
 //! This module defines the functionality of the create CLI subcommand.
 
-use anyhow::Result;
-use rust_embed::RustEmbed;
 use std::{
     fs::{self, File},
     io::Write,
     path::{Path, PathBuf},
     time::Instant,
 };
+
+use anyhow::Result;
+use rust_embed::RustEmbed;
 use tracing::{info, instrument};
 
 /// Embed landscape template files into binary.

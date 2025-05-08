@@ -1,5 +1,7 @@
 //! This module defines the functionality of the serve CLI subcommand.
 
+use std::{env, net::SocketAddr, path::PathBuf};
+
 use anyhow::Result;
 use axum::{
     extract::Request,
@@ -8,7 +10,6 @@ use axum::{
     response::IntoResponse,
     Router,
 };
-use std::{env, net::SocketAddr, path::PathBuf};
 use tokio::{net::TcpListener, signal};
 use tower_http::services::{ServeDir, ServeFile};
 use tracing::{info, instrument};
@@ -55,7 +56,7 @@ pub async fn serve(args: &ServeArgs) -> Result<()> {
         axum::serve(listener, router).with_graceful_shutdown(shutdown_signal()).await?;
     } else {
         axum::serve(listener, router).await?;
-    };
+    }
 
     Ok(())
 }

@@ -1,27 +1,29 @@
 //! This module provides some helper functions to prepare logos to be displayed
 //! on the landscape web application.
 
-use super::settings::LogosViewbox;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
+
 use anyhow::{bail, Result};
 use clap::Args;
-use lazy_static::lazy_static;
 use regex::bytes::Regex;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
 use usvg::{NodeExt, Rect, TreeParsing};
 
-lazy_static! {
-    /// Regular expression used to remove the SVG logos' title.
-    static ref SVG_TITLE: Regex = Regex::new("<title>.*</title>",).expect("exprs in SVG_TITLE to be valid");
+use super::settings::LogosViewbox;
 
-    /// Regular expression used to update the SVG logos' viewbox.
-    static ref SVG_VIEWBOX: Regex = Regex::new(r#"viewBox="[0-9. ]*""#).expect("expr in SVG_VIEWBOX to be valid");
-}
+/// Regular expression used to remove the SVG logos' title.
+pub static SVG_TITLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new("<title>.*</title>").expect("exprs in SVG_TITLE to be valid"));
+
+/// Regular expression used to update the SVG logos' viewbox.
+pub static SVG_VIEWBOX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"viewBox="[0-9. ]*""#).expect("expr in SVG_VIEWBOX to be valid"));
 
 /// Landscape logos source.
 #[derive(Args, Clone, Default)]
@@ -104,7 +106,7 @@ async fn get_logo(
     // Try from path
     if let Some(path) = &logos_source.logos_path {
         return fs::read(path.join(file_name)).map_err(Into::into);
-    };
+    }
 
     // Try from url
     if let Some(logos_url) = &logos_source.logos_url {
@@ -115,7 +117,7 @@ async fn get_logo(
             bail!("unexpected status code getting logo: {}", resp.status());
         }
         return Ok(resp.bytes().await?.to_vec());
-    };
+    }
 
     bail!("logos path or url not provided");
 }

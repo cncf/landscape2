@@ -1,14 +1,15 @@
 //! This module defines the types used to represent the landscape games data
 //! that must be provided from a YAML file (games.yml).
 
-use anyhow::{bail, format_err, Context, Result};
-use clap::Args;
-use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+use anyhow::{bail, format_err, Context, Result};
+use clap::Args;
+use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -57,13 +58,13 @@ impl LandscapeGames {
         if let Some(file) = &src.games_file {
             debug!(?file, "getting landscape games data from file");
             return Ok(Some(LandscapeGames::new_from_file(file)?));
-        };
+        }
 
         // Try from url
         if let Some(url) = &src.games_url {
             debug!(?url, "getting landscape games data from url");
             return Ok(Some(LandscapeGames::new_from_url(url).await?));
-        };
+        }
 
         Ok(None)
     }
