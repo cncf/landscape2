@@ -6,15 +6,17 @@
 //! so we'll do our best to not introduce breaking changes unless it's strictly
 //! necessary.
 
-use super::{
-    data::{self, AdditionalCategory, ItemAudit},
-    LandscapeData, LandscapeSettings,
-};
+use std::collections::{BTreeMap, HashMap};
+
 use chrono::NaiveDate;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::{BTreeMap, HashMap};
+
+use super::{
+    data::{self, AdditionalCategory, ItemAudit},
+    LandscapeData, LandscapeSettings,
+};
 
 /// Sources of information used to generate the landscape API data.
 #[derive(Debug, Clone)]

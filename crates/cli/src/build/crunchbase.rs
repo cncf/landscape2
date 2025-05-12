@@ -2,21 +2,27 @@
 //! from Crunchbase for each of the landscape items (when applicable), as well
 //! as the functionality used to collect that information.
 
-use super::{cache::Cache, LandscapeData};
+use std::{
+    collections::BTreeMap,
+    env,
+    sync::{Arc, LazyLock},
+    time::Duration,
+};
+
 use anyhow::{bail, format_err, Result};
 use async_trait::async_trait;
 use chrono::{Datelike, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
 use landscape2_core::data::{Acquisition, CrunchbaseData, FundingRound, Organization};
-use lazy_static::lazy_static;
 use leaky_bucket::RateLimiter;
 #[cfg(test)]
 use mockall::automock;
 use regex::Regex;
 use reqwest::{header, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, env, sync::Arc, time::Duration};
 use tracing::{debug, instrument, warn};
+
+use super::{cache::Cache, LandscapeData};
 
 /// File used to cache data collected from Crunchbase.
 const CRUNCHBASE_CACHE_FILE: &str = "crunchbase.json";
@@ -370,12 +376,11 @@ fn get_location_value(headquarters_address: Option<&Vec<CBAddress>>, location_ty
         })
 }
 
-lazy_static! {
-    /// Crunchbase url regular expression.
-    pub(crate) static ref CRUNCHBASE_URL: Regex =
-        Regex::new("^https://www.crunchbase.com/organization/(?P<permalink>[^/]+)/?$")
-            .expect("exprs in CRUNCHBASE_URL to be valid");
-}
+/// Crunchbase url regular expression.
+pub(crate) static CRUNCHBASE_URL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new("^https://www.crunchbase.com/organization/(?P<permalink>[^/]+)/?$")
+        .expect("exprs in CRUNCHBASE_URL to be valid")
+});
 
 /// Extract the organization permalink from the crunchbase url provided.
 fn get_permalink(cb_url: &str) -> Result<String> {

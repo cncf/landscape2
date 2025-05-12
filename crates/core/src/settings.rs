@@ -7,21 +7,24 @@
 //! NOTE: the landscape settings file uses a new format that is not backwards
 //! compatible with the legacy settings file used by existing landscapes.
 
-use super::data::{CategoryName, SubcategoryName};
-use crate::util::{normalize_name, validate_url};
-use anyhow::{bail, format_err, Context, Result};
-use chrono::NaiveDate;
-use clap::Args;
-use lazy_static::lazy_static;
-use regex::Regex;
-use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
     fs,
     path::{Path, PathBuf},
+    sync::LazyLock,
 };
+
+use anyhow::{bail, format_err, Context, Result};
+use chrono::NaiveDate;
+use clap::Args;
+use regex::Regex;
+use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
+
+use crate::util::{normalize_name, validate_url};
+
+use super::data::{CategoryName, SubcategoryName};
 
 /// Landscape settings location.
 #[derive(Args, Default, Debug, Clone, PartialEq)]
@@ -116,13 +119,13 @@ impl LandscapeSettings {
         if let Some(file) = &src.settings_file {
             debug!(?file, "getting landscape settings from file");
             return LandscapeSettings::new_from_file(file);
-        };
+        }
 
         // Try from url
         if let Some(url) = &src.settings_url {
             debug!(?url, "getting landscape settings from url");
             return LandscapeSettings::new_from_url(url).await;
-        };
+        }
 
         bail!("settings file or url not provided");
     }
@@ -501,12 +504,11 @@ pub struct Category {
     pub subcategories: Vec<SubcategoryName>,
 }
 
-lazy_static! {
-    /// RGBA regular expression.
-    static ref RGBA: Regex =
-        Regex::new(r"rgba?\(((25[0-5]|2[0-4]\d|1\d{1,2}|\d\d?)\s*,\s*?){2}(25[0-5]|2[0-4]\d|1\d{1,2}|\d\d?)\s*,?\s*([01]\.?\d*?)\)")
-            .expect("exprs in RGBA to be valid");
-}
+/// RGBA regular expression.
+static RGBA: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"rgba?\(((25[0-5]|2[0-4]\d|1\d{1,2}|\d\d?)\s*,\s*?){2}(25[0-5]|2[0-4]\d|1\d{1,2}|\d\d?)\s*,?\s*([01]\.?\d*?)\)")
+        .expect("exprs in RGBA to be valid")
+});
 
 /// Colors used across the landscape UI.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

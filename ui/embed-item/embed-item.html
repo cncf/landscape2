@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Landscape</title>
     <% if (isDev) { %>
-      <script>
+    <script>
         window.colors = {"color1":"rgba(0, 107, 204, 1)","color2":"rgba(214, 34, 147, 1)","color3":"rgba(96, 149, 214, 1)","color4":"rgba(0, 42, 81, 0.7)","color5":"rgba(1, 107, 204, 0.7)","color6":"rgba(0, 42, 81, 0.7)","color7":"rgba(180, 219, 255, 1)"};
-      </script>
+    </script>
     <% } else { %>
-      {%- if let Some(colors) = colors %}
-      <script>
-        window.colors = {{ colors|json_compact|safe }};
-      </script>
-      {% endif -%}
+    {%- if let Some(colors) = colors %}
+      <script>window.colors = {{ colors|json|safe }};</script>
+    {% endif -%}
     <% } %>
   </head>
   <body>

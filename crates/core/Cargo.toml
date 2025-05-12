@@ -15,7 +15,6 @@ anyhow = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
 itertools = { workspace = true }
-lazy_static = { workspace = true }
 markdown = { workspace = true }
 regex = { workspace = true }
 reqwest = { workspace = true }

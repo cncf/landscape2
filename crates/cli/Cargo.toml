@@ -13,7 +13,6 @@ homepage.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 askama = { workspace = true }
-askama_escape = { workspace = true }
 async-trait = { workspace = true }
 aws-config = { workspace = true }
 aws-sdk-s3 = { workspace = true }
@@ -30,7 +29,6 @@ hex = { workspace = true }
 imagesize = { workspace = true }
 itertools = { workspace = true }
 landscape2-core = { path = "../core" }
-lazy_static = { workspace = true }
 leaky-bucket = { workspace = true }
 md-5 = { workspace = true }
 mime_guess = { workspace = true }

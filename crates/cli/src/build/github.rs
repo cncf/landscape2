@@ -2,23 +2,25 @@
 //! from GitHub for each of the landscape items repositories (when applicable),
 //! as well as the functionality used to collect that information.
 
-use super::{cache::Cache, LandscapeData};
+use std::collections::BTreeMap;
+use std::env;
+use std::sync::LazyLock;
+
 use anyhow::{format_err, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use deadpool::unmanaged::{Object, Pool};
 use futures::stream::{self, StreamExt};
 use landscape2_core::data::{Commit, Contributors, GithubData, Release, RepositoryGithubData};
-use lazy_static::lazy_static;
 #[cfg(test)]
 use mockall::automock;
 use octorust::auth::Credentials;
 use octorust::types::{FullRepository, ParticipationStats};
 use regex::Regex;
 use reqwest::header::{self, HeaderMap, HeaderValue};
-use std::collections::BTreeMap;
-use std::env;
 use tracing::{debug, instrument, warn};
+
+use super::{cache::Cache, LandscapeData};
 
 /// File used to cache data collected from GitHub.
 const GITHUB_CACHE_FILE: &str = "github.json";
@@ -318,12 +320,11 @@ impl GH for GHApi {
     }
 }
 
-lazy_static! {
-    /// GitHub repository url regular expression.
-    pub(crate) static ref GITHUB_REPO_URL: Regex =
-        Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
-            .expect("exprs in GITHUB_REPO_URL to be valid");
-}
+/// GitHub repository url regular expression.
+pub(crate) static GITHUB_REPO_URL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new("^https://github.com/(?P<owner>[^/]+)/(?P<repo>[^/]+)/?$")
+        .expect("exprs in GITHUB_REPO_URL to be valid")
+});
 
 /// Return the last page of results available from the headers provided.
 fn get_last_page(headers: &HeaderMap) -> Result<Option<usize>> {

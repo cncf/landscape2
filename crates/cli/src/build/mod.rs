@@ -1,20 +1,16 @@
 //! This module defines the functionality of the build CLI subcommand.
 
-use self::{
-    cache::Cache,
-    crunchbase::collect_crunchbase_data,
-    export::generate_items_csv,
-    github::collect_github_data,
-    logos::{prepare_logo, LogosSource},
-    projects::{generate_projects_csv, ProjectsMd},
+use std::{
+    collections::{BTreeMap, HashMap},
+    ffi::OsStr,
+    fs::{self, File},
+    io::Write,
+    net::TcpListener,
+    path::{Path, PathBuf},
+    sync::Arc,
+    time::{Duration, Instant},
 };
-use crate::{
-    build::{
-        api::{Api, ApiSources},
-        projects::collect_projects,
-    },
-    serve::{self, serve},
-};
+
 use anyhow::{bail, Context, Result};
 use askama::Template;
 use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
@@ -35,19 +31,26 @@ use landscape2_core::{
 use qrcode::render::svg;
 use reqwest::StatusCode;
 use rust_embed::{EmbeddedFile, RustEmbed};
-use std::{
-    collections::{BTreeMap, HashMap},
-    ffi::OsStr,
-    fs::{self, File},
-    io::Write,
-    net::TcpListener,
-    path::{Path, PathBuf},
-    sync::Arc,
-    time::{Duration, Instant},
-};
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, instrument, trace, warn};
 use url::Url;
+
+use crate::{
+    build::{
+        api::{Api, ApiSources},
+        projects::collect_projects,
+    },
+    serve::{self, serve},
+};
+
+use self::{
+    cache::Cache,
+    crunchbase::collect_crunchbase_data,
+    export::generate_items_csv,
+    github::collect_github_data,
+    logos::{prepare_logo, LogosSource},
+    projects::{generate_projects_csv, ProjectsMd},
+};
 
 mod api;
 mod cache;
@@ -310,7 +313,7 @@ async fn collect_clomonitor_reports(
             if let Err(err) = file.write_all(&report_summary) {
                 error!(?err, ?file_name, "error writing report summary to file");
                 return;
-            };
+            }
 
             // Track report summary to include it later in the item
             let mut reports_summaries = reports_summaries.lock().await;
@@ -659,7 +662,7 @@ async fn prepare_items_logos(
             };
             if let Err(err) = file.write_all(&logo.data) {
                 error!(?err, ?file_name, "error writing logo to file in output dir");
-            };
+            }
 
             (item.id.clone(), Some(format!("{LOGOS_PATH}/{file_name}")))
         })
@@ -807,17 +810,17 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
     // Header
     if let Some(header) = &mut settings.header {
         header.logo = process_image(header.logo.as_ref(), output_dir).await?;
-    };
+    }
 
     // Footer
     if let Some(footer) = &mut settings.footer {
         footer.logo = process_image(footer.logo.as_ref(), output_dir).await?;
-    };
+    }
 
     // Other images
     if let Some(images) = &mut settings.images {
         images.favicon = process_image(images.favicon.as_ref(), output_dir).await?;
-    };
+    }
 
     Ok(())
 }
@@ -951,8 +954,6 @@ fn find_available_port() -> Option<u16> {
 
 mod filters {
     use super::settings::Analytics;
-    use askama_escape::JsonEscapeBuffer;
-    use serde::Serialize;
 
     /// Filter to get the Google Tag Manager container ID from the analytics
     /// instance provided.
@@ -961,17 +962,10 @@ mod filters {
         clippy::trivially_copy_pass_by_ref,
         clippy::ref_option_ref
     )]
-    pub(crate) fn get_gtm_container_id(analytics: &Option<&Analytics>) -> askama::Result<Option<String>> {
+    pub(crate) fn get_gtm_container_id(
+        analytics: &Option<&Analytics>,
+        _: &dyn askama::Values,
+    ) -> askama::Result<Option<String>> {
         Ok(analytics.as_ref().and_then(|a| a.gtm.as_ref()).and_then(|gtm| gtm.container_id.clone()))
-    }
-
-    /// Serialize to JSON.
-    ///
-    /// Based on the `json` built-in filter except the output is not pretty
-    /// printed.
-    pub(crate) fn json_compact<S: Serialize>(s: S) -> askama::Result<String> {
-        let mut writer = JsonEscapeBuffer::new();
-        serde_json::to_writer(&mut writer, &s)?;
-        Ok(writer.finish())
     }
 }

@@ -1,12 +1,15 @@
 //! This module defines the functionality to generate the `items.csv`
 //! file from the information available in the landscape.
 
-use super::{data, LandscapeData};
-use crate::build::data::DATE_FORMAT;
+use std::fs::File;
+
 use anyhow::Result;
 use chrono::NaiveDate;
 use serde::Serialize;
-use std::fs::File;
+
+use crate::build::data::DATE_FORMAT;
+
+use super::{data, LandscapeData};
 
 /// Item information used for each record in the CSV file.
 ///

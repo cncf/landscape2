@@ -1,10 +1,11 @@
 //! This module provides the functionality to collect projects' reports
 //! summaries from CLOMonitor (https://clomonitor.io).
 
-use super::cache::Cache;
 use anyhow::{bail, Result};
 use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
+
+use super::cache::Cache;
 
 /// How long the CLOMonitor data in the cache is valid (in days).
 const CLOMONITOR_CACHE_TTL: i64 = 7;

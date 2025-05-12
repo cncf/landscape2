@@ -7,19 +7,22 @@
 //! backwards compatibility, this module provides a `legacy` submodule that
 //! allows parsing the legacy format and convert it to the new one.
 
-use super::settings::{self, LandscapeSettings};
-use crate::util::normalize_name;
-use anyhow::{bail, Context, Result};
-use chrono::{DateTime, NaiveDate, Utc};
-use clap::Args;
-use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, HashMap},
     fs,
     path::{Path, PathBuf},
 };
+
+use anyhow::{bail, Context, Result};
+use chrono::{DateTime, NaiveDate, Utc};
+use clap::Args;
+use reqwest::StatusCode;
+use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument, warn};
+
+use crate::util::normalize_name;
+
+use super::settings::{self, LandscapeSettings};
 
 mod legacy;
 
@@ -84,13 +87,13 @@ impl LandscapeData {
         if let Some(file) = &src.data_file {
             debug!(?file, "getting landscape data from file");
             return LandscapeData::new_from_file(file);
-        };
+        }
 
         // Try from url
         if let Some(url) = &src.data_url {
             debug!(?url, "getting landscape data from url");
             return LandscapeData::new_from_url(url).await;
-        };
+        }
 
         bail!("data file or url not provided");
     }
@@ -960,8 +963,9 @@ pub struct RepositoryGithubData {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::settings::{EndUserRule, FeaturedItemRule, FeaturedItemRuleOption, TagRule};
+
+    use super::*;
 
     const DATA_FILE: &str = "data.yml";
     const TESTS_DATA_FILE: &str = "src/testdata/data.yml";
