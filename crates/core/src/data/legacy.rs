@@ -139,6 +139,7 @@ pub(super) struct Item {
     pub enduser: Option<bool>,
     pub extra: Option<ItemExtra>,
     pub joined: Option<NaiveDate>,
+    pub license: Option<String>,
     pub project: Option<String>,
     pub repo_url: Option<String>,
     pub second_path: Option<Vec<String>>,
@@ -199,6 +200,7 @@ pub(super) struct ItemExtra {
 pub(super) struct Repository {
     pub repo_url: String,
     pub branch: Option<String>,
+    pub license: Option<String>,
 }
 
 /// Validate the urls of the item provided.

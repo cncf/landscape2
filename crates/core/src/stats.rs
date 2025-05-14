@@ -385,6 +385,13 @@ impl RepositoriesStats {
                     // Number of repositories
                     stats.repositories += 1;
 
+                    // Licenses
+                    let mut license_overriden = false;
+                    if let Some(license) = &repo.license {
+                        license_overriden = true;
+                        increment(&mut stats.licenses, license, 1);
+                    }
+
                     if let Some(gh_data) = &repo.github_data {
                         // Contributors
                         stats.contributors += gh_data.contributors.count as u64;
@@ -404,8 +411,10 @@ impl RepositoriesStats {
                         }
 
                         // Licenses
-                        if let Some(license) = &gh_data.license {
-                            increment(&mut stats.licenses, license, 1);
+                        if !license_overriden {
+                            if let Some(license) = &gh_data.license {
+                                increment(&mut stats.licenses, license, 1);
+                            }
                         }
 
                         // Participation stats
