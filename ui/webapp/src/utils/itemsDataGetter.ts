@@ -674,7 +674,9 @@ export class ItemsDataGetter {
         allGroupedItems[group].forEach((i: Item) => {
           if (i.repositories) {
             i.repositories.forEach((r: Repository) => {
-              if (r.github_data) {
+              if (r.license) {
+                options.push(r.license);
+              } else if (r.github_data) {
                 options.push(r.github_data!.license);
               }
             });

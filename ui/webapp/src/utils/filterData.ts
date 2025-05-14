@@ -70,7 +70,9 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
             } else {
               const licenses: string[] = [];
               item.repositories.forEach((repo: Repository) => {
-                if (repo.github_data && repo.github_data.license) {
+                if (repo.license) {
+                  licenses.push(repo.license);
+                } else if (repo.github_data && repo.github_data.license) {
                   licenses.push(repo.github_data.license);
                 }
               });

@@ -117,9 +117,9 @@ const RepositoryInfo = (props: RepoProps) => {
               <Show when={props.repository.primary}>
                 <div class={`me-2 badge rounded-0 text-uppercase ${BadgeOutlineDark} ${MiniBadge}`}>Primary</div>
               </Show>
-              <Show when={!isUndefined(props.repository.github_data)}>
+              <Show when={!isUndefined(props.repository.license) || !isUndefined(props.repository.github_data)}>
                 <div class={`badge rounded-0 me-2 ${BadgeOutlineDark} ${MiniBadge}`}>
-                  {props.repository.github_data!.license}
+                  {props.repository.license || props.repository.github_data!.license}
                 </div>
               </Show>
               <div class="d-none d-md-flex">
