@@ -73,6 +73,11 @@ categories:
             # Branch to use when collecting information for the primary repository (optional).
             branch: main
 
+            # Primary repository license (optional). This information is usually collected from
+            # GitHub, but it can be overridden here. The license must be a valid SPDX license
+            # identifier (more info: https://spdx.org/licenses/).
+            license: "Apache-2.0"
+
             # List of additional repositories (optional). The structure for each repository is as
             # follows:
             #
@@ -81,6 +86,10 @@ categories:
             #     repo_url: https://github.com/owner/repo
             #     # Branch to use when collecting information for the repository (optional).
             #     branch: main
+            #     # Repository license (optional). This information is usually collected from
+            #     # GitHub, but it can be overridden here. The license must be a valid SPDX license
+            #     # identifier (more info: https://spdx.org/licenses/).
+            #     license: "Apache-2.0"
             additional_repos: []
 
             # Crunchbase URL of the organization this item belongs to (optional).
@@ -145,7 +154,7 @@ categories:
               blog_url: https://blog.url
 
               # Bluesky URL (optional).
-              bluesky_url: https://https://bsky.app/profile/you.com
+              bluesky_url: https://bsky.app/profile/you.com
 
               # Channel to discuss topics related to this item (optional).
               chat_channel: "#channel"

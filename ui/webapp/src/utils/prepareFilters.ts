@@ -103,7 +103,9 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
 
     if (i.repositories) {
       i.repositories.forEach((r: Repository) => {
-        if (r.github_data && r.github_data.license) {
+        if (r.license) {
+          licenses.push(r.license);
+        } else if (r.github_data && r.github_data.license) {
           licenses.push(r.github_data.license);
         }
       });

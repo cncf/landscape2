@@ -193,6 +193,7 @@ export interface ItemSummary {
 
 export interface Repository {
   url: string;
+  license?: string;
   branch?: string;
   github_data?: GithubRepository;
   primary: boolean;

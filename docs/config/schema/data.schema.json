@@ -121,6 +121,15 @@
                           "master"
                         ]
                       },
+                      "license": {
+                        "title": "Primary repository license",
+                        "description": "This information is usually collected from GitHub, but it can be overridden here. The license must be a valid SPDX license identifier (more info: https://spdx.org/licenses/)",
+                        "type": "string",
+                        "examples": [
+                          "Apache License 2.0",
+                          "MIT License"
+                        ]
+                      },
                       "additional_repos": {
                         "title": "List of additional repositories",
                         "type": "array",
@@ -141,6 +150,15 @@
                               "examples": [
                                 "main",
                                 "master"
+                              ]
+                            },
+                            "license": {
+                              "title": "Repository license",
+                              "description": "This information is usually collected from GitHub, but it can be overridden here. The license must be a valid SPDX license identifier (more info: https://spdx.org/licenses/)",
+                              "type": "string",
+                              "examples": [
+                                "Apache License 2.0",
+                                "MIT License"
                               ]
                             }
                           },
