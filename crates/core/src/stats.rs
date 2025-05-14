@@ -771,6 +771,7 @@ mod tests {
                     name: "Project 2".to_string(),
                     repositories: Some(vec![
                         Repository {
+                            license: Some("MIT".to_string()),
                             url: "https://repository2.url".to_string(),
                             github_data: Some(RepositoryGithubData {
                                 contributors: Contributors {
@@ -793,7 +794,7 @@ mod tests {
                                     .into_iter()
                                     .collect(),
                                 ),
-                                license: Some("MIT".to_string()),
+                                license: Some("Apache-2.0".to_string()),
                                 participation_stats: vec![4, 5, 6],
                                 stars: 20,
                                 ..Default::default()
