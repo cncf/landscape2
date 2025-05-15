@@ -1,5 +1,7 @@
 import { createEffect, createSignal, on, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
+import { linkify } from '../utils/linkify';
+import { replaceLineBreaks } from '../utils/replaceLineBreaks';
 
 interface Props {
   text: string;
@@ -74,9 +76,8 @@ export const CollapsableText = (props: Props) => {
               }
             : {}
         }
-      >
-        {props.text}
-      </div>
+        innerHTML={replaceLineBreaks(linkify(props.text))}
+      ></div>
       <Show when={enabledCollapsable() && !collapsable()}>
         <div class={`position-absolute end-0 ${BtnWrapper}`}>
           <button

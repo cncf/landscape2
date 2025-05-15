@@ -22,6 +22,8 @@ import { MobileMaturitySection } from './MobileMaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
+import { linkify } from '../utils/linkify';
+import { replaceLineBreaks } from '../utils/replaceLineBreaks';
 
 interface Props {
   item?: Item | null;
@@ -498,14 +500,20 @@ export const ItemModalMobileContent = (props: Props) => {
             <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Introduction</div>
-                <div class={`mt-2 text-truncate ${SummaryContent}`}>{itemInfo()!.summary!.intro_url!}</div>
+                <div
+                  class={`mt-2 text-truncate ${SummaryContent}`}
+                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.intro_url!))}
+                ></div>
               </div>
             </Show>
 
             <Show when={!isUndefined(itemInfo()!.summary!.use_case) && !isEmpty(itemInfo()!.summary!.use_case)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Use case</div>
-                <div class={`mt-2 ${SummaryContent}`}>{itemInfo()!.summary!.use_case!}</div>
+                <div
+                  class={`mt-2 ${SummaryContent}`}
+                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.use_case!))}
+                ></div>
               </div>
             </Show>
 
@@ -516,7 +524,10 @@ export const ItemModalMobileContent = (props: Props) => {
             >
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Business use case</div>
-                <div class={`mt-2 ${SummaryContent}`}>{itemInfo()!.summary!.business_use_case!}</div>
+                <div
+                  class={`mt-2 ${SummaryContent}`}
+                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.business_use_case!))}
+                ></div>
               </div>
             </Show>
 
@@ -528,16 +539,22 @@ export const ItemModalMobileContent = (props: Props) => {
             >
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Integrations</div>
-                <div class={`mt-2 ${SummaryContent}`}>
-                  {(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration)!}
-                </div>
+                <div
+                  class={`mt-2 ${SummaryContent}`}
+                  innerHTML={replaceLineBreaks(
+                    linkify(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration!)
+                  )}
+                ></div>
               </div>
             </Show>
 
             <Show when={!isUndefined(itemInfo()!.summary!.release_rate) && !isEmpty(itemInfo()!.summary!.release_rate)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Release rate</div>
-                <div class={`mt-2 ${SummaryContent}`}>{itemInfo()!.summary!.release_rate!}</div>
+                <div
+                  class={`mt-2 ${SummaryContent}`}
+                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.release_rate!))}
+                ></div>
               </div>
             </Show>
 

@@ -26,6 +26,8 @@ import { MaturitySection } from './MaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
+import { linkify } from '../utils/linkify';
+import { replaceLineBreaks } from '../utils/replaceLineBreaks';
 
 interface Props {
   item?: Item | null;
@@ -744,7 +746,10 @@ export const ItemModalContent = (props: Props) => {
               <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
                 <div class="summaryBlock">
                   <div class={`fw-bold text-uppercase ${TitleInSection}`}>Introduction</div>
-                  <div class={`mt-2 ${SummaryContent}`}>{itemInfo()!.summary!.intro_url!}</div>
+                  <div
+                    class={`mt-2 ${SummaryContent}`}
+                    innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.intro_url!))}
+                  />
                 </div>
               </Show>
 
