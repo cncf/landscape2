@@ -9,6 +9,7 @@ import { css } from 'solid-styled-components';
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../types/types';
 import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
+import { formatSummaryField } from '../utils/formatSummaryField';
 import { formatTAGName } from '../utils/formatTAGName';
 import { getMainTag } from '../utils/getMainTag';
 import { prettifyNumber } from '../utils/prettifyNumber';
@@ -744,7 +745,12 @@ export const ItemModalContent = (props: Props) => {
               <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
                 <div class="summaryBlock">
                   <div class={`fw-bold text-uppercase ${TitleInSection}`}>Introduction</div>
-                  <div class={`mt-2 ${SummaryContent}`}>{itemInfo()!.summary!.intro_url!}</div>
+                  {/* eslint-disable solid/no-innerhtml */}
+                  <div
+                    class={`mt-2 ${SummaryContent}`}
+                    innerHTML={formatSummaryField(itemInfo()!.summary!.intro_url!)}
+                  />
+                  {/* eslint-enable solid/no-innerhtml */}
                 </div>
               </Show>
 

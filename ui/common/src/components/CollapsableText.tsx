@@ -1,6 +1,8 @@
 import { createEffect, createSignal, on, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
+import { formatSummaryField } from '../utils/formatSummaryField';
+
 interface Props {
   text: string;
   maxLinesNumber?: number;
@@ -61,6 +63,7 @@ export const CollapsableText = (props: Props) => {
 
   return (
     <div class="position-relative">
+      {/* eslint-disable solid/no-innerhtml */}
       <div
         ref={setTextRef}
         class={`${Content} ${props.class}`}
@@ -74,9 +77,9 @@ export const CollapsableText = (props: Props) => {
               }
             : {}
         }
-      >
-        {props.text}
-      </div>
+        innerHTML={formatSummaryField(props.text)}
+      />
+      {/* eslint-enable solid/no-innerhtml */}
       <Show when={enabledCollapsable() && !collapsable()}>
         <div class={`position-absolute end-0 ${BtnWrapper}`}>
           <button
