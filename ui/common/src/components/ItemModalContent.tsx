@@ -9,6 +9,7 @@ import { css } from 'solid-styled-components';
 import { AdditionalCategory, Item, Repository, SecurityAudit, SVGIconKind } from '../types/types';
 import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
+import { formatSummaryField } from '../utils/formatSummaryField';
 import { formatTAGName } from '../utils/formatTAGName';
 import { getMainTag } from '../utils/getMainTag';
 import { prettifyNumber } from '../utils/prettifyNumber';
@@ -26,8 +27,6 @@ import { MaturitySection } from './MaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
-import { linkify } from '../utils/linkify';
-import { replaceLineBreaks } from '../utils/replaceLineBreaks';
 
 interface Props {
   item?: Item | null;
@@ -746,10 +745,12 @@ export const ItemModalContent = (props: Props) => {
               <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
                 <div class="summaryBlock">
                   <div class={`fw-bold text-uppercase ${TitleInSection}`}>Introduction</div>
+                  {/* eslint-disable solid/no-innerhtml */}
                   <div
                     class={`mt-2 ${SummaryContent}`}
-                    innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.intro_url!))}
+                    innerHTML={formatSummaryField(itemInfo()!.summary!.intro_url!)}
                   />
+                  {/* eslint-enable solid/no-innerhtml */}
                 </div>
               </Show>
 

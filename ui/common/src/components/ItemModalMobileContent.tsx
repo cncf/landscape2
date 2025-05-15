@@ -9,6 +9,7 @@ import { css } from 'solid-styled-components';
 import { AdditionalCategory, Item, SecurityAudit, SVGIconKind } from '../types/types';
 import { cutString, getItemDescription } from '../utils';
 import { formatProfitLabel } from '../utils/formatProfitLabel';
+import { formatSummaryField } from '../utils/formatSummaryField';
 import { prettifyNumber } from '../utils/prettifyNumber';
 import { AcquisitionsTable } from './AcquisitionsTable';
 import { Badge } from './Badge';
@@ -22,8 +23,6 @@ import { MobileMaturitySection } from './MobileMaturitySection';
 import { ParentProject } from './ParentProject';
 import { RepositoriesSection } from './RepositoriesSection';
 import { SVGIcon } from './SVGIcon';
-import { linkify } from '../utils/linkify';
-import { replaceLineBreaks } from '../utils/replaceLineBreaks';
 
 interface Props {
   item?: Item | null;
@@ -500,20 +499,20 @@ export const ItemModalMobileContent = (props: Props) => {
             <Show when={!isUndefined(itemInfo()!.summary!.intro_url) && !isEmpty(itemInfo()!.summary!.intro_url)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Introduction</div>
+                {/* eslint-disable solid/no-innerhtml */}
                 <div
                   class={`mt-2 text-truncate ${SummaryContent}`}
-                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.intro_url!))}
-                ></div>
+                  innerHTML={formatSummaryField(itemInfo()!.summary!.intro_url!)}
+                />
+                {/* eslint-enable solid/no-innerhtml */}
               </div>
             </Show>
 
             <Show when={!isUndefined(itemInfo()!.summary!.use_case) && !isEmpty(itemInfo()!.summary!.use_case)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Use case</div>
-                <div
-                  class={`mt-2 ${SummaryContent}`}
-                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.use_case!))}
-                ></div>
+                {/* eslint-disable-next-line solid/no-innerhtml */}
+                <div class={`mt-2 ${SummaryContent}`} innerHTML={formatSummaryField(itemInfo()!.summary!.use_case!)} />
               </div>
             </Show>
 
@@ -524,10 +523,12 @@ export const ItemModalMobileContent = (props: Props) => {
             >
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Business use case</div>
+                {/* eslint-disable solid/no-innerhtml */}
                 <div
                   class={`mt-2 ${SummaryContent}`}
-                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.business_use_case!))}
-                ></div>
+                  innerHTML={formatSummaryField(itemInfo()!.summary!.business_use_case!)}
+                />
+                {/* eslint-enable solid/no-innerhtml */}
               </div>
             </Show>
 
@@ -539,22 +540,24 @@ export const ItemModalMobileContent = (props: Props) => {
             >
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Integrations</div>
+                {/* eslint-disable solid/no-innerhtml */}
                 <div
                   class={`mt-2 ${SummaryContent}`}
-                  innerHTML={replaceLineBreaks(
-                    linkify(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration!)
-                  )}
-                ></div>
+                  innerHTML={formatSummaryField(itemInfo()!.summary!.integrations || itemInfo()!.summary!.integration!)}
+                />
+                {/* eslint-enable solid/no-innerhtml */}
               </div>
             </Show>
 
             <Show when={!isUndefined(itemInfo()!.summary!.release_rate) && !isEmpty(itemInfo()!.summary!.release_rate)}>
               <div class="summaryBlock">
                 <div class={`fw-bold text-uppercase ${TitleInSection}`}>Release rate</div>
+                {/* eslint-disable solid/no-innerhtml */}
                 <div
                   class={`mt-2 ${SummaryContent}`}
-                  innerHTML={replaceLineBreaks(linkify(itemInfo()!.summary!.release_rate!))}
-                ></div>
+                  innerHTML={formatSummaryField(itemInfo()!.summary!.release_rate!)}
+                />
+                {/* eslint-enable solid/no-innerhtml */}
               </div>
             </Show>
 

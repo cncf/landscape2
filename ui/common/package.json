@@ -18,11 +18,13 @@
     "@solid-primitives/resize-observer": "^2.1.0",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
+    "sanitize-html": "^2.17.0",
     "solid-js": "^1.9.5",
     "solid-styled-components": "^0.28.5"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.16",
+    "@types/sanitize-html": "^2.16.0",
     "esbuild": "^0.25.1",
     "esbuild-plugin-solid-js": "^1.0.1",
     "eslint": "^9.22.0",
