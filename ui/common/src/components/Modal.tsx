@@ -66,7 +66,7 @@ const ModalDialog = css`
   @media (max-width: 1199.98px) {
     width: 95% !important;
     max-width: 95% !important;
-    max-height: calc(100% - 1.5rem) !important;
+    max-height: calc(100% - 1.5rem);
   }
 `;
 
