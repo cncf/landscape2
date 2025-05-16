@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-05-16
+
+### Added
+
+- Allow overriding repositories license (#807)
+- Bluesky url field (#797)
+
+### Changed
+
+- Some improvements for stats graphs on mobile devices (#810)
+- Improve how summary fields are displayed (#808)
+- Increase screenshot timeout to 10m (#796)
+- Upgrade CLI tool dependencies
+- Upgrade web application and embed dependencies
+
+### Fixed
+
+- Issue handling empty categories in embed modal (#791, #801)
+
 ## [0.13.0] - 2025-01-24
 
 ### Added
