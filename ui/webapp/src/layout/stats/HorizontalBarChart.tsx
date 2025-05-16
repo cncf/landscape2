@@ -69,6 +69,7 @@ const HorizontalBarChart = (props: Props) => {
       },
       colors: ['var(--color-stats-1)'],
       xaxis: {
+        min: 0,
         categories: sortedKeys(),
         labels: {
           style: {
@@ -77,7 +78,7 @@ const HorizontalBarChart = (props: Props) => {
           },
           formatter: (value: string): string => {
             if (!isUndefined(props.dataType) && props.dataType === 'bytes') {
-              return prettifyBytes(parseInt(value));
+              return prettifyBytes(parseInt(value), 1);
             } else {
               return parseInt(value).toString();
             }
@@ -102,11 +103,16 @@ const HorizontalBarChart = (props: Props) => {
       },
       responsive: [
         {
-          breakpoint: 992,
+          breakpoint: 1200,
           options: {
             xaxis: {
-              tickAmount: 3,
+              tickAmount: 4,
               max: maxValue(),
+              labels: {
+                style: {
+                  fontSize: '10px',
+                },
+              },
             },
           },
         },
