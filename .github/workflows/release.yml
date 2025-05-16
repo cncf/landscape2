@@ -296,7 +296,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          persist-credentials: true
           repository: "cncf/homebrew-landscape2"
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
       # So we have access to the formula
