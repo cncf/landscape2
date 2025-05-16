@@ -70,6 +70,7 @@ const HorizontalBarChart = (props: Props) => {
       colors: ['var(--color-stats-1)'],
       xaxis: {
         min: 0,
+        tickAmount: 6,
         categories: sortedKeys(),
         labels: {
           style: {
