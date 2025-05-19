@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/data.schema.json
+# yaml-language-server: $schema=https://cncf.github.io/landscape2/config/schema/data.schema.json
 
 # Landscape2 data
 #

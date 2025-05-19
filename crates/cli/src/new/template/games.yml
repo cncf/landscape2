@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://cncf.github.io/landscape2/config/schema/games.schema.json
+
 # Landscape2 games data
 #
 # This file contains the data that will be used in the landscape games.

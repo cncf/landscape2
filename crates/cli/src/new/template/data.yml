@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://cncf.github.io/landscape2/config/schema/data.schema.json
+
 # Landscape2 data
 #
 # This file contains the data that will be used to generate the landscape.

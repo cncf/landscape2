@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://cncf.github.io/landscape2/config/schema/settings.schema.json
+
 # Landscape2 settings
 #
 # This settings file allows customizing some aspects of the landscape.
@@ -37,7 +39,7 @@ footer:
     twitter: "https://twitter.com/cloudnativefdn"
     wechat: "https://www.cncf.io/wechat/"
     youtube: "https://www.youtube.com/c/cloudnativefdn"
-  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
+  logo: "https://cncf.github.io/landscape2-sites/cncf/logo_footer.svg"
 
 grid_items_size: large
 
@@ -53,6 +55,6 @@ groups:
 header:
   links:
     github: "https://github.com/cncf/landscape2"
-  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+  logo: "https://cncf.github.io/landscape2-sites/cncf/logo_header.svg"
 
 screenshot_width: 1500

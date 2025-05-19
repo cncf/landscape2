@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/settings.schema.json
+# yaml-language-server: $schema=https://cncf.github.io/landscape2/config/schema/settings.schema.json
 
 # Landscape2 settings
 #
@@ -190,7 +190,7 @@ footer:
     twitter: "https://twitter.com/cloudnativefdn"
     wechat: "https://www.cncf.io/wechat/"
     youtube: "https://www.youtube.com/c/cloudnativefdn"
-  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg"
+  logo: "https://cncf.github.io/landscape2-sites/cncf/logo_footer.svg"
   text: |
     Copyright © 2024 The Linux Foundation®. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our [Trademark Usage page](https://www.linuxfoundation.org/trademark-usage). Linux is a registered trademark of Linus Torvalds. [Privacy Policy](https://www.linuxfoundation.org/privacy) and [Terms of Use](https://www.linuxfoundation.org/terms). This website contains data received from Crunchbase. This data is not licensed pursuant to the Apache License. It is subject to Crunchbase's Data Access Terms, available at <https://data.crunchbase.com/docs/terms>, and is only permitted to be used with Linux Foundation landscape projects.
 
@@ -257,7 +257,7 @@ groups:
 header:
   links:
     github: "https://github.com/cncf/landscape"
-  logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+  logo: "https://cncf.github.io/landscape2-sites/cncf/logo_header.svg"
 
 # Images (optional)
 #
@@ -268,8 +268,8 @@ header:
 #   open_graph: <OPEN_GRAPH_IMAGE_URL>
 #
 images:
-  favicon: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/icon/color/cncf-landscape-icon-color.png"
-  open_graph: "https://landscape.cncf.io/images/social.jpg"
+  favicon: "https://cncf.github.io/landscape2-sites/cncf/favicon.png"
+  open_graph: "https://cncf.github.io/landscape2-sites/cncf/open_graph.jpg"
 
 # Logos viewbox (optional)
 #
