@@ -957,7 +957,8 @@ const Explore = (props: Props) => {
                     '--card-size-width': `${ZOOM_LEVELS[zoom()][0]}px`,
                     '--card-size-height': `${ZOOM_LEVELS[zoom()][1]}px`,
                   }}
-                  class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()}`}
+                  // On Windows, we add a class to prevent flattening the items of the grid
+                  class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()} ${navigator.userAgent.indexOf('Win') != -1 ? styles.containerWindows : ''}`}
                 >
                   <Show when={readyData()}>
                     <Show

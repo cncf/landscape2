@@ -41,6 +41,17 @@
   min-height: 400px;
 }
 
+.containerWindows {
+  /* Force hardware acceleration and prevent flattening */
+  transform: translateZ(0);
+  will-change: transform;
+
+  /* Ensure smooth scrolling */
+  scroll-behavior: auto;
+
+  z-index: 1;
+}
+
 .loadingContent {
   min-height: calc(var(--app-height) - 92px - 36px);
 }
