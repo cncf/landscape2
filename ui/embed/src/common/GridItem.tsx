@@ -116,7 +116,7 @@ const GridItem = (props: Props) => {
             paddingBottom={props.withName ? props.itemNameSize + 8 : 0}
             class={LinkClass}
           >
-            <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+            <Image name={props.item.name} class={ImageClass} logo={props.item.logo} size={props.size} />
             <Show when={props.withName}>
               <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
                 {props.item.name}
@@ -131,7 +131,7 @@ const GridItem = (props: Props) => {
           class={`${LinkClass} ${ButtonClass}`}
           aria-label={`${props.item.name} info`}
         >
-          <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+          <Image name={props.item.name} class={ImageClass} logo={props.item.logo} size={props.size} />
           <Show when={props.withName}>
             <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
               {props.item.name}
