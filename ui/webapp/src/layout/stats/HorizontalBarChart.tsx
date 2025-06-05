@@ -5,6 +5,7 @@ import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyBytes from '../../utils/prettifyBytes';
 import styles from './HorizontalBarChart.module.css';
+import { isInteger } from 'lodash';
 
 interface Props {
   name: string;
@@ -94,10 +95,15 @@ const HorizontalBarChart = (props: Props) => {
             },
           },
           formatter: (val: number): string => {
+            const percentage = (val * 100) / props.total;
+            let formattedPercentage = `${percentage}`;
+            if (!isInteger(percentage)) {
+              formattedPercentage = `${percentage.toFixed(2)}%`;
+            }
             if (!isUndefined(props.dataType) && props.dataType === 'bytes') {
-              return `${prettifyBytes(val)} (${((val * 100) / props.total).toFixed(2)}%)`;
+              return `${prettifyBytes(val)} (${formattedPercentage})`;
             } else {
-              return `${val} (${((val * 100) / props.total).toFixed(2)}%)`;
+              return `${val} (${formattedPercentage})`;
             }
           },
         },
