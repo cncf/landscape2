@@ -47,7 +47,7 @@ const SubcategoryExtended = (props: Props) => {
               <th class={`w-50 ${styles.header}`} scope="col">
                 {foundation} Projects
               </th>
-              <th class={`d-none d-md-table-cell w-50 ${styles.header}`} scope="col">
+              <th class={`d-none d-sm-table-cell w-50 ${styles.header}`} scope="col">
                 Keywords
               </th>
             </tr>
@@ -70,7 +70,7 @@ const SubcategoryExtended = (props: Props) => {
                 </Show>
               </td>
 
-              <td class="py-4 d-none d-md-table-cell">
+              <td class="py-4 d-none d-sm-table-cell">
                 <Show when={!isUndefined(props.keywords)} fallback={<>-</>}>
                   <ul class="mb-0 text-muted">
                     <For each={props.keywords}>{(buzzword: string) => <li>{trim(buzzword)}</li>}</For>
@@ -82,7 +82,7 @@ const SubcategoryExtended = (props: Props) => {
         </table>
 
         <Show when={!isUndefined(props.keywords)}>
-          <div class="d-block d-md-none">
+          <div class="d-block d-sm-none">
             <table class="table table-bordered mt-3 mb-4 my-lg-5">
               <thead>
                 <tr>
