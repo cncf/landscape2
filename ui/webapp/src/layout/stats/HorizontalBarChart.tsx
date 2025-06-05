@@ -1,11 +1,11 @@
 import { sortObjectByValue } from 'common';
+import { isInteger } from 'lodash';
 import isUndefined from 'lodash/isUndefined';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
 
 import prettifyBytes from '../../utils/prettifyBytes';
 import styles from './HorizontalBarChart.module.css';
-import { isInteger } from 'lodash';
 
 interface Props {
   name: string;
