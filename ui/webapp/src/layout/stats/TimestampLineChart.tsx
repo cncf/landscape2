@@ -76,6 +76,15 @@ const TimestampLineChart = (props: Props) => {
           },
         },
       },
+      yaxis: {
+        forceNiceScale: true,
+        min: 0,
+        labels: {
+          formatter: (value: number): string => {
+            return prettifyNumber(value) as string;
+          },
+        },
+      },
       tooltip: {
         fillSeriesColor: false,
         y: {

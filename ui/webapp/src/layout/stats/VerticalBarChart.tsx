@@ -76,12 +76,14 @@ const VerticalBarChart = (props: Props) => {
         },
       },
       yaxis: {
+        forceNiceScale: true,
+        min: 0,
         labels: {
           formatter: (value: number): string => {
             if (!isUndefined(props.dataType) && props.dataType === 'money') {
               return `$${prettifyNumber(value)}`;
             } else {
-              return value.toString();
+              return value.toFixed(0);
             }
           },
         },
