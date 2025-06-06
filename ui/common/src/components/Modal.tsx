@@ -59,14 +59,12 @@ const ModalDialog = css`
   max-height: calc(100% - 6rem);
   margin: 3em auto;
 
-  @media only screen and (max-width: 767.98px) {
-    margin: 0.75em auto !important;
-  }
-
   @media (max-width: 1199.98px) {
-    width: 95% !important;
-    max-width: 95% !important;
-    max-height: calc(100% - 1.5rem);
+    width: calc(100% - 2rem);
+    max-width: calc(100% - 2rem);
+    max-height: calc(100% - 2rem);
+    min-height: calc(100% - 2rem);
+    margin: 1rem !important;
   }
 `;
 
