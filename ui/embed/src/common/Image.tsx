@@ -1,5 +1,6 @@
 import { createSignal, Show } from 'solid-js';
 import { styled } from 'solid-styled-components';
+
 import { Size } from '../types';
 
 interface Props {
