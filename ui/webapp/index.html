@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <% if (!isDev) { %>
-    {% if let Some(images) = datasets.base.images %}
-      {% if let Some(favicon) = images.favicon %}
-        <link rel="shortcut icon" href="{{ favicon }}" />
-        <link rel="apple-touch-icon" href="{{ favicon }}" />
-      {% endif %}
-      {% if let Some(open_graph) = images.open_graph %}
-        <meta property="og:image" content="{{ open_graph }}">
-        <meta name="twitter:image:src" content="{{ open_graph }}" />
-      {% endif %}
-    {% endif %}
-    {% if let Some(osano) = osano %}
-      <script defer
-              src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
-    {% endif %}
-    <% } %>
-    <title>{{ datasets.base.foundation }} Landscape</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <% if (isDev) { %>
-    <script>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <% if (!isDev) { %>
+        {% if let Some(images) = datasets.base.images %}
+            {% if let Some(favicon) = images.favicon %}
+                <link rel="shortcut icon" href="{{ favicon }}" />
+                <link rel="apple-touch-icon" href="{{ favicon }}" />
+            {% endif %}
+            {% if let Some(open_graph) = images.open_graph %}
+                <meta property="og:image" content="{{ open_graph }}">
+                <meta name="twitter:image:src" content="{{ open_graph }}" />
+            {% endif %}
+        {% endif %}
+        {% if let Some(osano) = osano %}
+            <script defer
+                    src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
+        {% endif %}
+        <% } %>
+        <title>{{ datasets.base.foundation }} Landscape</title>
+        <meta name="description" content="{{ datasets.base.foundation }} Landscape" />
+        <meta name="keywords"
+              content="{{ datasets.base.foundation }}, landscape, {{ datasets.base.foundation }} landscape" />
+        <% if (isDev) { %>
+        <script>
       fetch("./static/data/base.json")
       .then(res => res.json())
       .then(data => window.baseDS = data);
@@ -30,35 +32,35 @@
       fetch("./static/data/stats.json")
       .then(res => res.json())
       .then(data => window.statsDS = data);
-    </script>
-    <% } else { %>
-    <script>
+        </script>
+        <% } else { %>
+        <script>
       window.baseDS = {{ datasets.base|json|safe }};
       window.statsDS = {{ datasets.stats|json|safe }};
-    </script>
-    <% } %>
-    <% if (!isDev) { %>
-    {% set gtm_container_id = analytics|get_gtm_container_id %}
-    {% if let Some(gtm_container_id) = gtm_container_id %}
-      <!-- Google Tag Manager -->
-      <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
-      <!-- End Google Tag Manager -->
-    {% endif %}
-    <% } %>
-  </head>
-  <body>
-    <% if (!isDev) { %>
-    {% if let Some(gtm_container_id) = gtm_container_id %}
-      <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id }}"
+        </script>
+        <% } %>
+        <% if (!isDev) { %>
+        {% set gtm_container_id = analytics|get_gtm_container_id %}
+        {% if let Some(gtm_container_id) = gtm_container_id %}
+            <!-- Google Tag Manager -->
+            <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
+            <!-- End Google Tag Manager -->
+        {% endif %}
+        <% } %>
+    </head>
+    <body>
+        <% if (!isDev) { %>
+        {% if let Some(gtm_container_id) = gtm_container_id %}
+            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_container_id }}"
         height="0"
         width="0"
         style="display:none;
                visibility:hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->
-    {% endif %}
-    <% } %>
-    <div id="landscape"></div>
-    <script type="module" src="/src/index.tsx"></script>
-  </body>
+            <!-- End Google Tag Manager (noscript) -->
+        {% endif %}
+        <% } %>
+        <div id="landscape"></div>
+        <script type="module" src="/src/index.tsx"></script>
+    </body>
 </html>

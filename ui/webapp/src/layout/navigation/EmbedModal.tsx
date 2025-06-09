@@ -55,7 +55,7 @@ import {
   TITLE_SIZE_PARAM,
   UPPERCASE_TITLE_PARAM,
 } from '../../../../embed/src/types';
-import { BASE_PATH, EMBED_SETUP_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import { BASE_PATH, EMBED_SETUP_PATH, REGEX_UNDERSCORE, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import { Category, Subcategory } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
@@ -95,6 +95,10 @@ enum SpacingType {
   Default = 'default',
   Custom = 'custom',
 }
+
+const formatOptionValue = (value: string) => {
+  return value.replace(REGEX_UNDERSCORE, '-');
+};
 
 const EmbedModal = () => {
   const location = useLocation();
@@ -147,8 +151,12 @@ const EmbedModal = () => {
     `${import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin}${BASE_PATH}/embed`;
   const maturityOptions = itemsDataGetter.getMaturityOptions().sort();
   const TAGOptions = itemsDataGetter.getTagOptions().sort();
-  const [selectedMaturity, setSelectedMaturity] = createSignal<string>(maturityOptions[0] || 'all');
-  const [selectedTag, setSelectedTag] = createSignal<string>(TAGOptions[0] || 'all');
+  const [selectedMaturity, setSelectedMaturity] = createSignal<string>(
+    maturityOptions.length > 0 ? formatOptionValue(maturityOptions[0]) : 'all'
+  );
+  const [selectedTag, setSelectedTag] = createSignal<string>(
+    TAGOptions.length > 0 ? formatOptionValue(TAGOptions[0]) : 'all'
+  );
 
   const getIFrameUrl = () => {
     const embedUrl = new URL(`${embedOrigin()}/embed.html`);
@@ -484,7 +492,7 @@ const EmbedModal = () => {
                               <option value="all">All</option>
                               <For each={maturityOptions}>
                                 {(m: string) => {
-                                  return <option value={m}>{capitalizeFirstLetter(m)}</option>;
+                                  return <option value={formatOptionValue(m)}>{capitalizeFirstLetter(m)}</option>;
                                 }}
                               </For>
                             </select>
@@ -505,7 +513,7 @@ const EmbedModal = () => {
                               <option value="all">All</option>
                               <For each={TAGOptions}>
                                 {(t: string) => {
-                                  return <option value={t}>{formatTAGName(t)}</option>;
+                                  return <option value={formatOptionValue(t)}>{formatTAGName(t)}</option>;
                                 }}
                               </For>
                             </select>

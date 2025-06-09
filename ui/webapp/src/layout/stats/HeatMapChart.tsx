@@ -44,7 +44,7 @@ const HeatMapChart = (props: Props) => {
     Object.keys(groupedByYear).forEach((year: string) => {
       const currentData = new Array(12).fill(0);
       groupedByYear[year].forEach((i: DistributionData) => {
-        currentData[i.month - 1] = i.total;
+        currentData[i.month] = i.total;
       });
       series.push({ name: year, data: currentData });
     });
