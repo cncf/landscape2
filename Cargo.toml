@@ -20,7 +20,7 @@ anyhow = "1.0.98"
 askama = { version = "0.14.0", features = ["serde_json"] }
 async-trait = "0.1.88"
 aws-config = "1.8.0"
-aws-sdk-s3 = "1.92.0"
+aws-sdk-s3 = "1.93.0"
 axum = "0.8.4"
 base64 = "0.22.1"
 cached = { version = "0.55.1", default-features = false, features = ["async", "proc_macro"] }
@@ -47,7 +47,7 @@ octorust = "0.10.0"
 parse_link_header = "0.4.0"
 pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
-rand = "0.8.5" # do-not-upgrade
+rand = "0.9.1" # do-not-upgrade
 regex = "1.11.1"
 reqwest = { version = "0.12.20", features = ["json",  "multipart", "native-tls-vendored"] }
 reqwest-middleware = "0.4.2"
