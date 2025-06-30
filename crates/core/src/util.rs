@@ -5,6 +5,7 @@ use std::sync::LazyLock;
 use anyhow::{bail, Result};
 use regex::Regex;
 use url::Url;
+use unicode_segmentation::UnicodeSegmentation;
 
 /// Crunchbase url regular expression.
 pub(crate) static CRUNCHBASE_URL: LazyLock<Regex> = LazyLock::new(|| {
@@ -17,28 +18,30 @@ pub(crate) static MULTIPLE_HYPHENS: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"-{2,}").expect("exprs in MULTIPLE_HYPHENS to be valid"));
 
 /// Characters allowed in normalized names.
-pub(crate) static VALID_CHARS: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"[a-z0-9\-\ \+]").expect("exprs in VALID_CHARS to be valid"));
+// pub(crate) static VALID_CHARS: LazyLock<Regex> =
+//     LazyLock::new(|| Regex::new(r"[a-z0-9\-\ \+]").expect("exprs in VALID_CHARS to be valid"));
 
 /// Normalize category, subcategory and item name.
-pub(crate) fn normalize_name(value: &str) -> String {
-    let mut normalized_name = value
-        .to_lowercase()
-        .replace(' ', "-")
-        .chars()
-        .map(|c| {
-            if VALID_CHARS.is_match(&c.to_string()) {
-                c
+pub(crate) fn normalize_name(name: &str) -> String {
+    let normalized: String = name
+        .graphemes(true)
+        .map(|g| {
+            if g == " " {
+                "-"
+            } else if g == "/" || g == "\\" {
+                ""
+            } else if g.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
+                g
             } else {
-                '-'
+                g
             }
         })
-        .collect::<String>();
-    normalized_name = MULTIPLE_HYPHENS.replace(&normalized_name, "-").to_string();
-    if let Some(normalized_name_without_suffix) = normalized_name.strip_suffix('-') {
-        normalized_name = normalized_name_without_suffix.to_string();
+        .collect();
+    let mut normalized = MULTIPLE_HYPHENS.replace_all(&normalized, "-").to_string();
+    if let Some(stripped) = normalized.strip_suffix('-') {
+        normalized = stripped.to_string(); 
     }
-    normalized_name
+    normalized.to_lowercase()
 }
 
 /// Validate the url provided.
