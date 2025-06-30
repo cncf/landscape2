@@ -10,16 +10,23 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on:
       labels: ubuntu-latest-8-cores
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Login to AWS Public ECR
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: public.ecr.aws
-          username: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
         run: |
-          docker build -f crates/cli/Dockerfile -t public.ecr.aws/g6m3a0y9/landscape2:latest .
-          docker push public.ecr.aws/g6m3a0y9/landscape2:latest
+          docker build -f crates/cli/Dockerfile \
+            --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+            --label "org.opencontainers.image.description=Landscape2 CLI tool" \
+            --label "org.opencontainers.image.licenses=Apache-2.0" \
+            -t ghcr.io/${{ github.repository }}:latest .
+          docker push ghcr.io/${{ github.repository }}:latest
