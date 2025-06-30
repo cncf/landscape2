@@ -68,7 +68,7 @@ irm https://github.com/cncf/landscape2/releases/download/v1.0.0/landscape2-insta
 
 ### Container image
 
-The landscape2 CLI tool is also distributed in a [container image](https://gallery.ecr.aws/g6m3a0y9/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data, settings and guide files are valid, also uses this image.
+The landscape2 CLI tool is also distributed in a [container image](https://github.com/cncf/landscape2/pkgs/container/landscape2). This image can be used both to run the tool locally or from your [CI workflows to automate the generation of landscapes](https://github.com/cncf/landscape2-sites/tree/main/.github/workflows). The [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action), which can be used to check that the landscape data, settings and guide files are valid, also uses this image.
 
 ### Building from source
 
@@ -98,7 +98,7 @@ Commands:
 
 ## Usage
 
-To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH. Alternatively, you can launch a container from the [image provided](https://gallery.ecr.aws/g6m3a0y9/landscape2) where the **landscape2** CLI tool is ready to use.
+To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH. Alternatively, you can launch a container from the [image provided](https://github.com/cncf/landscape2/pkgs/container/landscape2) where the **landscape2** CLI tool is ready to use.
 
 ### Creating a new landscape
 
