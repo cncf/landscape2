@@ -141,7 +141,7 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
 
 /// Get landscape currently deployed full dataset.
 async fn get_full_dataset(landscape_url: &str) -> Result<Full> {
-    let url = format!("{}/{}", landscape_url, FULL_DATASET_PATH);
+    let url = format!("{landscape_url}/{FULL_DATASET_PATH}");
     let resp = reqwest::get(&url).await.context("error getting full dataset")?;
     if resp.status() != StatusCode::OK {
         bail!("unexpected status code getting full dataset: {}", resp.status());
@@ -183,5 +183,5 @@ fn set_logos_url(landscape_data: &mut LandscapeData, logos_url: Option<String>, 
 
 /// Helper function to convert an error to a string.
 fn to_str<E: std::fmt::Debug>(err: E) -> String {
-    format!("{:?}", err)
+    format!("{err:?}")
 }

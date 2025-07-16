@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use super::{
-    data::{self, AdditionalCategory, ItemAudit},
+    data::{self, AdditionalCategory, ItemAudit, ItemLink, ItemSummary},
     LandscapeData, LandscapeSettings,
 };
 
@@ -288,6 +288,9 @@ pub(crate) struct Item {
     pub oss: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub other_links: Option<Vec<ItemLink>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pinterest_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -304,6 +307,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stack_overflow_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub summary: Option<ItemSummary>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tag: Option<Vec<String>>,
@@ -362,6 +368,7 @@ impl Item {
             name: item.name.clone(),
             openssf_best_practices_url: item.openssf_best_practices_url.clone(),
             oss: item.oss,
+            other_links: item.other_links.clone(),
             pinterest_url: item.pinterest_url.clone(),
             reddit_url: item.reddit_url.clone(),
             repositories: item.repositories.as_ref().map(|repos| repos.iter().map(Into::into).collect()),
@@ -369,6 +376,7 @@ impl Item {
             specification: item.specification,
             stack_overflow_url: item.stack_overflow_url.clone(),
             subcategory: item.subcategory.clone(),
+            summary: item.summary.clone(),
             tag: item.tag.clone(),
             training_certifications: item.training_certifications.clone(),
             training_type: item.training_type.clone(),
