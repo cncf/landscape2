@@ -35,7 +35,7 @@ import {
   ViewMode,
 } from '../../types';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
-import getNormalizedName from '../../utils/getNormalizedName';
+import getId from '../../utils/getNormalizedId';
 import itemsDataGetter, { ClassifyAndSortOptions, GroupData } from '../../utils/itemsDataGetter';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
@@ -189,7 +189,7 @@ const Explore = (props: Props) => {
         const title = Object.keys(selectedGroupMenu)[0];
         if (title) {
           const subtitle = selectedGroupMenu[title][0];
-          hash = `#${getNormalizedName({ title: title, subtitle: subtitle, grouped: true })}`;
+          hash = `#${getId({ title: title, subtitle: subtitle, grouped: true })}`;
         }
       }
     }
