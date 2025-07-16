@@ -18,23 +18,23 @@ pub(crate) static MULTIPLE_HYPHENS: LazyLock<Regex> =
 
 /// Characters allowed in normalized names.
 pub(crate) static VALID_CHARS: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"[a-z0-9\-\ \+]").expect("exprs in VALID_CHARS to be valid"));
+    LazyLock::new(|| Regex::new(r"[\p{L}\p{N}\-\ \+]").expect("exprs in VALID_CHARS to be valid"));
 
 /// Normalize category, subcategory and item name.
 pub(crate) fn normalize_name(value: &str) -> String {
     let mut normalized_name = value
-        .to_lowercase()
         .replace(' ', "-")
         .chars()
         .map(|c| {
-            if VALID_CHARS.is_match(&c.to_string()) {
-                c
+            let c = c.to_string();
+            if VALID_CHARS.is_match(&c) {
+                c.to_lowercase()
             } else {
-                '-'
+                "-".to_string()
             }
         })
         .collect::<String>();
-    normalized_name = MULTIPLE_HYPHENS.replace(&normalized_name, "-").to_string();
+    normalized_name = MULTIPLE_HYPHENS.replace_all(&normalized_name, "-").to_string();
     if let Some(normalized_name_without_suffix) = normalized_name.strip_suffix('-') {
         normalized_name = normalized_name_without_suffix.to_string();
     }
@@ -97,11 +97,25 @@ mod tests {
 
     #[test]
     fn normalize_name_succeeds() {
-        assert_eq!(normalize_name("Hello World"), "hello-world");
-        assert_eq!(normalize_name("Hello  World"), "hello-world");
-        assert_eq!(normalize_name("Hello.World"), "hello-world");
-        assert_eq!(normalize_name("Hello--World"), "hello-world");
-        assert_eq!(normalize_name("Hello World-"), "hello-world");
+        assert_eq!(normalize_name("Test Project"), "test-project");
+        assert_eq!(normalize_name("Test  Project  "), "test-project");
+        assert_eq!(normalize_name("Test___Project"), "test-project");
+        assert_eq!(normalize_name("Test-Project-"), "test-project");
+        assert_eq!(normalize_name("Test--Project"), "test-project");
+        assert_eq!(normalize_name("Test/Project"), "test-project");
+        assert_eq!(normalize_name("Test@Project"), "test-project");
+        assert_eq!(normalize_name("a 🙂 b 🙂 "), "a-b");
+
+        assert_eq!(normalize_name("中文项目"), "中文项目");
+        assert_eq!(normalize_name("日本語プロジェクト"), "日本語プロジェクト");
+        assert_eq!(normalize_name("한국어 프로젝트"), "한국어-프로젝트");
+        assert_eq!(normalize_name("Проект"), "проект");
+        assert_eq!(normalize_name("مشروع"), "مشروع");
+        assert_eq!(normalize_name("中文 Project"), "中文-project");
+        assert_eq!(normalize_name("Test_中文_Project"), "test-中文-project");
+        assert_eq!(normalize_name("Test---中文"), "test-中文");
+        assert_eq!(normalize_name("Test/中文"), "test-中文");
+        assert_eq!(normalize_name("Test@中文#Project"), "test-中文-project");
     }
 
     #[test]
