@@ -220,7 +220,7 @@ async fn fetch_questions(landscape_url: String) -> Result<Vec<Question>, String>
 
 /// Helper function to convert an error to a string.
 fn to_str<E: std::fmt::Debug>(err: E) -> String {
-    format!("{:?}", err)
+    format!("{err:?}")
 }
 
 #[cfg(test)]
@@ -402,7 +402,7 @@ mod tests {
     async fn setup_mock_server(status_code: usize, data_file: &str) -> (mockito::ServerGuard, mockito::Mock) {
         let mut server = mockito::Server::new_async().await;
         let mock = server
-            .mock("GET", format!("/{}", QUIZ_DATA_PATH).as_str())
+            .mock("GET", format!("/{QUIZ_DATA_PATH}").as_str())
             .with_status(status_code)
             .with_body_from_file(data_file)
             .create_async()
