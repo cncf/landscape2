@@ -6,7 +6,7 @@ import { For, Match, Show, Switch } from 'solid-js';
 import { COLORS } from '../../../data';
 import { CardMenu, ClassifyOption, Item, SortDirection, SortOption, ViewMode } from '../../../types';
 import getGroupName from '../../../utils/getGroupName';
-import normalizeId from '../../../utils/buildNormalizedId';
+import buildNormalizedId from '../../../utils/normalizeId';
 import { CategoriesData } from '../../../utils/itemsDataGetter';
 import sortItems from '../../../utils/sortItems';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
@@ -109,7 +109,7 @@ const ExploreMobileIndex = (props: Props) => {
                           data()![title] && data()![title][subtitle] ? data()![title][subtitle]!.items : [];
                         if (items().length === 0) return null;
 
-                        const id = normalizeId({ title: title, subtitle: subtitle, grouped: true });
+                        const id = buildNormalizedId({ title: title, subtitle: subtitle, grouped: true });
 
                         return (
                           <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
@@ -160,7 +160,7 @@ const ExploreMobileIndex = (props: Props) => {
                                 : [];
                             if (items().length === 0) return null;
 
-                            const id = normalizeId({ title: title, subtitle: subtitle, grouped: true });
+                            const id = buildNormalizedId({ title: title, subtitle: subtitle, grouped: true });
 
                             return (
                               <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
@@ -194,7 +194,7 @@ const ExploreMobileIndex = (props: Props) => {
                           const items = () => ((cardData() as any)[subtitle] ? (cardData() as any)[subtitle] : []);
                           if (items().length === 0) return null;
 
-                          const id = normalizeId({
+                          const id = buildNormalizedId({
                             title: ClassifyOption.Maturity,
                             subtitle: subtitle,
                             grouped: true,
@@ -234,7 +234,7 @@ const ExploreMobileIndex = (props: Props) => {
                           const items = () => ((cardData() as any)[subtitle] ? (cardData() as any)[subtitle] : []);
                           if (items().length === 0) return null;
 
-                          const id = normalizeId({
+                          const id = buildNormalizedId({
                             title: ClassifyOption.TAG,
                             subtitle: subtitle,
                             grouped: true,

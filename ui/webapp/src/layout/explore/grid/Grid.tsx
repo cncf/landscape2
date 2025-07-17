@@ -7,7 +7,7 @@ import { createEffect, createSignal, For, on, Show } from 'solid-js';
 import { GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
-import normalizeId from '../../../utils/buildNormalizedId';
+import buildNormalizedId from '../../../utils/normalizeId';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -169,7 +169,7 @@ const Grid = (props: Props) => {
                         <Show when={isSectionInGuide(props.categoryName, subcat.subcategoryName)}>
                           <div>
                             <A
-                              href={`${GUIDE_PATH}#${normalizeId({
+                              href={`${GUIDE_PATH}#${buildNormalizedId({
                                 title: props.categoryName,
                                 subtitle: subcat.subcategoryName,
                                 grouped: true,

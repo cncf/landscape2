@@ -25,7 +25,7 @@ const MULTIPLE_HYPHENS = /-{2,}/g;
  *   - "subtitle-name" (for entries with subtitle in non-grouped view)
  *   - "title-name--subtitle-name" (for grouped view or fallback)
  */
-const normalizeId = (entry: Entry): string => {
+const buildNormalizedId = (entry: Entry): string => {
   // Try to find the title as a category in the base dataset
   const selectedCat = window.baseDS.categories.find((cat: Category) => cat.name === entry.title);
 
@@ -60,7 +60,7 @@ const normalizeId = (entry: Entry): string => {
 };
 
 /**
- * Normalizes a text string to be URL-safe and consistent with backend normalization
+ * Normalizes a text string to be consistent with backend normalization
  * This function mirrors the logic of the Rust normalize_name function in crates/core/src/util.rs
  *
  * @param text - The input text to normalize
@@ -94,4 +94,4 @@ const normalizeName = (text: string): string => {
   return normalizedName;
 };
 
-export default normalizeId;
+export default buildNormalizedId;
