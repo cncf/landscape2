@@ -6,9 +6,9 @@ import { createEffect, createSignal, on, onMount, Show } from 'solid-js';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
-import buildNormalizedId from '../../../utils/normalizeId';
 import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
+import buildNormalizedId from '../../../utils/normalizeId';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';

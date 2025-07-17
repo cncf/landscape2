@@ -5,8 +5,8 @@ import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu } from '../../../types';
-import buildNormalizedId from '../../../utils/normalizeId';
 import goToElement from '../../../utils/goToElement';
+import buildNormalizedId from '../../../utils/normalizeId';
 import styles from './Menu.module.css';
 
 interface Props {

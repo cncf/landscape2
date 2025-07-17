@@ -5,9 +5,9 @@ import { createEffect, createMemo, createSignal, For, on, onMount, Show } from '
 
 import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import { CategoryGuide, Guide, StateContent, SubcategoryGuide, ToCTitle } from '../../types';
-import buildNormalizedId from '../../utils/normalizeId';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
+import buildNormalizedId from '../../utils/normalizeId';
 import scrollToTop from '../../utils/scrollToTop';
 import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import { Sidebar } from '../common/Sidebar';

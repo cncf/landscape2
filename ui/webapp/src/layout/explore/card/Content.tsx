@@ -6,8 +6,8 @@ import { Accessor, For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS, GUIDE_PATH } from '../../../data';
 import { BaseItem, Category, ClassifyOption, Item, SortDirection, SortOption, Subcategory } from '../../../types';
-import buildNormalizedId from '../../../utils/normalizeId';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
+import buildNormalizedId from '../../../utils/normalizeId';
 import sortItems from '../../../utils/sortItems';
 import sortMaturityStatusTitles from '../../../utils/sortMenuOptions';
 import { useUpdateActiveItemId } from '../../stores/activeItem';

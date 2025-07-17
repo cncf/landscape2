@@ -7,7 +7,6 @@ import { createEffect, createSignal, For, on, Show } from 'solid-js';
 import { GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
-import buildNormalizedId from '../../../utils/normalizeId';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -17,6 +16,7 @@ import getGridCategoryLayout, {
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import { CategoryData } from '../../../utils/itemsDataGetter';
 import ItemIterator from '../../../utils/itemsIterator';
+import buildNormalizedId from '../../../utils/normalizeId';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import { useGridWidth } from '../../stores/gridWidth';
 import { useSetVisibleZoom } from '../../stores/visibleZoomSection';
