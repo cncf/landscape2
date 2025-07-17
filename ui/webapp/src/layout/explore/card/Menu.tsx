@@ -5,8 +5,8 @@ import { createEffect, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu } from '../../../types';
-import getNormalizedName from '../../../utils/getNormalizedName';
 import goToElement from '../../../utils/goToElement';
+import buildNormalizedId from '../../../utils/normalizeId';
 import styles from './Menu.module.css';
 
 interface Props {
@@ -68,7 +68,7 @@ const Menu = (props: Props) => {
                   >
                     <For each={props.menu[title]}>
                       {(subtitle: string) => {
-                        const hash = getNormalizedName({ title: title, subtitle: subtitle, grouped: true });
+                        const hash = buildNormalizedId({ title: title, subtitle: subtitle, grouped: true });
 
                         return (
                           <button

@@ -44,6 +44,9 @@ jobs:
       - name: Run eslint
         working-directory: ./ui/webapp
         run: yarn lint
+      - name: Run tests
+        working-directory: ./ui/webapp
+        run: yarn test
 
   lint-and-test-embed:
     runs-on:

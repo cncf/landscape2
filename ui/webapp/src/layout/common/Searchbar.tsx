@@ -26,7 +26,7 @@ const Searchbar = (props: Props) => {
   const [itemsList, setItemsList] = createSignal<SearchResult[] | null>(null);
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [highlightedItem, setHighlightedItem] = createSignal<number | null>(null);
-  const [dropdownTimeout, setDropdownTimeout] = createSignal<number | null>(null);
+  const [dropdownTimeout, setDropdownTimeout] = createSignal<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = createSignal<string | null>(null);
 
   useOutsideClick([dropdownRef], [BANNER_ID], visibleDropdown, () => {
