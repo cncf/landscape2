@@ -2388,7 +2388,7 @@ dependencies = [
  "gloo-net",
  "landscape2-core",
  "mockito",
- "rand 0.8.5",
+ "rand 0.9.1",
  "reqwest",
  "serde",
  "tokio",
