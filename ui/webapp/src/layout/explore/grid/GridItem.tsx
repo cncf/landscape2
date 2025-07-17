@@ -34,7 +34,7 @@ const GridItem = (props: Props) => {
   const [onDropdownHover, setOnDropdownHover] = createSignal(false);
   const [tooltipAlignment, setTooltipAlignment] = createSignal<'right' | 'left' | 'center'>('center');
   const [tooltipVerticalAlignment, setTooltipVerticalAlignment] = createSignal<'top' | 'bottom'>('bottom');
-  const [dropdownTimeout, setDropdownTimeout] = createSignal<number>();
+  const [dropdownTimeout, setDropdownTimeout] = createSignal<ReturnType<typeof setTimeout>>();
   const [elWidth, setElWidth] = createSignal<number>(0);
   const [item, setItem] = createSignal<Item | undefined>();
   const description = () => getItemDescription(props.item);

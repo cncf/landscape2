@@ -1,4 +1,4 @@
-import getId from './getNormalizedId';
+import normalizeId from './buildNormalizedId';
 
 // Mock window.baseDS for testing
 const mockBaseDS = {
@@ -57,69 +57,69 @@ describe('getNormalizedId', () => {
 
   describe('normalizeName function (tested via getId)', () => {
     it('should normalize basic text with spaces', () => {
-      const result = getId({ title: 'Test Project', subtitle: 'Sub Category' });
+      const result = normalizeId({ title: 'Test Project', subtitle: 'Sub Category' });
       expect(result).toBe('test-project--sub-category');
     });
 
     it('should handle special characters and unicode', () => {
-      const result = getId({ title: 'Test@Project#1', subtitle: 'Special/Category' });
+      const result = normalizeId({ title: 'Test@Project#1', subtitle: 'Special/Category' });
       expect(result).toBe('test-project-1--special-category');
     });
 
     it('should handle multiple consecutive hyphens', () => {
-      const result = getId({ title: 'Test___Project', subtitle: 'Sub--Category' });
+      const result = normalizeId({ title: 'Test___Project', subtitle: 'Sub--Category' });
       expect(result).toBe('test-project--sub-category');
     });
 
     it('should remove trailing hyphens', () => {
-      const result = getId({ title: 'Test Project-', subtitle: 'Sub Category@' });
+      const result = normalizeId({ title: 'Test Project-', subtitle: 'Sub Category@' });
       expect(result).toBe('test-project--sub-category');
     });
 
     it('should handle unicode characters', () => {
-      const result = getId({ title: '中文项目', subtitle: 'Test Project' });
+      const result = normalizeId({ title: '中文项目', subtitle: 'Test Project' });
       expect(result).toBe('中文项目--test-project');
     });
 
     it('should handle mixed unicode and latin characters', () => {
-      const result = getId({ title: 'Test_中文_Project', subtitle: 'Sub 한국어 Category' });
+      const result = normalizeId({ title: 'Test_中文_Project', subtitle: 'Sub 한국어 Category' });
       expect(result).toBe('test-中文-project--sub-한국어-category');
     });
 
     it('should handle empty string edge case', () => {
-      const result = getId({ title: '', subtitle: '' });
+      const result = normalizeId({ title: '', subtitle: '' });
       expect(result).toBe('--');
     });
 
     it('should handle string with only invalid characters', () => {
-      const result = getId({ title: '/@#$%', subtitle: '&*()' });
+      const result = normalizeId({ title: '/@#$%', subtitle: '&*()' });
       expect(result).toBe('--');
     });
 
     it('should preserve plus signs as valid characters', () => {
-      const result = getId({ title: 'C++', subtitle: 'C# Programming' });
+      const result = normalizeId({ title: 'C++', subtitle: 'C# Programming' });
       expect(result).toBe('c++--c-programming');
     });
 
     it('should handle numbers correctly', () => {
-      const result = getId({ title: 'Version 2.0', subtitle: 'Release 1.5' });
+      const result = normalizeId({ title: 'Version 2.0', subtitle: 'Release 1.5' });
       expect(result).toBe('version-2-0--release-1-5');
     });
 
     it('should trim leading and trailing whitespace', () => {
-      const result = getId({ title: '  Test Project  ', subtitle: '  Sub Category  ' });
+      const result = normalizeId({ title: '  Test Project  ', subtitle: '  Sub Category  ' });
       expect(result).toBe('test-project--sub-category');
     });
   });
 
   describe('getId function with dataset matches', () => {
     it('should return category normalized_name when title matches and no subtitle', () => {
-      const result = getId({ title: 'App Definition & Development' });
+      const result = normalizeId({ title: 'App Definition & Development' });
       expect(result).toBe('app-definition-development');
     });
 
     it('should return subcategory normalized_name in non-grouped view', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'Database',
       });
@@ -127,7 +127,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should return category--subcategory format in grouped view', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'Database',
         grouped: true,
@@ -136,7 +136,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle explicitly non-grouped view', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'Database',
         grouped: false,
@@ -145,7 +145,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should fall back to normalized names when subcategory not found', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'Unknown Subcategory',
       });
@@ -153,7 +153,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle category with empty subcategories array', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'Special Category',
         subtitle: 'Any Subtitle',
       });
@@ -161,11 +161,11 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle multiple subcategories correctly', () => {
-      const result1 = getId({
+      const result1 = normalizeId({
         title: 'Observability & Analysis',
         subtitle: 'Monitoring',
       });
-      const result2 = getId({
+      const result2 = normalizeId({
         title: 'Observability & Analysis',
         subtitle: 'Logging',
       });
@@ -176,12 +176,12 @@ describe('getNormalizedId', () => {
 
   describe('getId function without dataset matches', () => {
     it('should generate normalized names when category not found', () => {
-      const result = getId({ title: 'Unknown Category' });
+      const result = normalizeId({ title: 'Unknown Category' });
       expect(result).toBe('unknown-category');
     });
 
     it('should generate normalized names for both title and subtitle when category not found', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'Unknown Category',
         subtitle: 'Unknown Subcategory',
       });
@@ -189,7 +189,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle special characters in unknown categories', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'New@Category#1',
         subtitle: 'Special/Subcategory',
       });
@@ -197,8 +197,8 @@ describe('getNormalizedId', () => {
     });
 
     it('should generate consistent results for same input', () => {
-      const result1 = getId({ title: 'Test Category' });
-      const result2 = getId({ title: 'Test Category' });
+      const result1 = normalizeId({ title: 'Test Category' });
+      const result2 = normalizeId({ title: 'Test Category' });
       expect(result1).toBe(result2);
       expect(result1).toBe('test-category');
     });
@@ -206,7 +206,7 @@ describe('getNormalizedId', () => {
 
   describe('getId edge cases', () => {
     it('should handle undefined subtitle', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'Test Category',
         subtitle: undefined,
       });
@@ -214,7 +214,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle undefined grouped flag', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'Database',
         grouped: undefined,
@@ -223,12 +223,12 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle case sensitivity in category matching', () => {
-      const result = getId({ title: 'app definition & development' });
+      const result = normalizeId({ title: 'app definition & development' });
       expect(result).toBe('app-definition-development');
     });
 
     it('should handle case sensitivity in subcategory matching', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'App Definition & Development',
         subtitle: 'database',
       });
@@ -236,15 +236,15 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle whitespace in category names', () => {
-      const result = getId({ title: '  App Definition & Development  ' });
+      const result = normalizeId({ title: '  App Definition & Development  ' });
       expect(result).toBe('app-definition-development');
     });
 
     it('should handle null and undefined inputs gracefully', () => {
       // @ts-expect-error - Testing runtime behavior
-      expect(() => getId(null)).toThrow();
+      expect(() => normalizeId(null)).toThrow();
       // @ts-expect-error - Testing runtime behavior
-      expect(() => getId(undefined)).toThrow();
+      expect(() => normalizeId(undefined)).toThrow();
     });
   });
 
@@ -254,7 +254,7 @@ describe('getNormalizedId', () => {
       window.baseDS = undefined;
 
       expect(() => {
-        getId({ title: 'Test Category' });
+        normalizeId({ title: 'Test Category' });
       }).toThrow();
     });
 
@@ -266,7 +266,7 @@ describe('getNormalizedId', () => {
         categories: [],
       };
 
-      const result = getId({ title: 'Test Category' });
+      const result = normalizeId({ title: 'Test Category' });
       expect(result).toBe('test-category');
     });
 
@@ -275,14 +275,14 @@ describe('getNormalizedId', () => {
       window.baseDS = { categories: null };
 
       expect(() => {
-        getId({ title: 'Test Category' });
+        normalizeId({ title: 'Test Category' });
       }).toThrow();
     });
   });
 
   describe('getId with complex scenarios', () => {
     it('should prioritize exact matches over normalized generation', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'Observability & Analysis',
         subtitle: 'Monitoring',
       });
@@ -293,7 +293,7 @@ describe('getNormalizedId', () => {
       const longTitle = 'Very Long Category Name With Many Words And Special Characters!@#';
       const longSubtitle = 'Another Very Long Subcategory Name With Special Characters$%^';
 
-      const result = getId({
+      const result = normalizeId({
         title: longTitle,
         subtitle: longSubtitle,
       });
@@ -303,7 +303,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle entries with only spaces (trimmed to empty)', () => {
-      const result = getId({
+      const result = normalizeId({
         title: '   ',
         subtitle: '   ',
       });
@@ -311,7 +311,7 @@ describe('getNormalizedId', () => {
     });
 
     it('should handle mixed valid and invalid characters', () => {
-      const result = getId({
+      const result = normalizeId({
         title: 'Test123-Project_Name',
         subtitle: 'Sub+Category@2024',
       });
@@ -338,7 +338,7 @@ describe('getNormalizedId', () => {
       ];
 
       testCases.forEach(({ input, expected }) => {
-        const result = getId({ title: input });
+        const result = normalizeId({ title: input });
         expect(result).toBe(expected);
       });
     });

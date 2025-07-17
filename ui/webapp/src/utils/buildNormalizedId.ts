@@ -17,6 +17,49 @@ const VALID_CHARS = /[\p{L}\p{N}\- +]/u;
 const MULTIPLE_HYPHENS = /-{2,}/g;
 
 /**
+ * Generates a normalized ID for any entry (categories, tags, maturity levels, etc.)
+ *
+ * @param entry - Entry object containing title, optional subtitle, and grouping info
+ * @returns A normalized ID string in one of these formats:
+ *   - "title-name" (for entries without subtitle)
+ *   - "subtitle-name" (for entries with subtitle in non-grouped view)
+ *   - "title-name--subtitle-name" (for grouped view or fallback)
+ */
+const normalizeId = (entry: Entry): string => {
+  // Try to find the title as a category in the base dataset
+  const selectedCat = window.baseDS.categories.find((cat: Category) => cat.name === entry.title);
+
+  if (!isUndefined(selectedCat)) {
+    // Title matches a category in dataset - use pre-computed normalized names when possible
+
+    if (isUndefined(entry.subtitle)) {
+      // No subtitle - return the category's normalized name
+      return selectedCat.normalized_name;
+    } else {
+      // Subtitle provided - check if it matches a subcategory
+      const selectedSubcat = selectedCat.subcategories.find((subcat: Subcategory) => subcat.name === entry.subtitle);
+
+      if (!isUndefined(selectedSubcat)) {
+        // Subtitle matches a subcategory in dataset
+        if (isUndefined(entry.grouped) || !entry.grouped) {
+          // Non-grouped view - return just the subcategory's normalized name
+          return selectedSubcat.normalized_name;
+        } else {
+          // Grouped view - return category--subcategory format
+          return `${selectedCat.normalized_name}--${selectedSubcat.normalized_name}`;
+        }
+      } else {
+        // Subtitle doesn't match any subcategory - generate normalized names
+        return `${normalizeName(entry.title)}--${normalizeName(entry.subtitle)}`;
+      }
+    }
+  } else {
+    // Title doesn't match any category - generate normalized names for both parts
+    return `${normalizeName(entry.title)}${!isUndefined(entry.subtitle) ? `--${normalizeName(entry.subtitle)}` : ''}`;
+  }
+};
+
+/**
  * Normalizes a text string to be URL-safe and consistent with backend normalization
  * This function mirrors the logic of the Rust normalize_name function in crates/core/src/util.rs
  *
@@ -51,47 +94,4 @@ const normalizeName = (text: string): string => {
   return normalizedName;
 };
 
-/**
- * Generates a normalized ID for any landscape entry (categories, tags, maturity levels, etc.)
- *
- * @param entry - Entry object containing title, optional subtitle, and grouping info
- * @returns A normalized ID string in one of these formats:
- *   - "title-name" (for entries without subtitle)
- *   - "subtitle-name" (for entries with subtitle in non-grouped view)
- *   - "title-name--subtitle-name" (for grouped view or fallback)
- */
-const getId = (entry: Entry): string => {
-  // Try to find the title as a category in the base dataset
-  const selectedCat = window.baseDS.categories.find((cat: Category) => cat.name === entry.title);
-
-  if (!isUndefined(selectedCat)) {
-    // Title matches a category in dataset - use pre-computed normalized names when possible
-
-    if (isUndefined(entry.subtitle)) {
-      // No subtitle - return the category's normalized name
-      return selectedCat.normalized_name;
-    } else {
-      // Subtitle provided - check if it matches a subcategory
-      const selectedSubcat = selectedCat.subcategories.find((subcat: Subcategory) => subcat.name === entry.subtitle);
-
-      if (!isUndefined(selectedSubcat)) {
-        // Subtitle matches a subcategory in dataset
-        if (isUndefined(entry.grouped) || !entry.grouped) {
-          // Non-grouped view - return just the subcategory's normalized name
-          return selectedSubcat.normalized_name;
-        } else {
-          // Grouped view - return category--subcategory format
-          return `${selectedCat.normalized_name}--${selectedSubcat.normalized_name}`;
-        }
-      } else {
-        // Subtitle doesn't match any subcategory - generate normalized names
-        return `${normalizeName(entry.title)}--${normalizeName(entry.subtitle)}`;
-      }
-    }
-  } else {
-    // Title doesn't match any category - generate normalized names for both parts
-    return `${normalizeName(entry.title)}${!isUndefined(entry.subtitle) ? `--${normalizeName(entry.subtitle)}` : ''}`;
-  }
-};
-
-export default getId;
+export default normalizeId;

@@ -5,7 +5,7 @@ import { createEffect, createMemo, createSignal, For, on, onMount, Show } from '
 
 import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import { CategoryGuide, Guide, StateContent, SubcategoryGuide, ToCTitle } from '../../types';
-import getId from '../../utils/getNormalizedId';
+import normalizeId from '../../utils/buildNormalizedId';
 import goToElement from '../../utils/goToElement';
 import isElementInView from '../../utils/isElementInView';
 import scrollToTop from '../../utils/scrollToTop';
@@ -44,14 +44,14 @@ const GuideIndex = () => {
         cat.subcategories.forEach((subcat: SubcategoryGuide) => {
           subcategories.push({
             title: subcat.subcategory,
-            id: getId({ title: cat.category, subtitle: subcat.subcategory, grouped: true }),
+            id: normalizeId({ title: cat.category, subtitle: subcat.subcategory, grouped: true }),
           });
         });
       }
 
       content.push({
         title: cat.category,
-        id: getId({ title: cat.category }),
+        id: normalizeId({ title: cat.category }),
         options: subcategories,
       });
     });
@@ -202,7 +202,7 @@ const GuideIndex = () => {
               <div class={`position-relative ${styles.guide}`}>
                 <For each={guide()!.categories}>
                   {(cat, index) => {
-                    const id = getId({ title: cat.category });
+                    const id = normalizeId({ title: cat.category });
                     const hasSubcategories = !isUndefined(cat.subcategories) && cat.subcategories.length > 0;
 
                     return (
@@ -226,7 +226,7 @@ const GuideIndex = () => {
                         <Show when={hasSubcategories}>
                           <For each={cat.subcategories}>
                             {(subcat, index) => {
-                              const id = getId({
+                              const id = normalizeId({
                                 title: cat.category,
                                 subtitle: subcat.subcategory,
                                 grouped: true,

@@ -23,7 +23,7 @@ const SEARCH_DELAY = 3 * 100; // 300ms
 const SearchbarSection = (props: Props) => {
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
   const [value, setValue] = createSignal<string>('');
-  const [searchTimeout, setSearchTimeout] = createSignal<number | null>(null);
+  const [searchTimeout, setSearchTimeout] = createSignal<ReturnType<typeof setTimeout> | null>(null);
   const [visibleOptions, setVisibleOptions] = createSignal<FilterOption[]>([]);
   const [activeFilters, setActiveFilters] = createSignal<string[]>([]);
 

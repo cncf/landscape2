@@ -6,7 +6,7 @@ import { Accessor, For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS, GUIDE_PATH } from '../../../data';
 import { BaseItem, Category, ClassifyOption, Item, SortDirection, SortOption, Subcategory } from '../../../types';
-import getId from '../../../utils/getNormalizedId';
+import normalizeId from '../../../utils/buildNormalizedId';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import sortItems from '../../../utils/sortItems';
 import sortMaturityStatusTitles from '../../../utils/sortMenuOptions';
@@ -116,7 +116,7 @@ const Content = (props: Props) => {
                           const items = () => (content() as any)[subtitle];
                           if (items().length === 0) return null;
 
-                          const id = getId({ title: title, subtitle: subtitle, grouped: true });
+                          const id = normalizeId({ title: title, subtitle: subtitle, grouped: true });
 
                           return (
                             <div id={`card_${id}`} class={`mb-3 ${styles.section}`}>
@@ -128,7 +128,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title)}>
                                     <div>
                                       <A
-                                        href={`${GUIDE_PATH}#${getId({ title: title })}`}
+                                        href={`${GUIDE_PATH}#${normalizeId({ title: title })}`}
                                         state={{ from: 'explore' }}
                                         class={`position-relative btn btn-link text-white p-0 pe-2 ${styles.btnIcon}`}
                                         aria-label={`Open section ${subtitle} on guide page`}
@@ -147,7 +147,7 @@ const Content = (props: Props) => {
                                   <Show when={isSectionInGuide(title, subtitle)}>
                                     <div>
                                       <A
-                                        href={`${GUIDE_PATH}#${getId({
+                                        href={`${GUIDE_PATH}#${normalizeId({
                                           title: title,
                                           subtitle: subtitle,
                                           grouped: true,

@@ -6,7 +6,7 @@ import { createEffect, createSignal, on, onMount, Show } from 'solid-js';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption } from '../../../types';
 import getName from '../../../utils/getName';
-import getId from '../../../utils/getNormalizedId';
+import normalizeId from '../../../utils/buildNormalizedId';
 import goToElement from '../../../utils/goToElement';
 import isElementInView from '../../../utils/isElementInView';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
@@ -93,7 +93,7 @@ const CardCategory = (props: Props) => {
         const firstTitle = Object.keys(menu()!)[0];
         const firstSubtitle = menu()![firstTitle][0];
         if (!isUndefined(firstSubtitle)) {
-          const firstItemInMenu = getId({
+          const firstItemInMenu = normalizeId({
             title: firstTitle.toLowerCase(),
             subtitle: firstSubtitle,
             grouped: true,
