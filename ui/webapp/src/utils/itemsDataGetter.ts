@@ -647,9 +647,11 @@ export class ItemsDataGetter {
   }
 
   // Get items by end user
-  public getItemsByEndUser(): Item[] | undefined {
+  public getItemsByEndUser(excludeSubcategories?: string[]): Item[] | undefined {
     if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.filter((i: Item) => i.enduser);
+      return this.landscapeData.items.filter(
+        (i: Item) => i.enduser && (!excludeSubcategories || !excludeSubcategories.includes(i.subcategory))
+      );
     }
   }
 
@@ -770,6 +772,10 @@ export class ItemsDataGetter {
           {
             value: 'enduser',
             name: 'End user members',
+          },
+          {
+            value: 'enduser-notsupporters',
+            name: 'End user members (excluding End User Supporters)',
           },
         ],
       });
