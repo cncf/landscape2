@@ -41,6 +41,11 @@ pub(crate) fn normalize_name(value: &str) -> String {
     normalized_name
 }
 
+/// Check if the string provided starts with http:// or https://.
+pub(crate) fn is_url(s: &str) -> bool {
+    s.starts_with("http://") || s.starts_with("https://")
+}
+
 /// Validate the url provided.
 pub(crate) fn validate_url(kind: &str, url: Option<&String>) -> Result<()> {
     if let Some(url) = url {

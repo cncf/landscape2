@@ -22,7 +22,7 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 
-use crate::util::{normalize_name, validate_url};
+use crate::util::{is_url, normalize_name, validate_url};
 
 use super::data::{CategoryName, SubcategoryName};
 
@@ -356,7 +356,7 @@ impl LandscapeSettings {
 
         // Logo
         if let Some(logo) = &footer.logo {
-            if url::Url::parse(logo).is_ok() {
+            if is_url(logo) {
                 validate_url("footer logo", Some(logo))?;
             }
         }
@@ -412,7 +412,7 @@ impl LandscapeSettings {
 
         // Logo
         if let Some(logo) = &header.logo {
-            if url::Url::parse(logo).is_ok() {
+            if is_url(logo) {
                 validate_url("header logo", Some(logo))?;
             }
         }

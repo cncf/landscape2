@@ -795,7 +795,7 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
             let resp = reqwest::get(location).await?;
             if resp.status() != StatusCode::OK {
                 bail!(
-                    "unexpected status ({}) code getting logo {location}",
+                    "unexpected status ({}) code getting image {location}",
                     resp.status()
                 );
             }
