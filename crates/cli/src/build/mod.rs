@@ -787,18 +787,32 @@ async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &
             return Ok(None);
         };
 
-        // Fetch image from url
-        let resp = reqwest::get(url).await?;
-        if resp.status() != StatusCode::OK {
-            bail!("unexpected status ({}) code getting logo {url}", resp.status());
+        let img: Vec<u8>;
+        let file_name: String;
+
+        // Determine if url is a remote url or a local path
+        if let Ok(parsed_url) = Url::parse(url) {
+            // Fetch image from remote url
+            let resp = reqwest::get(url).await?;
+            if resp.status() != StatusCode::OK {
+                bail!("unexpected status ({}) code getting logo {url}", resp.status());
+            }
+            img = resp.bytes().await?.to_vec();
+            let Some(file_name_str) = parsed_url.path_segments().and_then(Iterator::last) else {
+                bail!("failed to read image from url: {url}");
+            };
+            file_name = file_name_str.to_string();
+        } else {
+            // Fetch image from local path
+            let img_path = Path::new(url);
+            img = fs::read(img_path).context(format!("failed to read image from path: {url}"))?;
+            let Some(file_name_str) = img_path.file_name().and_then(OsStr::to_str) else {
+                bail!("invalid file path: {url}");
+            };
+            file_name = file_name_str.to_string();
         }
-        let img = resp.bytes().await?.to_vec();
 
         // Write image to output dir
-        let url = Url::parse(url).context("invalid image url")?;
-        let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
-            bail!("invalid image url: {url}");
-        };
         let img_path = Path::new(IMAGES_PATH).join(file_name);
         File::create(output_dir.join(&img_path))?.write_all(&img)?;
 
