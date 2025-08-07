@@ -782,23 +782,39 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
 #[instrument(skip_all, err)]
 async fn prepare_settings_images(settings: &mut LandscapeSettings, output_dir: &Path) -> Result<()> {
     // Helper function to process the image provided
-    async fn process_image(url: Option<&String>, output_dir: &Path) -> Result<Option<String>> {
-        let Some(url) = url else {
+    async fn process_image(location: Option<&String>, output_dir: &Path) -> Result<Option<String>> {
+        let Some(location) = location else {
             return Ok(None);
         };
 
-        // Fetch image from url
-        let resp = reqwest::get(url).await?;
-        if resp.status() != StatusCode::OK {
-            bail!("unexpected status ({}) code getting logo {url}", resp.status());
+        // Fetch image from url or local path
+        let img: Vec<u8>;
+        let file_name: String;
+        if let Ok(url) = Url::parse(location) {
+            // From url
+            let resp = reqwest::get(location).await?;
+            if resp.status() != StatusCode::OK {
+                bail!(
+                    "unexpected status ({}) code getting image {location}",
+                    resp.status()
+                );
+            }
+            img = resp.bytes().await?.to_vec();
+            let Some(file_name_str) = url.path_segments().and_then(Iterator::last) else {
+                bail!("invalid image url: {location}");
+            };
+            file_name = file_name_str.to_string();
+        } else {
+            // From local path
+            let path = Path::new(location);
+            img = fs::read(path).context(format!("failed to read image from path: {location}"))?;
+            let Some(file_name_str) = path.file_name().and_then(OsStr::to_str) else {
+                bail!("invalid image file path: {location}");
+            };
+            file_name = file_name_str.to_string();
         }
-        let img = resp.bytes().await?.to_vec();
 
         // Write image to output dir
-        let url = Url::parse(url).context("invalid image url")?;
-        let Some(file_name) = url.path_segments().and_then(Iterator::last) else {
-            bail!("invalid image url: {url}");
-        };
         let img_path = Path::new(IMAGES_PATH).join(file_name);
         File::create(output_dir.join(&img_path))?.write_all(&img)?;
 
