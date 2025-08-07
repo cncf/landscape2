@@ -1150,7 +1150,7 @@ mod tests {
             foundation: "Foundation".to_string(),
             url: "https://example.url".to_string(),
             footer: Some(Footer {
-                logo: Some("invalid-url".to_string()),
+                logo: Some("https:// invalid_url".to_string()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -1267,7 +1267,7 @@ mod tests {
             foundation: "Foundation".to_string(),
             url: "https://example.url".to_string(),
             header: Some(Header {
-                logo: Some("invalid-url".to_string()),
+                logo: Some("https:// invalid_url".to_string()),
                 ..Default::default()
             }),
             ..Default::default()

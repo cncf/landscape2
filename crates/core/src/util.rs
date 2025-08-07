@@ -41,7 +41,7 @@ pub(crate) fn normalize_name(value: &str) -> String {
     normalized_name
 }
 
-/// Check if the string provided starts with http:// or https://.
+/// Check if the string provided looks like a URL.
 pub(crate) fn is_url(s: &str) -> bool {
     s.starts_with("http://") || s.starts_with("https://")
 }
