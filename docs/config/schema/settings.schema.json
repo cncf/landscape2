@@ -347,7 +347,8 @@
           }
         },
         "logo": {
-          "title": "Foundation logo featured on the header (URL or local path)",
+          "title": "Logo",
+          "description": "Foundation logo featured on the header (URL or local path)",
           "anyOf": [ { "type": "string", "format": "uri" }, { "type": "string" } ],
           "examples": ["https://example.com/logo.svg", "images/logo.svg"] }
       }
