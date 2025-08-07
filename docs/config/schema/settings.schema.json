@@ -286,11 +286,9 @@
         },
         "logo": {
           "title": "Logo",
-          "description": "Logo to be displayed in the footer",
-          "type": "string",
-          "format": "uri",
-          "examples": ["https://example.com/logo.svg"]
-        },
+          "description": "Logo to be displayed in the footer (URL or local path)",
+          "anyOf": [ { "type": "string", "format": "uri" }, { "type": "string" } ],
+          "examples": ["https://example.com/logo.svg", "images/logo.svg"] },
         "text": {
           "title": "Text",
           "description": "Text to be displayed in the footer",
@@ -349,11 +347,9 @@
           }
         },
         "logo": {
-          "title": "Foundation logo featured on the header",
-          "type": "string",
-          "format": "uri",
-          "examples": ["https://example.com/logo.svg"]
-        }
+          "title": "Foundation logo featured on the header (URL or local path)",
+          "anyOf": [ { "type": "string", "format": "uri" }, { "type": "string" } ],
+          "examples": ["https://example.com/logo.svg", "images/logo.svg"] }
       }
     },
     "images": {

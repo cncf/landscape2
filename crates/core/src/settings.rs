@@ -358,8 +358,6 @@ impl LandscapeSettings {
         if let Some(logo) = &footer.logo {
             if url::Url::parse(logo).is_ok() {
                 validate_url("footer logo", Some(logo))?;
-            } else if !Path::new(logo).exists() {
-                bail!("Path '{}' does not exist or is not accessible.", logo);
             }
         }
 
@@ -416,8 +414,6 @@ impl LandscapeSettings {
         if let Some(logo) = &header.logo {
             if url::Url::parse(logo).is_ok() {
                 validate_url("header logo", Some(logo))?;
-            } else if !Path::new(logo).exists() {
-                bail!("Path '{}' does not exist or is not accessible.", logo);
             }
         }
 
