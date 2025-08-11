@@ -22,7 +22,7 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument};
 
-use crate::util::{normalize_name, validate_url};
+use crate::util::{is_url, normalize_name, validate_url};
 
 use super::data::{CategoryName, SubcategoryName};
 
@@ -355,7 +355,11 @@ impl LandscapeSettings {
         }
 
         // Logo
-        validate_url("footer logo", footer.logo.as_ref())?;
+        if let Some(logo) = &footer.logo {
+            if is_url(logo) {
+                validate_url("footer logo", Some(logo))?;
+            }
+        }
 
         // Text
         if let Some(text) = &footer.text {
@@ -407,7 +411,11 @@ impl LandscapeSettings {
         }
 
         // Logo
-        validate_url("header logo", header.logo.as_ref())?;
+        if let Some(logo) = &header.logo {
+            if is_url(logo) {
+                validate_url("header logo", Some(logo))?;
+            }
+        }
 
         Ok(())
     }
@@ -1142,7 +1150,7 @@ mod tests {
             foundation: "Foundation".to_string(),
             url: "https://example.url".to_string(),
             footer: Some(Footer {
-                logo: Some("invalid-url".to_string()),
+                logo: Some("https:// invalid_url".to_string()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -1259,7 +1267,7 @@ mod tests {
             foundation: "Foundation".to_string(),
             url: "https://example.url".to_string(),
             header: Some(Header {
-                logo: Some("invalid-url".to_string()),
+                logo: Some("https:// invalid_url".to_string()),
                 ..Default::default()
             }),
             ..Default::default()

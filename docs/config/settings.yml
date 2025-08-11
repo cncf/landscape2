@@ -174,7 +174,7 @@ featured_items:
 #     twitter: <TWITTER_URL>
 #     wechat: <WECHAT_URL>
 #     youtube: <YOUTUBE_URL>
-#   logo: <LOGO_URL>  # Foundation logo featured on the footer
+#   logo: <LOGO_URL or LOGO_PATH>  # Foundation logo featured on the footer
 #   text: <TEXT>      # Copyright notice, for example
 #
 footer:
@@ -252,7 +252,7 @@ groups:
 # header:
 #   links:
 #     github: <GITHUB_URL>
-#   logo: <LOGO_URL>  # Foundation logo featured on the header
+#   logo: <LOGO_URL or LOGO_PATH>  # Foundation logo featured on the header
 #
 header:
   links:
