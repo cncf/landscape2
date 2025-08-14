@@ -27,6 +27,8 @@ const SORT_OPTIONS: SortOption[] = [
   { label: 'Accepted date (desc)', by: 'accepted_at', direction: 'desc' },
   { label: 'Archived date (asc)', by: 'archived_at', direction: 'asc' },
   { label: 'Archived date (desc)', by: 'archived_at', direction: 'desc' },
+  { label: 'First commit date (asc)', by: 'first_commit', direction: 'asc' },
+  { label: 'First commit date (desc)', by: 'first_commit', direction: 'desc' },
   { label: 'Graduated date (asc)', by: 'graduated_at', direction: 'asc' },
   { label: 'Graduated date (desc)', by: 'graduated_at', direction: 'desc' },
   { label: 'Incubating date (asc)', by: 'incubating_at', direction: 'asc' },
@@ -100,6 +102,9 @@ const Projects = () => {
       case 'sandbox_at':
         return orderBy(items, [(i: Item) => getValue(getSandboxDate(i))], [direction]);
 
+      case 'first_commit':
+        return orderBy(items, [(i: Item) => getValue(getFirstCommitTimestamp(i))], [direction]);
+
       case 'num_audits':
         return orderBy(items, [(i: Item) => (i.audits ? i.audits.length : 0)], [direction]);
 
@@ -163,6 +168,30 @@ const Projects = () => {
       return project.accepted_at;
     }
     return undefined;
+  };
+
+  const getFirstCommitTimestamp = (project: Item): string | undefined => {
+    if (project.repositories && project.repositories.length > 0) {
+      const primaryRepo = project.repositories.find((repo) => repo.primary);
+      const repo = primaryRepo || project.repositories[0];
+
+      if (repo.github_data && repo.github_data!.first_commit?.ts) {
+        return repo.github_data.first_commit.ts;
+      } else {
+        return undefined;
+      }
+    }
+    return undefined;
+  };
+
+  const formatFirstCommitDate = (project: Item): string | JSXElement => {
+    const first_commit = getFirstCommitTimestamp(project);
+    if (first_commit) {
+      const date = new Date(first_commit);
+      const dateOnly = date.toISOString().split('T')[0];
+      return formatDatesForDevices(dateOnly);
+    }
+    return '-';
   };
 
   const applyFilters = (newFilters: ActiveFilters) => {
@@ -368,7 +397,11 @@ const Projects = () => {
               <th class="d-none d-md-table-cell text-center" scope="col">
                 Archived
               </th>
-              <th class="d-none d-sm-table-cell text-center" scope="col">
+              <th class="d-none d-sm-table-cell text-center text-nowrap" scope="col">
+                <span class="d-none d-lg-inline">First commit</span>
+                <span class="d-inline d-lg-none">1st commit</span>
+              </th>
+              <th class="d-none d-md-table-cell text-center" scope="col">
                 Audits
               </th>
               <th class="d-none d-sm-table-cell text-center text-nowrap" scope="col">
@@ -438,6 +471,9 @@ const Projects = () => {
                         </Show>
                       </td>
                       <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                        {formatFirstCommitDate(project)!}
+                      </td>
+                      <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
                         {project.audits ? project.audits.length : 0}
                       </td>
                       <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
