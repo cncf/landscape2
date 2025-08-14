@@ -175,8 +175,10 @@ const Projects = () => {
       const primaryRepo = project.repositories.find((repo) => repo.primary);
       const repo = primaryRepo || project.repositories[0];
 
-      if (repo.github_data?.first_commit?.ts) {
+      if (repo.github_data && repo.github_data!.first_commit?.ts) {
         return repo.github_data.first_commit.ts;
+      } else {
+        return undefined;
       }
     }
     return undefined;
