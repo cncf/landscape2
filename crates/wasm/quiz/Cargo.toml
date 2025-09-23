@@ -24,7 +24,7 @@ wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 
 [dependencies.getrandom]
-version = "0.2.16"
+version = "0.2.16" # do-not-upgrade
 features = ["js"]
 
 [dev-dependencies]

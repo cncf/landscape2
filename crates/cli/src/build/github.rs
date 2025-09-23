@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::env;
 use std::sync::LazyLock;
 
-use anyhow::{format_err, Result};
+use anyhow::{Result, format_err};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use deadpool::unmanaged::{Object, Pool};
@@ -20,7 +20,7 @@ use regex::Regex;
 use reqwest::header::{self, HeaderMap, HeaderValue};
 use tracing::{debug, instrument, warn};
 
-use super::{cache::Cache, LandscapeData};
+use super::{LandscapeData, cache::Cache};
 
 /// File used to cache data collected from GitHub.
 const GITHUB_CACHE_FILE: &str = "github.json";
@@ -330,10 +330,10 @@ pub(crate) static GITHUB_REPO_URL: LazyLock<Regex> = LazyLock::new(|| {
 fn get_last_page(headers: &HeaderMap) -> Result<Option<usize>> {
     if let Some(link_header) = headers.get("link") {
         let rels = parse_link_header::parse_with_rel(link_header.to_str()?)?;
-        if let Some(last_page_url) = rels.get("last") {
-            if let Some(last_page) = last_page_url.queries.get("page") {
-                return Ok(Some(last_page.parse()?));
-            }
+        if let Some(last_page_url) = rels.get("last")
+            && let Some(last_page) = last_page_url.queries.get("page")
+        {
+            return Ok(Some(last_page.parse()?));
         }
     }
     Ok(None)

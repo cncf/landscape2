@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, format_err, Context, Result};
+use anyhow::{Context, Result, bail, format_err};
 use clap::Args;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -130,10 +130,10 @@ impl LandscapeGuide {
                 }
 
                 // Content
-                if let Some(content) = &categories.content {
-                    if content.is_empty() {
-                        return Err(format_err!("content cannot be empty")).context(ctx);
-                    }
+                if let Some(content) = &categories.content
+                    && content.is_empty()
+                {
+                    return Err(format_err!("content cannot be empty")).context(ctx);
                 }
 
                 // Keywords

@@ -174,38 +174,34 @@ pub mod base {
             }
 
             // Check what games will be available
-            if let Some(games) = games {
-                if games.quiz.is_some() {
-                    base.games_available = Some(vec!["quiz".to_string()]);
-                }
+            if let Some(games) = games
+                && games.quiz.is_some()
+            {
+                base.games_available = Some(vec!["quiz".to_string()]);
             }
 
             // Prepare guide summary
-            if let Some(guide) = guide {
-                if let Some(categories) = &guide.categories {
-                    for category in categories {
-                        let subcategories = if let Some(subcategories) = &category.subcategories {
-                            subcategories.iter().map(|s| s.subcategory.clone()).collect()
-                        } else {
-                            Vec::new()
-                        };
-                        base.guide_summary.insert(category.category.clone(), subcategories);
-                    }
+            if let Some(guide) = guide
+                && let Some(categories) = &guide.categories
+            {
+                for category in categories {
+                    let subcategories = if let Some(subcategories) = &category.subcategories {
+                        subcategories.iter().map(|s| s.subcategory.clone()).collect()
+                    } else {
+                        Vec::new()
+                    };
+                    base.guide_summary.insert(category.category.clone(), subcategories);
                 }
             }
 
             // Check if finances data is available (funding rounds or acquisitions)
             if landscape_data.items.iter().any(|item| {
                 if let Some(org) = &item.crunchbase_data {
-                    if let Some(acquisitions) = &org.acquisitions {
-                        if !acquisitions.is_empty() {
-                            return true;
-                        }
+                    if org.acquisitions.as_ref().is_some_and(|acquisitions| !acquisitions.is_empty()) {
+                        return true;
                     }
-                    if let Some(funding_rounds) = &org.funding_rounds {
-                        if !funding_rounds.is_empty() {
-                            return true;
-                        }
+                    if org.funding_rounds.as_ref().is_some_and(|funding_rounds| !funding_rounds.is_empty()) {
+                        return true;
                     }
                 }
                 false

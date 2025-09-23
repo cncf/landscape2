@@ -7,7 +7,7 @@ use std::{
     sync::LazyLock,
 };
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Args;
 use regex::bytes::Regex;
 use reqwest::StatusCode;
@@ -69,20 +69,21 @@ pub(crate) async fn prepare_logo(
         logo_data = SVG_TITLE.replace(&logo_data, b"").into_owned();
 
         // Update viewbox to the smallest rectangle in which the object fits
-        if logos_viewbox.adjust && !logos_viewbox.exclude.contains(&file_name.to_string()) {
-            if let Ok(Some(bounding_box)) = get_svg_bounding_box(&logo_data) {
-                if bounding_box.left() >= 0.0 && bounding_box.top() >= 0.0 {
-                    let new_viewbox_bounds = format!(
-                        "{} {} {} {}",
-                        bounding_box.left(),
-                        bounding_box.top(),
-                        bounding_box.right() - bounding_box.left(),
-                        bounding_box.bottom() - bounding_box.top()
-                    );
-                    let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
-                    logo_data = SVG_VIEWBOX.replace(&logo_data, new_viewbox.as_bytes()).into_owned();
-                }
-            }
+        if logos_viewbox.adjust
+            && !logos_viewbox.exclude.contains(&file_name.to_string())
+            && let Ok(Some(bounding_box)) = get_svg_bounding_box(&logo_data)
+            && bounding_box.left() >= 0.0
+            && bounding_box.top() >= 0.0
+        {
+            let new_viewbox_bounds = format!(
+                "{} {} {} {}",
+                bounding_box.left(),
+                bounding_box.top(),
+                bounding_box.right() - bounding_box.left(),
+                bounding_box.bottom() - bounding_box.top()
+            );
+            let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
+            logo_data = SVG_VIEWBOX.replace(&logo_data, new_viewbox.as_bytes()).into_owned();
         }
     }
 

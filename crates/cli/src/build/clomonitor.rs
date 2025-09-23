@@ -1,7 +1,7 @@
 //! This module provides the functionality to collect projects' reports
 //! summaries from CLOMonitor (https://clomonitor.io).
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use chrono::{DateTime, Utc};
 use reqwest::StatusCode;
 

@@ -84,20 +84,20 @@ impl MembersStats {
 
         // Collect stats from landscape items
         for item in &landscape_data.items {
-            if let Some(members_category) = &settings.members_category {
-                if &item.category == members_category {
-                    // Total number of members
-                    stats.members += 1;
+            if let Some(members_category) = &settings.members_category
+                && &item.category == members_category
+            {
+                // Total number of members
+                stats.members += 1;
 
-                    // Number of members joined per year-month
-                    if let Some(joined_at) = &item.joined_at {
-                        let year_month = joined_at.format(YEAR_MONTH_FORMAT).to_string();
-                        increment(&mut stats.joined_at, &year_month, 1);
-                    }
-
-                    // Number of members per subcategory
-                    increment(&mut stats.subcategories, &item.subcategory, 1);
+                // Number of members joined per year-month
+                if let Some(joined_at) = &item.joined_at {
+                    let year_month = joined_at.format(YEAR_MONTH_FORMAT).to_string();
+                    increment(&mut stats.joined_at, &year_month, 1);
                 }
+
+                // Number of members per subcategory
+                increment(&mut stats.subcategories, &item.subcategory, 1);
             }
         }
         stats.joined_at_rt = calculate_running_total(&stats.joined_at);
@@ -288,13 +288,12 @@ impl ProjectsStats {
                 increment(&mut stats.maturity, maturity, 1);
 
                 // Promotions from sandbox to incubating
-                if let Some(incubating_at) = &item.incubating_at {
-                    if let Some(accepted_at) = &item.accepted_at {
-                        if incubating_at != accepted_at {
-                            let year_month = incubating_at.format(YEAR_MONTH_FORMAT).to_string();
-                            increment(&mut stats.sandbox_to_incubating, &year_month, 1);
-                        }
-                    }
+                if let Some(incubating_at) = &item.incubating_at
+                    && let Some(accepted_at) = &item.accepted_at
+                    && incubating_at != accepted_at
+                {
+                    let year_month = incubating_at.format(YEAR_MONTH_FORMAT).to_string();
+                    increment(&mut stats.sandbox_to_incubating, &year_month, 1);
                 }
 
                 // Promotions from incubating to graduated
@@ -411,10 +410,8 @@ impl RepositoriesStats {
                         }
 
                         // Licenses
-                        if !license_overriden {
-                            if let Some(license) = &gh_data.license {
-                                increment(&mut stats.licenses, license, 1);
-                            }
+                        if !license_overriden && let Some(license) = &gh_data.license {
+                            increment(&mut stats.licenses, license, 1);
                         }
 
                         // Participation stats

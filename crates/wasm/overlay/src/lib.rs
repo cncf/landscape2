@@ -1,6 +1,6 @@
 //! This module is in charge of preparing the overlay data.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use landscape2_core::{
     data::{DataSource, Item, LandscapeData},
     datasets::{base::Base, full::Full},

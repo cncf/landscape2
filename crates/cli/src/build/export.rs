@@ -9,7 +9,7 @@ use serde::Serialize;
 
 use crate::build::data::DATE_FORMAT;
 
-use super::{data, LandscapeData};
+use super::{LandscapeData, data};
 
 /// Item information used for each record in the CSV file.
 ///
@@ -166,20 +166,20 @@ impl From<&data::Item> for Item {
                     item.github_latest_release_link = Some(release.url.clone());
                 }
 
-                if item.license.is_none() {
-                    if let Some(license) = &gh_data.license {
-                        item.license = Some(license.clone());
-                    }
+                if item.license.is_none()
+                    && let Some(license) = &gh_data.license
+                {
+                    item.license = Some(license.clone());
                 }
             }
         }
 
         // Last audit values
-        if let Some(audits) = &di.audits {
-            if let Some(last_audit) = audits.last() {
-                item.last_audit_date = Some(fmt_date(last_audit.date));
-                item.last_audit_url = Some(String::from(&last_audit.url));
-            }
+        if let Some(audits) = &di.audits
+            && let Some(last_audit) = audits.last()
+        {
+            item.last_audit_date = Some(fmt_date(last_audit.date));
+            item.last_audit_url = Some(String::from(&last_audit.url));
         }
 
         // Headquarters

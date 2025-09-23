@@ -14,7 +14,7 @@ use std::{
     sync::LazyLock,
 };
 
-use anyhow::{bail, format_err, Context, Result};
+use anyhow::{Context, Result, bail, format_err};
 use chrono::NaiveDate;
 use clap::Args;
 use regex::Regex;
@@ -167,11 +167,11 @@ impl LandscapeSettings {
 
     /// Convert the provided footer text in markdown format to HTML.
     fn footer_text_to_html(&mut self) -> Result<()> {
-        if let Some(footer) = &mut self.footer {
-            if let Some(text) = &mut footer.text {
-                let options = markdown::Options::default();
-                *text = markdown::to_html_with_options(text, &options).map_err(|err| format_err!("{err}"))?;
-            }
+        if let Some(footer) = &mut self.footer
+            && let Some(text) = &mut footer.text
+        {
+            let options = markdown::Options::default();
+            *text = markdown::to_html_with_options(text, &options).map_err(|err| format_err!("{err}"))?;
         }
 
         Ok(())
@@ -179,10 +179,10 @@ impl LandscapeSettings {
 
     /// Remove base_path trailing slash if present.
     fn remove_base_path_trailing_slash(&mut self) {
-        if let Some(base_path) = &mut self.base_path {
-            if let Some(base_path_updated) = base_path.strip_suffix('/') {
-                *base_path = base_path_updated.to_string();
-            }
+        if let Some(base_path) = &mut self.base_path
+            && let Some(base_path_updated) = base_path.strip_suffix('/')
+        {
+            *base_path = base_path_updated.to_string();
         }
     }
 
@@ -317,10 +317,10 @@ impl LandscapeSettings {
                     }
 
                     // Label
-                    if let Some(label) = &option.label {
-                        if label.is_empty() {
-                            return Err(format_err!("option label cannot be empty")).context(ctx);
-                        }
+                    if let Some(label) = &option.label
+                        && label.is_empty()
+                    {
+                        return Err(format_err!("option label cannot be empty")).context(ctx);
                     }
                 }
             }
@@ -355,17 +355,17 @@ impl LandscapeSettings {
         }
 
         // Logo
-        if let Some(logo) = &footer.logo {
-            if is_url(logo) {
-                validate_url("footer logo", Some(logo))?;
-            }
+        if let Some(logo) = &footer.logo
+            && is_url(logo)
+        {
+            validate_url("footer logo", Some(logo))?;
         }
 
         // Text
-        if let Some(text) = &footer.text {
-            if text.is_empty() {
-                bail!("footer text cannot be empty");
-            }
+        if let Some(text) = &footer.text
+            && text.is_empty()
+        {
+            bail!("footer text cannot be empty");
         }
 
         Ok(())
@@ -411,10 +411,10 @@ impl LandscapeSettings {
         }
 
         // Logo
-        if let Some(logo) = &header.logo {
-            if is_url(logo) {
-                validate_url("header logo", Some(logo))?;
-            }
+        if let Some(logo) = &header.logo
+            && is_url(logo)
+        {
+            validate_url("header logo", Some(logo))?;
         }
 
         Ok(())
@@ -485,10 +485,10 @@ impl LandscapeSettings {
                     }
 
                     // Subcategories
-                    if let Some(subcategories) = &rule.subcategories {
-                        if subcategories.is_empty() {
-                            bail!("tag [{i}] subcategories cannot be empty");
-                        }
+                    if let Some(subcategories) = &rule.subcategories
+                        && subcategories.is_empty()
+                    {
+                        bail!("tag [{i}] subcategories cannot be empty");
                     }
                 }
             }

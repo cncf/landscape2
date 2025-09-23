@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, format_err, Context, Result};
+use anyhow::{Context, Result, bail, format_err};
 use clap::Args;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -150,17 +150,17 @@ impl LandscapeGames {
                 }
 
                 // Category cannot be empty if provided
-                if let Some(category) = &option.category {
-                    if category.is_empty() {
-                        return Err(format_err!("category cannot be empty if provided")).context(ctx);
-                    }
+                if let Some(category) = &option.category
+                    && category.is_empty()
+                {
+                    return Err(format_err!("category cannot be empty if provided")).context(ctx);
                 }
 
                 // Subcategory cannot be empty if provided
-                if let Some(subcategory) = &option.subcategory {
-                    if subcategory.is_empty() {
-                        return Err(format_err!("subcategory cannot be empty if provided")).context(ctx);
-                    }
+                if let Some(subcategory) = &option.subcategory
+                    && subcategory.is_empty()
+                {
+                    return Err(format_err!("subcategory cannot be empty if provided")).context(ctx);
                 }
             }
         }
