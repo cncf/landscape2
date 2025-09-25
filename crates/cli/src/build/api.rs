@@ -14,8 +14,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use super::{
-    data::{self, AdditionalCategory, ItemAudit, ItemLink, ItemSummary},
     LandscapeData, LandscapeSettings,
+    data::{self, AdditionalCategory, ItemAudit, ItemLink, ItemSummary},
 };
 
 /// Sources of information used to generate the landscape API data.
@@ -55,10 +55,10 @@ impl<'a> Api<'a> {
         let members = self.sources.settings.members_category.as_ref();
         for category in &self.sources.landscape_data.categories {
             // Members category will be treated specially
-            if let Some(members) = members {
-                if category.name == *members {
-                    continue;
-                }
+            if let Some(members) = members
+                && category.name == *members
+            {
+                continue;
             }
 
             // Category endpoints

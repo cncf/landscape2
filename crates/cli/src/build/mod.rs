@@ -11,19 +11,18 @@ use std::{
     time::{Duration, Instant},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use askama::Template;
-use base64::{engine::general_purpose::STANDARD as b64, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD as b64};
 use futures::stream::{self, StreamExt};
 use headless_chrome::{
-    browser,
+    Browser, LaunchOptions, browser,
     protocol::cdp::Page::{self, CaptureScreenshotFormatOption},
     types::PrintToPdfOptions,
-    Browser, LaunchOptions,
 };
 use landscape2_core::{
     data::{self, CrunchbaseData, DataSource, GithubData, Item, LandscapeData},
-    datasets::{embed::EmbedView, full::Full, Datasets, NewDatasetsInput},
+    datasets::{Datasets, NewDatasetsInput, embed::EmbedView, full::Full},
     games::{GamesSource, LandscapeGames},
     guide::{GuideSource, LandscapeGuide},
     settings::{self, Analytics, Colors, LandscapeSettings, LogosViewbox, Osano, SettingsSource},
@@ -48,8 +47,8 @@ use self::{
     crunchbase::collect_crunchbase_data,
     export::generate_items_csv,
     github::collect_github_data,
-    logos::{prepare_logo, LogosSource},
-    projects::{generate_projects_csv, ProjectsMd},
+    logos::{LogosSource, prepare_logo},
+    projects::{ProjectsMd, generate_projects_csv},
 };
 
 mod api;

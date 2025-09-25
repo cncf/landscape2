@@ -19,7 +19,7 @@ const Content = () => {
 
   const startGame = async (initiated?: boolean) => {
     const options = new QuizOptions(import.meta.env.MODE === 'development' ? 'http://localhost:8000' : location.origin);
-    const quiz = await new Quiz(options);
+    const quiz = await Quiz.new(options);
     setActiveQuiz(quiz);
     if (initiated) setQuizState(quiz.state());
   };

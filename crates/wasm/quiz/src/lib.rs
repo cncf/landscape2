@@ -43,7 +43,7 @@ pub struct Quiz {
 #[wasm_bindgen]
 impl Quiz {
     /// Create a new Quiz instance.
-    #[wasm_bindgen(constructor)]
+    #[wasm_bindgen]
     pub async fn new(options: Option<QuizOptions>) -> Result<Quiz, String> {
         let options = options.unwrap_or_default();
         let questions = pick_questions(options.landscape_url).await?;

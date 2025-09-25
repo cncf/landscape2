@@ -13,7 +13,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, NaiveDate, Utc};
 use clap::Args;
 use reqwest::StatusCode;
@@ -135,10 +135,10 @@ impl LandscapeData {
     #[instrument(skip_all)]
     pub fn add_crunchbase_data(&mut self, crunchbase_data: &CrunchbaseData) {
         for item in &mut self.items {
-            if let Some(crunchbase_url) = item.crunchbase_url.as_ref() {
-                if let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url) {
-                    item.crunchbase_data = Some(org_crunchbase_data.clone());
-                }
+            if let Some(crunchbase_url) = item.crunchbase_url.as_ref()
+                && let Some(org_crunchbase_data) = crunchbase_data.get(crunchbase_url)
+            {
+                item.crunchbase_data = Some(org_crunchbase_data.clone());
             }
         }
     }
@@ -156,13 +156,13 @@ impl LandscapeData {
             match rule.field.as_str() {
                 "maturity" => {
                     for item in &mut self.items {
-                        if let Some(item_maturity) = item.maturity.as_ref() {
-                            if let Some(option) = rule.options.iter().find(|o| o.value == *item_maturity) {
-                                item.featured = Some(ItemFeatured {
-                                    order: option.order,
-                                    label: option.label.clone(),
-                                });
-                            }
+                        if let Some(item_maturity) = item.maturity.as_ref()
+                            && let Some(option) = rule.options.iter().find(|o| o.value == *item_maturity)
+                        {
+                            item.featured = Some(ItemFeatured {
+                                order: option.order,
+                                label: option.label.clone(),
+                            });
                         }
                     }
                 }
@@ -198,11 +198,11 @@ impl LandscapeData {
             }
 
             // Set item's oss field
-            if let Some(repo) = item.primary_repository() {
-                if repo.license.is_some() || repo.github_data.as_ref().is_some_and(|gh| gh.license.is_some())
-                {
-                    item.oss = Some(true);
-                }
+            if let Some(repo) = item.primary_repository()
+                && (repo.license.is_some()
+                    || repo.github_data.as_ref().is_some_and(|gh| gh.license.is_some()))
+            {
+                item.oss = Some(true);
             }
         }
     }
@@ -224,10 +224,10 @@ impl LandscapeData {
 
         // Set item's member subcategory using the item's Crunchbase url to match
         for item in &mut self.items {
-            if let Some(crunchbase_url) = &item.crunchbase_url {
-                if let Some(member_subcategory) = members_subcategories.get(crunchbase_url) {
-                    item.member_subcategory = Some(member_subcategory.clone());
-                }
+            if let Some(crunchbase_url) = &item.crunchbase_url
+                && let Some(member_subcategory) = members_subcategories.get(crunchbase_url)
+            {
+                item.member_subcategory = Some(member_subcategory.clone());
             }
         }
     }
@@ -252,11 +252,9 @@ impl LandscapeData {
                         Some(s)
                     });
 
-                    if let Some(subcategories) = subcategories {
-                        if item.category == rule.category && subcategories.contains(&item.subcategory) {
-                            return Some(tag.clone());
-                        }
-                    } else if item.category == rule.category {
+                    if item.category == rule.category
+                        && subcategories.is_none_or(|scs| scs.contains(&item.subcategory))
+                    {
                         return Some(tag.clone());
                     }
                 }
@@ -308,11 +306,9 @@ impl LandscapeData {
                     Some(s)
                 });
 
-                if let Some(subcategories) = &subcategories {
-                    if item.category == rule.category && subcategories.contains(&item.subcategory) {
-                        item.enduser = Some(true);
-                    }
-                } else if item.category == rule.category {
+                if item.category == rule.category
+                    && subcategories.as_ref().is_none_or(|scs| scs.contains(&item.subcategory))
+                {
                     item.enduser = Some(true);
                 }
             }
@@ -733,15 +729,13 @@ impl Item {
     /// it matches the primary repository URL, we'll fallback to the homepage
     /// URL defined in the Crunchbase data -when available-.
     pub fn set_website(&mut self) {
-        if let Some(primary_repository) = self.primary_repository() {
-            if self.homepage_url == primary_repository.url {
-                if let Some(crunchbase_data) = &self.crunchbase_data {
-                    if let Some(cb_homepage_url) = &crunchbase_data.homepage_url {
-                        self.website.clone_from(cb_homepage_url);
-                        return;
-                    }
-                }
-            }
+        if let Some(primary_repository) = self.primary_repository()
+            && self.homepage_url == primary_repository.url
+            && let Some(crunchbase_data) = &self.crunchbase_data
+            && let Some(cb_homepage_url) = &crunchbase_data.homepage_url
+        {
+            self.website.clone_from(cb_homepage_url);
+            return;
         }
 
         self.website.clone_from(&self.homepage_url);

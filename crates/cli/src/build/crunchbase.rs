@@ -9,7 +9,7 @@ use std::{
     time::Duration,
 };
 
-use anyhow::{bail, format_err, Result};
+use anyhow::{Result, bail, format_err};
 use async_trait::async_trait;
 use chrono::{Datelike, NaiveDate, Utc};
 use futures::stream::{self, StreamExt};
@@ -18,11 +18,11 @@ use leaky_bucket::RateLimiter;
 #[cfg(test)]
 use mockall::automock;
 use regex::Regex;
-use reqwest::{header, StatusCode};
+use reqwest::{StatusCode, header};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, instrument, warn};
 
-use super::{cache::Cache, LandscapeData};
+use super::{LandscapeData, cache::Cache};
 
 /// File used to cache data collected from Crunchbase.
 const CRUNCHBASE_CACHE_FILE: &str = "crunchbase.json";

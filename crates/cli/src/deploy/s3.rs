@@ -10,7 +10,7 @@ use std::{
     time::Instant,
 };
 
-use anyhow::{bail, format_err, Context, Result};
+use anyhow::{Context, Result, bail, format_err};
 use aws_sdk_s3::primitives::ByteStream;
 use futures::stream::{self, StreamExt};
 use md5::{Digest, Md5};
@@ -164,10 +164,10 @@ async fn upload_objects(
             if deployed_objects.contains_key(&key) {
                 // Skip any other objects that haven't changed
                 let checksum = md5sum(file)?;
-                if let Some(remote_checksum) = deployed_objects.get(&key).expect("object to be present") {
-                    if checksum == *remote_checksum {
-                        return Ok(());
-                    }
+                if let Some(remote_checksum) = deployed_objects.get(&key).expect("object to be present")
+                    && checksum == *remote_checksum
+                {
+                    return Ok(());
                 }
             }
 
@@ -184,7 +184,7 @@ async fn upload_objects(
                 .content_type(content_type.essence_str())
                 .send()
                 .await
-                .context(format_err!("error uploading file {}", key))?;
+                .context(format_err!("error uploading file {key}"))?;
 
             debug!(?key, "file uploaded");
             Ok(())
@@ -225,10 +225,10 @@ async fn upload_index_document(
     let content_type = mime::TEXT_HTML.essence_str();
 
     // Check if the remote copy is up to date
-    if let Some(remote_checksum) = remote_checksum {
-        if checksum == *remote_checksum {
-            return Ok(());
-        }
+    if let Some(remote_checksum) = remote_checksum
+        && checksum == *remote_checksum
+    {
+        return Ok(());
     }
 
     // Upload file

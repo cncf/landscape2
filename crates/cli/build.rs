@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -32,10 +32,10 @@ fn main() -> Result<()> {
 
     // Prepare wasm profile and target directory
     let mut wasm_profile = "--dev";
-    if let Ok(profile) = std::env::var("PROFILE") {
-        if profile == "release" {
-            wasm_profile = "--release";
-        }
+    if let Ok(profile) = std::env::var("PROFILE")
+        && profile == "release"
+    {
+        wasm_profile = "--release";
     };
     let wasm_target_dir = workspace_dir()?.join("target-wasm").to_string_lossy().to_string();
 

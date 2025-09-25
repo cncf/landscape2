@@ -6,7 +6,7 @@ use std::fs::File;
 use anyhow::Result;
 use askama::Template;
 use chrono::NaiveDate;
-use landscape2_core::data::{LandscapeData, DATE_FORMAT};
+use landscape2_core::data::{DATE_FORMAT, LandscapeData};
 use serde::{Deserialize, Serialize};
 
 /// Project information used to generate the projects.md and projects.csv files.

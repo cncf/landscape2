@@ -4,11 +4,11 @@ use std::{env, net::SocketAddr, path::PathBuf};
 
 use anyhow::Result;
 use axum::{
+    Router,
     extract::Request,
-    http::{header::CACHE_CONTROL, HeaderValue},
+    http::{HeaderValue, header::CACHE_CONTROL},
     middleware::{self, Next},
     response::IntoResponse,
-    Router,
 };
 use tokio::{net::TcpListener, signal};
 use tower_http::services::{ServeDir, ServeFile};

@@ -3,7 +3,7 @@
 
 use std::{collections::HashMap, sync::LazyLock};
 
-use anyhow::{bail, format_err, Context, Result};
+use anyhow::{Context, Result, bail, format_err};
 use chrono::NaiveDate;
 use regex::Regex;
 use serde::{Deserialize, Serialize};

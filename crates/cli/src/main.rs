@@ -7,14 +7,15 @@
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use landscape2::build::{build, BuildArgs};
+use landscape2::build::{BuildArgs, build};
 use landscape2::deploy::s3::{self};
 use landscape2::deploy::{DeployArgs, Provider};
-use landscape2::new::{new, NewArgs};
-use landscape2::serve::{serve, ServeArgs};
+use landscape2::new::{NewArgs, new};
+use landscape2::serve::{ServeArgs, serve};
 use landscape2::validate::{
-    validate_data, validate_games, validate_guide, validate_settings, Target, ValidateArgs,
+    Target, ValidateArgs, validate_data, validate_games, validate_guide, validate_settings,
 };
+use tracing_subscriber::EnvFilter;
 
 /// CLI arguments.
 #[derive(Parser)]
@@ -56,10 +57,9 @@ async fn main() -> Result<()> {
     // Setup logging
     match &cli.command {
         Command::Build(_) | Command::Deploy(_) | Command::New(_) | Command::Serve(_) => {
-            if std::env::var_os("RUST_LOG").is_none() {
-                std::env::set_var("RUST_LOG", "landscape2=debug");
-            }
-            tracing_subscriber::fmt::init();
+            let env_filter =
+                EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("landscape2=debug"));
+            tracing_subscriber::fmt().with_env_filter(env_filter).init();
         }
         Command::Validate(_) => {}
     }

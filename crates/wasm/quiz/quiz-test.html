@@ -12,7 +12,7 @@
         const landscape_url = "http://localhost:8000";
         const options = new QuizOptions(landscape_url);
 
-        const quiz1 = await new Quiz(options);
+        const quiz1 = await Quiz.new(options);
         console.log("quiz1.questions()", quiz1.questions());
         console.log("quiz1.state()", quiz1.state());
         console.log("quiz1.check_player_guess(0)", quiz1.check_player_guess(0));

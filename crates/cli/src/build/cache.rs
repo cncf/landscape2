@@ -2,7 +2,7 @@
 
 use std::{fs, io::Write, path::PathBuf, time::SystemTime};
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use tracing::instrument;
 
 /// Path where the cache files will be written to inside the cache directory.
