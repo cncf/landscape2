@@ -2,11 +2,12 @@ import { A } from '@solidjs/router';
 import { SVGIcon, SVGIconKind } from 'common';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, on, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, For, on, Show } from 'solid-js';
 
 import { GUIDE_PATH, ZOOM_LEVELS } from '../../../data';
 import { BaseItem, Item } from '../../../types';
 import calculateGridItemsPerRow from '../../../utils/calculateGridItemsPerRow';
+import createIncrementalLimit from '../../../utils/createIncrementalLimit';
 import getGridCategoryLayout, {
   GridCategoryLayout,
   LayoutColumn,
@@ -46,35 +47,32 @@ export const ItemsList = (props: ItemsListProps) => {
   const gridWidth = useGridWidth();
   const percentage = () => props.percentage;
   const initialItems = () => props.items;
-  const [items, setItems] = createSignal<(BaseItem | Item)[]>();
   const [itemsPerRow, setItemsPerRow] = createSignal<number>(0);
 
-  const updateItemsPerRow = () => {
-    setItemsPerRow(
-      calculateGridItemsPerRow(
-        percentage(),
-        gridWidth(),
-        props.itemWidth || ZOOM_LEVELS[zoom()][0],
-        !isUndefined(props.itemWidth)
-      )
-    );
-  };
+  const processedItems = createMemo<(BaseItem | Item)[]>(() => {
+    const perRow = itemsPerRow();
+    const source = initialItems();
+    if (perRow <= 0) return source;
 
-  const prepareItems = () => {
-    setItems((prev) => {
-      const tmpItems: (BaseItem | Item)[] = [];
-
-      for (const item of new ItemIterator(initialItems(), itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow())) {
-        if (item) {
-          tmpItems.push(item);
-        }
+    const arranged: (BaseItem | Item)[] = [];
+    for (const item of new ItemIterator(source, perRow <= 0 ? MIN_COLUMN_ITEMS : perRow)) {
+      if (item) {
+        arranged.push(item);
       }
+    }
 
-      return !isEqual(tmpItems, prev) ? tmpItems : prev;
-    });
-  };
+    return arranged;
+  });
+
+  const visibleLimit = createIncrementalLimit(() => processedItems().length, {
+    enabled: () => processedItems().length > 0,
+  });
+
+  const visibleItems = createMemo(() => processedItems().slice(0, visibleLimit()));
 
   createEffect(() => {
+    // Track dependencies to recalculate when layout inputs change
+    initialItems();
     const newItemsPerRow = calculateGridItemsPerRow(
       percentage(),
       gridWidth(),
@@ -83,23 +81,11 @@ export const ItemsList = (props: ItemsListProps) => {
     );
     if (newItemsPerRow !== itemsPerRow()) {
       setItemsPerRow(newItemsPerRow);
-    } else {
-      if (!isUndefined(items()) && initialItems().length !== items()!.length) {
-        prepareItems();
-      }
     }
   });
 
-  createEffect(on(initialItems, () => updateItemsPerRow()));
-
-  createEffect(
-    on(itemsPerRow, () => {
-      prepareItems();
-    })
-  );
-
   return (
-    <For each={items()}>
+    <For each={visibleItems()}>
       {(item: BaseItem | Item) => {
         return (
           <GridItem item={item} borderColor={props.borderColor} showMoreInfo activeDropdown={props.activeDropdown} />
@@ -149,8 +135,20 @@ const Grid = (props: Props) => {
                 {(subcat: LayoutColumn) => {
                   const items = () => data()[subcat.subcategoryName].items;
                   if (items().length === 0) return null;
-                  const featuredItems = items().filter((item: BaseItem | Item) => !isUndefined(item.featured)).length;
-                  const sortedItems: (BaseItem | Item)[] = sortItemsByOrderValue(items());
+                  const sortedItems = createMemo<(BaseItem | Item)[]>(() => sortItemsByOrderValue(items()));
+                  const featuredItems = createMemo(
+                    () => sortedItems().filter((item: BaseItem | Item) => !isUndefined(item.featured)).length
+                  );
+                  const useDynamicLayout = createMemo(
+                    () => featuredItems() > 0 && featuredItems() < sortedItems().length
+                  );
+                  const fallbackLimit = createIncrementalLimit(() => sortedItems().length, {
+                    enabled: () => !useDynamicLayout() && sortedItems().length > 0,
+                  });
+                  const visibleFallbackItems = createMemo(() => {
+                    if (useDynamicLayout()) return [];
+                    return sortedItems().slice(0, fallbackLimit());
+                  });
 
                   return (
                     <div
@@ -203,10 +201,10 @@ const Grid = (props: Props) => {
                       <div class={`flex-grow-1 ${styles.itemsContainer}`}>
                         {/* Use ItemsList when subcategory has featured and no featured items */}
                         <Show
-                          when={featuredItems > 0 && featuredItems < sortedItems.length}
+                          when={useDynamicLayout()}
                           fallback={
                             <div class={styles.items} role="list">
-                              <For each={sortedItems}>
+                              <For each={visibleFallbackItems()}>
                                 {(item: BaseItem | Item) => {
                                   return (
                                     <GridItem
@@ -224,7 +222,7 @@ const Grid = (props: Props) => {
                           <div class={styles.items} role="list">
                             <ItemsList
                               borderColor={props.backgroundColor}
-                              items={sortedItems}
+                              items={sortedItems()}
                               percentage={subcat.percentage}
                               activeDropdown
                             />

@@ -2,10 +2,11 @@ import { A } from '@solidjs/router';
 import { formatTAGName, SVGIcon, SVGIconKind } from 'common';
 import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, For, Match, Show, Switch } from 'solid-js';
+import { Accessor, createMemo, For, Match, Show, Switch } from 'solid-js';
 
 import { COLORS, GUIDE_PATH } from '../../../data';
 import { BaseItem, Category, ClassifyOption, Item, SortDirection, SortOption, Subcategory } from '../../../types';
+import createIncrementalLimit from '../../../utils/createIncrementalLimit';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import buildNormalizedId from '../../../utils/normalizeId';
 import sortItems from '../../../utils/sortItems';
@@ -33,11 +34,17 @@ interface ListProps {
 const CardList = (props: ListProps) => {
   const updateActiveItemId = useUpdateActiveItemId();
   const itemsList = () => props.items;
-  const items = () => sortItems(itemsList(), props.sorted, props.direction);
+  const items = createMemo(() => sortItems(itemsList(), props.sorted, props.direction));
+  const visibleLimit = createIncrementalLimit(() => items().length, {
+    enabled: () => props.isVisible && items().length > 0,
+    initial: 48,
+    step: 48,
+  });
+  const visibleItems = createMemo(() => items().slice(0, visibleLimit()));
 
   return (
     <div class="row g-4 mb-4" role="list">
-      <For each={items()}>
+      <For each={visibleItems()}>
         {(item: Item) => {
           return (
             <div class="col-12 col-lg-6 col-xxl-4 col-xxxl-3" role="listitem">

@@ -12,7 +12,7 @@ import {
   SVGIconKind,
 } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
+import { createSignal, Match, onCleanup, onMount, Show, Switch } from 'solid-js';
 
 import { FOUNDATION } from '../../../data';
 import { Item, Repository } from '../../../types';
@@ -27,30 +27,62 @@ interface Props {
 }
 
 const Card = (props: Props) => {
+  let containerRef: HTMLDivElement | undefined;
   const [description, setDescription] = createSignal<string>();
   const [stars, setStars] = createSignal<number>();
   const [primaryRepoUrl, setPrimaryRepoUrl] = createSignal<string>();
+  const [detailsLoaded, setDetailsLoaded] = createSignal(false);
 
-  onMount(() => {
+  const loadDetails = () => {
+    if (detailsLoaded()) return;
     setDescription(getItemDescription(props.item));
-    let starsCount: number | undefined;
 
     if (props.item.repositories) {
+      let starsCount: number | undefined;
+
       props.item.repositories.forEach((repo: Repository) => {
         if (repo.primary) {
           setPrimaryRepoUrl(repo.url);
         }
 
         if (repo.github_data) {
-          starsCount = starsCount || 0 + repo.github_data.stars;
+          starsCount = (starsCount ?? 0) + repo.github_data.stars;
         }
       });
-      setStars(starsCount);
+
+      if (!isUndefined(starsCount)) {
+        setStars(starsCount);
+      }
     }
+
+    setDetailsLoaded(true);
+  };
+
+  onMount(() => {
+    if (detailsLoaded()) return;
+
+    if (!('IntersectionObserver' in window) || isUndefined(containerRef)) {
+      loadDetails();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          loadDetails();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+
+    observer.observe(containerRef);
+
+    onCleanup(() => observer.disconnect());
   });
 
   return (
-    <div class={`d-flex flex-column ${props.class}`}>
+    <div ref={containerRef} class={`d-flex flex-column ${props.class}`}>
       <div class="d-flex flex-row align-items-center">
         <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
           <Image
@@ -146,7 +178,7 @@ const Card = (props: Props) => {
           </div>
         </div>
       </div>
-      <div class={`my-3 text-muted ${styles.description}`}>{description()}</div>
+      <div class={`my-3 text-muted ${styles.description}`}>{description() || ''}</div>
       <div
         class={`d-flex flex-row justify-content-between align-items-baseline text-muted mt-auto pt-1 ${styles.additionalInfo}`}
       >

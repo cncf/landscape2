@@ -1,6 +1,6 @@
 import { getItemDescription, Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
+import { createEffect, createSignal, onCleanup, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../../types';
 import isTouchDevice from '../../../utils/isTouchDevice';
@@ -30,27 +30,64 @@ const GridItem = (props: Props) => {
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
   const updateActiveItemId = useUpdateActiveItemId();
   const [visibleDropdown, setVisibleDropdown] = createSignal(false);
-  const [onLinkHover, setOnLinkHover] = createSignal(false);
-  const [onDropdownHover, setOnDropdownHover] = createSignal(false);
   const [tooltipAlignment, setTooltipAlignment] = createSignal<'right' | 'left' | 'center'>('center');
   const [tooltipVerticalAlignment, setTooltipVerticalAlignment] = createSignal<'top' | 'bottom'>('bottom');
-  const [dropdownTimeout, setDropdownTimeout] = createSignal<ReturnType<typeof setTimeout>>();
   const [elWidth, setElWidth] = createSignal<number>(0);
   const [item, setItem] = createSignal<Item | undefined>();
   const description = () => getItemDescription(props.item);
   const containerWidth = () => (!isUndefined(props.container) ? props.container.clientWidth : window.innerWidth);
   const containerHeight = () => (!isUndefined(props.container) ? props.container.clientHeight : window.innerHeight);
-  const touchDevice = () => isTouchDevice();
-  // Only show dropdown on hover if it's not a touch device and activeDropdown prop is true
-  const activeDropdown = () => (touchDevice() ? false : props.activeDropdown);
+  const touchDevice = isTouchDevice();
+  const dropdownEnabled = () => (!touchDevice && props.activeDropdown);
+  let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+  let linkHover = false;
+  let dropdownHover = false;
 
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        setItem(itemsDataGetter.getItemById(props.item.id));
+  const clearHoverTimer = () => {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      hoverTimer = undefined;
+    }
+  };
+
+  const ensureItemLoaded = () => {
+    if (!isUndefined(item()) || !fullDataReady()) return;
+    setItem(itemsDataGetter.getItemById(props.item.id));
+  };
+
+  const openDropdown = () => {
+    if (!dropdownEnabled() || visibleDropdown()) return;
+    calculateTooltipPosition();
+    ensureItemLoaded();
+    setVisibleDropdown(true);
+  };
+
+  const closeDropdown = () => {
+    if (!visibleDropdown()) return;
+    setVisibleDropdown(false);
+  };
+
+  const scheduleOpen = () => {
+    if (!dropdownEnabled()) return;
+    clearHoverTimer();
+    hoverTimer = setTimeout(() => {
+      hoverTimer = undefined;
+      if (linkHover || dropdownHover) {
+        openDropdown();
       }
-    })
-  );
+    }, 200);
+  };
+
+  const scheduleClose = () => {
+    if (!dropdownEnabled()) return;
+    clearHoverTimer();
+    hoverTimer = setTimeout(() => {
+      hoverTimer = undefined;
+      if (!linkHover && !dropdownHover) {
+        closeDropdown();
+      }
+    }, 80);
+  };
 
   const calculateTooltipPosition = () => {
     if (!isUndefined(wrapper())) {
@@ -83,39 +120,24 @@ const GridItem = (props: Props) => {
   };
 
   createEffect(() => {
-    if (props.activeDropdown) {
-      if (!visibleDropdown() && (onLinkHover() || onDropdownHover())) {
-        setDropdownTimeout(
-          setTimeout(() => {
-            if (onLinkHover() || onDropdownHover()) {
-              calculateTooltipPosition();
-              setVisibleDropdown(true);
-            }
-          }, 200)
-        );
-      }
-      if (visibleDropdown() && !onLinkHover() && !onDropdownHover()) {
-        setDropdownTimeout(
-          setTimeout(() => {
-            if (!onLinkHover() && !onDropdownHover()) {
-              // Delay to hide the dropdown to avoid hide it if user changes from link to dropdown
-              setVisibleDropdown(false);
-            }
-          }, 50)
-        );
-      }
+    if (visibleDropdown() && fullDataReady()) {
+      ensureItemLoaded();
+    }
+    if (!dropdownEnabled() && visibleDropdown()) {
+      setVisibleDropdown(false);
+      linkHover = false;
+      dropdownHover = false;
+      clearHoverTimer();
     }
   });
 
   onCleanup(() => {
-    if (!isUndefined(dropdownTimeout())) {
-      clearTimeout(dropdownTimeout());
-    }
+    clearHoverTimer();
   });
 
   return (
     <Show
-      when={activeDropdown()}
+      when={dropdownEnabled()}
       fallback={
         <div
           role="listitem"
@@ -138,7 +160,7 @@ const GridItem = (props: Props) => {
               class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
               classList={{ noCursor: !props.activeDropdown && !props.showMoreInfo }}
             >
-              <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
+            <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
 
               <Show when={props.item.featured && props.item.featured.label}>
                 <div
@@ -179,10 +201,12 @@ const GridItem = (props: Props) => {
                 left: tooltipAlignment() === 'center' ? `${-(DEFAULT_DROPDOWN_WIDTH - elWidth()) / 2}px` : 'auto',
               }}
               onMouseEnter={() => {
-                setOnDropdownHover(true);
+                dropdownHover = true;
+                scheduleOpen();
               }}
               onMouseLeave={() => {
-                setOnDropdownHover(false);
+                dropdownHover = false;
+                scheduleClose();
               }}
             >
               <div class={`d-block position-absolute ${styles.arrow}`} />
@@ -200,16 +224,21 @@ const GridItem = (props: Props) => {
               e.preventDefault();
               if (props.showMoreInfo) {
                 updateActiveItemId(props.item.id);
-                setOnLinkHover(false);
-                setVisibleDropdown(false);
+                linkHover = false;
+                dropdownHover = false;
+                clearHoverTimer();
+                closeDropdown();
+                ensureItemLoaded();
               }
             }}
             onMouseEnter={(e) => {
               e.preventDefault();
-              setOnLinkHover(true);
+              linkHover = true;
+              scheduleOpen();
             }}
             onMouseLeave={() => {
-              setOnLinkHover(false);
+              linkHover = false;
+              scheduleClose();
             }}
             aria-label={`${props.item.name} info`}
             aria-expanded={visibleDropdown()}
