@@ -1,6 +1,11 @@
+import path from 'path';
 import { defineConfig } from 'vite';
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid';
+
+if (!process.env.SASS_SILENCE_DEPRECATIONS) {
+  process.env.SASS_SILENCE_DEPRECATIONS = 'import,global-builtin,color-functions';
+}
 
 export default defineConfig({
   base: '',
@@ -22,5 +27,16 @@ export default defineConfig({
   plugins: [ViteEjsPlugin(), solid()],
   resolve: {
     dedupe: ['solid-js', 'solid-js/web'],
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        includePaths: [
+          path.resolve(__dirname, 'node_modules'),
+          path.resolve(__dirname, '../webapp/node_modules'),
+          path.resolve(__dirname, '../../node_modules'),
+        ],
+      },
+    },
   },
 });

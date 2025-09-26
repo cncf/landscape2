@@ -1,8 +1,13 @@
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
+import path from 'path'
 import { defineConfig } from 'vite'
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid'
+
+if (!process.env.SASS_SILENCE_DEPRECATIONS) {
+  process.env.SASS_SILENCE_DEPRECATIONS = 'import,global-builtin,color-functions';
+}
 
 const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
 
@@ -58,5 +63,15 @@ export default defineConfig({
       "solid-js",
       "solid-js/web"
     ]
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        includePaths: [
+          path.resolve(__dirname, 'node_modules'),
+          path.resolve(__dirname, '../../node_modules'),
+        ],
+      },
+    },
   },
 })
