@@ -21,7 +21,7 @@
     "@solidjs/router": "^0.15.3",
     "add": "^2.0.6",
     "apexcharts": "3.49.1",
-    "bootstrap": "^5.3.8",
+    "bootstrap": "5.3.6",
     "common": "link:../common",
     "lodash": "^4.17.21",
     "minisearch": "^7.2.0",
