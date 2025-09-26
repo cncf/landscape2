@@ -43,7 +43,7 @@
         {% set gtm_container_id = analytics|get_gtm_container_id %}
         {% if let Some(gtm_container_id) = gtm_container_id %}
             <!-- Google Tag Manager -->
-            <script defer data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
+            <script defer data-container-id="{{ gtm_container_id }}" src="/assets/gtm.js"></script>
             <!-- End Google Tag Manager -->
         {% endif %}
         <% } %>
