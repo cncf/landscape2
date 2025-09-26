@@ -15,6 +15,14 @@ const scssIncludePaths = [
   path.resolve(projectDir, '../../node_modules'),
 ].filter((p) => fs.existsSync(p));
 
+const bootstrapDir = [
+  path.resolve(projectDir, 'node_modules/bootstrap'),
+  path.resolve(projectDir, '../webapp/node_modules/bootstrap'),
+  path.resolve(projectDir, '../../node_modules/bootstrap'),
+].find((candidate) => fs.existsSync(candidate));
+
+const alias = bootstrapDir ? { bootstrap: bootstrapDir } : {};
+
 export default defineConfig({
   base: '',
   build: {
@@ -35,5 +43,8 @@ export default defineConfig({
         includePaths: scssIncludePaths,
       },
     },
+  },
+  resolve: {
+    alias,
   },
 });

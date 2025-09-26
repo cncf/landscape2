@@ -16,6 +16,12 @@ const scssIncludePaths = [
   path.resolve(projectDir, '../../node_modules'),
 ].filter((p) => fs.existsSync(p));
 
+const bootstrapDir = [
+  path.resolve(projectDir, 'node_modules/bootstrap'),
+  path.resolve(projectDir, '../webapp/node_modules/bootstrap'),
+  path.resolve(projectDir, '../../node_modules/bootstrap'),
+].find((candidate) => fs.existsSync(candidate));
+
 export default defineConfig({
   base: '',
   build: {
@@ -36,6 +42,7 @@ export default defineConfig({
   plugins: [ViteEjsPlugin(), solid()],
   resolve: {
     dedupe: ['solid-js', 'solid-js/web'],
+    ...(bootstrapDir ? { alias: { bootstrap: bootstrapDir } } : {}),
   },
   css: {
     preprocessorOptions: {

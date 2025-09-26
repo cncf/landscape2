@@ -17,6 +17,11 @@ const scssIncludePaths = [
   path.resolve(projectDir, '../../node_modules'),
 ].filter((p) => fs.existsSync(p));
 
+const bootstrapDir = [
+  path.resolve(projectDir, 'node_modules/bootstrap'),
+  path.resolve(projectDir, '../../node_modules/bootstrap'),
+].find((candidate) => fs.existsSync(candidate));
+
 const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
 
 function getCSSHref(str: string) {
@@ -70,7 +75,8 @@ export default defineConfig({
       "moment",
       "solid-js",
       "solid-js/web"
-    ]
+    ],
+    ...(bootstrapDir ? { alias: { bootstrap: bootstrapDir } } : {}),
   },
   css: {
     preprocessorOptions: {
