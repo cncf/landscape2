@@ -1,8 +1,26 @@
+import fs from 'node:fs';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid'
+
+if (!process.env.SASS_SILENCE_DEPRECATIONS) {
+  process.env.SASS_SILENCE_DEPRECATIONS = 'import,global-builtin,color-functions';
+}
+
+const projectDir = fileURLToPath(new URL('.', import.meta.url));
+const scssIncludePaths = [
+  path.resolve(projectDir, 'node_modules'),
+  path.resolve(projectDir, '../../node_modules'),
+].filter((p) => fs.existsSync(p));
+
+const bootstrapDir = [
+  path.resolve(projectDir, 'node_modules/bootstrap'),
+  path.resolve(projectDir, '../../node_modules/bootstrap'),
+].find((candidate) => fs.existsSync(candidate));
 
 const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
 
@@ -57,6 +75,14 @@ export default defineConfig({
       "moment",
       "solid-js",
       "solid-js/web"
-    ]
+    ],
+    ...(bootstrapDir ? { alias: { bootstrap: bootstrapDir } } : {}),
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        includePaths: scssIncludePaths,
+      },
+    },
   },
 })
