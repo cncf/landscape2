@@ -161,6 +161,7 @@ impl LandscapeSettings {
         let mut settings: LandscapeSettings = serde_yaml::from_str(raw_data).context("invalid yaml file")?;
 
         settings.validate().context("the landscape settings file provided is not valid")?;
+        settings.header_motd_to_html().context("error converting header motd md text to html")?;
         settings.footer_text_to_html().context("error converting footer md text to html")?;
         settings.remove_base_path_trailing_slash();
         settings.set_groups_normalized_name();
@@ -175,6 +176,18 @@ impl LandscapeSettings {
         {
             let options = markdown::Options::default();
             *text = markdown::to_html_with_options(text, &options).map_err(|err| format_err!("{err}"))?;
+        }
+
+        Ok(())
+    }
+
+    /// Convert the provided header motd in markdown format to HTML.
+    fn header_motd_to_html(&mut self) -> Result<()> {
+        if let Some(header) = &mut self.header
+            && let Some(motd) = &mut header.motd
+        {
+            let options = markdown::Options::default();
+            *motd = markdown::to_html_with_options(motd, &options).map_err(|err| format_err!("{err}"))?;
         }
 
         Ok(())
@@ -420,6 +433,13 @@ impl LandscapeSettings {
             validate_url("header logo", Some(logo))?;
         }
 
+        // Message of the day
+        if let Some(motd) = &header.motd
+            && motd.is_empty()
+        {
+            bail!("header motd cannot be empty");
+        }
+
         Ok(())
     }
 
@@ -650,6 +670,9 @@ pub struct Header {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub logo: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub motd: Option<String>,
 }
 
 /// Header links.
@@ -1238,6 +1261,7 @@ mod tests {
                     github: Some("https://github.com".to_string()),
                 }),
                 logo: Some("https://logo.url".to_string()),
+                ..Default::default()
             }),
             ..Default::default()
         };
@@ -1271,6 +1295,22 @@ mod tests {
             url: "https://example.url".to_string(),
             header: Some(Header {
                 logo: Some("https:// invalid_url".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "header motd cannot be empty")]
+    fn settings_validate_header_empty_motd() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            header: Some(Header {
+                motd: Some(String::new()),
                 ..Default::default()
             }),
             ..Default::default()
