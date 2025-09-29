@@ -87,6 +87,9 @@ pub struct LandscapeSettings {
     pub groups: Option<Vec<Group>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub hide_organization_section_in_projects: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub images: Option<Images>,
 
     #[serde(default)]

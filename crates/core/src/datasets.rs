@@ -112,6 +112,9 @@ pub mod base {
         pub header: Option<Header>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub hide_organization_section_in_projects: Option<bool>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub images: Option<Images>,
 
         #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -151,6 +154,7 @@ pub mod base {
                 groups: settings.groups.clone().unwrap_or_default(),
                 guide_summary: BTreeMap::new(),
                 header: settings.header.clone(),
+                hide_organization_section_in_projects: settings.hide_organization_section_in_projects,
                 images: settings.images.clone(),
                 items: vec![],
                 members_category: settings.members_category.clone(),
@@ -691,6 +695,7 @@ mod tests {
             grid_items_size: Some(GridItemsSize::Small),
             groups: Some(groups.clone()),
             header: header.clone(),
+            hide_organization_section_in_projects: Some(true),
             images: images.clone(),
             members_category: Some("Members".to_string()),
             upcoming_event: Some(upcoming_event.clone()),
@@ -742,6 +747,7 @@ mod tests {
                 .into_iter()
                 .collect(),
             header,
+            hide_organization_section_in_projects: Some(true),
             images,
             items: vec![(&item).into()],
             members_category: Some("Members".to_string()),

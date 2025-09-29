@@ -259,6 +259,13 @@ header:
     github: "https://github.com/cncf/landscape"
   logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
 
+# Hide organization section in projects (optional)
+#
+# When set to true, the organization section won't be displayed in the item
+# modal for project items.
+#
+hide_organization_section_in_projects: false
+
 # Images (optional)
 #
 # Urls of some images used in the landscape UI.
