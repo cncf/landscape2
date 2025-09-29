@@ -350,7 +350,14 @@
           "title": "Logo",
           "description": "Foundation logo featured on the header (URL or local path)",
           "anyOf": [ { "type": "string", "format": "uri" }, { "type": "string" } ],
-          "examples": ["https://example.com/logo.svg", "images/logo.svg"] }
+          "examples": ["https://example.com/logo.svg", "images/logo.svg"] },
+        "motd": {
+          "title": "Message of the day",
+          "description": "Message of the day displayed at the top of the header (supports markdown)",
+          "type": "string",
+          "minLength": 1,
+          "examples": ["**Welcome** to the landscape!"]
+        }
       }
     },
     "hide_organization_section_in_projects": {

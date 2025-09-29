@@ -253,11 +253,14 @@ groups:
 #   links:
 #     github: <GITHUB_URL>
 #   logo: <LOGO_URL or LOGO_PATH>  # Foundation logo featured on the header
+#   motd: <MOTD_TEXT>  # Message of the day displayed at the top of the header (supports markdown)
 #
 header:
   links:
     github: "https://github.com/cncf/landscape"
   logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+  motd: |
+    "Welcome to the CNCF Landscape!"
 
 # Hide organization section in projects (optional)
 #
