@@ -20,6 +20,7 @@ import {
   DEFAULT_DISPLAY_HEADER,
   DEFAULT_DISPLAY_ITEM_MODAL,
   DEFAULT_DISPLAY_ITEM_NAME,
+  DEFAULT_HIDE_ORGANIZATION_SECTION,
   DEFAULT_ITEM_NAME_SIZE,
   DEFAULT_ITEMS_ALIGNMENT,
   DEFAULT_ITEMS_SIZE,
@@ -36,6 +37,7 @@ import {
   DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
+  HIDE_ORGANIZATION_SECTION_PARAM,
   ITEM_NAME_SIZE_PARAM,
   ITEMS_ALIGNMENT_PARAM,
   ITEMS_SIZE_PARAM,
@@ -149,6 +151,9 @@ const App = () => {
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
   const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
+  const [hideOrganizationSection, setHideOrganizationSection] = createSignal<boolean>(
+    DEFAULT_HIDE_ORGANIZATION_SECTION
+  );
   const [activeItemId, setActiveItemId] = createSignal<string | null>(null);
   const origin = () => (import.meta.env.MODE === 'development' ? `http://localhost:8000` : `${basePath()}`);
 
@@ -180,6 +185,7 @@ const App = () => {
     const spacingParam = urlParams.get(ITEMS_SPACING_PARAM);
     const uppercaseParam = urlParams.get(UPPERCASE_TITLE_PARAM);
     const displayItemModalParam = urlParams.get(DISPLAY_ITEM_MODAL_PARAM);
+    const hideOrganizationSectionParam = urlParams.get(HIDE_ORGANIZATION_SECTION_PARAM);
 
     batch(() => {
       if (keyParam !== null) {
@@ -252,6 +258,9 @@ const App = () => {
         if (displayItemModalParam !== null) {
           const displayItemModal = displayItemModalParam === 'true';
           setDisplayItemModal(displayItemModal);
+          if (hideOrganizationSectionParam !== null) {
+            setHideOrganizationSection(hideOrganizationSectionParam === 'true');
+          }
         }
         // When size and style are not valid, we don´t save the key
         if (isValidSize && isValidStyle) {
@@ -305,6 +314,7 @@ const App = () => {
             key: key(),
             foundation: data()!.foundation,
             basePath: origin(),
+            hideOrganizationSection: hideOrganizationSection(),
           },
           '*'
         );

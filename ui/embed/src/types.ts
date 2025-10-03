@@ -17,9 +17,11 @@ export const TITLE_BGCOLOR_PARAM = 'bg-color';
 export const TITLE_FGCOLOR_PARAM = 'fg-color';
 export const BASE_PATH_PARAM = 'base-path';
 export const DISPLAY_ITEM_MODAL_PARAM = 'item-modal';
+export const HIDE_ORGANIZATION_SECTION_PARAM = 'hide-organization-section';
 
 export interface Data {
   foundation: string;
+  hide_organization_section?: boolean;
   classification: CategoryClassification | MaturityClassification | TagClassification;
   category: Category;
   items: BaseItem[];
@@ -134,3 +136,4 @@ export const DEFAULT_TITLE_BG_COLOR = '#323437';
 export const DEFAULT_TITLE_FG_COLOR = '#ffffff';
 export const DEFAULT_DISPLAY_ITEM_MODAL = false;
 export const DEFAULT_CLASSIFY_TYPE = ClassifyType.Category;
+export const DEFAULT_HIDE_ORGANIZATION_SECTION = false;

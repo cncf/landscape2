@@ -15,6 +15,7 @@ interface CurrrentItem {
   classifyBy: string;
   key: string;
   itemId: string;
+  hideOrganizationSection?: boolean;
 }
 
 const App = () => {
@@ -56,7 +57,10 @@ const App = () => {
       // If the message is to show the item details
       if (event.data.type === 'showItemDetails') {
         // Set the current item
-        setCurrentItem(event.data);
+        setCurrentItem({
+          ...event.data,
+          hideOrganizationSection: event.data.hideOrganizationSection,
+        });
       }
     });
     // Subscribe to the itemsDataGetter to get the available keys
@@ -126,6 +130,7 @@ const App = () => {
           activeItemId={currentItem()!.itemId}
           itemInfo={itemInfo()}
           onClose={onClose}
+          hideOrganizationSection={currentItem()!.hideOrganizationSection}
         />
       </Show>
     </>

@@ -32,6 +32,7 @@ interface Props {
   item?: Item | null;
   parentInfo?: Item | null;
   foundation: string;
+  hideOrganizationSection?: boolean;
   basePath?: string;
   onClose?: () => void;
 }
@@ -590,7 +591,7 @@ export const ItemModalContent = (props: Props) => {
           </div>
         </Show>
         {/* Organization */}
-        <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
+        <Show when={!props.hideOrganizationSection && !isUndefined(itemInfo()!.crunchbase_data)}>
           <div class={`position-relative border ${Fieldset}`}>
             <div class={`position-absolute px-2 bg-white fw-semibold ${FieldsetTitle}`}>Organization</div>
             <div class="d-flex flex-row align-items-center">
