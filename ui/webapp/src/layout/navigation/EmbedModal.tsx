@@ -40,6 +40,7 @@ import {
   DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
   FontFamily,
+  HIDE_ORGANIZATION_SECTION_PARAM,
   ITEM_NAME_SIZE_PARAM,
   ITEMS_ALIGNMENT_PARAM,
   ITEMS_SIZE_PARAM,
@@ -55,7 +56,13 @@ import {
   TITLE_SIZE_PARAM,
   UPPERCASE_TITLE_PARAM,
 } from '../../../../embed/src/types';
-import { BASE_PATH, EMBED_SETUP_PATH, REGEX_UNDERSCORE, SMALL_DEVICES_BREAKPOINTS } from '../../data';
+import {
+  BASE_PATH,
+  EMBED_SETUP_PATH,
+  HIDE_ORGANIZATION_SECTION_IN_PROJECTS,
+  REGEX_UNDERSCORE,
+  SMALL_DEVICES_BREAKPOINTS,
+} from '../../data';
 import { Category, Subcategory } from '../../types';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
@@ -143,6 +150,7 @@ const EmbedModal = () => {
   const [displayItemName, setDisplayItemName] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_NAME);
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
   const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
+  const [hideOrganizationSection] = createSignal<boolean>(HIDE_ORGANIZATION_SECTION_IN_PROJECTS);
   const [url, setUrl] = createSignal<string>();
   const [prevHash, setPrevHash] = createSignal<string>('');
   const [prevSearch, setPrevSearch] = createSignal<string>('');
@@ -186,6 +194,10 @@ const EmbedModal = () => {
     embedParams.append(TITLE_BGCOLOR_PARAM, bgColor());
     embedParams.append(TITLE_FGCOLOR_PARAM, fgColor());
     embedParams.append(DISPLAY_ITEM_MODAL_PARAM, displayItemModal() ? 'true' : 'false');
+    embedParams.append(
+      HIDE_ORGANIZATION_SECTION_PARAM,
+      displayItemModal() && hideOrganizationSection() ? 'true' : 'false'
+    );
 
     if (selectedStyle() !== Style.Card) {
       embedParams.append(DISPLAY_ITEM_NAME_PARAM, displayItemName() ? 'true' : 'false');

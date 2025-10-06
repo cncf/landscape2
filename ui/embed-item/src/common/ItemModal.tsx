@@ -6,6 +6,7 @@ import { css } from 'solid-styled-components';
 interface Props {
   activeItemId: string | null;
   foundation: string;
+  hideOrganizationSection?: boolean;
   itemInfo?: Item | null;
   onClose: () => void;
 }
@@ -40,9 +41,19 @@ const ItemModal = (props: Props) => {
         >
           <Show
             when={width() > 1200}
-            fallback={<ItemModalMobileContent item={itemInfo()} foundation={props.foundation} />}
+            fallback={
+              <ItemModalMobileContent
+                item={itemInfo()}
+                foundation={props.foundation}
+                hideOrganizationSection={props.hideOrganizationSection}
+              />
+            }
           >
-            <ItemModalContent item={itemInfo()} foundation={props.foundation} />
+            <ItemModalContent
+              item={itemInfo()}
+              foundation={props.foundation}
+              hideOrganizationSection={props.hideOrganizationSection}
+            />
           </Show>
         </Show>
       </Modal>

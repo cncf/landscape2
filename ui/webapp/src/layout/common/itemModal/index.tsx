@@ -3,7 +3,13 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, Show } from 'solid-js';
 
-import { BASE_PATH, FOUNDATION, ITEM_VIEW, SMALL_DEVICES_BREAKPOINTS } from '../../../data';
+import {
+  BASE_PATH,
+  FOUNDATION,
+  HIDE_ORGANIZATION_SECTION_IN_PROJECTS,
+  ITEM_VIEW,
+  SMALL_DEVICES_BREAKPOINTS,
+} from '../../../data';
 import { Item } from '../../../types';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useActiveItemId, useUpdateActiveItemId } from '../../stores/activeItem';
@@ -72,6 +78,7 @@ const ItemModal = () => {
                 foundation={FOUNDATION}
                 parentInfo={parentInfo()}
                 onClose={() => updateActiveItemId()}
+                hideOrganizationSection={HIDE_ORGANIZATION_SECTION_IN_PROJECTS}
               />
             }
           >
@@ -81,6 +88,7 @@ const ItemModal = () => {
               basePath={BASE_PATH}
               parentInfo={parentInfo()}
               onClose={() => updateActiveItemId()}
+              hideOrganizationSection={HIDE_ORGANIZATION_SECTION_IN_PROJECTS}
             />
           </Show>
         </Show>

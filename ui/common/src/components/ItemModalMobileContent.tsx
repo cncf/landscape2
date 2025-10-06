@@ -28,6 +28,7 @@ interface Props {
   item?: Item | null;
   parentInfo?: Item | null;
   foundation: string;
+  hideOrganizationSection?: boolean;
   onClose?: () => void;
 }
 
@@ -356,7 +357,7 @@ export const ItemModalMobileContent = (props: Props) => {
         </Show>
 
         {/* Organization */}
-        <Show when={!isUndefined(itemInfo()!.crunchbase_data)}>
+        <Show when={!props.hideOrganizationSection && !isUndefined(itemInfo()!.crunchbase_data)}>
           <div class={`text-uppercase mt-3 fw-semibold border-bottom ${SectionTitle}`}>Organization</div>
           <div class={`fw-semibold text-truncate my-2 ${Text}`}>{itemInfo()!.crunchbase_data!.name}</div>
           <div class="d-flex flex-row align-items-center">

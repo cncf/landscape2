@@ -353,6 +353,12 @@
           "examples": ["https://example.com/logo.svg", "images/logo.svg"] }
       }
     },
+    "hide_organization_section_in_projects": {
+      "title": "Hide organization section in projects",
+      "description": "When true, the organization section in the item modal is hidden for project items",
+      "type": "boolean",
+      "examples": [true]
+    },
     "images": {
       "title": "Images",
       "description": "Urls of some images used in the landscape UI",

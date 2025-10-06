@@ -18,6 +18,7 @@ export interface BaseData {
   view_mode?: ViewMode;
   header?: HeaderContent;
   footer?: FooterContent;
+  hide_organization_section_in_projects?: boolean;
 }
 
 export interface HeaderContent {
@@ -126,6 +127,7 @@ export interface Item extends BaseItem {
   audits?: SecurityAudit[];
   parent_project?: string;
   other_links?: OtherLink[];
+  hide_organization_section_in_projects?: boolean;
 }
 
 export interface OtherLink {
