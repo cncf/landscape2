@@ -236,7 +236,7 @@ export const overrideSettings = (values: SettingsValue) => {
   GRID_SIZE = values.gridSize;
   DEFAULT_VIEW_MODE = values.viewMode;
   HIDE_ORGANIZATION_SECTION_IN_PROJECTS = window.baseDS
-    ? window.baseDS.hide_organization_section_in_projects ?? DEFAULT_HIDE_ORGANIZATION_SECTION
+    ? (window.baseDS.hide_organization_section_in_projects ?? DEFAULT_HIDE_ORGANIZATION_SECTION)
     : DEFAULT_HIDE_ORGANIZATION_SECTION;
   ZOOM_LEVELS = ZOOM_LEVELS_PER_SIZE[values.gridSize];
   FILTERS = [
