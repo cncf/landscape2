@@ -93,8 +93,12 @@
   top: 0px;
 }
 
+:global(.motd-visible) .isSticky {
+  top: var(--motd-height);
+}
+
 :global(.overlay-active) .isSticky {
-  top: var(--overlay-alert-height);
+  top: calc(var(--overlay-alert-height) + var(--motd-height));
 }
 
 .mobileBtn {

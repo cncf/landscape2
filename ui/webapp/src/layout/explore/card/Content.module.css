@@ -7,6 +7,18 @@
   scroll-margin: 5.5rem;
 }
 
+:global(.motd-visible) .section {
+  scroll-margin: calc(5.5rem + var(--motd-height));
+}
+
+:global(.overlay-active) .section {
+  scroll-margin: calc(5.5rem + var(--overlay-alert-height));
+}
+
+:global(.overlay-active.motd-visible) .section {
+  scroll-margin: calc(5.5rem + var(--overlay-alert-height) + var(--motd-height));
+}
+
 .categoryTitle {
   max-width: 50%;
 }

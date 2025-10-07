@@ -5,6 +5,7 @@
   --card-gap: 5px;
   --mobile-card-size-width: 50px;
   --mobile-card-size-height: 50px;
+  --motd-height: 0px;
 
   --color1: rgba(0, 107, 204, 1);
   --color2: rgba(255, 0, 170, 1);
@@ -107,6 +108,7 @@ a,
     overflow: auto;
   }
 
+  .motd-visible #landscape,
   .overlay-active #landscape {
     height: 100%;
   }

@@ -26,6 +26,7 @@ export interface HeaderContent {
     github?: string;
   };
   logo?: string;
+  motd?: string;
 }
 
 export interface FooterContent {

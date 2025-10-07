@@ -4,6 +4,10 @@
   min-height: var(--app-height);
 }
 
+:global(.motd-visible) .container {
+  margin-top: var(--motd-height);
+}
+
 :global(.overlay-active) .container {
-  margin-top: var(--overlay-alert-height);
+  margin-top: calc(var(--overlay-alert-height) + var(--motd-height));
 }

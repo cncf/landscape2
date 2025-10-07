@@ -121,6 +121,7 @@ a,
     overflow: auto;
   }
 
+  .motd-visible #landscape,
   .overlay-active #landscape {
     height: 100%;
   }

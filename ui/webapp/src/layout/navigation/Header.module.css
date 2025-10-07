@@ -7,8 +7,12 @@
   top: 0;
 }
 
+:global(.motd-visible) .navbar {
+  top: var(--motd-height);
+}
+
 :global(.overlay-active) .navbar {
-  top: var(--overlay-alert-height);
+  top: calc(var(--overlay-alert-height) + var(--motd-height));
 }
 
 .logo {
