@@ -7,6 +7,21 @@
   max-height: calc(var(--app-height) - 4.5rem);
 }
 
+:global(.motd-visible) .sticky {
+  top: calc(4.5rem + var(--motd-height));
+  max-height: calc(var(--app-height) - 4.5rem - var(--motd-height));
+}
+
+:global(.overlay-active) .sticky {
+  top: calc(4.5rem + var(--overlay-alert-height));
+  max-height: calc(var(--app-height) - 4.5rem - var(--overlay-alert-height));
+}
+
+:global(.overlay-active.motd-visible) .sticky {
+  top: calc(4.5rem + var(--overlay-alert-height) + var(--motd-height));
+  max-height: calc(var(--app-height) - 4.5rem - var(--overlay-alert-height) - var(--motd-height));
+}
+
 .wrapper {
   height: calc(100% - 3rem);
 }

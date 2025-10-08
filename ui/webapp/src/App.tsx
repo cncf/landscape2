@@ -3,7 +3,7 @@ import { Route, Router } from '@solidjs/router';
 import { Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
-import { batch, createEffect, createSignal, on, onMount, Show } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
 
 import styles from './App.module.css';
 import {
@@ -49,8 +49,12 @@ const App = () => {
   const [data, setData] = createSignal<BaseData>();
   const [loadingOverlay, setLoadingOverlay] = createSignal<boolean>(false);
   const [error, setError] = createSignal<string | undefined>();
+  const [motdDismissed, setMotdDismissed] = createSignal(false);
   const size = createWindowSize();
   const height = () => size.height;
+  const motdContent = () => data()?.header?.motd;
+  const motdVisible = createMemo(() => !isUndefined(motdContent()) && !motdDismissed());
+  let motdRef: HTMLDivElement | undefined;
 
   async function fetchOverlayData() {
     try {
@@ -69,6 +73,15 @@ const App = () => {
 
   const updateAppHeight = () => {
     document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+  };
+
+  const updateMotdHeight = () => {
+    if (!motdVisible()) {
+      document.documentElement.style.setProperty('--motd-height', '0px');
+      return;
+    }
+    const elementHeight = motdRef?.offsetHeight ?? 0;
+    document.documentElement.style.setProperty('--motd-height', `${elementHeight}px`);
   };
 
   const loadColors = () => {
@@ -119,6 +132,38 @@ const App = () => {
 
   createEffect(on(height, updateAppHeight));
 
+  createEffect(
+    on(motdContent, () => {
+      setMotdDismissed(false);
+    })
+  );
+
+  createEffect(() => {
+    if (motdVisible()) {
+      document.body.classList.add('motd-visible');
+      requestAnimationFrame(() => {
+        updateMotdHeight();
+      });
+    } else {
+      document.body.classList.remove('motd-visible');
+      document.documentElement.style.setProperty('--motd-height', '0px');
+    }
+  });
+
+  createEffect(() => {
+    if (!motdVisible() || !motdRef || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    updateMotdHeight();
+    const observer = new ResizeObserver(() => {
+      updateMotdHeight();
+    });
+    observer.observe(motdRef);
+    onCleanup(() => {
+      observer.disconnect();
+    });
+  });
+
   onMount(() => {
     const isOverlayActive = overlayData.checkIfOverlayInQuery();
     if (!isOverlayActive) {
@@ -147,9 +192,33 @@ const App = () => {
       <Show when={isOverlay() && !isUndefined(error)}>
         <div class={`position-fixed top-0 start-0 end-0 ${styles.alertWrapper}`}>
           <div
-            class={`alert alert-warning w-100 d-flex align-items-center justify-content-center rounded-0 m-0 px-3 py-0 lh-base text-uppercase fw-semibold ${styles.alert}`}
+            class={`alert alert-warning w-100 d-flex align-items-center justify-content-center rounded-0 m-0 px-3 py-0 lh-base text-uppercase fw-semibold ${styles.alert} ${styles.alertOverlay}`}
           >
             Landscape overlay enabled
+          </div>
+        </div>
+      </Show>
+      {/* motd */}
+      <Show when={motdVisible() && !isUndefined(motdContent())}>
+        <div
+          class={`position-fixed start-0 end-0 ${styles.alertWrapper}`}
+          style={{ top: isOverlay() ? 'var(--overlay-alert-height)' : '0px' }}
+        >
+          <div
+            ref={motdRef}
+            class={`alert w-100 d-flex align-items-center rounded-0 m-0 px-3 px-lg-4 py-2 lh-base ${styles.alert} ${styles.motd} ${styles.motdAlert}`}
+          >
+            {/* eslint-disable solid/no-innerhtml */}
+            <div class={`flex-grow-1 text-center ${styles.motdMessage}`} innerHTML={motdContent()} />
+            {/* eslint-enable solid/no-innerhtml */}
+            <button
+              type="button"
+              class={`btn-close ${styles.motdClose}`}
+              aria-label="Dismiss message"
+              onClick={() => {
+                setMotdDismissed(true);
+              }}
+            />
           </div>
         </div>
       </Show>

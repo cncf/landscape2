@@ -5,10 +5,16 @@
 .alert {
   font-size: 0.8rem;
   border: 0;
-  border: 1px solid var(--bs-warning-border-subtle);
+  border: 1px solid transparent;
   border-width: 1px 0 1px 0;
+}
+
+.alertOverlay {
   height: var(--overlay-alert-height);
   cursor: none;
+  position: relative;
+  padding-right: 3rem;
+  border-color: var(--bs-warning-border-subtle);
 }
 
 .legend {
@@ -21,11 +27,81 @@
   max-width: 90%;
   max-height: 80%;
   height: 500px;
-  margin-top: var(--overlay-alert-height);
+  margin-top: calc(var(--overlay-alert-height) + var(--motd-height));
 }
 
 .errorAlertHeading {
   font-size: 1.5rem;
+}
+
+.motd p {
+  margin-bottom: 0.25rem;
+}
+
+.motd p:last-child {
+  margin-bottom: 0;
+}
+
+.motdAlert {
+  justify-content: center;
+  gap: 1rem;
+  min-height: 44px;
+  background-color: var(--bs-gray-100);
+  border-color: var(--bs-border-color);
+}
+
+.motdMessage {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 62px;
+  overflow-y: auto;
+}
+
+/* Motd message styles */
+/* Hide all by default */
+.motdMessage * {
+  display: none;
+}
+
+/* Show only these elements */
+.motdMessage a,
+.motdMessage strong,
+.motdMessage em,
+.motdMessage i,
+.motdMessage br {
+  display: inline;
+}
+.motdMessage p,
+.motdMessage h1,
+.motdMessage h2,
+.motdMessage h3,
+.motdMessage h4,
+.motdMessage h5,
+.motdMessage h6 {
+  display: block;
+}
+.motdMessage h1,
+.motdMessage h2,
+.motdMessage h3,
+.motdMessage h4,
+.motdMessage h5,
+.motdMessage h6 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.25rem 0;
+}
+.motdMessage a {
+  text-decoration: underline;
+}
+/* End motd message styles */
+
+.motdClose {
+  flex: 0 0 auto;
+  cursor: pointer;
+  align-self: flex-start;
+  margin: 0.25rem 0 0 auto;
 }
 
 .preWrapper {
