@@ -206,9 +206,11 @@ const App = () => {
         >
           <div
             ref={motdRef}
-            class={`alert alert-warning w-100 d-flex align-items-center rounded-0 m-0 px-3 px-lg-4 py-2 lh-base ${styles.alert} ${styles.motd} ${styles.motdAlert}`}
+            class={`alert w-100 d-flex align-items-center rounded-0 m-0 px-3 px-lg-4 py-2 lh-base ${styles.alert} ${styles.motd} ${styles.motdAlert}`}
           >
-            <div class={`flex-grow-1 text-center ${styles.motdMessage}`} innerHTML={motdContent()}></div>
+            {/* eslint-disable solid/no-innerhtml */}
+            <div class={`flex-grow-1 ${styles.motdMessage}`} innerHTML={motdContent()} />
+            {/* eslint-enable solid/no-innerhtml */}
             <button
               type="button"
               class={`btn-close ${styles.motdClose}`}
@@ -216,7 +218,7 @@ const App = () => {
               onClick={() => {
                 setMotdDismissed(true);
               }}
-            ></button>
+            />
           </div>
         </div>
       </Show>
