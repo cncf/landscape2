@@ -6,6 +6,7 @@ import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
+import reduce from 'lodash/reduce';
 import some from 'lodash/some';
 import uniq from 'lodash/uniq';
 import uniqWith from 'lodash/uniqWith';
@@ -378,6 +379,23 @@ export class ItemsDataGetter {
     return groupedItems;
   }
 
+  // Group items by tags (considering items can have multiple tags)
+  private groupByTags(items: Item[]): Record<string, Item[]> {
+    return reduce(
+      items,
+      (acc, item) => {
+        const tags = item.tag && item.tag.length > 0 ? item.tag : ['undefined']; // Assign to 'undefined' tag if no tags are present
+
+        tags.forEach((tag) => {
+          (acc[tag] ||= []).push(item);
+        });
+
+        return acc;
+      },
+      {} as Record<string, Item[]>
+    );
+  }
+
   // Classify items
   public classifyItems(
     items: (BaseItem | Item)[],
@@ -393,7 +411,7 @@ export class ItemsDataGetter {
       case ClassifyOption.Maturity:
         return groupBy(items, 'maturity');
       case ClassifyOption.TAG:
-        return groupBy(items, 'tag');
+        return this.groupByTags(items as Item[]);
     }
   }
 
