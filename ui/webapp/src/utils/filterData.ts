@@ -23,9 +23,15 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
 
       // Filter Category
       if (activeFilters[FilterCategory.Category]) {
+        const additional_categories = item.additional_categories
+          ? item.additional_categories.map((c) => c.category)
+          : [];
         if (isUndefined(item.category)) {
           return false;
-        } else if (!activeFilters[FilterCategory.Category].includes(item.category)) {
+        } else if (
+          !activeFilters[FilterCategory.Category].includes(item.category) &&
+          !activeFilters[FilterCategory.Category].some((c) => additional_categories.includes(c))
+        ) {
           return false;
         }
       }

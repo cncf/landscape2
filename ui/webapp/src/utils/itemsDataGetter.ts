@@ -343,14 +343,15 @@ export class ItemsDataGetter {
 
     if (items && items.length > 0) {
       const addItem = (category: string, subcategory: string, item: BaseItem | Item) => {
+        const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
         if (groupedItems[category]) {
           if (groupedItems[category][subcategory]) {
-            groupedItems[category][subcategory].push(item);
+            groupedItems[category][subcategory].push(preparedItem);
           } else {
-            groupedItems[category][subcategory] = [item];
+            groupedItems[category][subcategory] = [preparedItem];
           }
         } else {
-          groupedItems[category] = { [subcategory]: [item] };
+          groupedItems[category] = { [subcategory]: [preparedItem] };
         }
       };
 
@@ -377,6 +378,46 @@ export class ItemsDataGetter {
     }
 
     return groupedItems;
+  }
+
+  // Align item metadata with the category view consuming this entry
+  private prepareItemForCategory(
+    item: BaseItem | Item,
+    category: string,
+    subcategory: string,
+    activeCategoryFilters?: string[]
+  ): BaseItem | Item {
+    const shouldFilterAdditionalCategories = !isUndefined(activeCategoryFilters) && activeCategoryFilters.length > 0;
+
+    const filteredAdditionalCategories =
+      shouldFilterAdditionalCategories && item.additional_categories
+        ? item.additional_categories.filter((additionalCategory: AdditionalCategory) =>
+            activeCategoryFilters!.includes(additionalCategory.category)
+          )
+        : item.additional_categories;
+
+    const requiresClone =
+      item.category !== category || item.subcategory !== subcategory || shouldFilterAdditionalCategories;
+
+    if (!requiresClone) {
+      return item;
+    }
+
+    const preparedItem: BaseItem | Item = {
+      ...item,
+      category,
+      subcategory,
+    };
+
+    if (shouldFilterAdditionalCategories) {
+      if (!isUndefined(filteredAdditionalCategories) && filteredAdditionalCategories.length > 0) {
+        preparedItem.additional_categories = filteredAdditionalCategories;
+      } else {
+        delete (preparedItem as BaseItem).additional_categories;
+      }
+    }
+
+    return preparedItem;
   }
 
   // Group items by tags (considering items can have multiple tags)
@@ -429,26 +470,27 @@ export class ItemsDataGetter {
       }
 
       const addItem = (group: string, category: string, subcategory: string, item: Item | BaseItem) => {
+        const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
         if (data[group][category]) {
           if (data[group][category][subcategory]) {
-            data[group][category][subcategory].items.push(item);
+            data[group][category][subcategory].items.push(preparedItem);
             data[group][category][subcategory].itemsCount++;
-            if (item.featured) {
+            if (preparedItem.featured) {
               data[group][category][subcategory].itemsFeaturedCount++;
             }
           } else {
             data[group][category][subcategory] = {
-              items: [item],
+              items: [preparedItem],
               itemsCount: 1,
-              itemsFeaturedCount: item.featured ? 1 : 0,
+              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
             };
           }
         } else {
           data[group][category] = {
             [subcategory]: {
-              items: [item],
+              items: [preparedItem],
               itemsCount: 1,
-              itemsFeaturedCount: item.featured ? 1 : 0,
+              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
             },
           };
         }
