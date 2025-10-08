@@ -54,7 +54,8 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  max-height: 250px;
+  justify-content: center;
+  max-height: 62px;
   overflow-y: auto;
 }
 
@@ -78,9 +79,7 @@
 .motdMessage h3,
 .motdMessage h4,
 .motdMessage h5,
-.motdMessage h6,
-.motdMessage ul,
-.motdMessage ol {
+.motdMessage h6 {
   display: block;
 }
 .motdMessage h1,
@@ -93,15 +92,8 @@
   font-weight: 600;
   margin: 0.25rem 0;
 }
-.motdMessage ul,
-.motdMessage ol {
-  margin: 0.25rem 0;
-  padding-left: 1.5rem;
-  text-align: left;
-}
-.motdMessage li {
-  display: list-item;
-  text-align: left;
+.motdMessage a {
+  text-decoration: underline;
 }
 /* End motd message styles */
 
