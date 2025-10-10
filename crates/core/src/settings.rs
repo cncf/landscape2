@@ -69,6 +69,9 @@ pub struct LandscapeSettings {
     pub colors: Option<Colors>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub enduser: Option<Vec<EndUserRule>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -222,6 +225,7 @@ impl LandscapeSettings {
         validate_url("landscape", Some(self.url.clone()).as_ref())?;
 
         self.validate_base_path()?;
+        self.validate_description()?;
         self.validate_categories()?;
         self.validate_colors()?;
         self.validate_featured_items()?;
@@ -301,6 +305,17 @@ impl LandscapeSettings {
                     bail!(r#"{name} is not valid (expected format: "rgba(0, 107, 204, 1)")"#);
                 }
             }
+        }
+
+        Ok(())
+    }
+
+    /// Check description is not empty when provided.
+    fn validate_description(&self) -> Result<()> {
+        if let Some(description) = &self.description
+            && description.is_empty()
+        {
+            bail!("description cannot be empty");
         }
 
         Ok(())
@@ -947,6 +962,19 @@ mod tests {
             foundation: "Foundation".to_string(),
             url: "https://example.url".to_string(),
             base_path: Some("base_path".to_string()),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "description cannot be empty")]
+    fn settings_validate_description_empty() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            description: Some("   ".to_string()),
             ..Default::default()
         };
 

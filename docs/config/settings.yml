@@ -103,6 +103,15 @@ colors:
   color6: "rgba(0, 42, 81, 0.7)"
   color7: "rgba(180, 219, 255, 1)"
 
+# Description (optional)
+#
+# Text describing the landscape. Aim for ~150 characters so search engines may
+# use this content as the site's description in results pages.
+#
+# description: <LANDSCAPE_DESCRIPTION>
+#
+description: The CNCF Landscape showcases cloud native projects and members.
+
 # End user (optional)
 #
 # This section allows defining what items should be marked as `end user` based
