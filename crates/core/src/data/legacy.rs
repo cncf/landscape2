@@ -28,7 +28,7 @@ impl LandscapeData {
     pub fn validate(&self) -> Result<()> {
         for (category_index, category) in self.landscape.iter().enumerate() {
             // Check category name
-            if category.name.is_empty() {
+            if category.name.trim().is_empty() {
                 bail!("category [{category_index}] name is required");
             }
 
@@ -37,7 +37,7 @@ impl LandscapeData {
                 let mut items_seen = Vec::new();
 
                 // Check subcategory name
-                if subcategory.name.is_empty() {
+                if subcategory.name.trim().is_empty() {
                     bail!(
                         "subcategory [{subcategory_index}] name is required (category: [{}]) ",
                         category.name
@@ -46,7 +46,7 @@ impl LandscapeData {
 
                 for (item_index, item) in subcategory.items.iter().enumerate() {
                     // Prepare context for errors
-                    let item_id = if item.name.is_empty() {
+                    let item_id = if item.name.trim().is_empty() {
                         format!("{item_index}")
                     } else {
                         item.name.clone()
@@ -57,7 +57,7 @@ impl LandscapeData {
                     );
 
                     // Check name
-                    if item.name.is_empty() {
+                    if item.name.trim().is_empty() {
                         return Err(format_err!("item name is required")).context(ctx);
                     }
                     if items_seen.contains(&item.name) {
@@ -66,12 +66,12 @@ impl LandscapeData {
                     items_seen.push(item.name.clone());
 
                     // Check homepage
-                    if item.homepage_url.is_empty() {
+                    if item.homepage_url.trim().is_empty() {
                         return Err(format_err!("homepage url is required")).context(ctx);
                     }
 
                     // Check logo
-                    if item.logo.is_empty() {
+                    if item.logo.trim().is_empty() {
                         return Err(format_err!("logo is required")).context(ctx);
                     }
 
@@ -80,10 +80,10 @@ impl LandscapeData {
                         // Check other links
                         if let Some(other_links) = &extra.other_links {
                             for link in other_links {
-                                if link.name.is_empty() {
+                                if link.name.trim().is_empty() {
                                     return Err(format_err!("link name is required")).context(ctx);
                                 }
-                                if link.url.is_empty() {
+                                if link.url.trim().is_empty() {
                                     return Err(format_err!("link url is required")).context(ctx);
                                 }
                             }
@@ -317,7 +317,7 @@ mod tests {
     fn landscape_data_validate_empty_category_name() {
         let mut landscape = LandscapeData::default();
         landscape.landscape.push(Category {
-            name: String::new(),
+            name: "   ".to_string(),
             subcategories: vec![],
         });
 
@@ -331,7 +331,7 @@ mod tests {
         landscape.landscape.push(Category {
             name: "Category".to_string(),
             subcategories: vec![SubCategory {
-                name: String::new(),
+                name: "   ".to_string(),
                 items: vec![],
             }],
         });
@@ -348,7 +348,7 @@ mod tests {
             subcategories: vec![SubCategory {
                 name: "Subcategory".to_string(),
                 items: vec![Item {
-                    name: String::new(),
+                    name: "   ".to_string(),
                     ..Default::default()
                 }],
             }],
@@ -388,6 +388,8 @@ mod tests {
                 name: "Subcategory".to_string(),
                 items: vec![Item {
                     name: "Item".to_string(),
+                    homepage_url: "   ".to_string(),
+                    logo: "logo".to_string(),
                     ..Default::default()
                 }],
             }],
@@ -407,6 +409,7 @@ mod tests {
                 items: vec![Item {
                     name: "Item".to_string(),
                     homepage_url: "https://example.com".to_string(),
+                    logo: "   ".to_string(),
                     ..Default::default()
                 }],
             }],
@@ -429,7 +432,7 @@ mod tests {
                     logo: "logo".to_string(),
                     extra: Some(ItemExtra {
                         other_links: Some(vec![ItemLink {
-                            name: String::new(),
+                            name: "   ".to_string(),
                             url: "https://link.url".to_string(),
                         }]),
                         ..Default::default()
@@ -457,7 +460,7 @@ mod tests {
                     extra: Some(ItemExtra {
                         other_links: Some(vec![ItemLink {
                             name: "name".to_string(),
-                            url: String::new(),
+                            url: "   ".to_string(),
                         }]),
                         ..Default::default()
                     }),
