@@ -217,7 +217,7 @@ impl LandscapeSettings {
     /// Validate landscape settings.
     fn validate(&self) -> Result<()> {
         // Check foundation is not empty
-        if self.foundation.is_empty() {
+        if self.foundation.trim().is_empty() {
             bail!("foundation cannot be empty");
         }
 
@@ -248,7 +248,7 @@ impl LandscapeSettings {
         };
 
         // Check base path is not empty
-        if base_path.is_empty() {
+        if base_path.trim().is_empty() {
             bail!("base_path cannot be empty");
         }
 
@@ -264,20 +264,20 @@ impl LandscapeSettings {
     fn validate_categories(&self) -> Result<()> {
         if let Some(categories) = &self.categories {
             for (i, category) in categories.iter().enumerate() {
-                let category_id = if category.name.is_empty() {
+                let category_id = if category.name.trim().is_empty() {
                     format!("{i}")
                 } else {
                     category.name.clone()
                 };
 
                 // Name
-                if category.name.is_empty() {
+                if category.name.trim().is_empty() {
                     bail!("category [{category_id}] name cannot be empty");
                 }
 
                 // Subcategories
                 for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
-                    if subcategory.is_empty() {
+                    if subcategory.trim().is_empty() {
                         bail!("category [{category_id}]: subcategory [{subcategory_index}] cannot be empty");
                     }
                 }
@@ -313,7 +313,7 @@ impl LandscapeSettings {
     /// Check description is not empty when provided.
     fn validate_description(&self) -> Result<()> {
         if let Some(description) = &self.description
-            && description.is_empty()
+            && description.trim().is_empty()
         {
             bail!("description cannot be empty");
         }
@@ -325,7 +325,7 @@ impl LandscapeSettings {
     fn validate_featured_items(&self) -> Result<()> {
         if let Some(featured_items) = &self.featured_items {
             for (i, rule) in featured_items.iter().enumerate() {
-                let rule_id = if rule.field.is_empty() {
+                let rule_id = if rule.field.trim().is_empty() {
                     format!("{i}")
                 } else {
                     rule.field.clone()
@@ -333,7 +333,7 @@ impl LandscapeSettings {
                 let ctx = format!("featured item rule [{rule_id}] is not valid");
 
                 // Field
-                if rule.field.is_empty() {
+                if rule.field.trim().is_empty() {
                     return Err(format_err!("field cannot be empty")).context(ctx);
                 }
 
@@ -343,13 +343,13 @@ impl LandscapeSettings {
                 }
                 for option in &rule.options {
                     // Value
-                    if option.value.is_empty() {
+                    if option.value.trim().is_empty() {
                         return Err(format_err!("option value cannot be empty")).context(ctx);
                     }
 
                     // Label
                     if let Some(label) = &option.label
-                        && label.is_empty()
+                        && label.trim().is_empty()
                     {
                         return Err(format_err!("option label cannot be empty")).context(ctx);
                     }
@@ -394,7 +394,7 @@ impl LandscapeSettings {
 
         // Text
         if let Some(text) = &footer.text
-            && text.is_empty()
+            && text.trim().is_empty()
         {
             bail!("footer text cannot be empty");
         }
@@ -406,20 +406,20 @@ impl LandscapeSettings {
     fn validate_groups(&self) -> Result<()> {
         if let Some(groups) = &self.groups {
             for (i, group) in groups.iter().enumerate() {
-                let group_id = if group.name.is_empty() {
+                let group_id = if group.name.trim().is_empty() {
                     format!("{i}")
                 } else {
                     group.name.clone()
                 };
 
                 // Name
-                if group.name.is_empty() {
+                if group.name.trim().is_empty() {
                     bail!("group [{group_id}] name cannot be empty");
                 }
 
                 // Categories
                 for (category_index, category) in group.categories.iter().enumerate() {
-                    if category.is_empty() {
+                    if category.trim().is_empty() {
                         bail!("group [{group_id}]: category [{category_index}] cannot be empty");
                     }
                 }
@@ -450,7 +450,7 @@ impl LandscapeSettings {
 
         // Message of the day
         if let Some(motd) = &header.motd
-            && motd.is_empty()
+            && motd.trim().is_empty()
         {
             bail!("header motd cannot be empty");
         }
@@ -477,7 +477,7 @@ impl LandscapeSettings {
         };
 
         // Check members category is not empty
-        if members_category.is_empty() {
+        if members_category.trim().is_empty() {
             bail!("members category cannot be empty");
         }
 
@@ -489,10 +489,10 @@ impl LandscapeSettings {
         let Some(osano) = &self.osano else { return Ok(()) };
 
         // Check customer id and customer configuration id are not empty
-        if osano.customer_id.is_empty() {
+        if osano.customer_id.trim().is_empty() {
             bail!("osano customer id cannot be empty");
         }
-        if osano.customer_configuration_id.is_empty() {
+        if osano.customer_configuration_id.trim().is_empty() {
             bail!("osano customer configuration id cannot be empty");
         }
 
@@ -518,7 +518,7 @@ impl LandscapeSettings {
             for (i, tag_rules) in tags {
                 for rule in tag_rules {
                     // Category
-                    if rule.category.is_empty() {
+                    if rule.category.trim().is_empty() {
                         bail!("tag [{i}] category cannot be empty");
                     }
 
