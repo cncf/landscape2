@@ -47,6 +47,7 @@ import {
   MaturityClassification,
   Size,
   Style,
+  SUBCATEGORIES_PARAM,
   TagClassification,
   TITLE_ALIGNMENT_PARAM,
   TITLE_BGCOLOR_PARAM,
@@ -150,6 +151,7 @@ const App = () => {
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
   const [itemsAlignment, setItemsAlignment] = createSignal<Alignment>(DEFAULT_ITEMS_ALIGNMENT);
   const [itemsSpacing, setItemsSpacing] = createSignal<number | undefined>();
+  const [selectedSubcategories, setSelectedSubcategories] = createSignal<string[]>([]);
   const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
   const [hideOrganizationSection, setHideOrganizationSection] = createSignal<boolean>(
     DEFAULT_HIDE_ORGANIZATION_SECTION
@@ -162,6 +164,57 @@ const App = () => {
     return items.sort((a, b) => {
       return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     });
+  };
+
+  const filterBySelectedSubcategories = (input: Data, currentClassify: string, currentSelection: string[]): Data => {
+    if (currentClassify !== ClassifyType.Category) {
+      return input;
+    }
+
+    const normalizedSelection = Array.from(
+      new Set(currentSelection.filter((value) => value !== '' && value !== 'all'))
+    );
+
+    if (normalizedSelection.length === 0) {
+      return input;
+    }
+
+    const categoryClassification = input.classification as CategoryClassification;
+    const filteredSubcategories = categoryClassification.category.subcategories.filter((subcategory) =>
+      normalizedSelection.includes(subcategory.normalized_name)
+    );
+
+    if (filteredSubcategories.length === 0) {
+      return input;
+    }
+
+    const allowedNames = new Set(filteredSubcategories.map((subcategory) => subcategory.name));
+    const filteredItems = input.items.filter((item) => {
+      if (allowedNames.has(item.subcategory)) {
+        return true;
+      }
+      if (!item.additional_categories) {
+        return false;
+      }
+      return item.additional_categories.some((additionalCategory) => {
+        return (
+          additionalCategory.category === categoryClassification.category.name &&
+          allowedNames.has(additionalCategory.subcategory)
+        );
+      });
+    });
+
+    return {
+      ...input,
+      classification: {
+        ...categoryClassification,
+        category: {
+          ...categoryClassification.category,
+          subcategories: filteredSubcategories,
+        },
+      },
+      items: filteredItems,
+    };
   };
 
   onMount(() => {
@@ -186,6 +239,7 @@ const App = () => {
     const uppercaseParam = urlParams.get(UPPERCASE_TITLE_PARAM);
     const displayItemModalParam = urlParams.get(DISPLAY_ITEM_MODAL_PARAM);
     const hideOrganizationSectionParam = urlParams.get(HIDE_ORGANIZATION_SECTION_PARAM);
+    const subcategoriesParam = urlParams.get(SUBCATEGORIES_PARAM);
 
     batch(() => {
       if (keyParam !== null) {
@@ -262,6 +316,15 @@ const App = () => {
             setHideOrganizationSection(hideOrganizationSectionParam === 'true');
           }
         }
+        if (classifyByParam === ClassifyType.Category && subcategoriesParam) {
+          const parsedSubcategories = subcategoriesParam
+            .split(',')
+            .map((value) => value.trim())
+            .filter((value) => value !== '');
+          setSelectedSubcategories(parsedSubcategories);
+        } else {
+          setSelectedSubcategories([]);
+        }
         // When size and style are not valid, we don´t save the key
         if (isValidSize && isValidStyle) {
           setBasePath(basePathParam || '');
@@ -277,9 +340,16 @@ const App = () => {
 
   createEffect(
     on(key, () => {
+      const currentKey = key();
+      if (typeof currentKey === 'undefined') {
+        return;
+      }
+      const currentClassifyBy = classifyBy();
+      const currentSelections = selectedSubcategories();
+
       async function fetchData() {
         try {
-          fetch(`${origin()}/data/embed_${classifyBy()}_${key()}.json`)
+          fetch(`${origin()}/data/embed_${currentClassifyBy}_${currentKey}.json`)
             .then((res) => {
               if (res.ok) {
                 return res.json();
@@ -287,7 +357,7 @@ const App = () => {
               throw new Error('Something went wrong');
             })
             .then((res) => {
-              setData(res);
+              setData(filterBySelectedSubcategories(res, currentClassifyBy, currentSelections));
             })
             .catch(() => {
               setData(null);
@@ -296,9 +366,8 @@ const App = () => {
           setData(null);
         }
       }
-      if (typeof key() !== 'undefined') {
-        fetchData();
-      }
+
+      fetchData();
     })
   );
 
