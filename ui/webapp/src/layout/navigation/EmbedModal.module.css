@@ -60,6 +60,59 @@
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
 }
 
+.dropdownWrapper {
+  margin: 0.5rem 0.2rem;
+  width: 250px;
+  max-width: calc(100% - 0.4rem);
+}
+
+.dropdownButton {
+  background-color: #fff;
+  border: 0;
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200);
+  font-size: 0.8rem;
+  padding: 0.55rem 0.75rem;
+  color: var(--bs-gray-800);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dropdownButton:focus {
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+}
+
+.dropdownButtonLabel {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dropdownButtonIcon {
+  flex-shrink: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--bs-gray-800);
+}
+
+.dropdownMenu {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 0;
+  box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
+  margin-top: 0.25rem;
+}
+
+.dropdownOption {
+  margin-bottom: 0.25rem;
+}
+
+.optionLabel {
+  font-size: 0.8rem;
+}
+
 .inputColor,
 .inputColor:focus {
   appearance: none;
