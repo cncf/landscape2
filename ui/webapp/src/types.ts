@@ -51,6 +51,7 @@ export interface FooterContent {
 export interface Group {
   name: string;
   normalized_name: string;
+  alias?: string;
   categories: string[];
 }
 

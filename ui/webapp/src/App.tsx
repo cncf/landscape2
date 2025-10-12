@@ -1,9 +1,9 @@
 import { createWindowSize } from '@solid-primitives/resize-observer';
-import { Route, Router } from '@solidjs/router';
+import { Route, Router, useNavigate } from '@solidjs/router';
 import { Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import range from 'lodash/range';
-import { batch, createEffect, createMemo, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
+import { batch, createEffect, createMemo, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
 
 import styles from './App.module.css';
 import {
@@ -44,6 +44,14 @@ let COLOR_5 = 'rgba(1, 107, 204, 0.7)';
 let COLOR_6 = 'rgba(0, 42, 81, 0.7)';
 let COLOR_7 = 'rgba(180, 219, 255, 1)';
 
+const GroupAliasRedirect = (props: { target: string }) => {
+  const navigate = useNavigate();
+  onMount(() => {
+    navigate(props.target, { replace: true });
+  });
+  return null;
+};
+
 const App = () => {
   const [isOverlay, setIsOverlay] = createSignal<boolean | undefined>();
   const [data, setData] = createSignal<BaseData>();
@@ -55,6 +63,19 @@ const App = () => {
   const motdContent = () => data()?.header?.motd;
   const motdVisible = createMemo(() => !isUndefined(motdContent()) && !motdDismissed());
   let motdRef: HTMLDivElement | undefined;
+  const groupAliasRoutes = createMemo(() => {
+    const groups = data()?.groups;
+    if (isUndefined(groups)) return [];
+    return groups.reduce<{ alias: string; normalized: string }[]>((aliasRoutes, group) => {
+      const alias = group.alias?.trim();
+      if (!alias) return aliasRoutes;
+      const sanitizedAlias = alias.replace(/^\/+|\/+$/g, '');
+      if (sanitizedAlias === '') return aliasRoutes;
+      if (aliasRoutes.some((route) => route.alias === sanitizedAlias)) return aliasRoutes;
+      aliasRoutes.push({ alias: sanitizedAlias, normalized: group.normalized_name });
+      return aliasRoutes;
+    }, []);
+  });
 
   async function fetchOverlayData() {
     try {
@@ -253,6 +274,16 @@ const App = () => {
           <Route path={ACQUISITIONS_PATH} component={Finances} />
           <Route path={PROJECTS_PATH} component={Projects} />
           <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
+          <For each={groupAliasRoutes()}>
+            {(route) => (
+              <Route
+                path={`${EXPLORE_PATH}${route.alias}`}
+                component={() => (
+                  <GroupAliasRedirect target={`${EXPLORE_PATH}?group=${encodeURIComponent(route.normalized)}`} />
+                )}
+              />
+            )}
+          </For>
           <Route path="*" component={NotFound} />
           <Route path={SCREENSHOTS_PATH} component={() => <Screenshots initialData={data()!} />} />
         </Router>
