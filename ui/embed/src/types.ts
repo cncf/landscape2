@@ -19,6 +19,7 @@ export const BASE_PATH_PARAM = 'base-path';
 export const DISPLAY_ITEM_MODAL_PARAM = 'item-modal';
 export const HIDE_ORGANIZATION_SECTION_PARAM = 'hide-organization-section';
 export const SUBCATEGORIES_PARAM = 'subcategories';
+export const CATEGORIES_PARAM = 'categories';
 
 export interface Data {
   foundation: string;

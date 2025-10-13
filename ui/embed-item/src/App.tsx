@@ -16,6 +16,7 @@ interface CurrrentItem {
   key: string;
   itemId: string;
   hideOrganizationSection?: boolean;
+  categories?: string[];
 }
 
 const App = () => {
@@ -60,6 +61,7 @@ const App = () => {
         setCurrentItem({
           ...event.data,
           hideOrganizationSection: event.data.hideOrganizationSection,
+          categories: event.data.categories,
         });
       }
     });
@@ -80,7 +82,12 @@ const App = () => {
       if (currentItem() !== null) {
         if (!availableKeys().includes(`${currentItem()!.classifyBy}_${currentItem()!.key}`)) {
           // Fetch the items data
-          itemsDataGetter.fetchItems(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.basePath);
+          itemsDataGetter.fetchItems(
+            currentItem()!.classifyBy,
+            currentItem()!.key,
+            currentItem()!.basePath,
+            currentItem()!.categories
+          );
         } else {
           // If the item is already available, set the item info
           setItemInfo(
