@@ -65,25 +65,14 @@
         </script>
         <script type="application/ld+json">
             {
-            "@context":"https://schema.org",
-            "@type":"BreadcrumbList",
-            "itemListElement":[
-                {"@type":"ListItem","position":1,"name":"Explore","item":"{{ datasets.base.url }}/"},
-                {"@type":"ListItem","position":2,"name":"Stats","item":"{{ datasets.base.url }}/stats"}{% set guide_summary = datasets.base.guide_summary %}
-                {%- if guide_summary.len() > 0 %},
-                {"@type":"ListItem","position":3,"name":"Guide","item":"{{ datasets.base.url }}/guide"}{% endif %}{% set groups = datasets.base.groups %}
-                {%- if groups.len() > 0 -%}
-                    {%- if guide_summary.len() > 0 -%}
-                        {%- for group in groups -%}
-                            {%- set normalized_name = group.normalized_name.as_ref().unwrap_or(&group.name) %},
-                {"@type":"ListItem","position":{{ loop.index + 3 }},"name":"{{ group.name }}","item":"{{ datasets.base.url }}/?group={{ normalized_name }}"}{% endfor %}
-                    {%- else -%}
-                        {%- for group in groups -%}
-                            {% set normalized_name = group.normalized_name.as_ref().unwrap_or(&group.name) %},
-                {"@type":"ListItem","position":{{ loop.index + 2 }},"name":"{{ group.name }}","item":"{{ datasets.base.url }}/?group={{ normalized_name }}"}{% endfor %}
-                    {%- endif -%}
-                {% endif %}
-            ]
+                "@context":"https://schema.org",
+                "@type":"BreadcrumbList",
+                "itemListElement":[
+                    {"@type":"ListItem","position":1,"name":"Explore","item":"{{ datasets.base.url }}/"},
+                    {"@type":"ListItem","position":2,"name":"Stats","item":"{{ datasets.base.url }}/stats"}{% set guide_summary = datasets.base.guide_summary %}
+                    {%- if guide_summary.len() > 0 %},
+                    {"@type":"ListItem","position":3,"name":"Guide","item":"{{ datasets.base.url }}/guide"}{% endif %}
+                ]
             }
         </script>
         {% set gtm_container_id = analytics|get_gtm_container_id %}
