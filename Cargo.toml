@@ -47,7 +47,7 @@ octorust = "0.10.0"
 parse_link_header = "0.4.0"
 pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
-rand = "0.8.5" # do-not-upgrade
+rand = "0.9.1" # do-not-upgrade
 regex = "1.12.2"
 reqwest = { version = "0.12.24", features = ["json",  "multipart", "native-tls-vendored"] }
 reqwest-middleware = "0.4.2"
