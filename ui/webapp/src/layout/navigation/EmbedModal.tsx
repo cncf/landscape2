@@ -636,10 +636,7 @@ const EmbedModal = () => {
                             <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
                               Category
                             </div>
-                            <div
-                              ref={setCategoriesDropdownRef}
-                              class={`position-relative ${styles.dropdownWrapper}`}
-                            >
+                            <div ref={setCategoriesDropdownRef} class={`position-relative ${styles.dropdownWrapper}`}>
                               <button
                                 type="button"
                                 id="categories"
@@ -745,7 +742,7 @@ const EmbedModal = () => {
                             </div>
                             <Show when={multipleCategoriesSelected()}>
                               <div class={`mt-2 ${styles.dropdownHint}`}>
-                                Select one category to filter specific subcategories.
+                                Select only one category to filter specific subcategories.
                               </div>
                             </Show>
                           </div>
