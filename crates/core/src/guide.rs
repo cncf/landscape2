@@ -117,7 +117,7 @@ impl LandscapeGuide {
     fn validate(&self) -> Result<()> {
         if let Some(categories) = &self.categories {
             for (i, categories) in categories.iter().enumerate() {
-                let category_id = if categories.category.is_empty() {
+                let category_id = if categories.category.trim().is_empty() {
                     format!("{i}")
                 } else {
                     categories.category.clone()
@@ -125,13 +125,13 @@ impl LandscapeGuide {
                 let mut ctx = format!("category [{category_id}] is not valid");
 
                 // Category
-                if categories.category.is_empty() {
+                if categories.category.trim().is_empty() {
                     return Err(format_err!("category cannot be empty")).context(ctx);
                 }
 
                 // Content
                 if let Some(content) = &categories.content
-                    && content.is_empty()
+                    && content.trim().is_empty()
                 {
                     return Err(format_err!("content cannot be empty")).context(ctx);
                 }
@@ -139,7 +139,7 @@ impl LandscapeGuide {
                 // Keywords
                 if let Some(keywords) = &categories.keywords {
                     for keyword in keywords {
-                        if keyword.is_empty() {
+                        if keyword.trim().is_empty() {
                             return Err(format_err!("keywords cannot be empty")).context(ctx);
                         }
                     }
@@ -148,7 +148,7 @@ impl LandscapeGuide {
                 // Subcategories
                 if let Some(subcategories) = &categories.subcategories {
                     for (i, subcategory) in subcategories.iter().enumerate() {
-                        let subcategory_id = if subcategory.subcategory.is_empty() {
+                        let subcategory_id = if subcategory.subcategory.trim().is_empty() {
                             format!("{i}")
                         } else {
                             subcategory.subcategory.clone()
@@ -156,19 +156,19 @@ impl LandscapeGuide {
                         ctx = format!("subcategory [{subcategory_id}] in {ctx}");
 
                         // Subcategory
-                        if subcategory.subcategory.is_empty() {
+                        if subcategory.subcategory.trim().is_empty() {
                             return Err(format_err!("subcategory cannot be empty")).context(ctx);
                         }
 
                         // Content
-                        if subcategory.content.is_empty() {
+                        if subcategory.content.trim().is_empty() {
                             return Err(format_err!("content cannot be empty")).context(ctx);
                         }
 
                         // Keywords
                         if let Some(keywords) = &subcategory.keywords {
                             for keyword in keywords {
-                                if keyword.is_empty() {
+                                if keyword.trim().is_empty() {
                                     return Err(format_err!("keywords cannot be empty")).context(ctx);
                                 }
                             }
@@ -325,7 +325,7 @@ mod tests {
     fn guide_validate_empty_category() {
         let guide = LandscapeGuide {
             categories: Some(vec![Category {
-                category: String::new(),
+                category: "   ".to_string(),
                 ..Default::default()
             }]),
         };
@@ -339,7 +339,7 @@ mod tests {
         let guide = LandscapeGuide {
             categories: Some(vec![Category {
                 category: "category".to_string(),
-                content: Some(String::new()),
+                content: Some("   ".to_string()),
                 ..Default::default()
             }]),
         };
@@ -353,7 +353,7 @@ mod tests {
         let guide = LandscapeGuide {
             categories: Some(vec![Category {
                 category: "category".to_string(),
-                keywords: Some(vec![String::new()]),
+                keywords: Some(vec!["   ".to_string()]),
                 ..Default::default()
             }]),
         };
@@ -368,7 +368,7 @@ mod tests {
             categories: Some(vec![Category {
                 category: "category".to_string(),
                 subcategories: Some(vec![Subcategory {
-                    subcategory: String::new(),
+                    subcategory: "   ".to_string(),
                     ..Default::default()
                 }]),
                 ..Default::default()
@@ -386,7 +386,7 @@ mod tests {
                 category: "category".to_string(),
                 subcategories: Some(vec![Subcategory {
                     subcategory: "subcategory".to_string(),
-                    content: String::new(),
+                    content: "   ".to_string(),
                     ..Default::default()
                 }]),
                 ..Default::default()
@@ -405,7 +405,7 @@ mod tests {
                 subcategories: Some(vec![Subcategory {
                     subcategory: "subcategory".to_string(),
                     content: "content".to_string(),
-                    keywords: Some(vec![String::new()]),
+                    keywords: Some(vec!["   ".to_string()]),
                 }]),
                 ..Default::default()
             }]),

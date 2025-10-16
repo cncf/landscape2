@@ -2,8 +2,26 @@
 <html lang="en" data-theme="light">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{{ datasets.base.foundation }} Landscape</title>
         <% if (!isDev) { %>
+        <link rel="canonical" href="{{ datasets.base.url }}" />
+        <meta name="robots"
+              content="index, follow, max-snippet:160, max-image-preview:large" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="{{ datasets.base.url }}" />
+        <meta property="og:site_name"
+              content="{{ datasets.base.foundation }} Landscape" />
+        <meta property="og:title"
+              content="{{ datasets.base.foundation }} Landscape" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title"
+              content="{{ datasets.base.foundation }} Landscape" />
+        {% if let Some(description) = datasets.base.description %}
+            <meta name="description" content="{{ description }}" />
+            <meta property="og:description" content="{{ description }}" />
+            <meta name="twitter:description" content="{{ description }}" />
+        {% endif %}
         {% if let Some(images) = datasets.base.images %}
             {% if let Some(favicon) = images.favicon %}
                 <link rel="shortcut icon" href="{{ favicon }}" />
@@ -11,7 +29,7 @@
             {% endif %}
             {% if let Some(open_graph) = images.open_graph %}
                 <meta property="og:image" content="{{ open_graph }}">
-                <meta name="twitter:image:src" content="{{ open_graph }}" />
+                <meta name="twitter:image" content="{{ open_graph }}" />
             {% endif %}
         {% endif %}
         {% if let Some(osano) = osano %}
@@ -19,10 +37,6 @@
                     src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
         {% endif %}
         <% } %>
-        <title>{{ datasets.base.foundation }} Landscape</title>
-        <meta name="description" content="{{ datasets.base.foundation }} Landscape" />
-        <meta name="keywords"
-              content="{{ datasets.base.foundation }}, landscape, {{ datasets.base.foundation }} landscape" />
         <% if (isDev) { %>
         <script>
       fetch("./static/data/base.json")
@@ -40,10 +54,34 @@
         </script>
         <% } %>
         <% if (!isDev) { %>
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": "{{ datasets.base.foundation }} Landscape",
+                "description": "{%- if let Some(description) = datasets.base.description -%}{{ description }}{%- else -%}{{ datasets.base.foundation }} Landscape{%- endif -%}",
+                "url": "{{ datasets.base.url }}"
+            }
+        </script>
+        <script type="application/ld+json">
+            {
+                "@context":"https://schema.org",
+                "@type":"BreadcrumbList",
+                "itemListElement":[
+                    {"@type":"ListItem","position":1,"name":"Explore","item":"{{ datasets.base.url }}/"},
+                    {"@type":"ListItem","position":2,"name":"Stats","item":"{{ datasets.base.url }}/stats"}{% set guide_summary = datasets.base.guide_summary %}
+                    {%- if guide_summary.len() > 0 %},
+                    {"@type":"ListItem","position":3,"name":"Guide","item":"{{ datasets.base.url }}/guide"}{% endif %}
+                ]
+            }
+        </script>
         {% set gtm_container_id = analytics|get_gtm_container_id %}
         {% if let Some(gtm_container_id) = gtm_container_id %}
             <!-- Google Tag Manager -->
-            <script defer data-vite-ignore data-container-id="{{ gtm_container_id }}" src="assets/gtm.js"></script>
+            <script defer
+                    data-vite-ignore
+                    data-container-id="{{ gtm_container_id }}"
+                    src="assets/gtm.js"></script>
             <!-- End Google Tag Manager -->
         {% endif %}
         <% } %>

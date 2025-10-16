@@ -124,6 +124,12 @@
       },
       "required": ["color1", "color2", "color3", "color4", "color5", "color6", "color7"]
     },
+    "description": {
+      "title": "Description",
+      "description": "Text describing the landscape (~150 chars) that search engines may use as the site's description.",
+      "type": "string",
+      "examples": ["The CNCF Landscape showcases cloud native projects and members."]
+    },
     "enduser": {
       "title": "End user",
       "description": "This section allows defining what items should be marked as `end user` based on the category and subcategory they belong to. If the `enduser` field has been set on a given item, that value will take precedence.",

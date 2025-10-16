@@ -118,7 +118,7 @@ impl LandscapeGames {
             let ctx = format!("question [{i}] is not valid");
 
             // Title cannot be empty
-            if question.title.is_empty() {
+            if question.title.trim().is_empty() {
                 return Err(format_err!("title cannot be empty")).context(ctx);
             }
 
@@ -145,20 +145,20 @@ impl LandscapeGames {
 
             for option in &question.options {
                 // Item name cannot be empty
-                if option.item.is_empty() {
+                if option.item.trim().is_empty() {
                     return Err(format_err!("item cannot be empty")).context(ctx);
                 }
 
                 // Category cannot be empty if provided
                 if let Some(category) = &option.category
-                    && category.is_empty()
+                    && category.trim().is_empty()
                 {
                     return Err(format_err!("category cannot be empty if provided")).context(ctx);
                 }
 
                 // Subcategory cannot be empty if provided
                 if let Some(subcategory) = &option.subcategory
-                    && subcategory.is_empty()
+                    && subcategory.trim().is_empty()
                 {
                     return Err(format_err!("subcategory cannot be empty if provided")).context(ctx);
                 }
@@ -348,7 +348,7 @@ mod tests {
         let games = LandscapeGames {
             quiz: Some(Quiz {
                 questions: vec![Question {
-                    title: String::new(),
+                    title: "   ".to_string(),
                     options: vec![],
                 }],
             }),
@@ -461,7 +461,7 @@ mod tests {
                             ..Default::default()
                         },
                         QuestionOption {
-                            item: String::new(),
+                            item: "   ".to_string(),
                             ..Default::default()
                         },
                     ],
@@ -487,7 +487,7 @@ mod tests {
                         },
                         QuestionOption {
                             item: "Option 2".to_string(),
-                            category: Some(String::new()),
+                            category: Some("   ".to_string()),
                             ..Default::default()
                         },
                     ],
@@ -513,7 +513,7 @@ mod tests {
                         },
                         QuestionOption {
                             item: "Option 2".to_string(),
-                            subcategory: Some(String::new()),
+                            subcategory: Some("   ".to_string()),
                             ..Default::default()
                         },
                     ],

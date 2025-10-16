@@ -80,6 +80,7 @@ pub mod base {
         pub finances_available: bool,
         pub foundation: String,
         pub qr_code: String,
+        pub url: String,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub base_path: Option<String>,
@@ -92,6 +93,9 @@ pub mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub colors: Option<Colors>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub description: Option<String>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub footer: Option<Footer>,
@@ -144,10 +148,12 @@ pub mod base {
                 finances_available: false,
                 foundation: settings.foundation.clone(),
                 qr_code: qr_code.to_string(),
+                url: settings.url.clone(),
                 base_path: settings.base_path.clone(),
                 categories: landscape_data.categories.clone(),
                 categories_overridden: vec![],
                 colors: settings.colors.clone(),
+                description: settings.description.clone(),
                 footer: settings.footer.clone(),
                 games_available: None,
                 grid_items_size: settings.grid_items_size.clone(),
@@ -685,12 +691,14 @@ mod tests {
         };
         let settings = LandscapeSettings {
             foundation: "Foundation".to_string(),
+            url: "https://landscape.url".to_string(),
             base_path: Some("/base/path".to_string()),
             categories: Some(vec![settings::Category {
                 name: "Category 1".to_string(),
                 subcategories: vec!["Subcategory 1".to_string()],
             }]),
             colors: colors.clone(),
+            description: Some("Short landscape description.".to_string()),
             footer: footer.clone(),
             grid_items_size: Some(GridItemsSize::Small),
             groups: Some(groups.clone()),
@@ -728,6 +736,7 @@ mod tests {
             finances_available: true,
             foundation: "Foundation".to_string(),
             qr_code: "QR_CODE".to_string(),
+            url: "https://landscape.url".to_string(),
             base_path: Some("/base/path".to_string()),
             categories: vec![data::Category {
                 name: "Category 1".to_string(),
@@ -739,6 +748,7 @@ mod tests {
             }],
             categories_overridden: vec!["Category 1".to_string()],
             colors,
+            description: Some("Short landscape description.".to_string()),
             footer,
             games_available: Some(vec!["quiz".to_string()]),
             grid_items_size: Some(GridItemsSize::Small),
