@@ -78,6 +78,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  height: 31px;
 }
 
 .dropdownButton:focus {
@@ -97,6 +98,14 @@
   color: var(--bs-gray-800);
 }
 
+.dropdownButtonDisabled,
+.dropdownButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #f8f9fa;
+  color: var(--bs-gray-500);
+}
+
 .dropdownMenu {
   max-height: 220px;
   overflow-y: auto;
@@ -111,6 +120,11 @@
 
 .optionLabel {
   font-size: 0.8rem;
+}
+
+.dropdownHint {
+  font-size: 0.7rem;
+  color: var(--bs-gray-600);
 }
 
 .inputColor,

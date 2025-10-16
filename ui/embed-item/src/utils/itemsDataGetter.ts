@@ -27,10 +27,14 @@ export class ItemsDataGetter {
     this.updateStatus = updateStatus;
   }
 
-  public fetchItems(classifyBy: string, key: string, basePath: string) {
+  public fetchItems(classifyBy: string, key: string, basePath: string, categories?: string[]) {
     const name = `${classifyBy}_${key}`;
-    const url =
-      import.meta.env.MODE === 'development'
+    const shouldLoadFullDataset = Array.isArray(categories) && categories.length > 0;
+    const url = shouldLoadFullDataset
+      ? import.meta.env.MODE === 'development'
+        ? `http://localhost:8000/data/full.json`
+        : `${basePath}/data/full.json`
+      : import.meta.env.MODE === 'development'
         ? `http://localhost:8000/data/embed_full_${name}.json`
         : `${basePath}/data/embed_full_${name}.json`;
 

@@ -16,6 +16,7 @@ import { batch, createEffect, createMemo, createSignal, For, Match, on, onMount,
 import {
   Alignment,
   BASE_PATH_PARAM,
+  CATEGORIES_PARAM,
   CLASSIFY_BY_PARAM,
   ClassifyType,
   DEFAULT_CLASSIFY_TYPE,
@@ -138,16 +139,43 @@ const EmbedModal = () => {
   const initialSubcategoryName = initialSubcategories[0]?.normalized_name;
   const [key, setKey] = createSignal<string>(getCategoryKey(initialCategoryName, initialSubcategoryName));
   const [selectedClassifyBy, setSelectedClassifyBy] = createSignal<string>(DEFAULT_CLASSIFY_TYPE);
-  const [selectedCategory, setSelectedCategory] = createSignal<string>(initialCategoryName);
+  const initialCategoriesSelection = initialCategoryName ? [initialCategoryName] : [];
+  const [selectedCategories, setSelectedCategories] = createSignal<string[]>(initialCategoriesSelection);
   const [selectedSubcategories, setSelectedSubcategories] = createSignal<string[]>(
     initialSubcategoryName ? [initialSubcategoryName] : []
   );
   const [subcategoriesDropdownVisible, setSubcategoriesDropdownVisible] = createSignal<boolean>(false);
   const [subcategoriesDropdownRef, setSubcategoriesDropdownRef] = createSignal<HTMLDivElement>();
+  const [categoriesDropdownVisible, setCategoriesDropdownVisible] = createSignal<boolean>(false);
+  const [categoriesDropdownRef, setCategoriesDropdownRef] = createSignal<HTMLDivElement>();
+  useOutsideClick([categoriesDropdownRef], [BANNER_ID], categoriesDropdownVisible, () =>
+    setCategoriesDropdownVisible(false)
+  );
   useOutsideClick([subcategoriesDropdownRef], [BANNER_ID], subcategoriesDropdownVisible, () =>
     setSubcategoriesDropdownVisible(false)
   );
+  const multipleCategoriesSelected = createMemo(() => selectedCategories().length > 1);
+  const selectedCategoriesLabel = createMemo(() => {
+    if (selectedCategories().length === 0) {
+      return 'Select categories';
+    }
+    const categoriesMap = new Map(
+      categoriesList().map((category) => [category.normalized_name, category.name] as [string, string])
+    );
+    const labels = selectedCategories()
+      .map((value) => categoriesMap.get(value))
+      .filter((name): name is string => Boolean(name));
+
+    if (labels.length === 0) {
+      return 'Select categories';
+    }
+
+    return labels.join(', ');
+  });
   const selectedSubcategoriesLabel = createMemo(() => {
+    if (multipleCategoriesSelected()) {
+      return 'All subcategories';
+    }
     if (selectedSubcategories().includes('all') || selectedSubcategories().length === 0) {
       return 'All subcategories';
     }
@@ -205,10 +233,16 @@ const EmbedModal = () => {
     embedParams.append(CLASSIFY_BY_PARAM, selectedClassifyBy());
     if (selectedClassifyBy() === ClassifyType.Category) {
       const fallbackCategory = categoriesList()[0]?.normalized_name || '';
-      embedParams.append(KEY_PARAM, key() || fallbackCategory);
-      const selectedSubcategoriesParam = selectedSubcategories().filter((value) => value !== 'all');
-      if (selectedSubcategoriesParam.length > 1) {
-        embedParams.append(SUBCATEGORIES_PARAM, selectedSubcategoriesParam.join(','));
+      const categoriesSelection = selectedCategories();
+      if (categoriesSelection.length > 1) {
+        embedParams.append(CATEGORIES_PARAM, categoriesSelection.join(','));
+      } else {
+        const singleCategory = categoriesSelection[0] || fallbackCategory;
+        embedParams.append(KEY_PARAM, key() || singleCategory);
+        const selectedSubcategoriesParam = selectedSubcategories().filter((value) => value !== 'all');
+        if (selectedSubcategoriesParam.length > 1) {
+          embedParams.append(SUBCATEGORIES_PARAM, selectedSubcategoriesParam.join(','));
+        }
       }
     } else if (selectedClassifyBy() === ClassifyType.Maturity) {
       embedParams.append(KEY_PARAM, selectedMaturity());
@@ -317,6 +351,73 @@ const EmbedModal = () => {
     }
   };
 
+  const applySingleCategorySelection = (category: string) => {
+    const selectedCat = categoriesList().find((cat: Category) => cat.normalized_name === category);
+    if (!selectedCat) {
+      return;
+    }
+    const subcategories = sortBy(selectedCat.subcategories, ['name']);
+    const firstSubcategory = subcategories[0]?.normalized_name;
+
+    batch(() => {
+      setSubcategoriesList(subcategories);
+      setSubcategoriesDropdownVisible(false);
+      if (firstSubcategory) {
+        setSelectedSubcategories([firstSubcategory]);
+        setKey(getCategoryKey(category, firstSubcategory));
+      } else {
+        setSelectedSubcategories([]);
+        setKey(category);
+      }
+    });
+  };
+
+  const updateCategoriesSelection = (values: string[]) => {
+    const categoriesOrder = new Map(
+      categoriesList().map((category, index) => [category.normalized_name, index] as [string, number])
+    );
+    const unique = Array.from(new Set(values.filter((value) => categoriesOrder.has(value))));
+    if (unique.length === 0) {
+      return;
+    }
+    unique.sort((a, b) => categoriesOrder.get(a)! - categoriesOrder.get(b)!);
+    setSelectedCategories(unique);
+
+    if (unique.length === 1) {
+      applySingleCategorySelection(unique[0]);
+      return;
+    }
+
+    const first = unique[0];
+    const firstCategory = categoriesList().find((category) => category.normalized_name === first);
+    const subcategories = firstCategory ? sortBy(firstCategory.subcategories, ['name']) : [];
+
+    batch(() => {
+      setSubcategoriesList(subcategories);
+      setSubcategoriesDropdownVisible(false);
+      setSelectedSubcategories(['all']);
+      setKey(first);
+    });
+  };
+
+  const toggleCategory = (value: string, checked: boolean) => {
+    const previousValues = selectedCategories();
+
+    if (checked) {
+      if (previousValues.includes(value)) {
+        return;
+      }
+      updateCategoriesSelection([...previousValues, value]);
+      return;
+    }
+
+    const nextValues = previousValues.filter((item) => item !== value);
+    if (nextValues.length === 0) {
+      return;
+    }
+    updateCategoriesSelection(nextValues);
+  };
+
   const updateSelectionsKey = (values: string[], category: string) => {
     if (values.length === 1) {
       setKey(getCategoryKey(category, values[0]));
@@ -326,7 +427,10 @@ const EmbedModal = () => {
   };
 
   const selectAllSubcategories = () => {
-    const currentCategory = selectedCategory();
+    const currentCategory = selectedCategories()[0];
+    if (!currentCategory) {
+      return;
+    }
     batch(() => {
       setSelectedSubcategories(['all']);
       setKey(currentCategory);
@@ -334,7 +438,13 @@ const EmbedModal = () => {
   };
 
   const toggleSubcategory = (value: string, checked: boolean) => {
-    const currentCategory = selectedCategory();
+    if (multipleCategoriesSelected()) {
+      return;
+    }
+    const currentCategory = selectedCategories()[0];
+    if (!currentCategory) {
+      return;
+    }
 
     if (value === 'all') {
       selectAllSubcategories();
@@ -366,27 +476,6 @@ const EmbedModal = () => {
     });
   };
 
-  const updateCategory = (category: string) => {
-    const selectedCat = categoriesList().find((cat: Category) => cat.normalized_name === category);
-    if (selectedCat) {
-      const subcategories = sortBy(selectedCat.subcategories, ['name']);
-      const firstSubcategory = subcategories[0]?.normalized_name;
-
-      batch(() => {
-        setSubcategoriesList(subcategories);
-        setSelectedCategory(category);
-        setSubcategoriesDropdownVisible(false);
-        if (firstSubcategory) {
-          setSelectedSubcategories([firstSubcategory]);
-          setKey(getCategoryKey(category, firstSubcategory));
-        } else {
-          setSelectedSubcategories([]);
-          setKey(category);
-        }
-      });
-    }
-  };
-
   const onClose = () => {
     navigate(`${BASE_PATH}/${prevSearch() !== '' ? prevSearch() : ''}${prevHash()}`, {
       replace: true,
@@ -399,7 +488,8 @@ const EmbedModal = () => {
       const subcategories = sortBy(firstCategory.subcategories, ['name']);
       const firstSubcategory = subcategories[0]?.normalized_name;
       setSubcategoriesList(subcategories);
-      setSelectedCategory(firstCategory.normalized_name);
+      setSelectedCategories([firstCategory.normalized_name]);
+      setCategoriesDropdownVisible(false);
       setSelectedSubcategories(firstSubcategory ? [firstSubcategory] : []);
       setSubcategoriesDropdownVisible(false);
       setSelectedMaturity(maturityOptions[0] || 'all');
@@ -455,6 +545,7 @@ const EmbedModal = () => {
   createEffect(
     on(selectedClassifyBy, () => {
       if (selectedClassifyBy() !== ClassifyType.Category) {
+        setCategoriesDropdownVisible(false);
         setSubcategoriesDropdownVisible(false);
       }
     })
@@ -545,21 +636,44 @@ const EmbedModal = () => {
                             <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
                               Category
                             </div>
-                            <select
-                              id="categories"
-                              class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
-                              value={selectedCategory()}
-                              aria-label="Categories list"
-                              onChange={(e) => {
-                                updateCategory(e.currentTarget.value);
-                              }}
-                            >
-                              <For each={categoriesList()}>
-                                {(cat: Category) => {
-                                  return <option value={cat.normalized_name}>{cat.name}</option>;
-                                }}
-                              </For>
-                            </select>
+                            <div ref={setCategoriesDropdownRef} class={`position-relative ${styles.dropdownWrapper}`}>
+                              <button
+                                type="button"
+                                id="categories"
+                                class={`btn btn-sm text-start w-100 rounded-0 ${styles.dropdownButton}`}
+                                onClick={() => setCategoriesDropdownVisible(!categoriesDropdownVisible())}
+                                aria-label="Categories list"
+                                aria-expanded={categoriesDropdownVisible()}
+                              >
+                                <span class={styles.dropdownButtonLabel}>{selectedCategoriesLabel()}</span>
+                                <SVGIcon kind={SVGIconKind.CaretDown} class={styles.dropdownButtonIcon} />
+                              </button>
+                              <div
+                                role="menu"
+                                class={`dropdown-menu rounded-0 shadow-none w-100 ${styles.dropdownMenu}`}
+                                classList={{ show: categoriesDropdownVisible() }}
+                              >
+                                <div class="px-3 py-2">
+                                  <For each={categoriesList()}>
+                                    {(cat: Category) => {
+                                      return (
+                                        <CheckBox
+                                          name="category"
+                                          value={cat.normalized_name}
+                                          label={cat.name}
+                                          checked={selectedCategories().includes(cat.normalized_name)}
+                                          onChange={(value, checked) => {
+                                            toggleCategory(value, checked);
+                                          }}
+                                          labelClass={`mw-100 text-muted ${styles.optionLabel}`}
+                                          class={styles.dropdownOption}
+                                        />
+                                      );
+                                    }}
+                                  </For>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           <div class="mt-4">
                             <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
@@ -572,8 +686,17 @@ const EmbedModal = () => {
                               <button
                                 type="button"
                                 id="subcategories"
-                                class={`btn btn-sm text-start w-100 rounded-0 ${styles.dropdownButton}`}
-                                onClick={() => setSubcategoriesDropdownVisible(!subcategoriesDropdownVisible())}
+                                class={`btn btn-sm text-start w-100 rounded-0 ${styles.dropdownButton} ${
+                                  multipleCategoriesSelected() ? styles.dropdownButtonDisabled : ''
+                                }`}
+                                disabled={multipleCategoriesSelected()}
+                                aria-disabled={multipleCategoriesSelected()}
+                                onClick={() => {
+                                  if (multipleCategoriesSelected()) {
+                                    return;
+                                  }
+                                  setSubcategoriesDropdownVisible(!subcategoriesDropdownVisible());
+                                }}
                                 aria-label="Subcategories list"
                                 aria-expanded={subcategoriesDropdownVisible()}
                               >
@@ -617,6 +740,11 @@ const EmbedModal = () => {
                                 </div>
                               </div>
                             </div>
+                            <Show when={multipleCategoriesSelected()}>
+                              <div class={`mt-2 ${styles.dropdownHint}`}>
+                                Select only one category to filter specific subcategories.
+                              </div>
+                            </Show>
                           </div>
                         </Match>
                         <Match when={selectedClassifyBy() === ClassifyType.Maturity}>
