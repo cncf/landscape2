@@ -670,9 +670,10 @@ mod tests {
             ..Default::default()
         });
         let groups = vec![Group {
-            name: "Group 1".to_string(),
-            normalized_name: Some("group-1".to_string()),
             categories: vec!["Category 1".to_string()],
+            name: "Group 1".to_string(),
+            alias: Some("group-1".to_string()),
+            normalized_name: Some("group-1".to_string()),
         }];
         let header = Some(Header {
             logo: Some("https://logo.url".to_string()),
