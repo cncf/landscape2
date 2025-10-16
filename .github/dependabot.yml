@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     ignore:
       - dependency-name: "markdown"
       - dependency-name: "usvg"
@@ -18,7 +18,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/ui"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       web-application:
         patterns:
@@ -30,7 +30,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       github-actions:
         patterns:
@@ -39,7 +39,7 @@ updates:
   - package-ecosystem: "docker"
     directory: "/crates/cli"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       docker:
         patterns:

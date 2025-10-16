@@ -12,7 +12,7 @@ jobs:
       labels: ubuntu-latest-8-cores
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@master
         with:
@@ -34,7 +34,7 @@ jobs:
       NODE_OPTIONS: --max_old_space_size=4096
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install dependencies
         working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
@@ -55,7 +55,7 @@ jobs:
       NODE_OPTIONS: --max_old_space_size=4096
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install dependencies
         working-directory: ./ui/embed
         run: yarn install --network-concurrency 1
