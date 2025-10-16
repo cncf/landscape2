@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  height: 31px;;
+  height: 31px;
 }
 
 .dropdownButton:focus {
