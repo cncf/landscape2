@@ -672,9 +672,14 @@ pub enum GridItemsSize {
 /// categories in the web application.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Group {
-    pub name: String,
-    pub normalized_name: Option<String>,
     pub categories: Vec<CategoryName>,
+    pub name: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alias: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub normalized_name: Option<String>,
 }
 
 /// Header configuration.

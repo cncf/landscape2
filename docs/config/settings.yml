@@ -228,12 +228,14 @@ grid_items_size: small
 #
 # groups:
 #   - name: <GROUP_NAME>
+#     alias: <GROUP_ALIAS>  # Optional alias enabling cleaner URLs (e.g. /projects)
 #     categories:
 #       - <CATEGORY1_NAME>
 #       - <CATEGORY2_NAME>
 #
 groups:
   - name: Projects and products
+    alias: projects
     categories:
       - App Definition and Development
       - Orchestration & Management

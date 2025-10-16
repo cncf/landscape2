@@ -313,16 +313,17 @@
     },
     "groups": {
       "title": "Groups",
-      "description": "In some cases, specially when a landscape contains lots of items, it may be interesting to organize them in groups. Each group will be displayed on a different tab in the landscape web application. Each entry must contain the name of the group (it will be displayed as is) and a list with the categories (as defined in the landscape.yml data file) that will be part of this group. When groups are used, categories not listed in any group won't be displayed in the grid mode",
+      "description": "In some cases, specially when a landscape contains lots of items, it may be interesting to organize them in groups. Each group will be displayed on a different tab in the landscape web application. Each entry must contain the name of the group (it will be displayed as is) and a list with the categories (as defined in the landscape.yml data file) that will be part of this group. Optionally, you can set an alias to create cleaner URLs that point directly to the group. When groups are used, categories not listed in any group won't be displayed in the grid mode",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "name": {
-            "title": "Group name",
+          "alias": {
+            "title": "Group alias",
+            "description": "Optional alias used to create cleaner URLs that point directly to the group (e.g. `/projects`).",
             "type": "string",
             "minLength": 1,
-            "examples": ["Group 1"]
+            "examples": ["projects"]
           },
           "categories": {
             "title": "Categories",
@@ -331,6 +332,12 @@
               "type": "string",
               "examples": ["Category 1"]
             }
+          },
+          "name": {
+            "title": "Group name",
+            "type": "string",
+            "minLength": 1,
+            "examples": ["Group 1"]
           }
         }
       }
