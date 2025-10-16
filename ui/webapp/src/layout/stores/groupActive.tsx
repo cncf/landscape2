@@ -4,7 +4,7 @@ import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
 
-import { ALL_OPTION, BASE_PATH, GROUP_PARAM } from '../../data';
+import { ALL_OPTION, BASE_PATH, EXPLORE_PATH, GROUP_PARAM } from '../../data';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
@@ -12,24 +12,50 @@ import prepareLink from '../../utils/prepareLink';
 const getInitialGroupName = (groupParam: string | string[] | null): string | undefined => {
   const navigate = useNavigate();
   const groups = itemsDataGetter.getGroups();
+  const aliasGroup = (() => {
+    if (!window.baseDS || !window.baseDS.groups) {
+      return undefined;
+    }
+    const baseExplorePath = EXPLORE_PATH.endsWith('/') ? EXPLORE_PATH : `${EXPLORE_PATH}/`;
+    if (!location.pathname.startsWith(baseExplorePath)) {
+      return undefined;
+    }
+    const remainder = location.pathname.slice(baseExplorePath.length);
+    const sanitizedPath = remainder.replace(/^\/+|\/+$/g, '');
+    if (sanitizedPath === '') {
+      return undefined;
+    }
+    const match = window.baseDS.groups.find((group) => {
+      if (!group.alias) {
+        return false;
+      }
+      const sanitizedAlias = group.alias.trim().replace(/^\/+|\/+$/g, '');
+      return sanitizedAlias !== '' && sanitizedAlias === sanitizedPath;
+    });
+    return match?.normalized_name;
+  })();
 
   if (isUndefined(groups)) {
     return undefined;
   } else {
     const firstGroup = groups[0];
-    if (isNull(groupParam) || isArray(groupParam)) {
-      return firstGroup;
+    if (aliasGroup && groups.includes(aliasGroup)) {
+      return aliasGroup;
     } else {
-      const isValidGroup = groups.includes(groupParam);
-      if (isValidGroup || groupParam === ALL_OPTION) {
-        return groupParam;
-      } else {
-        if (isExploreSection(location.pathname)) {
-          navigate(prepareLink(BASE_PATH, `group=${firstGroup}`), {
-            replace: true,
-          });
-        }
+      if (isNull(groupParam) || isArray(groupParam)) {
         return firstGroup;
+      } else {
+        const isValidGroup = groups.includes(groupParam);
+        if (isValidGroup || groupParam === ALL_OPTION) {
+          return groupParam;
+        } else {
+          if (isExploreSection(location.pathname)) {
+            navigate(prepareLink(BASE_PATH, `group=${firstGroup}`), {
+              replace: true,
+            });
+          }
+          return firstGroup;
+        }
       }
     }
   }
