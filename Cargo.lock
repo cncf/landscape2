@@ -2255,7 +2255,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "askama",
@@ -2303,7 +2303,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2324,7 +2324,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-overlay"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "anyhow",
  "landscape2-core",
@@ -2338,7 +2338,7 @@ dependencies = [
 
 [[package]]
 name = "landscape2-quiz"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "cached",
  "getrandom 0.2.16",
