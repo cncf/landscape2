@@ -20,5 +20,8 @@ ui/embed-item/node_modules
 ui/webapp/dist
 ui/webapp/node_modules
 ui/webapp/static/*
+ui/webapp/playwright-report
+ui/webapp/test-results
+ui/webapp/blob-report
 yarn-debug.log*
 yarn-error.log*
