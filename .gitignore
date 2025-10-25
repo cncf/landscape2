@@ -23,5 +23,6 @@ ui/webapp/static/*
 ui/webapp/playwright-report
 ui/webapp/test-results
 ui/webapp/blob-report
+ui/webapp/coverage
 yarn-debug.log*
 yarn-error.log*
