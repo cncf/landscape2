@@ -21,6 +21,9 @@ export default defineConfig({
     command: 'yarn dev -- --host 127.0.0.1 --port 5173',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000
+    timeout: 120000,
+    env: {
+      SASS_SILENCE_DEPRECATION_WARNINGS: '1'
+    }
   }
 });
