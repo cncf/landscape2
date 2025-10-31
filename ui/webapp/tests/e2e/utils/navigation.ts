@@ -41,11 +41,29 @@ const registerTemplateRoutes = async (page: Page) => {
   ]);
 };
 
-// Navigate to the home page, registering template routes beforehand
-export const gotoHome = async (page: Page) => {
+// Navigate to the explore page, registering template routes beforehand
+export const gotoExplore = async (page: Page) => {
   await registerTemplateRoutes(page);
   await Promise.all([
     page.waitForResponse((response) => response.url().includes('/static/data/base.json') && response.ok()),
     page.goto('/'),
+  ]);
+};
+
+// Navigate to the stats page, registering template routes beforehand
+export const gotoStats = async (page: Page) => {
+  await registerTemplateRoutes(page);
+  await Promise.all([
+    page.waitForResponse((response) => response.url().includes('/static/data/stats.json') && response.ok()),
+    page.goto('/stats'),
+  ]);
+};
+
+// Navigate to the guide page, registering template routes beforehand
+export const gotoGuide = async (page: Page) => {
+  await registerTemplateRoutes(page);
+  await Promise.all([
+    page.waitForResponse((response) => response.url().includes('/static/data/guide.json') && response.ok()),
+    page.goto('/guide'),
   ]);
 };
