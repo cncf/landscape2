@@ -35,6 +35,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+      - name: Install shared package dependencies
+        working-directory: ./ui/common
+        run: yarn install --network-concurrency 1
+      - name: Build shared package
+        working-directory: ./ui/common
+        run: yarn build
       - name: Install dependencies
         working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
