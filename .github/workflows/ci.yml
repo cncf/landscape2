@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
+      - name: Install Playwright browsers
+        working-directory: ./ui/webapp
+        run: npx playwright install --with-deps
       - name: Run prettier
         working-directory: ./ui/webapp
         run: yarn format:diff
@@ -47,6 +50,9 @@ jobs:
       - name: Run tests
         working-directory: ./ui/webapp
         run: yarn test
+      - name: Run e2e tests
+        working-directory: ./ui/webapp
+        run: yarn test:e2e
 
   lint-and-test-embed:
     runs-on:
