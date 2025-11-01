@@ -42,11 +42,11 @@ const registerTemplateRoutes = async (page: Page) => {
 };
 
 // Navigate to the explore page, registering template routes beforehand
-export const gotoExplore = async (page: Page) => {
+export const gotoExplore = async (page: Page, query?: string) => {
   await registerTemplateRoutes(page);
   await Promise.all([
     page.waitForResponse((response) => response.url().includes('/static/data/base.json') && response.ok()),
-    page.goto('/'),
+    page.goto(`/${query || ''}`),
   ]);
 };
 
@@ -66,4 +66,17 @@ export const gotoGuide = async (page: Page) => {
     page.waitForResponse((response) => response.url().includes('/static/data/guide.json') && response.ok()),
     page.goto('/guide'),
   ]);
+};
+
+export const waitForGuideData = async (page: Page) => {
+  await page.waitForResponse((response) => {
+    if (!response.url().includes('/static/data/guide.json')) {
+      return false;
+    }
+    const request = response.request();
+    if (request.method() !== 'GET') {
+      return false;
+    }
+    return response.ok();
+  });
 };
