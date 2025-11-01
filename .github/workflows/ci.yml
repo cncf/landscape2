@@ -35,9 +35,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.90.0
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build overlay wasm package
+        working-directory: ./crates/wasm/overlay
+        run: wasm-pack build --dev --target web --out-dir ../../../ui/webapp/wasm/overlay --target-dir ../../../target-wasm
+      - name: Build quiz wasm package
+        working-directory: ./crates/wasm/quiz
+        run: wasm-pack build --dev --target web --out-dir ../../../ui/webapp/wasm/quiz --target-dir ../../../target-wasm
+      - name: Install shared package dependencies
+        working-directory: ./ui/common
+        run: yarn install --network-concurrency 1
+      - name: Build shared package
+        working-directory: ./ui/common
+        run: yarn build
       - name: Install dependencies
         working-directory: ./ui/webapp
         run: yarn install --network-concurrency 1
+      - name: Install Playwright browsers
+        working-directory: ./ui/webapp
+        run: npx playwright install --with-deps
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: 0
       - name: Run prettier
         working-directory: ./ui/webapp
         run: yarn format:diff
@@ -47,6 +70,11 @@ jobs:
       - name: Run tests
         working-directory: ./ui/webapp
         run: yarn test
+      - name: Run e2e tests
+        working-directory: ./ui/webapp
+        run: yarn test:e2e
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: 0
 
   lint-and-test-embed:
     runs-on:

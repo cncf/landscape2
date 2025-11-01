@@ -1,0 +1,36 @@
+[
+  {
+    "title": "Which of the following items have feature X?",
+    "options": [
+      {
+        "item": "Item 1",
+        "correct": true
+      },
+      {
+        "item": "Item 2",
+        "correct": false
+      },
+      {
+        "item": "Item 3",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "title": "Please select the item with feature Y",
+    "options": [
+      {
+        "item": "Item 1",
+        "correct": false
+      },
+      {
+        "item": "Item 2",
+        "correct": false
+      },
+      {
+        "item": "Item 3",
+        "correct": true
+      }
+    ]
+  }
+]
