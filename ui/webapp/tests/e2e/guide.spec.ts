@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { waitForGuideData } from './utils/data';
-import { gotoExplore, gotoGuide } from './utils/navigation';
+import { gotoExplore, gotoGuide, waitForGuideData } from './utils/navigation';
 
 test.describe('Guide page', () => {
   test('loads guide content when navigating from the header', async ({ page }) => {
