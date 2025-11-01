@@ -168,7 +168,7 @@ test.describe('Explore page', () => {
     // Expects project dropdown to be visible
     const dropdown = page.getByRole('complementary');
     await expect(dropdown).toBeVisible();
-    await expect(dropdown.getByRole('complementary').getByAltText('Item 1 logo')).toBeVisible();
+    await expect(dropdown.locator('img[alt="Item 1 logo"]')).toBeVisible();
     await expect(dropdown.getByText('Item 1', { exact: true })).toBeVisible();
     await expect(dropdown.getByText('DEMO', { exact: true })).toBeVisible();
     await expect(dropdown.getByText('graduated')).toBeVisible();
