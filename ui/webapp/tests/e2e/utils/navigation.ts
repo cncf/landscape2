@@ -6,6 +6,9 @@ import guideData from '../data/guide.json' assert { type: 'json' };
 import quizData from '../data/quiz.json' assert { type: 'json' };
 import statsData from '../data/stats.json' assert { type: 'json' };
 
+const placeholderLogoSvg =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" fill="#ccc"/></svg>';
+
 const registeredPages = new WeakSet<Page>();
 
 const fixtures = {
@@ -38,6 +41,9 @@ const registerTemplateRoutes = async (page: Page) => {
     page.route('**/static/data/guide.json', (route) => fulfillJson(route, fixtures.guide)),
     page.route('**/static/data/full.json', (route) => fulfillJson(route, fixtures.full)),
     page.route('**/static/data/quiz.json', (route) => fulfillJson(route, fixtures.quiz)),
+    page.route('**/static/logos/**', (route) =>
+      route.fulfill({ status: 200, contentType: 'image/svg+xml', body: placeholderLogoSvg })
+    ),
   ]);
 };
 
