@@ -174,4 +174,52 @@ test.describe('Explore page', () => {
     await expect(dropdown.getByText('graduated')).toBeVisible();
     await expect(dropdown.getByText('This is the description of item 1')).toBeVisible();
   });
+
+  test('displays embeddable view setup modal', async ({ page }) => {
+    await gotoExplore(page);
+
+    // Opens embeddable view setup modal
+    const embedButton = page.getByRole('button', { name: 'Open "Embeddable view setup"' });
+    await embedButton.click();
+
+    // Expects embeddable view setup modal to be visible
+    const embedModal = page.getByLabel('Embeddable view setup modal');
+    await expect(embedModal).toBeVisible();
+    await expect(embedModal.getByText('Embeddable view setup', { exact: true })).toBeVisible();
+    await expect(embedModal.getByText('Embed code')).toBeVisible();
+    await expect(embedModal.getByLabel('Classification options')).toBeVisible();
+    await expect(embedModal.getByLabel('Categories list', { exact: true })).toBeVisible();
+    await expect(embedModal.getByLabel('Subcategories list')).toBeVisible();
+    await expect(embedModal.getByLabel('Copy code to clipboard')).toBeVisible();
+
+    // Closes embeddable view setup modal
+    const closeButton = embedModal.getByLabel('Close modal');
+    await closeButton.click();
+    await expect(embedModal).not.toBeVisible();
+  });
+
+  test('downloads landscape image', async ({ page }) => {
+    await gotoExplore(page);
+
+    // Clicks on download image button
+    const downloadButton = page.getByRole('button', { name: 'Open dropdown' })
+    await downloadButton.click();
+
+    // Expects download to be open
+    const dropdown = page.getByRole('complementary')
+    await expect(dropdown).toBeVisible();
+    await expect(dropdown.getByRole('button', { name: 'Download landscape in PDF' })).toBeVisible();
+    await expect(dropdown.getByRole('button', { name: 'Download landscape in PNG' })).toBeVisible();
+    await expect(dropdown.getByRole('button', { name: 'Download items in CSV format' })).toBeVisible();
+    await expect(dropdown.getByRole('button', { name: 'Download projects in CSV' })).toBeVisible();
+
+    // Downloads landscape PNG
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      dropdown.getByRole('button', { name: 'Download landscape in PNG' }).click(),
+    ]);
+
+    // Expects download to have correct filename
+    expect(download.suggestedFilename()).toBe('landscape.png');
+  });
 });
