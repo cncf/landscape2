@@ -26,6 +26,7 @@ export const FINANCES_PATH = `${BASE_PATH}/finances`;
 export const FUNDING_PATH = `${BASE_PATH}/funding`;
 export const ACQUISITIONS_PATH = `${BASE_PATH}/acquisitions`;
 export const PROJECTS_PATH = `${BASE_PATH}/projects-summary`;
+export const SUMMARY_PATH = `${BASE_PATH}/summary`;
 export const GAMES_PATH = `${BASE_PATH}/games`;
 export const LOGOS_PREVIEW_PATH = `${BASE_PATH}/logos-preview`;
 export const SCREENSHOTS_PATH = '/screenshot';

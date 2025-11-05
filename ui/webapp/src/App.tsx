@@ -18,6 +18,7 @@ import {
   PROJECTS_PATH,
   SCREENSHOTS_PATH,
   STATS_PATH,
+  SUMMARY_PATH,
 } from './data';
 import Layout from './layout';
 import Explore from './layout/explore';
@@ -272,7 +273,7 @@ const App = () => {
           <Route path={FINANCES_PATH} component={Finances} />
           <Route path={FUNDING_PATH} component={Finances} />
           <Route path={ACQUISITIONS_PATH} component={Finances} />
-          <Route path={PROJECTS_PATH} component={Projects} />
+          <Route path={[PROJECTS_PATH, SUMMARY_PATH]} component={Projects} />
           <Route path={LOGOS_PREVIEW_PATH} component={Logos} />
           <For each={groupAliasRoutes()}>
             {(route) => (
