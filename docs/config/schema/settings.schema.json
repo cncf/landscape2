@@ -323,9 +323,9 @@
             "description": "Optional alias used to create cleaner URLs that point directly to the group (e.g. `/projects`).",
             "type": "string",
             "minLength": 1,
-            "$comment": "Reserved alias words to avoid conflicts: stats, guide, games, screenshot.",
+            "$comment": "Reserved alias words to avoid conflicts: stats, guide, games, screenshot, summary.",
             "not": {
-              "enum": ["stats", "guide", "games", "screenshot"]
+              "enum": ["stats", "guide", "games", "screenshot", "summary"]
             },
             "examples": ["projects"]
           },
