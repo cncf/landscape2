@@ -65,12 +65,14 @@ export const gotoStats = async (page: Page) => {
   ]);
 };
 
-// Navigate to the guide page, registering template routes beforehand
-export const gotoGuide = async (page: Page) => {
+// Navigate to the guide page (optionally with a hash) after registering routes
+export const gotoGuide = async (page: Page, hash?: string) => {
   await registerTemplateRoutes(page);
+  const normalizedHash = hash?.startsWith('#') ? hash.slice(1) : hash;
+  const target = normalizedHash ? `/guide#${normalizedHash}` : '/guide';
   await Promise.all([
     page.waitForResponse((response) => response.url().includes('/static/data/guide.json') && response.ok()),
-    page.goto('/guide'),
+    page.goto(target),
   ]);
 };
 
