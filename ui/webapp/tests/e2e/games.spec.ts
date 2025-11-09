@@ -100,10 +100,12 @@ test.describe('Games page', () => {
     await gotoGames(page);
     await startQuiz(page);
 
+    // Answer the first question correctly
     await answerCurrentQuestion(page, true);
     await expectScore(page, 1, 0);
     await goToNextQuestion(page, 2);
 
+    // Answer the second question incorrectly
     await answerCurrentQuestion(page, false);
     await expectScore(page, 1, 1);
     await expect(page.getByRole('button', { name: 'Play again' })).toBeEnabled();
@@ -114,6 +116,7 @@ test.describe('Games page', () => {
     await gotoGames(page);
     await startQuiz(page);
 
+    // Answer all questions correctly
     for (let index = 1; index <= totalQuestions; index += 1) {
       await answerCurrentQuestion(page, true);
       await expectScore(page, index, 0);
@@ -122,10 +125,12 @@ test.describe('Games page', () => {
       }
     }
 
+    // Restart the quiz
     const playAgainButton = page.getByRole('button', { name: 'Play again' });
     await expect(playAgainButton).toBeEnabled();
     await playAgainButton.click();
 
+    // Verify quiz state reset
     await expectScore(page, 0, 0);
     await expect(page.getByLabel(`question 1 of ${totalQuestions}`)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled();
