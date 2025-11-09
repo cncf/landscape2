@@ -74,6 +74,16 @@ export const gotoGuide = async (page: Page) => {
   ]);
 };
 
+// Navigate to the games page, registering template routes beforehand
+export const gotoGames = async (page: Page) => {
+  await registerTemplateRoutes(page);
+  await Promise.all([
+    page.waitForResponse((response) => response.url().includes('/static/data/quiz.json') && response.ok()),
+    page.goto('/games'),
+  ]);
+};
+
+// Wait for guide data to be loaded
 export const waitForGuideData = async (page: Page) => {
   await page.waitForResponse((response) => {
     if (!response.url().includes('/static/data/guide.json')) {

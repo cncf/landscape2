@@ -43,7 +43,11 @@ const Title = (props: Props) => {
   );
 
   return (
-    <div ref={setRef} class={`position-relative w-100 h-100 ${styles.container}`}>
+    <div
+      ref={setRef}
+      class={`position-relative w-100 h-100 ${styles.container}`}
+      data-testid="quiz-question-title"
+    >
       <div
         ref={setTextRef}
         class={`position-absolute w-100 text-center ${styles.text}`}
