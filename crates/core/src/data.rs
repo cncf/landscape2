@@ -433,6 +433,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
                         item.incubating_at = extra.incubating;
                         item.latest_annual_review_at = extra.annual_review_date;
                         item.latest_annual_review_url = extra.annual_review_url;
+                        item.lfx_slug = extra.lfx_slug;
                         item.linkedin_url = extra.linkedin_url;
                         item.mailing_list_url = extra.mailing_list_url;
                         item.other_links = extra.other_links;
@@ -609,6 +610,9 @@ pub struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub joined_at: Option<NaiveDate>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lfx_slug: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub linkedin_url: Option<String>,
@@ -1405,6 +1409,7 @@ mod tests {
                             gitter_url: Some("gitter_url".to_string()),
                             graduated: Some(date),
                             incubating: Some(date),
+                            lfx_slug: Some("lfx_slug".to_string()),
                             linkedin_url: Some("linkedin_url".to_string()),
                             mailing_list_url: Some("mailing_list_url".to_string()),
                             other_links: Some(vec![ItemLink {
@@ -1494,6 +1499,7 @@ mod tests {
                 graduated_at: Some(date),
                 incubating_at: Some(date),
                 joined_at: Some(date),
+                lfx_slug: Some("lfx_slug".to_string()),
                 linkedin_url: Some("linkedin_url".to_string()),
                 mailing_list_url: Some("mailing_list_url".to_string()),
                 maturity: Some("graduated".to_string()),

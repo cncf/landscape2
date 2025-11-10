@@ -61,7 +61,7 @@ pub(crate) fn collect_projects(landscape_data: &LandscapeData) -> Vec<Project> {
                 graduated_at: fmt_date(&item.graduated_at),
                 homepage_url: item.homepage_url,
                 incubating_at: fmt_date(&item.incubating_at),
-                maturity: maturity.to_string(),
+                maturity,
                 name: item.name.to_lowercase(),
                 num_security_audits: num_security_audits.unwrap_or_default().to_string(),
                 last_security_audit: fmt_date(&last_security_audit),

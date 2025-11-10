@@ -125,7 +125,7 @@ impl From<&data::Item> for Item {
 
         // Relation
         if let Some(maturity) = &di.maturity {
-            item.relation = Some(maturity.to_string());
+            item.relation = Some(maturity.clone());
         } else if di.member_subcategory.is_some() {
             item.relation = Some(String::from("member"));
         }
