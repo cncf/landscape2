@@ -196,6 +196,10 @@ categories:
               # should only be used when adhering to the graduated/incubating/sandbox maturities.
               incubating: "2024-05-14"
 
+              # LFX slug (optional). This value should match the slug used by LFX to reference
+              # the project, so external integrations can link both records together.
+              lfx_slug: "my-project"
+
               # LinkedIn URL (optional).
               linkedin_url: "https://linkedin.com/url"
 

@@ -171,6 +171,7 @@ pub(super) struct ItemExtra {
     pub gitter_url: Option<String>,
     pub graduated: Option<NaiveDate>,
     pub incubating: Option<NaiveDate>,
+    pub lfx_slug: Option<String>,
     pub linkedin_url: Option<String>,
     pub mailing_list_url: Option<String>,
     pub other_links: Option<Vec<ItemLink>>,

@@ -399,6 +399,14 @@
                               "2025-01-01"
                             ]
                           },
+                          "lfx_slug": {
+                            "title": "Slug used by LFX to identify the item (i.e. project)",
+                            "description": "Slug used by LFX to reference the project, so external integrations can link both records together.",
+                            "type": "string",
+                            "examples": [
+                              "my-project"
+                            ]
+                          },
                           "linkedin_url": {
                             "title": "LinkedIn URL",
                             "type": "string",

@@ -276,6 +276,9 @@ pub(crate) struct Item {
     pub latest_annual_review_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub lfx_slug: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -358,6 +361,7 @@ impl Item {
             joined_at: item.joined_at,
             latest_annual_review_at: item.latest_annual_review_at,
             latest_annual_review_url: item.latest_annual_review_url.clone(),
+            lfx_slug: item.lfx_slug.clone(),
             logo_url: format!(
                 "{}/{}",
                 landscape_url.strip_suffix('/').unwrap_or(landscape_url),
