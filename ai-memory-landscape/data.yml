@@ -1,0 +1,332 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/data.schema.json
+
+# AI Memory Landscape Data
+# This file contains projects, products, and companies in the AI agent memory ecosystem
+
+categories:
+  - name: Memory Layer Platforms
+    subcategories:
+      - name: Managed Memory Services
+        items:
+          - name: Mem0
+            homepage_url: https://mem0.ai
+            logo: mem0.svg
+            description: Universal memory layer for AI agents with 186M+ API calls, exclusive memory provider for AWS Agent SDK
+            repo_url: https://github.com/mem0ai/mem0
+            crunchbase: https://www.crunchbase.com/organization/mem0
+            license: Apache-2.0
+            extra:
+              summary_tags: "memory, agents, personalization, context"
+              summary_use_case: "Provides persistent memory for AI agents to remember user preferences and context across sessions"
+              summary_business_use_case: "Enable personalized AI experiences with long-term memory"
+
+          - name: Zep
+            homepage_url: https://www.getzep.com
+            logo: zep.svg
+            description: Context engineering platform with temporal knowledge graphs for fast, accurate, and personalized AI agents
+            repo_url: https://github.com/getzep/zep
+            license: Apache-2.0
+            extra:
+              summary_tags: "memory, knowledge-graph, temporal, context"
+              summary_use_case: "Systematically engineers relevant context from chat history and business data using temporal knowledge graphs"
+
+          - name: Supermemory
+            homepage_url: https://supermemory.ai
+            logo: supermemory.svg
+            description: Universal memory API for AI apps with plug-and-play memory infrastructure
+            repo_url: https://github.com/Dhravya/supermemory
+            license: MIT
+            extra:
+              summary_tags: "memory, api, infrastructure"
+              summary_use_case: "Scalable memory infrastructure that adapts to any stack for custom AI agents"
+
+      - name: Open Source Memory Frameworks
+        items:
+          - name: Letta
+            homepage_url: https://www.letta.com
+            logo: letta.svg
+            description: Platform for building stateful agents with advanced memory (formerly MemGPT), 13K+ GitHub stars
+            repo_url: https://github.com/letta-ai/letta
+            crunchbase: https://www.crunchbase.com/organization/letta
+            license: Apache-2.0
+            extra:
+              summary_tags: "memory, stateful-agents, llm-os"
+              summary_use_case: "LLM operating system with intelligent memory management for context windows"
+              summary_business_use_case: "Build AI agents that learn and self-improve over time"
+
+          - name: Memori
+            homepage_url: https://github.com/GibsonAI/Memori
+            logo: memori.svg
+            description: Open-source memory engine for LLMs, AI agents and multi-agent systems
+            repo_url: https://github.com/GibsonAI/Memori
+            license: MIT
+            extra:
+              summary_tags: "memory, multi-agent, open-source"
+              summary_use_case: "Memory engine designed for complex multi-agent systems"
+
+  - name: Vector Databases
+    subcategories:
+      - name: Managed Vector Services
+        items:
+          - name: Pinecone
+            homepage_url: https://www.pinecone.io
+            logo: pinecone.svg
+            description: Fully managed serverless vector database with multi-region performance for AI applications
+            crunchbase: https://www.crunchbase.com/organization/pinecone-io
+            extra:
+              summary_tags: "vector-database, serverless, managed"
+              summary_use_case: "Serverless vector database for similarity search with minimal ops"
+              summary_business_use_case: "Reliable multi-region vector search without infrastructure management"
+
+      - name: Open Source Vector Databases
+        items:
+          - name: Weaviate
+            homepage_url: https://weaviate.io
+            logo: weaviate.svg
+            description: Open-source vector database with hybrid search, modularity, and knowledge graph capabilities
+            repo_url: https://github.com/weaviate/weaviate
+            license: BSD-3-Clause
+            extra:
+              summary_tags: "vector-database, knowledge-graph, hybrid-search, graphql"
+              summary_use_case: "Schema-based vector database for contextual search with GraphQL interface"
+
+          - name: Qdrant
+            homepage_url: https://qdrant.tech
+            logo: qdrant.svg
+            description: High-performance vector similarity search engine written in Rust with powerful filtering
+            repo_url: https://github.com/qdrant/qdrant
+            license: Apache-2.0
+            extra:
+              summary_tags: "vector-database, rust, performance, edge"
+              summary_use_case: "Production-ready vector search with compact footprint for cost-sensitive workloads"
+
+          - name: Milvus
+            homepage_url: https://milvus.io
+            logo: milvus.svg
+            description: Open-source vector database for billion-scale similarity search in AI applications
+            repo_url: https://github.com/milvus-io/milvus
+            license: Apache-2.0
+            extra:
+              summary_tags: "vector-database, scale, enterprise"
+              summary_use_case: "Industrial-scale vector database for billion-vector scenarios"
+              summary_business_use_case: "Enterprise-grade applications with massive vector datasets"
+
+          - name: Chroma
+            homepage_url: https://www.trychroma.com
+            logo: chroma.svg
+            description: Open-source embedding database designed for developer-friendly prototyping
+            repo_url: https://github.com/chroma-core/chroma
+            license: Apache-2.0
+            extra:
+              summary_tags: "vector-database, embeddings, prototyping"
+              summary_use_case: "Lightweight embedding database for rapid prototyping and small/medium apps"
+
+      - name: Database Extensions
+        items:
+          - name: pgvector
+            homepage_url: https://github.com/pgvector/pgvector
+            logo: pgvector.svg
+            description: Open-source vector similarity search extension for PostgreSQL
+            repo_url: https://github.com/pgvector/pgvector
+            license: PostgreSQL
+            extra:
+              summary_tags: "postgresql, vector-search, sql"
+              summary_use_case: "Vector similarity search directly within PostgreSQL using SQL queries"
+
+          - name: Redis
+            homepage_url: https://redis.io
+            logo: redis.svg
+            description: In-memory data store with vector search capabilities for real-time AI applications
+            repo_url: https://github.com/redis/redis
+            license: BSD-3-Clause
+            extra:
+              summary_tags: "vector-search, in-memory, real-time"
+              summary_use_case: "Fast in-memory vector search for high-throughput AI services"
+
+  - name: Agent Frameworks
+    subcategories:
+      - name: Orchestration Frameworks
+        items:
+          - name: LangChain
+            homepage_url: https://www.langchain.com
+            logo: langchain.svg
+            description: Framework for developing applications powered by LLMs with memory management and agent orchestration
+            repo_url: https://github.com/langchain-ai/langchain
+            license: MIT
+            extra:
+              summary_tags: "framework, orchestration, memory, chains"
+              summary_use_case: "Chain prompts, models, tools, and memory for complex LLM applications"
+              summary_business_use_case: "Build production LLM applications with context retention"
+
+          - name: LlamaIndex
+            homepage_url: https://www.llamaindex.ai
+            logo: llamaindex.svg
+            description: Data framework for LLM applications specializing in data ingestion and retrieval
+            repo_url: https://github.com/run-llama/llama_index
+            license: MIT
+            extra:
+              summary_tags: "framework, data-ingestion, retrieval, rag"
+              summary_use_case: "Data ingestion and intelligent retrieval for LLM applications"
+              summary_integration: "LangChain, vector databases"
+
+          - name: LangGraph
+            homepage_url: https://www.langchain.com/langgraph
+            logo: langgraph.svg
+            description: Framework for building stateful multi-agent applications with persistent memory
+            repo_url: https://github.com/langchain-ai/langgraph
+            license: MIT
+            extra:
+              summary_tags: "multi-agent, state-management, memory, workflow"
+              summary_use_case: "State management and persistent memory for multi-agent systems"
+
+          - name: CrewAI
+            homepage_url: https://www.crewai.com
+            logo: crewai.svg
+            description: Framework for orchestrating role-playing AI agents with native Mem0 integration
+            repo_url: https://github.com/joaomdmoura/crewAI
+            license: MIT
+            extra:
+              summary_tags: "multi-agent, orchestration, collaboration"
+              summary_use_case: "Orchestrate autonomous AI agents that collaborate on complex tasks"
+              summary_integration: "Mem0"
+
+  - name: Knowledge Graph Systems
+    subcategories:
+      - name: Graph Databases
+        items:
+          - name: Neo4j
+            homepage_url: https://neo4j.com
+            logo: neo4j.svg
+            description: Leading graph database with GraphRAG capabilities for AI agent memory
+            repo_url: https://github.com/neo4j/neo4j
+            crunchbase: https://www.crunchbase.com/organization/neo4j
+            license: GPL-3.0
+            extra:
+              summary_tags: "graph-database, knowledge-graph, graphrag"
+              summary_use_case: "Graph database for dynamic knowledge graph memory in AI agents"
+              summary_business_use_case: "Reduce LLM hallucinations by up to 90% with structured knowledge"
+
+          - name: FalkorDB
+            homepage_url: https://www.falkordb.com
+            logo: falkordb.svg
+            description: Ultra-fast graph database for GraphRAG and AI agent data retrieval
+            repo_url: https://github.com/FalkorDB/FalkorDB
+            license: MIT
+            extra:
+              summary_tags: "graph-database, graphrag, performance"
+              summary_use_case: "Fast graph database optimized for AI agent knowledge retrieval"
+
+      - name: Graph Memory Frameworks
+        items:
+          - name: Graphiti
+            homepage_url: https://github.com/getzep/graphiti
+            logo: graphiti.svg
+            description: Temporally-aware knowledge graph memory framework for AI agents by Zep
+            repo_url: https://github.com/getzep/graphiti
+            license: Apache-2.0
+            extra:
+              summary_tags: "knowledge-graph, temporal, memory, incremental"
+              summary_use_case: "Real-time temporally-aware knowledge graph engine for dynamic agent memory"
+              summary_integration: "Neo4j, Zep"
+
+  - name: Foundation Model Memory
+    subcategories:
+      - name: LLM Provider Memory
+        items:
+          - name: OpenAI ChatGPT Memory
+            homepage_url: https://openai.com/chatgpt
+            logo: openai.svg
+            description: Built-in memory feature for ChatGPT that remembers user preferences across conversations
+            extra:
+              summary_tags: "llm, memory, personalization"
+              summary_use_case: "Automatic memory of past chats to inform future ChatGPT responses"
+
+          - name: Anthropic Claude Memory
+            homepage_url: https://www.anthropic.com/claude
+            logo: anthropic.svg
+            description: Transparent memory system for Claude with per-project memory spaces and user control
+            extra:
+              summary_tags: "llm, memory, transparency, privacy"
+              summary_use_case: "Project-based memory with full transparency and user control"
+              summary_business_use_case: "Privacy-focused AI memory with actual visibility into stored information"
+
+          - name: Google Gemini Memory
+            homepage_url: https://gemini.google.com
+            logo: google.svg
+            description: Cross-chat memory for Gemini Advanced integrated with Google ecosystem
+            extra:
+              summary_tags: "llm, memory, integration"
+              summary_use_case: "Memory integration across Google services for comprehensive context"
+
+      - name: Cloud Agent Services
+        items:
+          - name: AWS AgentCore
+            homepage_url: https://aws.amazon.com/bedrock/agents/
+            logo: aws.svg
+            description: AWS service for building AI agents with built-in memory strategies including semantic memory
+            extra:
+              summary_tags: "cloud, agents, memory, managed"
+              summary_use_case: "Managed agent platform with semantic memory and preference tracking"
+              summary_integration: "Mem0, AWS Bedrock"
+
+  - name: RAG & Semantic Search
+    subcategories:
+      - name: RAG Frameworks
+        items:
+          - name: Haystack
+            homepage_url: https://haystack.deepset.ai
+            logo: haystack.svg
+            description: Open-source framework for building RAG applications with customizable pipelines
+            repo_url: https://github.com/deepset-ai/haystack
+            license: Apache-2.0
+            extra:
+              summary_tags: "rag, search, pipelines"
+              summary_use_case: "Build end-to-end RAG and question answering pipelines"
+
+          - name: txtai
+            homepage_url: https://neuml.github.io/txtai/
+            logo: txtai.svg
+            description: All-in-one embeddings database for semantic search and RAG
+            repo_url: https://github.com/neuml/txtai
+            license: Apache-2.0
+            extra:
+              summary_tags: "embeddings, semantic-search, rag"
+              summary_use_case: "Embeddings database with semantic search and RAG capabilities"
+
+      - name: Semantic Frameworks
+        items:
+          - name: Semantic Kernel
+            homepage_url: https://learn.microsoft.com/en-us/semantic-kernel/
+            logo: semantic-kernel.svg
+            description: Microsoft's SDK for integrating LLMs with memory and plugins
+            repo_url: https://github.com/microsoft/semantic-kernel
+            license: MIT
+            extra:
+              summary_tags: "framework, memory, plugins, microsoft"
+              summary_use_case: "Integrate LLMs with conventional programming and memory systems"
+
+  - name: Development Tools
+    subcategories:
+      - name: Workflow Platforms
+        items:
+          - name: Flowise
+            homepage_url: https://flowiseai.com
+            logo: flowise.svg
+            description: Low-code platform for building LLM applications with native Mem0 integration
+            repo_url: https://github.com/FlowiseAI/Flowise
+            license: Apache-2.0
+            extra:
+              summary_tags: "low-code, workflow, visual"
+              summary_use_case: "Visual builder for LLM flows with memory integration"
+              summary_integration: "Mem0, LangChain"
+
+          - name: Langflow
+            homepage_url: https://www.langflow.org
+            logo: langflow.svg
+            description: Visual framework for building multi-agent applications with native Mem0 support
+            repo_url: https://github.com/logspace-ai/langflow
+            license: MIT
+            extra:
+              summary_tags: "visual, multi-agent, workflow"
+              summary_use_case: "Drag-and-drop interface for building agent applications"
+              summary_integration: "Mem0, LangChain"

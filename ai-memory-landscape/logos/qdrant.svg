@@ -1,0 +1,4 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#DC2626" rx="20"/>
+  <text x="100" y="130" font-family="Arial, sans-serif" font-size="120" fill="white" text-anchor="middle" font-weight="bold">Q</text>
+</svg>

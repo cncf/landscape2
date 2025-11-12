@@ -1,0 +1,730 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/guide.schema.json
+
+# AI Memory Landscape Guide
+
+categories:
+  - category: "Introduction"
+    keywords: []
+    content: |
+      Welcome to the AI Memory Landscape! This guide provides a comprehensive overview of the technologies,
+      frameworks, and platforms that enable AI agents to remember, learn, and maintain context across
+      interactions. As AI systems evolve from stateless tools to intelligent, context-aware agents, memory
+      has become a critical capability.
+
+      This landscape organizes the ecosystem into categories based on functionality, helping you understand
+      what each type of technology does and how different solutions fit together. Whether you're building
+      chatbots, autonomous agents, or enterprise AI systems, understanding these memory technologies is
+      essential for creating truly intelligent applications.
+
+    subcategories:
+      - subcategory: "What is AI Agent Memory?"
+        content: |
+          AI agent memory refers to the systems and technologies that allow AI agents to retain information
+          across interactions, learn from past experiences, and build up context over time. Unlike traditional
+          stateless AI systems that treat each interaction independently, agents with memory can:
+
+          - **Remember user preferences and context** across multiple conversations
+          - **Learn and adapt** based on historical interactions
+          - **Maintain long-term knowledge** about users, tasks, and domains
+          - **Access relevant information** from large knowledge bases
+          - **Build temporal understanding** of how information changes over time
+
+          Memory systems transform AI from simple question-answering tools into persistent, context-aware
+          agents that can provide personalized, intelligent assistance.
+
+      - subcategory: "Why AI Agents Need Memory"
+        content: |
+          Modern AI applications face several challenges that memory systems address:
+
+          #### The Context Window Problem
+          Large Language Models (LLMs) have limited context windows - they can only process a fixed amount
+          of text at once (typically 4K-200K tokens). Without memory systems, agents lose context from
+          earlier conversations and cannot maintain long-term relationships with users.
+
+          #### Personalization Requirements
+          Users expect AI assistants to remember their preferences, past interactions, and specific needs.
+          Memory enables personalization at scale, making each interaction feel tailored and relevant.
+
+          #### Knowledge Management
+          Organizations need AI agents that can access vast amounts of enterprise knowledge, from documents
+          to databases. Memory systems provide efficient retrieval mechanisms to find relevant information
+          quickly.
+
+          #### Reducing Hallucinations
+          By grounding AI responses in retrieved facts and stored knowledge rather than purely generative
+          responses, memory systems can reduce hallucinations by up to 90%.
+
+      - subcategory: "How to Use This Guide"
+        content: |
+          This guide is organized into major categories that reflect different aspects of AI memory systems:
+
+          - **Memory Layer Platforms**: Dedicated services that provide memory-as-a-service for AI agents
+          - **Vector Databases**: Storage systems optimized for semantic similarity search
+          - **Agent Frameworks**: Tools for building and orchestrating AI agents with memory
+          - **Knowledge Graph Systems**: Graph-based approaches to storing and retrieving structured knowledge
+          - **Foundation Model Memory**: Built-in memory features from major LLM providers
+          - **RAG & Semantic Search**: Technologies for retrieval-augmented generation
+          - **Development Tools**: Visual and workflow tools for building memory-enabled applications
+
+          Each section explains what the technology is, the problems it addresses, how it helps, and
+          provides technical context for implementation.
+
+  - category: "Memory Layer Platforms"
+    keywords: ["memory", "agent-memory", "personalization", "context"]
+    content: |
+      Memory layer platforms provide dedicated infrastructure specifically designed to give AI agents
+      persistent memory capabilities. These platforms abstract away the complexity of memory management,
+      offering APIs and SDKs that developers can integrate into their applications. They handle storage,
+      retrieval, organization, and updates of memories automatically.
+
+    subcategories:
+      - subcategory: "Managed Memory Services"
+        keywords: ["mem0", "zep", "supermemory", "managed", "api"]
+        content: |
+          #### What It Is
+
+          Managed memory services are cloud-based platforms that provide memory-as-a-service for AI
+          applications. They offer APIs for storing, retrieving, and managing agent memories without
+          requiring developers to build and maintain their own memory infrastructure.
+
+          #### Problem It Addresses
+
+          Building production-ready memory systems is complex. Developers must handle:
+          - Efficient storage and retrieval of contextual information
+          - Semantic understanding of what information is relevant
+          - Temporal management of how memories change over time
+          - Scalability across millions of users
+          - Privacy and data isolation
+
+          Building this infrastructure from scratch diverts engineering resources from core product features.
+
+          #### How It Helps
+
+          Managed services provide turnkey memory infrastructure with:
+          - **Simple APIs**: Add memory with just a few lines of code
+          - **Automatic relevance**: Systems determine what to remember and when to recall it
+          - **Scalability**: Handle millions of users without infrastructure management
+          - **Privacy**: Built-in user data isolation and compliance features
+          - **Integration**: Works with popular frameworks like LangChain, CrewAI, and cloud services
+
+          #### Technical 101
+
+          Services like **Mem0** process hundreds of millions of API calls per quarter, serving as the
+          exclusive memory provider for AWS's Agent SDK. They use embedding models to understand semantic
+          meaning, vector databases for retrieval, and intelligent algorithms to determine memory relevance.
+
+          **Zep** takes a knowledge graph approach, using temporal graphs to organize memories by time and
+          relationships. This enables sophisticated queries like "What did the user prefer last month vs. now?"
+
+          These services integrate seamlessly into existing applications - you send conversation data to
+          their API, and they return relevant memories when needed.
+
+      - subcategory: "Open Source Memory Frameworks"
+        keywords: ["letta", "memgpt", "memori", "open-source"]
+        content: |
+          #### What It Is
+
+          Open-source memory frameworks are self-hosted solutions that developers can deploy in their own
+          infrastructure. They provide the same core memory capabilities as managed services but with
+          full control and customization.
+
+          #### Problem It Addresses
+
+          Some organizations require:
+          - Full data control and on-premises deployment
+          - Customization of memory behavior and algorithms
+          - No dependency on external services
+          - Compliance with specific regulatory requirements
+
+          #### How It Helps
+
+          Open-source frameworks like **Letta** (formerly MemGPT) provide a complete "LLM Operating System"
+          where the agent manages its own memory, deciding what to move in and out of its context window.
+          With over 13,000 GitHub stars, Letta has proven production-ready and is backed by Felicis Ventures.
+
+          **Memori** specializes in memory for multi-agent systems, handling the complexity of shared and
+          individual agent memories in collaborative scenarios.
+
+          #### Technical 101
+
+          These frameworks typically implement memory as a hierarchy:
+          - **Working memory**: Currently in the LLM's context window
+          - **Short-term memory**: Recent conversation history
+          - **Long-term memory**: Persistent storage in vector databases
+          - **Archival memory**: Historical data for deep recall
+
+          The framework acts as a memory manager, implementing strategies to move data between these layers
+          based on relevance, recency, and importance.
+
+  - category: "Vector Databases"
+    keywords: ["vector", "embeddings", "similarity-search", "rag"]
+    content: |
+      Vector databases are specialized storage systems designed to handle high-dimensional vector embeddings
+      and perform fast similarity searches. They form the foundation of modern AI memory systems by enabling
+      semantic search - finding information based on meaning rather than exact keyword matches.
+
+      When text, images, or other data are converted into embeddings (numerical vector representations),
+      vector databases can quickly find the most similar items, making them essential for RAG (Retrieval
+      Augmented Generation) and agent memory.
+
+    subcategories:
+      - subcategory: "Managed Vector Services"
+        keywords: ["pinecone", "managed", "serverless"]
+        content: |
+          #### What It Is
+
+          Managed vector services are fully-hosted vector databases that handle all infrastructure,
+          scaling, and operations automatically. Developers simply send vectors via API and perform
+          similarity searches without managing servers.
+
+          #### Problem It Addresses
+
+          Running vector databases at scale requires expertise in:
+          - Indexing algorithms (HNSW, IVF, etc.)
+          - Multi-region replication for low latency
+          - Automatic scaling for variable workloads
+          - High availability and disaster recovery
+
+          #### How It Helps
+
+          **Pinecone** pioneered the serverless vector database model, providing:
+          - Automatic scaling from zero to billions of vectors
+          - Global replication for <50ms latency worldwide
+          - No infrastructure management or DevOps overhead
+          - Enterprise features like backup, monitoring, and compliance
+
+          This approach works well for companies that want reliability and performance without
+          building specialized database operations expertise.
+
+          #### Technical 101
+
+          Managed services use sophisticated algorithms like HNSW (Hierarchical Navigable Small World)
+          to create graph-based indexes that enable logarithmic-time similarity search. They handle
+          sharding, replication, and load balancing automatically, presenting a simple REST or gRPC API.
+
+      - subcategory: "Open Source Vector Databases"
+        keywords: ["weaviate", "qdrant", "milvus", "chroma", "open-source"]
+        content: |
+          #### What It Is
+
+          Open-source vector databases provide the same core functionality as managed services but can
+          be self-hosted, allowing full control over deployment, customization, and costs.
+
+          #### Problem It Addresses
+
+          Organizations may need to:
+          - Keep sensitive data on-premises
+          - Customize database behavior for specific use cases
+          - Reduce costs by using existing infrastructure
+          - Avoid vendor lock-in
+
+          #### How It Helps
+
+          Different open-source databases serve different needs:
+
+          - **Weaviate**: Provides hybrid search (combining keyword and vector search), modular
+            architecture, and GraphQL interface. Strong for knowledge graph use cases.
+
+          - **Qdrant**: Written in Rust for maximum performance with a compact footprint. Excellent
+            for cost-sensitive deployments and edge scenarios. Powerful filtering capabilities.
+
+          - **Milvus**: Designed for industrial scale with proven performance at billion-vector
+            scale. Best for large enterprises with dedicated database teams.
+
+          - **Chroma**: Lightweight and developer-friendly, perfect for prototyping and small to
+            medium applications. Focuses on ease of use over extreme scale.
+
+          Most offer both self-hosted and managed cloud options, providing flexibility.
+
+          #### Technical 101
+
+          These databases implement sophisticated indexing algorithms:
+          - **HNSW**: Graph-based approximate nearest neighbor search
+          - **IVF**: Inverted file index with product quantization
+          - **Flat**: Exact search for smaller datasets
+
+          They support various distance metrics (cosine, euclidean, dot product) and offer features
+          like metadata filtering, allowing queries like "find similar documents from 2024 in the
+          finance category."
+
+      - subcategory: "Database Extensions"
+        keywords: ["pgvector", "redis", "postgresql", "extensions"]
+        content: |
+          #### What It Is
+
+          Database extensions add vector search capabilities to existing databases like PostgreSQL
+          and Redis, allowing organizations to use their current database infrastructure for AI
+          memory without introducing new systems.
+
+          #### Problem It Addresses
+
+          Organizations with significant investment in existing databases face challenges:
+          - Maintaining separate vector databases adds operational complexity
+          - Data duplication between operational and vector databases
+          - Need to learn new database systems and tooling
+
+          #### How It Helps
+
+          **pgvector** extends PostgreSQL with vector similarity search, enabling:
+          - Vector operations directly in SQL queries
+          - ACID transactions combining vector and relational data
+          - Use of existing PostgreSQL expertise and tooling
+          - No additional infrastructure or new database to learn
+
+          **Redis** with vector search capabilities provides:
+          - In-memory performance for real-time applications
+          - Sub-millisecond latency for high-throughput services
+          - Integration with existing Redis caching infrastructure
+
+          #### Technical 101
+
+          pgvector implements vector operations as a PostgreSQL extension, adding new data types
+          (vector) and operators for similarity search. You can run queries like:
+
+          ```sql
+          SELECT * FROM documents
+          ORDER BY embedding <-> query_vector
+          LIMIT 5;
+          ```
+
+          Redis uses HNSW and IVF indexes in memory for extremely fast lookups, ideal for scenarios
+          like real-time recommendations or chatbot memory where latency is critical.
+
+  - category: "Agent Frameworks"
+    keywords: ["agents", "orchestration", "langchain", "llamaindex"]
+    content: |
+      Agent frameworks provide the tools and abstractions for building AI agents that can reason, plan,
+      use tools, and maintain memory. These frameworks handle the orchestration of LLM calls, memory
+      management, tool integration, and state management.
+
+    subcategories:
+      - subcategory: "Orchestration Frameworks"
+        keywords: ["langchain", "llamaindex", "langgraph", "crewai", "orchestration"]
+        content: |
+          #### What It Is
+
+          Orchestration frameworks provide high-level abstractions for building AI applications that
+          coordinate multiple components: LLMs, memory systems, tools, and APIs. They handle the
+          complexity of chaining operations and managing state.
+
+          #### Problem It Addresses
+
+          Building production AI agents requires:
+          - Managing conversation history and context
+          - Integrating with vector databases and memory systems
+          - Coordinating multiple API calls and tool invocations
+          - Handling errors and retries
+          - Maintaining state across asynchronous operations
+
+          Implementing this from scratch is time-consuming and error-prone.
+
+          #### How It Helps
+
+          **LangChain** provides comprehensive memory management capabilities including:
+          - Conversation buffer memory for recent context
+          - Summary memory for compressed long-term context
+          - Entity memory for tracking specific information
+          - Vector store memory for semantic retrieval
+          - Integration with all major LLMs and vector databases
+
+          **LlamaIndex** specializes in data ingestion and retrieval:
+          - Connectors for 100+ data sources
+          - Sophisticated indexing strategies
+          - Query engines that optimize retrieval
+          - Native RAG pipeline support
+
+          **LangGraph** extends LangChain for multi-agent systems with:
+          - State machines for complex workflows
+          - Persistent memory across agent interactions
+          - Human-in-the-loop capabilities
+          - Time-travel debugging for agent behavior
+
+          **CrewAI** enables role-playing autonomous agents that collaborate on tasks, with native
+          Mem0 integration for memory.
+
+          #### Technical 101
+
+          These frameworks use a pipeline architecture where data flows through stages:
+
+          1. **Input Processing**: User query is embedded into vector space
+          2. **Memory Retrieval**: Relevant context is pulled from memory stores
+          3. **Prompt Construction**: Retrieved context is added to the LLM prompt
+          4. **LLM Invocation**: The model generates a response
+          5. **Memory Update**: New information is stored in memory
+          6. **Output**: Response is returned to the user
+
+          Many applications use both LangChain and LlamaIndex together - LlamaIndex for powerful
+          data retrieval, and LangChain for orchestrating the overall agent logic.
+
+  - category: "Knowledge Graph Systems"
+    keywords: ["knowledge-graph", "graph-database", "neo4j", "graphrag"]
+    content: |
+      Knowledge graph systems organize information as networks of entities and relationships rather
+      than flat vectors or documents. This structured approach enables sophisticated reasoning,
+      multi-hop queries, and reduces hallucinations by providing verifiable facts.
+
+    subcategories:
+      - subcategory: "Graph Databases"
+        keywords: ["neo4j", "falkordb", "graph-database"]
+        content: |
+          #### What It Is
+
+          Graph databases store data as nodes (entities) and edges (relationships), enabling natural
+          representation of connected information. For AI agents, they provide structured knowledge
+          that can be traversed and queried precisely.
+
+          #### Problem It Addresses
+
+          Vector-based retrieval has limitations:
+          - Cannot express complex relationships between entities
+          - Difficult to perform multi-hop reasoning
+          - No built-in temporal understanding
+          - Hard to verify factual accuracy
+
+          Knowledge graphs address these by explicitly modeling relationships and facts.
+
+          #### How It Helps
+
+          **Neo4j** is the leading graph database with specialized AI features:
+          - GraphRAG capabilities for combining graph traversal with LLM generation
+          - Cypher query language for expressing complex patterns
+          - Temporal support for tracking how knowledge evolves
+          - Reduces LLM hallucinations by up to 90% through structured facts
+
+          **FalkorDB** optimizes for speed in AI agent scenarios:
+          - Ultra-fast graph queries for real-time agent decisions
+          - Optimized specifically for GraphRAG patterns
+          - Lightweight footprint for embedded use cases
+
+          #### Technical 101
+
+          GraphRAG combines traditional retrieval with graph traversal:
+
+          1. Query is embedded and used to find relevant starting nodes
+          2. Graph is traversed to gather connected entities and relationships
+          3. Structured subgraph is converted to text context
+          4. LLM generates response grounded in graph facts
+
+          This approach provides citations and traceability - you can show exactly which graph
+          paths informed the response.
+
+      - subcategory: "Graph Memory Frameworks"
+        keywords: ["graphiti", "temporal", "dynamic"]
+        content: |
+          #### What It Is
+
+          Graph memory frameworks provide specialized tools for using knowledge graphs as dynamic
+          memory systems for AI agents. Unlike static graphs, these systems update in real-time
+          as new information arrives.
+
+          #### Problem It Addresses
+
+          Traditional GraphRAG (like Microsoft's approach) requires expensive recomputation when
+          data changes. For AI agents that learn continuously from interactions, this is impractical.
+
+          #### How It Helps
+
+          **Graphiti** by Zep provides real-time, temporally-aware knowledge graphs:
+          - Incremental updates without batch recomputation
+          - Temporal awareness showing how facts change over time
+          - Near-constant time retrieval regardless of graph size
+          - Hybrid indexing combining semantic, keyword, and graph traversal
+
+          Queries resolve in milliseconds rather than tens of seconds, making it practical for
+          interactive agents.
+
+          #### Technical 101
+
+          Graphiti implements a temporal knowledge graph where each fact has:
+          - **Timestamp**: When the information was learned
+          - **Validity period**: How long it remains true
+          - **Confidence**: Certainty level of the information
+          - **Source**: Where it came from
+
+          This enables queries like "What did user prefer in Q1 2024?" or "Show me how requirements
+          evolved over time," providing agents with sophisticated temporal reasoning.
+
+  - category: "Foundation Model Memory"
+    keywords: ["chatgpt", "claude", "gemini", "llm-memory"]
+    content: |
+      Major LLM providers now offer built-in memory features as part of their platforms. These
+      integrated solutions provide seamless memory without additional infrastructure.
+
+    subcategories:
+      - subcategory: "LLM Provider Memory"
+        keywords: ["openai", "anthropic", "google", "chatgpt-memory", "claude-memory"]
+        content: |
+          #### What It Is
+
+          LLM providers like OpenAI, Anthropic, and Google have added native memory features to
+          their chat interfaces and APIs, allowing models to remember user preferences and context
+          across sessions.
+
+          #### Problem It Addresses
+
+          Users interacting with AI assistants expect:
+          - Consistent personality and context across conversations
+          - Remembering preferences without repeating them
+          - Building on previous discussions
+          - Personalized responses
+
+          #### How It Helps
+
+          **OpenAI ChatGPT Memory** (launched early 2024):
+          - Automatically stores information from conversations
+          - Learns writing style, preferences, and context
+          - Memory dashboard shows themes like "prefers concise responses"
+          - Users can edit or disable memory
+
+          **Anthropic Claude Memory** (launched October 2025):
+          - Project-based memory spaces keeping contexts separate
+          - Transparent display of actual stored facts
+          - User control over what's remembered
+          - Import/export capabilities for data portability
+          - Emphasis on privacy and user control
+
+          **Google Gemini Memory**:
+          - Integrates with Google ecosystem (Gmail, Docs, Search)
+          - Cross-service memory aggregation
+          - Leverages Google account data for comprehensive context
+
+          #### Technical 101
+
+          Provider memory typically works through:
+          1. Conversation analysis to extract key facts
+          2. Storage in provider's memory system
+          3. Automatic retrieval when relevant to new queries
+          4. Continuous learning and refinement
+
+          **Key Difference**: Claude emphasizes transparency - you see exactly what it remembers
+          as specific facts. ChatGPT shows general themes. Gemini integrates across the entire
+          Google ecosystem.
+
+      - subcategory: "Cloud Agent Services"
+        keywords: ["aws", "agentcore", "bedrock", "cloud"]
+        content: |
+          #### What It Is
+
+          Cloud providers offer managed agent platforms with built-in memory capabilities, allowing
+          developers to build agents without managing memory infrastructure.
+
+          #### Problem It Addresses
+
+          Enterprise developers need:
+          - Compliance and security built-in
+          - Integration with existing cloud infrastructure
+          - Scalability and reliability guarantees
+          - Support and SLAs
+
+          #### How It Helps
+
+          **AWS AgentCore** provides:
+          - Built-in memory strategies including semantic memory
+          - User preference tracking (explicit and implicit)
+          - Integration with AWS Bedrock LLMs
+          - Mem0 as exclusive memory provider
+          - Enterprise security and compliance
+
+          #### Technical 101
+
+          Cloud agent services abstract memory complexity:
+          - Automatic embedding generation
+          - Managed vector storage
+          - Memory retrieval optimization
+          - Integration with observability tools
+
+          Developers configure memory behavior through simple APIs rather than implementing
+          low-level vector operations.
+
+  - category: "RAG & Semantic Search"
+    keywords: ["rag", "retrieval", "semantic-search"]
+    content: |
+      Retrieval-Augmented Generation (RAG) combines the power of large language models with
+      information retrieval, allowing models to access external knowledge bases. This is
+      fundamental to giving agents access to large memory stores.
+
+    subcategories:
+      - subcategory: "RAG Frameworks"
+        keywords: ["haystack", "txtai", "rag-pipeline"]
+        content: |
+          #### What It Is
+
+          RAG frameworks provide end-to-end pipelines for building retrieval-augmented generation
+          systems, handling document processing, indexing, retrieval, and generation.
+
+          #### Problem It Addresses
+
+          Building RAG systems requires:
+          - Document parsing and chunking
+          - Embedding generation
+          - Vector storage and indexing
+          - Retrieval optimization
+          - Prompt engineering for generation
+
+          #### How It Helps
+
+          **Haystack** by deepset offers:
+          - Flexible pipeline architecture
+          - 100+ integrations with LLMs, vector DBs, and data sources
+          - Both extractive and generative QA
+          - Evaluation tools for measuring RAG quality
+
+          **txtai** provides:
+          - All-in-one embeddings database
+          - Semantic search out of the box
+          - Workflow pipelines for complex RAG patterns
+          - Lightweight and easy to deploy
+
+          #### Technical 101
+
+          A typical RAG pipeline:
+          1. **Indexing**: Documents are split, embedded, and stored
+          2. **Retrieval**: Query is embedded and similar chunks are found
+          3. **Reranking**: Results are reordered by relevance
+          4. **Generation**: Retrieved context + query → LLM → answer
+
+          Advanced techniques include:
+          - **Hybrid search**: Combining keyword and semantic search
+          - **Multi-query**: Generating multiple search queries from one question
+          - **Hypothetical document embeddings**: Embedding expected answers, not questions
+
+      - subcategory: "Semantic Frameworks"
+        keywords: ["semantic-kernel", "microsoft", "plugins"]
+        content: |
+          #### What It Is
+
+          Semantic frameworks provide higher-level abstractions for integrating LLMs with
+          conventional programming, memory systems, and plugins.
+
+          #### Problem It Addresses
+
+          Developers need to:
+          - Integrate LLMs into existing applications
+          - Combine AI with traditional business logic
+          - Manage memory and state across AI interactions
+          - Enable extensibility through plugins
+
+          #### How It Helps
+
+          **Microsoft Semantic Kernel** offers:
+          - SDK for .NET, Python, and Java
+          - Plugin architecture for extensibility
+          - Memory connectors for various storage systems
+          - Planners that coordinate multiple skills
+          - Integration with Azure AI services
+
+          #### Technical 101
+
+          Semantic Kernel uses a "semantic function" model where:
+          - Functions can be native code or AI prompts
+          - Memory provides context to all functions
+          - Planners chain functions to achieve goals
+          - Plugins extend capabilities dynamically
+
+          This bridges AI and traditional software development, allowing gradual AI adoption.
+
+  - category: "Development Tools"
+    keywords: ["low-code", "visual", "workflow"]
+    content: |
+      Development tools provide visual interfaces and low-code platforms for building AI agents
+      with memory, making agent development accessible to non-programmers.
+
+    subcategories:
+      - subcategory: "Workflow Platforms"
+        keywords: ["flowise", "langflow", "visual-builder", "low-code"]
+        content: |
+          #### What It Is
+
+          Visual workflow platforms allow building AI applications through drag-and-drop interfaces
+          rather than code, while still providing the full power of frameworks like LangChain.
+
+          #### Problem It Addresses
+
+          Not everyone who wants to build AI agents is a programmer. Even experienced developers
+          benefit from visual tools for:
+          - Rapid prototyping
+          - Experimenting with different architectures
+          - Documenting complex flows
+          - Enabling non-technical stakeholders to contribute
+
+          #### How It Helps
+
+          **Flowise** provides:
+          - Visual builder for LangChain flows
+          - Native Mem0 integration for memory
+          - Library of pre-built components
+          - API generation for production deployment
+
+          **Langflow** offers:
+          - Drag-and-drop multi-agent systems
+          - Native memory support through Mem0
+          - Real-time testing and debugging
+          - Export to production-ready code
+
+          Both lower the barrier to entry while maintaining the power of underlying frameworks.
+
+          #### Technical 101
+
+          These tools generate code behind the scenes:
+          1. Visual components represent framework objects
+          2. Connections define data flow
+          3. Configuration panels set parameters
+          4. Export generates Python/JavaScript code
+          5. Deployment creates REST APIs
+
+          You can start visually and later customize the generated code for advanced use cases.
+
+  - category: "Getting Started"
+    keywords: ["tutorial", "quickstart"]
+    content: |
+      Ready to build AI agents with memory? Here's how to get started based on your needs.
+
+    subcategories:
+      - subcategory: "For Rapid Prototyping"
+        content: |
+          **Recommended Stack:**
+          - **Memory**: Mem0 cloud (free tier available)
+          - **Vector DB**: Chroma (embedded mode, no setup)
+          - **Framework**: LangChain or LlamaIndex
+          - **Tools**: Flowise for visual development
+
+          **Quick Start:**
+          1. Sign up for Mem0 free tier
+          2. Install LangChain: `pip install langchain langchain-community`
+          3. Add memory with a few lines of code
+          4. Test with your own data
+
+          **Time to First Agent**: 30 minutes
+
+      - subcategory: "For Production Applications"
+        content: |
+          **Recommended Stack:**
+          - **Memory Platform**: Mem0, Zep, or Letta depending on requirements
+          - **Vector DB**: Pinecone (managed) or Qdrant (self-hosted)
+          - **Framework**: LangChain + LangGraph for complex workflows
+          - **Monitoring**: LangSmith for observability
+
+          **Key Considerations:**
+          - Data privacy and compliance requirements
+          - Expected scale (users, queries per second)
+          - Latency requirements
+          - Budget for managed services vs. self-hosting
+
+          **Time to Production**: 2-4 weeks
+
+      - subcategory: "For Enterprise Deployments"
+        content: |
+          **Recommended Stack:**
+          - **Memory**: Self-hosted Letta or Zep for control
+          - **Vector DB**: Milvus or Weaviate for scale
+          - **Knowledge Graph**: Neo4j for complex reasoning
+          - **Framework**: LangChain + LangGraph
+          - **Infrastructure**: Kubernetes for orchestration
+
+          **Key Considerations:**
+          - Security and compliance (SOC2, HIPAA, GDPR)
+          - Multi-tenancy and data isolation
+          - High availability and disaster recovery
+          - Integration with existing systems
+
+          **Time to Production**: 2-3 months

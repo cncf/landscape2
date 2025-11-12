@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/settings.schema.json
+
+# AI Memory Landscape Settings
+
+foundation: AI Memory
+
+url: https://ai-memory-landscape.example.com
+
+description: The AI Memory Landscape showcases projects, products, and companies building memory systems for AI agents, including vector databases, knowledge graphs, and memory frameworks.
+
+colors:
+  color1: "rgba(99, 102, 241, 1)"     # Indigo - Buttons, groups, links
+  color2: "rgba(236, 72, 153, 1)"     # Pink - Highlighted items, search
+  color3: "rgba(139, 92, 246, 1)"     # Purple - Stats bars, spinners
+  color4: "rgba(30, 41, 59, 0.7)"     # Slate - Category titles
+  color5: "rgba(99, 102, 241, 0.7)"   # Indigo transparent - Frames (odd)
+  color6: "rgba(30, 41, 59, 0.7)"     # Slate transparent - Frames (even)
+  color7: "rgba(196, 181, 253, 1)"    # Light purple - Borders, shadows
+
+categories:
+  - name: Memory Layer Platforms
+    subcategories:
+      - Managed Memory Services
+      - Open Source Memory Frameworks
+  - name: Vector Databases
+    subcategories:
+      - Managed Vector Services
+      - Open Source Vector Databases
+      - Database Extensions
+  - name: Agent Frameworks
+    subcategories:
+      - Orchestration Frameworks
+  - name: Knowledge Graph Systems
+    subcategories:
+      - Graph Databases
+      - Graph Memory Frameworks
+  - name: Foundation Model Memory
+    subcategories:
+      - LLM Provider Memory
+      - Cloud Agent Services
+  - name: RAG & Semantic Search
+    subcategories:
+      - RAG Frameworks
+      - Semantic Frameworks
+  - name: Development Tools
+    subcategories:
+      - Workflow Platforms
+
+footer:
+  links:
+    github: "https://github.com/landscape2"
+    homepage: "https://landscape2.io"
+  text: |
+    This landscape is an open source project. Contributions are welcome!
+
+header:
+  links:
+    github: "https://github.com/landscape2/ai-memory-landscape"
+  motd: |
+    "Welcome to the AI Memory Landscape - Your guide to memory systems for AI agents!"
+
+grid_items_size: medium
+
+groups:
+  - name: Core Infrastructure
+    alias: infrastructure
+    categories:
+      - Memory Layer Platforms
+      - Vector Databases
+      - Knowledge Graph Systems
+  - name: Frameworks & Tools
+    alias: frameworks
+    categories:
+      - Agent Frameworks
+      - RAG & Semantic Search
+      - Development Tools
+  - name: Foundation Models
+    alias: models
+    categories:
+      - Foundation Model Memory
+
+featured_items:
+  - field: subcategory
+    options:
+      - value: Managed Memory Services
+        order: 1
+        label: Memory Platform
+      - value: Open Source Vector Databases
+        order: 2
+        label: Vector DB
+
+view_mode: grid
