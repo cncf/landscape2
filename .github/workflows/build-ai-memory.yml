@@ -1,0 +1,97 @@
+name: Build AI Memory Landscape
+
+on:
+  push:
+    branches:
+      - main
+      - claude/follow-the-011CV4WuGF3ZnQyJAUYnJy4F
+    paths:
+      - 'ai-memory-landscape/**'
+      - '.github/workflows/build-ai-memory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: public.ecr.aws/g6m3a0y9/landscape2:latest
+      options: --user root
+    steps:
+      - name: Install git
+        run: apk add git
+
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build AI Memory landscape
+        run: |
+          landscape2 build \
+          --data-file ./ai-memory-landscape/data.yml \
+          --settings-file ./ai-memory-landscape/settings.yml \
+          --guide-file ./ai-memory-landscape/guide.yml \
+          --logos-path ./ai-memory-landscape/logos \
+          --output-dir /tmp/landscape
+
+      - name: Prepare build output
+        run: |
+          # Copy index.html to 404.html for SPA routing on GitHub Pages
+          cp /tmp/landscape/index.html /tmp/landscape/404.html
+
+      - name: Commit built landscape to build branch
+        run: |
+          git config --global safe.directory `pwd`
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Create or checkout build branch
+          git fetch origin build:build || git checkout -b build
+          git checkout build
+
+          # If build branch exists on remote, set upstream and pull
+          if git ls-remote --exit-code --heads origin build; then
+            git branch --set-upstream-to=origin/build build
+            git pull --rebase || true
+          fi
+
+          # Clear the branch and copy new build
+          rm -rf *
+          cp -R /tmp/landscape/* .
+
+          # Add .nojekyll to prevent GitHub Pages from processing files
+          touch .nojekyll
+
+          # Commit and push
+          git add -A
+          git commit -m "Build AI Memory Landscape from ${{ github.sha }}" || echo "No changes to commit"
+          git push origin build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout build branch
+        uses: actions/checkout@v4
+        with:
+          ref: build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
