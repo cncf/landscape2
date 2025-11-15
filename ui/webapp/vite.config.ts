@@ -82,6 +82,8 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         includePaths: scssIncludePaths,
+        quietDeps: true,
+        silenceDeprecations: ['import', 'global-builtin', 'color-functions'],
       },
     },
   },
