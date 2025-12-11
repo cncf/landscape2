@@ -537,6 +537,7 @@ export const ItemModalContent = (props: Props) => {
         <RepositoriesSection
           repositories={itemInfo()!.repositories}
           class={`border ${Fieldset}`}
+          projectMaturity={itemInfo()!.maturity}
           titleClass={`position-absolute px-2 bg-white fw-semibold ${FieldsetTitle}`}
         />
         {/* Security audits */}
