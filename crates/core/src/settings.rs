@@ -585,6 +585,17 @@ pub struct EndUserRule {
 pub struct FeaturedItemRule {
     pub field: String,
     pub options: Vec<FeaturedItemRuleOption>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exclude: Option<FeaturedItemRuleExclude>,
+}
+
+/// Featured item rule exclusion configuration.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct FeaturedItemRuleExclude {
+    /// Groups where the featured highlight should not be applied.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub groups: Option<Vec<String>>,
 }
 
 /// Featured item rule option.
@@ -1086,6 +1097,29 @@ mod tests {
                     label: Some("Label".to_string()),
                     order: Some(1),
                 }],
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        settings.validate().unwrap();
+    }
+
+    #[test]
+    fn settings_validate_featured_items_with_exclude_succeeds() {
+        let settings = LandscapeSettings {
+            foundation: "Foundation".to_string(),
+            url: "https://example.url".to_string(),
+            featured_items: Some(vec![FeaturedItemRule {
+                field: "Field".to_string(),
+                options: vec![FeaturedItemRuleOption {
+                    value: "Value".to_string(),
+                    label: Some("Label".to_string()),
+                    order: Some(1),
+                }],
+                exclude: Some(FeaturedItemRuleExclude {
+                    groups: Some(vec!["members".to_string()]),
+                }),
             }]),
             ..Default::default()
         };
@@ -1102,6 +1136,7 @@ mod tests {
             featured_items: Some(vec![FeaturedItemRule {
                 field: String::new(),
                 options: vec![],
+                ..Default::default()
             }]),
             ..Default::default()
         };
@@ -1118,6 +1153,7 @@ mod tests {
             featured_items: Some(vec![FeaturedItemRule {
                 field: "Field".to_string(),
                 options: vec![],
+                ..Default::default()
             }]),
             ..Default::default()
         };
@@ -1137,6 +1173,7 @@ mod tests {
                     value: String::new(),
                     ..Default::default()
                 }],
+                ..Default::default()
             }]),
             ..Default::default()
         };
@@ -1157,6 +1194,7 @@ mod tests {
                     label: Some(String::new()),
                     ..Default::default()
                 }],
+                ..Default::default()
             }]),
             ..Default::default()
         };

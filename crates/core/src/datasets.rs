@@ -67,7 +67,8 @@ pub mod base {
         games::LandscapeGames,
         guide::LandscapeGuide,
         settings::{
-            Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent, ViewMode,
+            Colors, FeaturedItemRule, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings,
+            UpcomingEvent, ViewMode,
         },
     };
     use serde::{Deserialize, Serialize};
@@ -96,6 +97,9 @@ pub mod base {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub description: Option<String>,
+
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub featured_items: Option<Vec<FeaturedItemRule>>,
 
         #[serde(skip_serializing_if = "Option::is_none")]
         pub footer: Option<Footer>,
@@ -154,6 +158,7 @@ pub mod base {
                 categories_overridden: vec![],
                 colors: settings.colors.clone(),
                 description: settings.description.clone(),
+                featured_items: settings.featured_items.clone(),
                 footer: settings.footer.clone(),
                 games_available: None,
                 grid_items_size: settings.grid_items_size.clone(),
@@ -750,6 +755,7 @@ mod tests {
             categories_overridden: vec!["Category 1".to_string()],
             colors,
             description: Some("Short landscape description.".to_string()),
+            featured_items: None,
             footer,
             games_available: Some(vec!["quiz".to_string()]),
             grid_items_size: Some(GridItemsSize::Small),

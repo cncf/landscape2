@@ -4,6 +4,7 @@ import { For, Show } from 'solid-js';
 
 import { BaseItem, Breakpoint, Item } from '../../../types';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
+import { useFeaturedItems } from '../../stores/featuredItems';
 import { ItemsList } from '../grid/Grid';
 import styles from './MobileGrid.module.css';
 
@@ -14,6 +15,7 @@ interface Props {
 
 const MobileGrid = (props: Props) => {
   const items = () => props.items;
+  const { getEffectiveFeatured } = useFeaturedItems();
   const updateActiveItemId = useUpdateActiveItemId();
   const gridWidth = () => window.innerWidth - 24; // device width - margin
   const { point } = useBreakpointDetect();
@@ -47,10 +49,13 @@ const MobileGrid = (props: Props) => {
         >
           <For each={items()}>
             {(item: BaseItem | Item) => {
+              const effectiveFeatured = () => getEffectiveFeatured(item);
               return (
                 <div
                   role="listitem"
-                  style={item.featured && item.featured.label ? { border: `2px solid ${props.bgColor}` } : {}}
+                  style={
+                    effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.bgColor}` } : {}
+                  }
                   class={`card rounded-0 position-relative p-0 ${styles.card}`}
                   classList={{
                     whithoutRepo: isUndefined(item.oss) || !item.oss,
