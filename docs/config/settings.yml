@@ -145,11 +145,19 @@ enduser:
 # considered a featured item. For each option, it is possible to also define an
 # order (which item would be displayed first) and a label for the item.
 #
+# It is also possible to exclude the featured highlight from being applied in
+# certain groups by using the `exclude` option. The `exclude` option contains a
+# `groups` field that allows providing a list of groups where the featured
+# highlight should not be applied.
+#
 # featured_items:
 #   - field: subcategory
 #     options:
 #       - value: <SUBCATEGORY1_NAME>
 #       - value: <SUBCATEGORY2_NAME>
+#     exclude:
+#       groups:
+#         - <GROUP_NAME>
 #
 featured_items:
   - field: maturity
@@ -160,6 +168,9 @@ featured_items:
       - value: incubating
         order: 2
         label: CNCF Incubating
+    exclude:
+      groups:
+        - Certified partners and providers
   - field: subcategory
     options:
       - value: Platinum

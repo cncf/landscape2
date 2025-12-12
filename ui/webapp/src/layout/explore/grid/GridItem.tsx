@@ -1,11 +1,12 @@
 import { getItemDescription, Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, onCleanup, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { BaseItem, Item } from '../../../types';
 import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
+import { useFeaturedItems } from '../../stores/featuredItems';
 import { useFullDataReady } from '../../stores/fullData';
 import Card from '../card/Card';
 import styles from './GridItem.module.css';
@@ -27,6 +28,7 @@ const DEFAULT_MARGIN = 35;
 const GridItem = (props: Props) => {
   let ref;
   const fullDataReady = useFullDataReady();
+  const { getEffectiveFeatured } = useFeaturedItems();
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
   const updateActiveItemId = useUpdateActiveItemId();
   const [visibleDropdown, setVisibleDropdown] = createSignal(false);
@@ -41,8 +43,12 @@ const GridItem = (props: Props) => {
   const containerWidth = () => (!isUndefined(props.container) ? props.container.clientWidth : window.innerWidth);
   const containerHeight = () => (!isUndefined(props.container) ? props.container.clientHeight : window.innerHeight);
   const touchDevice = () => isTouchDevice();
+
   // Only show dropdown on hover if it's not a touch device and activeDropdown prop is true
   const activeDropdown = () => (touchDevice() ? false : props.activeDropdown);
+
+  // Get featured data considering group exclusions
+  const effectiveFeatured = createMemo(() => getEffectiveFeatured(props.item));
 
   createEffect(
     on(fullDataReady, () => {
@@ -119,11 +125,11 @@ const GridItem = (props: Props) => {
       fallback={
         <div
           role="listitem"
-          style={props.item.featured && props.item.featured.label ? { border: `2px solid ${props.borderColor}` } : {}}
+          style={effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.borderColor}` } : {}}
           class={`card rounded-0 position-relative p-0 ${styles.card}`}
           classList={{
-            bigCard: !isUndefined(props.item.featured),
-            withLabel: !isUndefined(props.item.featured) && !isUndefined(props.item.featured.label),
+            bigCard: !isUndefined(effectiveFeatured()),
+            withLabel: !isUndefined(effectiveFeatured()) && !isUndefined(effectiveFeatured()!.label),
             whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
             archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
           }}
@@ -140,12 +146,12 @@ const GridItem = (props: Props) => {
             >
               <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
 
-              <Show when={props.item.featured && props.item.featured.label}>
+              <Show when={effectiveFeatured() && effectiveFeatured()!.label}>
                 <div
                   class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
-                  style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
+                  style={effectiveFeatured() ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
                 >
-                  {props.item.featured!.label}
+                  {effectiveFeatured()!.label}
                 </div>
               </Show>
             </div>
@@ -155,11 +161,11 @@ const GridItem = (props: Props) => {
     >
       <div
         role="listitem"
-        style={props.item.featured && props.item.featured.label ? { border: `2px solid ${props.borderColor}` } : {}}
+        style={effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.borderColor}` } : {}}
         class={`card rounded-0 position-relative p-0 ${styles.card}`}
         classList={{
-          bigCard: !isUndefined(props.item.featured),
-          withLabel: !isUndefined(props.item.featured) && !isUndefined(props.item.featured.label),
+          bigCard: !isUndefined(effectiveFeatured()),
+          withLabel: !isUndefined(effectiveFeatured()) && !isUndefined(effectiveFeatured()!.label),
           whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
           archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
         }}
@@ -221,13 +227,13 @@ const GridItem = (props: Props) => {
               enableLazyLoad={!isUndefined(props.enableLazyLoad) ? props.enableLazyLoad : true}
             />
 
-            <Show when={props.item.featured && props.item.featured.label}>
+            <Show when={effectiveFeatured() && effectiveFeatured()!.label}>
               <div
                 class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
-                style={props.item.featured ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
-                aria-label={props.item.featured!.label}
+                style={effectiveFeatured() ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
+                aria-label={effectiveFeatured()!.label}
               >
-                {props.item.featured!.label}
+                {effectiveFeatured()!.label}
               </div>
             </Show>
           </button>

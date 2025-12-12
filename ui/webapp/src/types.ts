@@ -7,6 +7,7 @@ export interface BaseData {
   colors?: {
     [key: string]: string;
   };
+  featured_items?: FeaturedItemRule[];
   grid_items_size?: string;
   groups?: Group[];
   categories: Category[];
@@ -87,6 +88,22 @@ export interface BaseItem {
 export interface Featured {
   label?: string;
   order?: number;
+}
+
+export interface FeaturedItemRule {
+  field: string;
+  options: FeaturedItemRuleOption[];
+  exclude?: FeaturedItemRuleExclude;
+}
+
+export interface FeaturedItemRuleOption {
+  value: string;
+  label?: string;
+  order?: number;
+}
+
+export interface FeaturedItemRuleExclude {
+  groups?: string[];
 }
 
 export interface Item extends BaseItem {
