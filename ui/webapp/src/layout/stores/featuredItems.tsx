@@ -36,10 +36,13 @@ export const useFeaturedItems = () => {
   // Transform items array with effective featured status (for ItemsList).
   const withEffectiveFeatured = (items: (BaseItem | Item)[]) => {
     if (!activeGroupHasFeaturedExclusions()) return items;
-    return items.map((item) => ({
-      ...item,
-      featured: getEffectiveFeatured(item),
-    }));
+    return items.map((item) => {
+      const effectiveFeatured = getEffectiveFeatured(item);
+      if (effectiveFeatured !== item.featured) {
+        return { ...item, featured: effectiveFeatured };
+      }
+      return item;
+    });
   };
 
   // Count featured items considering exclusions (for Grid).
