@@ -160,8 +160,8 @@ impl LandscapeData {
                             && let Some(option) = rule.options.iter().find(|o| o.value == *item_maturity)
                         {
                             item.featured = Some(ItemFeatured {
-                                order: option.order,
                                 label: option.label.clone(),
+                                order: option.order,
                             });
                         }
                     }
@@ -170,8 +170,8 @@ impl LandscapeData {
                     for item in &mut self.items {
                         if let Some(option) = rule.options.iter().find(|o| o.value == item.subcategory) {
                             item.featured = Some(ItemFeatured {
-                                order: option.order,
                                 label: option.label.clone(),
+                                order: option.order,
                             });
                         }
                     }
@@ -964,7 +964,7 @@ pub struct RepositoryGithubData {
 
 #[cfg(test)]
 mod tests {
-    use crate::settings::{EndUserRule, FeaturedItemRule, FeaturedItemRuleOption, TagRule};
+    use crate::settings::{self, EndUserRule, FeaturedItemRule, FeaturedItemRuleOption, TagRule};
 
     use super::*;
 
@@ -1089,6 +1089,7 @@ mod tests {
                     label: Some("Graduated".to_string()),
                     order: Some(1),
                 }],
+                ..Default::default()
             }]),
             ..Default::default()
         };
@@ -1098,7 +1099,7 @@ mod tests {
             landscape_data.items[0].featured,
             Some(ItemFeatured {
                 label: Some("Graduated".to_string()),
-                order: Some(1)
+                order: Some(1),
             })
         );
     }
@@ -1119,6 +1120,7 @@ mod tests {
                     label: Some("VIP category".to_string()),
                     order: Some(1),
                 }],
+                ..Default::default()
             }]),
             ..Default::default()
         };
@@ -1128,7 +1130,7 @@ mod tests {
             landscape_data.items[0].featured,
             Some(ItemFeatured {
                 label: Some("VIP category".to_string()),
-                order: Some(1)
+                order: Some(1),
             })
         );
     }
