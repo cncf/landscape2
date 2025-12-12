@@ -314,6 +314,7 @@ export const ItemModalMobileContent = (props: Props) => {
         {/* Repositories */}
         <RepositoriesSection
           repositories={itemInfo()!.repositories}
+          projectMaturity={itemInfo()!.maturity}
           titleClass={`text-uppercase mt-3 mb-4 fw-semibold border-bottom ${SectionTitle}`}
           boxClass="col-6"
         />
