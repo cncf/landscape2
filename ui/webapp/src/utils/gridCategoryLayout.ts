@@ -52,7 +52,7 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   if (input.isOverriden) {
     rowsCount = input.subcategories.length;
   } else {
-    const maxColumns = Math.floor(input.containerWidth / COLUMN_RESERVED_WIDTH);
+    const maxColumns = Math.max(1, Math.floor(input.containerWidth / COLUMN_RESERVED_WIDTH));
     rowsCount = Math.ceil(input.subcategories.length / maxColumns);
   }
 
