@@ -197,11 +197,11 @@ const Explore = (props: Props) => {
   };
 
   const checkIfAvaibleClassificationInGroup = (group: string): boolean => {
-    return classifyAndSortOptions()[group].classify.includes(classify());
+    return classifyAndSortOptions()[group]?.classify?.includes(classify()) ?? false;
   };
 
   const checkIfAvaibleSortOptionInGroup = (group: string): boolean => {
-    return classifyAndSortOptions()[group].sort.includes(sorted());
+    return classifyAndSortOptions()[group]?.sort?.includes(sorted()) ?? false;
   };
 
   const closeMenuStatus = () => {
