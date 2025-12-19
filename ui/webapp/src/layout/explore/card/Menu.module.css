@@ -8,22 +8,25 @@
   min-width: 270px;
   top: 5.5rem;
   bottom: 1rem;
-  max-height: calc(var(--app-height) - 6.5rem);
+  max-height: var(--menu-max-height, calc(var(--app-height) - 6.5rem));
 }
 
 :global(.motd-visible) .sticky {
   top: calc(5.5rem + var(--motd-height));
-  max-height: calc(var(--app-height) - 6.5rem - var(--motd-height));
+  max-height: var(--menu-max-height, calc(var(--app-height) - 6.5rem - var(--motd-height)));
 }
 
 :global(.overlay-active) .sticky {
   top: calc(5.5rem + var(--overlay-alert-height));
-  max-height: calc(var(--app-height) - 6.5rem - var(--overlay-alert-height));
+  max-height: var(--menu-max-height, calc(var(--app-height) - 6.5rem - var(--overlay-alert-height)));
 }
 
 :global(.overlay-active.motd-visible) .sticky {
   top: calc(5.5rem + var(--overlay-alert-height) + var(--motd-height));
-  max-height: calc(var(--app-height) - 6.5rem - var(--overlay-alert-height) - var(--motd-height));
+  max-height: var(
+    --menu-max-height,
+    calc(var(--app-height) - 6.5rem - var(--overlay-alert-height) - var(--motd-height))
+  );
 }
 
 .content {
