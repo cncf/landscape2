@@ -23,4 +23,5 @@ If you are using **Landscape2**, please consider adding your landscape to this l
 - [Post-Quantum Cryptography Alliance](https://pqca.landscape2.io)
 - [Presto](https://presto.landscape2.io)
 - [RISC-V](https://riscv.landscape2.io)
+- [Space Value Chain (SVC)](https://svc.fudge.org)
 - [SPDX](https://spdx.landscape2.io)
