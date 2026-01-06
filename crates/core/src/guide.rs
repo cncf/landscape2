@@ -45,6 +45,9 @@ pub struct LandscapeGuide {
 
 impl LandscapeGuide {
     /// Create a new landscape guide instance from the source provided.
+    ///
+    /// # Errors
+    /// Returns an error if the file or URL cannot be read or parsed.
     #[instrument(skip_all, err)]
     pub async fn new(src: &GuideSource) -> Result<Option<Self>> {
         // Try from file

@@ -25,6 +25,10 @@ pub struct NewArgs {
 }
 
 /// Create a new landscape from the built-in template.
+///
+/// # Errors
+/// Returns an error if the output directory or template files cannot be
+/// created or written.
 #[instrument(skip_all)]
 pub fn new(args: &NewArgs) -> Result<()> {
     info!("creating new landscape from the built-in template..");

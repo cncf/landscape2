@@ -138,6 +138,10 @@ pub struct BuildArgs {
 }
 
 /// Build landscape website.
+///
+/// # Errors
+/// Returns an error if required assets are missing, inputs are invalid, or any
+/// data processing step fails.
 #[instrument(skip_all)]
 pub async fn build(args: &BuildArgs) -> Result<()> {
     info!("building landscape website..");
@@ -967,16 +971,17 @@ fn find_available_port() -> Option<u16> {
     (9000..10000).find(|port| TcpListener::bind(("127.0.0.1", *port)).is_ok())
 }
 
+#[allow(
+    clippy::ref_option_ref,
+    clippy::trivially_copy_pass_by_ref,
+    clippy::unnecessary_wraps
+)]
 mod filters {
     use super::settings::Analytics;
 
     /// Filter to get the Google Tag Manager container ID from the analytics
     /// instance provided.
-    #[allow(
-        clippy::unnecessary_wraps,
-        clippy::trivially_copy_pass_by_ref,
-        clippy::ref_option_ref
-    )]
+    #[askama::filter_fn]
     pub(crate) fn get_gtm_container_id(
         analytics: &Option<&Analytics>,
         _: &dyn askama::Values,
