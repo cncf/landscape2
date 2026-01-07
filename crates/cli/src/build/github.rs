@@ -177,6 +177,7 @@ type DynGH = Box<dyn GH + Send + Sync>;
 /// Trait that defines some operations a GH implementation must support.
 #[async_trait]
 #[cfg_attr(test, automock)]
+#[allow(clippy::struct_field_names)]
 trait GH {
     /// Get number of repository contributors.
     async fn get_contributors_count(&self, owner: &str, repo: &str) -> Result<usize>;

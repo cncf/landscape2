@@ -36,6 +36,10 @@ pub struct ServeArgs {
 }
 
 /// Serve landscape website.
+///
+/// # Errors
+/// Returns an error if the server cannot bind, start, or read the current
+/// directory when needed.
 #[instrument(skip_all)]
 pub async fn serve(args: &ServeArgs) -> Result<()> {
     // Setup router

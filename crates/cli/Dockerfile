@@ -1,5 +1,5 @@
 # Build CLI tool
-FROM rust:1-alpine3.22 as builder
+FROM rust:1-alpine3.23 as builder
 RUN apk --no-cache add musl-dev perl make libconfig-dev openssl-dev yarn wasm-pack binaryen
 WORKDIR /landscape2
 COPY crates crates
@@ -9,7 +9,7 @@ WORKDIR /landscape2/crates/cli
 RUN cargo build --release
 
 # Final stage
-FROM alpine:3.22.2
+FROM alpine:3.23.2
 RUN addgroup -S landscape2 && adduser -S landscape2 -G landscape2
 RUN apk --no-cache add bash chromium font-ubuntu
 USER landscape2

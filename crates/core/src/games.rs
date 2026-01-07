@@ -52,6 +52,9 @@ pub struct LandscapeGames {
 
 impl LandscapeGames {
     /// Create a new landscape games instance from the source provided.
+    ///
+    /// # Errors
+    /// Returns an error if the file or URL cannot be read or parsed.
     #[instrument(skip_all, err)]
     pub async fn new(src: &GamesSource) -> Result<Option<Self>> {
         // Try from file

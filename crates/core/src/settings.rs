@@ -119,6 +119,10 @@ pub struct LandscapeSettings {
 
 impl LandscapeSettings {
     /// Create a new landscape settings instance from the source provided.
+    ///
+    /// # Errors
+    /// Returns an error if the source is missing, the file or URL cannot be read,
+    /// or the data is invalid.
     #[instrument(skip_all, err)]
     pub async fn new(src: &SettingsSource) -> Result<Self> {
         // Try from file

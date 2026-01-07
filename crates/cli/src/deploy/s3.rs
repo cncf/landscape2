@@ -43,6 +43,10 @@ pub struct Args {
 }
 
 /// Deploy landscape website to AWS S3.
+///
+/// # Errors
+/// Returns an error if required environment variables are missing, uploads fail,
+/// or the source files cannot be read.
 #[instrument(skip_all, err)]
 pub async fn deploy(args: &Args) -> Result<()> {
     info!("deploying landscape website..");
