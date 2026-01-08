@@ -81,7 +81,7 @@ interface MultiCategoryEntry {
 
 const FONT_FAMILY_OPTIONS = {
   [FontFamily.Serif]: `Times, "Times New Roman", Georgia, Palatino, serif`,
-  [FontFamily.SansSerif]: `"Clarity City", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, Roboto, Ubuntu, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+  [FontFamily.SansSerif]: `"Clarity City", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, Roboto, "Noto Sans", Ubuntu, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
   [FontFamily.Monospace]: `Courier, Consolas, "Andale Mono", monospace`,
 };
 
