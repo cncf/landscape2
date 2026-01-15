@@ -1,0 +1,192 @@
+{
+  "finances_available": false,
+  "foundation": "DEMO",
+  "description": "Demo landscape for local development.",
+  "url": "http://127.0.0.1:8000",
+  "colors": {
+    "color1": "rgba(0, 107, 204, 1)",
+    "color2": "rgba(255, 0, 170, 1)",
+    "color3": "rgba(96, 149, 214, 1)",
+    "color4": "rgba(0, 42, 81, 0.7)",
+    "color5": "rgba(1, 107, 204, 0.7)",
+    "color6": "rgba(0, 42, 81, 0.7)",
+    "color7": "rgba(180, 219, 255, 1)"
+  },
+  "grid_items_size": "large",
+  "games_available": [
+    "quiz"
+  ],
+  "guide_summary": {
+    "Category 1": [
+      "Summary",
+      "Subcategory 1-1",
+      "Subcategory 1-2"
+    ],
+    "Category 2": [
+      "Summary",
+      "Subcategory 2-1",
+      "Subcategory 2-2"
+    ]
+  },
+  "groups": [
+    {
+      "name": "Some categories",
+      "normalized_name": "some-categories",
+      "categories": [
+        "Category 1",
+        "Category 2"
+      ]
+    },
+    {
+      "name": "Only category 2",
+      "normalized_name": "only-category-2",
+      "categories": [
+        "Category 2"
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "Category 1",
+      "normalized_name": "category-1",
+      "subcategories": [
+        {
+          "name": "Subcategory 1-1",
+          "normalized_name": "subcategory-1-1"
+        },
+        {
+          "name": "Subcategory 1-2",
+          "normalized_name": "subcategory-1-2"
+        }
+      ]
+    },
+    {
+      "name": "Category 2",
+      "normalized_name": "category-2",
+      "subcategories": [
+        {
+          "name": "Subcategory 2-1",
+          "normalized_name": "subcategory-2-1"
+        },
+        {
+          "name": "Subcategory 2-2",
+          "normalized_name": "subcategory-2-2"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "category-1--subcategory-1-1--item-1",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 1",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 1",
+      "maturity": "graduated"
+    },
+    {
+      "id": "category-1--subcategory-1-1--item-2",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 2",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 2",
+      "maturity": "sandbox"
+    },
+    {
+      "id": "category-1--subcategory-1-1--item-3",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 3",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 3"
+    },
+    {
+      "id": "category-1--subcategory-1-2--item-4",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-2",
+      "name": "Item 4",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 4"
+    },
+    {
+      "id": "category-1--subcategory-1-2--item-5",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-2",
+      "name": "Item 5",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 5"
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-6",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 6",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 6",
+      "maturity": "graduated"
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-7",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 7",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 7",
+      "maturity": "sandbox"
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-8",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 8",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 8"
+    },
+    {
+      "id": "category-2--subcategory-2-2--item-9",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-2",
+      "name": "Item 9",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 9"
+    }
+  ],
+  "footer": {
+    "links": {
+      "facebook": "https://www.facebook.com/CloudNativeComputingFoundation/",
+      "flickr": "https://www.flickr.com/photos/143247548@N03/albums",
+      "github": "https://github.com/cncf",
+      "homepage": "https://cncf.io",
+      "instagram": "https://www.instagram.com/humans.of.cloudnative/",
+      "linkedin": "https://www.linkedin.com/company/cloud-native-computing-foundation/",
+      "slack": "https://slack.cncf.io/",
+      "twitch": "https://www.twitch.tv/cloudnativefdn",
+      "twitter": "https://twitter.com/cloudnativefdn",
+      "wechat": "https://www.cncf.io/wechat/",
+      "youtube": "https://www.youtube.com/c/cloudnativefdn"
+    },
+    "logo": "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf/horizontal/white/cncf-white.svg",
+    "text": "<p>&copy; 2025 DEMO. <a href=\"http://127.0.0.1:8000/privacy-policy\">Privacy Policy</a> · <a href=\"http://127.0.0.1:8000/terms-of-use\">Terms of Use</a></p>"
+  },
+  "header": {
+    "links": {
+      "github": "https://github.com/cncf/landscape2"
+    },
+    "logo": "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
+  },
+  "featured_items": [
+    {
+      "field": "maturity",
+      "options": [
+        {
+          "value": "graduated",
+          "order": 1,
+          "label": "Graduated"
+        }
+      ]
+    }
+  ],
+  "screenshot_width": 1500
+}

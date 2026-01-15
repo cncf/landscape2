@@ -4,11 +4,38 @@ import isUndefined from 'lodash/isUndefined';
 import { createSignal, For, onMount, Show } from 'solid-js';
 
 import init, { Quiz, QuizOptions, State } from '../../../wasm/quiz/landscape2_quiz';
+import { BASE_PATH } from '../../data';
 import pattern from '../../media/pattern_quiz.png';
 import isWasmSupported from '../../utils/isWasmSupported';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import styles from './Content.module.css';
 import Title from './Title';
+
+const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, '');
+
+const buildPath = (...segments: (string | undefined)[]) => {
+  const parts = segments
+    .map((segment) => segment?.trim())
+    .filter((segment) => !isUndefined(segment) && segment !== '')
+    .map((segment) => trimSlashes(segment!))
+    .filter((segment) => segment.length > 0);
+
+  if (parts.length === 0) {
+    return '';
+  }
+
+  return `/${parts.join('/')}`;
+};
+
+const normalizedBasePath = buildPath(BASE_PATH);
+const devStaticPath = buildPath(BASE_PATH, 'static') || '/static';
+
+const getQuizBaseUrl = () => {
+  if (import.meta.env.MODE === 'development') {
+    return `${window.location.origin}${devStaticPath}`;
+  }
+  return `${window.location.origin}${normalizedBasePath}`;
+};
 
 const Content = () => {
   const [loaded, setLoaded] = createSignal<boolean>(false);
@@ -18,7 +45,7 @@ const Content = () => {
   const [error, setError] = createSignal<string | undefined>();
 
   const startGame = async (initiated?: boolean) => {
-    const options = new QuizOptions(import.meta.env.MODE === 'development' ? 'http://localhost:8000' : location.origin);
+    const options = new QuizOptions(getQuizBaseUrl());
     const quiz = await Quiz.new(options);
     setActiveQuiz(quiz);
     if (initiated) setQuizState(quiz.state());
@@ -79,7 +106,7 @@ const Content = () => {
                   <div class={`ms-3 ms-xl-4 border border-2 border-light ${styles.dot} ${styles.dotWrong}`} />
                   <div
                     class={`ms-2 fw-semibold ${styles.score}`}
-                    aria-label={`${quizState()!.score.correct} wrong guesses`}
+                    aria-label={`${quizState()!.score.wrong} wrong guesses`}
                   >
                     {quizState()!.score.wrong}
                   </div>

@@ -1,0 +1,110 @@
+{
+  "projects": {
+    "projects": 9,
+    "maturity": {
+      "graduated": 2,
+      "sandbox": 2
+    },
+    "accepted_at": {
+      "2024-01": 3,
+      "2024-02": 3,
+      "2024-03": 3
+    },
+    "accepted_at_rt": {
+      "2024-01": 3,
+      "2024-02": 6,
+      "2024-03": 9
+    },
+    "audits": {
+      "2024-01": 3,
+      "2024-02": 3,
+      "2024-03": 3
+    },
+    "audits_rt": {
+      "2024-01": 3,
+      "2024-02": 6,
+      "2024-03": 9
+    },
+    "sandbox_to_incubating": {
+      "2024-02": 1,
+      "2024-03": 1
+    },
+    "incubating_to_graduated": {
+      "2024-03": 1
+    },
+    "category": {
+      "Category 1": {
+        "projects": 5,
+        "subcategories": {
+          "Subcategory 1-1": 3,
+          "Subcategory 1-2": 2
+        }
+      },
+      "Category 2": {
+        "projects": 4,
+        "subcategories": {
+          "Subcategory 2-1": 3,
+          "Subcategory 2-2": 1
+        }
+      }
+    },
+    "tag": {
+      "category-1--subcategory-1-1": 3,
+      "category-1--subcategory-1-2": 2,
+      "category-2--subcategory-2-1": 3,
+      "category-2--subcategory-2-2": 1
+    }
+  },
+  "members": {
+    "members": 6,
+    "subcategories": {
+      "Category 1": 3,
+      "Category 2": 3
+    },
+    "joined_at": {
+      "2023-01": 3,
+      "2024-01": 3
+    },
+    "joined_at_rt": {
+      "2023-01": 3,
+      "2024-01": 6
+    }
+  },
+  "repositories": {
+    "repositories": 4,
+    "contributors": 12,
+    "stars": 40,
+    "bytes": 4096,
+    "languages": {
+      "TypeScript": 4
+    },
+    "languages_bytes": {
+      "TypeScript": 4096
+    },
+    "participation_stats": [
+      1,
+      0,
+      2,
+      1,
+      3,
+      2
+    ],
+    "licenses": {
+      "Apache-2.0": 4
+    }
+  },
+  "organizations": {
+    "funding_rounds": {
+      "2024": 4
+    },
+    "funding_rounds_money_raised": {
+      "2024": 400000
+    },
+    "acquisitions": {
+      "2024": 2
+    },
+    "acquisitions_price": {
+      "2024": 100000
+    }
+  }
+}

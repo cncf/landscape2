@@ -1,0 +1,170 @@
+{
+  "categories": [
+    {
+      "name": "Category 1",
+      "normalized_name": "category-1",
+      "subcategories": [
+        {
+          "name": "Subcategory 1-1",
+          "normalized_name": "subcategory-1-1"
+        },
+        {
+          "name": "Subcategory 1-2",
+          "normalized_name": "subcategory-1-2"
+        }
+      ]
+    },
+    {
+      "name": "Category 2",
+      "normalized_name": "category-2",
+      "subcategories": [
+        {
+          "name": "Subcategory 2-1",
+          "normalized_name": "subcategory-2-1"
+        },
+        {
+          "name": "Subcategory 2-2",
+          "normalized_name": "subcategory-2-2"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "category-1--subcategory-1-1--item-1",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 1",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 1",
+      "maturity": "graduated",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-1--subcategory-1-1--item-2",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 2",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 2",
+      "maturity": "sandbox",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-1--subcategory-1-1--item-3",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-1",
+      "name": "Item 3",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 3",
+      "homepage_url": "https://cncf.io"
+    },
+    {
+      "id": "category-1--subcategory-1-2--item-4",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-2",
+      "name": "Item 4",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 4",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-1--subcategory-1-2--item-5",
+      "category": "Category 1",
+      "subcategory": "Subcategory 1-2",
+      "name": "Item 5",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 5",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-6",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 6",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 6",
+      "maturity": "graduated",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-7",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 7",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 7",
+      "maturity": "sandbox",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    },
+    {
+      "id": "category-2--subcategory-2-1--item-8",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-1",
+      "name": "Item 8",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 8",
+      "homepage_url": "https://cncf.io"
+    },
+    {
+      "id": "category-2--subcategory-2-2--item-9",
+      "category": "Category 2",
+      "subcategory": "Subcategory 2-2",
+      "name": "Item 9",
+      "logo": "logos/cncf.svg",
+      "description": "This is the description of item 9",
+      "homepage_url": "https://cncf.io",
+      "crunchbase_url": "https://www.crunchbase.com/organization/cloud-native-computing-foundation",
+      "twitter_url": "https://twitter.com/CloudNativeFdn",
+      "repositories": [
+        {
+          "url": "https://github.com/cncf/landscape2"
+        }
+      ]
+    }
+  ],
+  "crunchbase_data": {},
+  "github_data": {}
+}
