@@ -25,16 +25,17 @@ use super::{LandscapeData, cache::Cache};
 /// File used to cache data collected from GitHub.
 const GITHUB_CACHE_FILE: &str = "github.json";
 
-/// How long the GitHub data in the cache is valid (in days).
-const GITHUB_CACHE_TTL: i64 = 7;
-
 /// Environment variable containing a comma separated list of GitHub tokens.
 const GITHUB_TOKENS: &str = "GITHUB_TOKENS";
 
 /// Collect GitHub data for each of the items repositories in the landscape,
 /// reusing cached data whenever possible.
 #[instrument(skip_all, err)]
-pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &LandscapeData) -> Result<GithubData> {
+pub(crate) async fn collect_github_data(
+    cache: &Cache,
+    landscape_data: &LandscapeData,
+    github_cache_ttl: i64,
+) -> Result<GithubData> {
     debug!("collecting repositories information from github (this may take a while)");
 
     // Read cached data (if available)
@@ -92,7 +93,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
             // Use cached data when available if it hasn't expired yet
             if let Some(cached_repo) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|repo| {
-                    if repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now() {
+                    if repo.generated_at + chrono::Duration::days(github_cache_ttl) > Utc::now() {
                         Some(repo)
                     } else {
                         None

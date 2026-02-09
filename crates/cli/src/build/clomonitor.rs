@@ -7,9 +7,6 @@ use reqwest::StatusCode;
 
 use super::cache::Cache;
 
-/// How long the CLOMonitor data in the cache is valid (in days).
-const CLOMONITOR_CACHE_TTL: i64 = 7;
-
 /// Foundations supported by CLOMonitor.
 const SUPPORTED_FOUNDATIONS: [&str; 2] = ["cncf", "lfaidata"];
 
@@ -19,6 +16,7 @@ pub(crate) async fn fetch_report_summary(
     http_client: reqwest::Client,
     foundation: &str,
     project_name: &str,
+    clomonitor_cache_ttl: i64,
 ) -> Result<Option<Vec<u8>>> {
     // Check if the foundation provided is supported by CLOMonitor
     let foundation = foundation.to_lowercase();
@@ -30,7 +28,7 @@ pub(crate) async fn fetch_report_summary(
     let cache_file = format!("clomonitor_{foundation}_{project_name}.svg");
     if let Ok(Some((Some(modified_at), cached_report_summary))) = cache.read(&cache_file) {
         let modified_at: DateTime<Utc> = modified_at.into();
-        if Utc::now() - chrono::Duration::days(CLOMONITOR_CACHE_TTL) < modified_at {
+        if Utc::now() - chrono::Duration::days(clomonitor_cache_ttl) < modified_at {
             return Ok(Some(cached_report_summary));
         }
     }

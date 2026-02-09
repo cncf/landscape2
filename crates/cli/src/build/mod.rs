@@ -135,6 +135,18 @@ pub struct BuildArgs {
     /// Settings source.
     #[command(flatten)]
     pub settings_source: SettingsSource,
+
+    /// GitHub data cache TTL in days (default: 7).
+    #[arg(long, default_value_t = 7)]
+    pub github_cache_ttl: i64,
+
+    /// Crunchbase data cache TTL in days (default: 7).
+    #[arg(long, default_value_t = 7)]
+    pub crunchbase_cache_ttl: i64,
+
+    /// CLOMonitor data cache TTL in days (default: 7).
+    #[arg(long, default_value_t = 7)]
+    pub clomonitor_cache_ttl: i64,
 }
 
 /// Build landscape website.
@@ -182,8 +194,8 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
 
     // Collect data from external services
     let (crunchbase_data, github_data) = tokio::try_join!(
-        collect_crunchbase_data(&cache, &landscape_data),
-        collect_github_data(&cache, &landscape_data)
+        collect_crunchbase_data(&cache, &landscape_data, args.crunchbase_cache_ttl),
+        collect_github_data(&cache, &landscape_data, args.github_cache_ttl)
     )?;
 
     // Enrich landscape data with some extra information from the settings and
@@ -196,7 +208,14 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
     landscape_data.set_enduser_flag(&settings);
 
     // Collect CLOMonitor reports summaries and copy them to the output directory
-    collect_clomonitor_reports(&cache, &mut landscape_data, &settings, &args.output_dir).await?;
+    collect_clomonitor_reports(
+        &cache,
+        &mut landscape_data,
+        &settings,
+        &args.output_dir,
+        args.clomonitor_cache_ttl,
+    )
+    .await?;
 
     // Generate API data files
     generate_api(
@@ -278,6 +297,7 @@ async fn collect_clomonitor_reports(
     landscape_data: &mut LandscapeData,
     settings: &LandscapeSettings,
     output_dir: &Path,
+    clomonitor_cache_ttl: i64,
 ) -> Result<()> {
     debug!("collecting clomonitor reports");
 
@@ -294,15 +314,22 @@ async fn collect_clomonitor_reports(
 
             // Fetch report summary
             let http_client = http_client.clone();
-            let report_summary =
-                match clomonitor::fetch_report_summary(cache, http_client, foundation, project_name).await {
-                    Ok(Some(report_summary)) => report_summary,
-                    Ok(None) => return,
-                    Err(err) => {
-                        error!(?err, ?foundation, ?project_name, "error fetching report summary");
-                        return;
-                    }
-                };
+            let report_summary = match clomonitor::fetch_report_summary(
+                cache,
+                http_client,
+                foundation,
+                project_name,
+                clomonitor_cache_ttl,
+            )
+            .await
+            {
+                Ok(Some(report_summary)) => report_summary,
+                Ok(None) => return,
+                Err(err) => {
+                    error!(?err, ?foundation, ?project_name, "error fetching report summary");
+                    return;
+                }
+            };
 
             // Copy report summary to the output dir
             let file_name = format!("clomonitor_{foundation}_{project_name}.svg");

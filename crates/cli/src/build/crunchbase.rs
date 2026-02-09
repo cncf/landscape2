@@ -27,9 +27,6 @@ use super::{LandscapeData, cache::Cache};
 /// File used to cache data collected from Crunchbase.
 const CRUNCHBASE_CACHE_FILE: &str = "crunchbase.json";
 
-/// How long the Crunchbase data in the cache is valid (in days).
-const CRUNCHBASE_CACHE_TTL: i64 = 7;
-
 /// Environment variable containing the Crunchbase API key.
 const CRUNCHBASE_API_KEY: &str = "CRUNCHBASE_API_KEY";
 
@@ -42,6 +39,7 @@ const CRUNCHBASE_RATE_LIMITER_INTERVAL: Duration = Duration::from_millis(300);
 pub(crate) async fn collect_crunchbase_data(
     cache: &Cache,
     landscape_data: &LandscapeData,
+    crunchbase_cache_ttl: i64,
 ) -> Result<CrunchbaseData> {
     debug!("collecting organizations information from crunchbase (this may take a while)");
 
@@ -87,7 +85,7 @@ pub(crate) async fn collect_crunchbase_data(
             // Use cached data when available if it hasn't expired yet
             if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
                 cache.get(&url).and_then(|org| {
-                    if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
+                    if org.generated_at + chrono::Duration::days(crunchbase_cache_ttl) > Utc::now() {
                         Some(org)
                     } else {
                         None
