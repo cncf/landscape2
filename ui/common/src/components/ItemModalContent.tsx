@@ -713,8 +713,21 @@ export const ItemModalContent = (props: Props) => {
             </div>
 
             {/* Funding rounds */}
+            <Show when={!isUndefined(itemInfo()!.funding_url) && !isEmpty(itemInfo()!.funding_url)}>
+              <div class={`fw-bold text-uppercase mt-3 mt-lg-4 mb-2 mb-lg-3 ${TitleInSection}`}>Funding rounds</div>
+              <div class="w-100 my-3">
+                <small class="text-muted">For more financial details, see:</small>
+                <ExternalLink
+                  class={`text-muted text-break d-block text-decoration-underline ${TableLink}`}
+                  href={itemInfo()!.funding_url!}
+                >
+                  {itemInfo()!.funding_url!}
+                </ExternalLink>
+              </div>
+            </Show>
             <Show
               when={
+                (isUndefined(itemInfo()!.funding_url) || isEmpty(itemInfo()!.funding_url)) &&
                 !isUndefined(itemInfo()!.crunchbase_data!.funding_rounds) &&
                 !isEmpty(itemInfo()!.crunchbase_data!.funding_rounds!)
               }

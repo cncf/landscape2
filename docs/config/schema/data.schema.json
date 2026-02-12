@@ -365,6 +365,15 @@
                             "format": "uri",
                             "pattern": "^https?://(www\\.)?facebook.com/.*"
                           },
+                          "funding_url": {
+                            "title": "Funding URL",
+                            "description": "URL to external financial details. When provided, the funding rounds table in the item's details view is hidden and this URL is shown instead",
+                            "type": "string",
+                            "format": "uri",
+                            "examples": [
+                              "https://financial.details.url"
+                            ]
+                          },
                           "github_discussions_url": {
                             "title": "GitHub discussions URL",
                             "type": "string",
