@@ -180,6 +180,11 @@ categories:
               # Facebook URL (optional).
               facebook_url: https://facebook.com/url
 
+              # URL to external financial details (optional). When this field is set, the
+              # funding rounds table in the item's details view is hidden and this URL is shown
+              # instead.
+              funding_url: https://financial.details.url
+
               # GitHub discussions URL (optional).
               github_discussions_url: https://github.discussions.url
 

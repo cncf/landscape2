@@ -124,6 +124,7 @@ export interface Item extends BaseItem {
   docker_url?: string;
   documentation_url?: string;
   enduser?: boolean;
+  funding_url?: string;
   github_discussions_url?: string;
   graduated_at?: string;
   incubating_at?: string;

@@ -102,7 +102,7 @@ const OtherLink = css`
   max-width: calc(100% - 2rem - 15px);
   font-size: 0.65rem !important;
   color: var(--color4);
-  line-height: 16px;
+  line-height: 1;
 `;
 
 const Dot = css`
@@ -471,8 +471,24 @@ export const ItemModalMobileContent = (props: Props) => {
           </div>
 
           {/* Funding rounds */}
+          <Show when={!isUndefined(itemInfo()!.funding_url) && !isEmpty(itemInfo()!.funding_url)}>
+            <div class={`fw-bold text-uppercase mt-3 mt-lg-4 mb-2 mb-lg-3 ${TitleInSection}`}>Funding rounds</div>
+            <div class="w-100 my-1">
+              <small class="text-muted lh-1">For more financial details, see:</small>
+              <div class="mt-1 lh-1">
+                <ExternalLink
+                  class="text-muted d-inline-block text-truncate text-decoration-underline mw-100 lh-1"
+                  href={itemInfo()!.funding_url!}
+                >
+                  {itemInfo()!.funding_url!}
+                </ExternalLink>
+              </div>
+            </div>
+          </Show>
           <Show
             when={
+              (isUndefined(itemInfo()!.funding_url) || isEmpty(itemInfo()!.funding_url)) &&
+              !isUndefined(itemInfo()!.crunchbase_data) &&
               !isUndefined(itemInfo()!.crunchbase_data!.funding_rounds) &&
               !isEmpty(itemInfo()!.crunchbase_data!.funding_rounds!)
             }
