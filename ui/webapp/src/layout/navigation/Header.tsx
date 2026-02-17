@@ -136,44 +136,47 @@ const Header = (props: Props) => {
             </Show>
           </div>
 
-          <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
-            <div class="position-relative me-4 w-100">
-              <Searchbar searchBarClass={`${styles.searchBar}`} device="desktop" />
-            </div>
+          <Show when={!location.pathname.startsWith(GUIDE_PATH)}>
+  <div class={`d-flex flex-row align-items-center ms-auto mt-0 ${styles.searchWrapper}`}>
+    <div class="position-relative me-4 w-100">
+      <Searchbar searchBarClass={`${styles.searchBar}`} device="desktop" />
+    </div>
 
-            <div class={`d-flex align-items-center ${styles.icons}`}>
-              <EmbedModal />
-              <DownloadDropdown />
-              <Show when={!isUndefined(window.baseDS.games_available)}>
-                <button
-                  class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
-                  onClick={() => {
-                    navigate(prepareLink(GAMES_PATH), {
-                      state: { from: 'header' },
-                    });
-                    scrollToTop(false);
-                  }}
-                  aria-label='Go to "Games" page'
-                >
-                  <SVGIcon kind={SVGIconKind.Games} class={`position-relative ${styles.linkIcon}`} />
-                </button>
-              </Show>
-              <Show
-                when={
-                  !isUndefined(window.baseDS.header) &&
-                  !isUndefined(window.baseDS.header!.links) &&
-                  !isUndefined(window.baseDS.header!.links!.github)
-                }
-              >
-                <ExternalLink
-                  class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
-                  href={window.baseDS.header!.links!.github!}
-                >
-                  <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.linkIcon}`} />
-                </ExternalLink>
-              </Show>
-            </div>
-          </div>
+    <div class={`d-flex align-items-center ${styles.icons}`}>
+      <EmbedModal />
+      <DownloadDropdown />
+      <Show when={!isUndefined(window.baseDS.games_available)}>
+        <button
+          class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
+          onClick={() => {
+            navigate(prepareLink(GAMES_PATH), {
+              state: { from: 'header' },
+            });
+            scrollToTop(false);
+          }}
+          aria-label='Go to "Games" page'
+        >
+          <SVGIcon kind={SVGIconKind.Games} class={`position-relative ${styles.linkIcon}`} />
+        </button>
+      </Show>
+      <Show
+        when={
+          !isUndefined(window.baseDS.header) &&
+          !isUndefined(window.baseDS.header!.links) &&
+          !isUndefined(window.baseDS.header!.links!.github)
+        }
+      >
+        <ExternalLink
+          class={`btn btn-md text-dark ms-3 px-0 ${styles.btnLink}`}
+          href={window.baseDS.header!.links!.github!}
+        >
+          <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.linkIcon}`} />
+        </ExternalLink>
+      </Show>
+    </div>
+  </div>
+</Show>
+
         </Show>
       </div>
     </header>

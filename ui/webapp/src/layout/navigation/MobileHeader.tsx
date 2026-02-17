@@ -84,26 +84,28 @@ const MobileHeader = (props: Props) => {
                 <Image class={styles.qr} name="QR code" logo={window.baseDS.qr_code!} />
               </Show>
             }
-          >
-            <div class={`d-flex flex-row align-items-center mt-3 mt-md-4 ${styles.searchWrapper}`}>
-              <div class="position-relative w-100">
-                <Searchbar device="mobile" />
-              </div>
-              <div class="d-none d-lg-flex align-items-center">
-                <DownloadDropdown />
-                <Show
-                  when={
-                    !isUndefined(window.baseDS.header) &&
-                    !isUndefined(window.baseDS.header!.links) &&
-                    !isUndefined(window.baseDS.header!.links!.github)
-                  }
-                >
-                  <ExternalLink class="btn btn-md text-dark fs-5 ms-2 px-0" href={window.baseDS.header!.links!.github!}>
-                    <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
-                  </ExternalLink>
-                </Show>
-              </div>
-            </div>
+          ><Show when={!location.pathname.startsWith('/guide')}>
+  <div class={`d-flex flex-row align-items-center mt-3 mt-md-4 ${styles.searchWrapper}`}>
+    <div class="position-relative w-100">
+      <Searchbar device="mobile" />
+    </div>
+    <div class="d-none d-lg-flex align-items-center">
+      <DownloadDropdown />
+      <Show
+        when={
+          !isUndefined(window.baseDS.header) &&
+          !isUndefined(window.baseDS.header!.links) &&
+          !isUndefined(window.baseDS.header!.links!.github)
+        }
+      >
+        <ExternalLink class="btn btn-md text-dark fs-5 ms-2 px-0" href={window.baseDS.header!.links!.github!}>
+          <SVGIcon kind={SVGIconKind.GitHub} class={`position-relative ${styles.githubIcon}`} />
+        </ExternalLink>
+      </Show>
+    </div>
+  </div>
+</Show>
+
           </Show>
         </div>
       </header>
