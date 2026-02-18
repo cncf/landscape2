@@ -1,4 +1,5 @@
 import isUndefined from 'lodash/isUndefined';
+import { Match, Show, Switch } from 'solid-js';
 
 import { ALL_OPTION } from '../../data';
 import { CardMenu, ClassifyOption, SortDirection, SortOption, ViewMode } from '../../types';
@@ -24,26 +25,24 @@ const Content = (props: Props) => {
   const isSelected = () => isUndefined(props.group) || props.group === props.initialSelectedGroup;
 
   return (
-    <div class={isSelected() ? 'd-block' : 'd-none'}>
-      <div class={selectedViewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
-        <CardCategory
-          initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Card}
-          group={props.group || ALL_OPTION}
-          data={props.cardData}
-          menu={props.menu}
-          classify={props.classify}
-          sorted={props.sorted}
-          direction={props.direction}
-        />
-      </div>
-      <div class={selectedViewMode() === ViewMode.Grid ? 'd-block' : 'd-none'}>
-        <GridCategory
-          initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Grid}
-          data={props.data}
-          categories_overridden={props.categories_overridden}
-        />
-      </div>
-    </div>
+    <Show when={isSelected()}>
+      <Switch>
+        <Match when={selectedViewMode() === ViewMode.Card}>
+          <CardCategory
+            initialIsVisible
+            group={props.group || ALL_OPTION}
+            data={props.cardData}
+            menu={props.menu}
+            classify={props.classify}
+            sorted={props.sorted}
+            direction={props.direction}
+          />
+        </Match>
+        <Match when={selectedViewMode() === ViewMode.Grid}>
+          <GridCategory initialIsVisible data={props.data} categories_overridden={props.categories_overridden} />
+        </Match>
+      </Switch>
+    </Show>
   );
 };
 

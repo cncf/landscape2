@@ -35,7 +35,7 @@ import {
   ViewMode,
 } from '../../types';
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
-import itemsDataGetter, { ClassifyAndSortOptions, GroupData } from '../../utils/itemsDataGetter';
+import itemsDataGetter, { CategoriesData, ClassifyAndSortOptions } from '../../utils/itemsDataGetter';
 import buildNormalizedId from '../../utils/normalizeId';
 import scrollToTop from '../../utils/scrollToTop';
 import ActiveFiltersList from '../common/ActiveFiltersList';
@@ -46,7 +46,6 @@ import { useGroupActive, useSetGroupActive } from '../stores/groupActive';
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import { useSetViewMode, useViewMode } from '../stores/viewMode';
 import { useSetZoomLevel, useZoomLevel } from '../stores/zoom';
-import CardCategory from './card';
 import Content from './Content';
 import styles from './Explore.module.css';
 import Filters from './filters';
@@ -85,9 +84,9 @@ const Explore = (props: Props) => {
   const [controlsGroupWrapper, setControlsGroupWrapper] = createSignal<HTMLDivElement>();
   const [controlsGroupWrapperWidth, setControlsGroupWrapperWidth] = createSignal<number>(0);
   const [landscapeData, setLandscapeData] = createSignal<Item[]>();
-  const [groupsData, setGroupsData] = createSignal<GroupData>();
-  const [cardData, setCardData] = createSignal<{ [key: string]: unknown }>();
-  const [cardMenu, setCardMenu] = createSignal<{ [key: string]: CardMenu | undefined }>();
+  const [groupsData, setGroupsData] = createSignal<CategoriesData>();
+  const [cardData, setCardData] = createSignal<unknown>();
+  const [cardMenu, setCardMenu] = createSignal<CardMenu | undefined>();
   const [numVisibleItems, setNumVisibleItems] = createSignal<number>();
   const [fullDataApplied, setFullDataApplied] = createSignal<boolean>(false);
   const [openMenuStatus, setOpenMenuStatus] = createSignal<boolean>(false);
@@ -108,7 +107,6 @@ const Explore = (props: Props) => {
   }>({});
   const [classifyOptions, setClassifyOptions] = createSignal<ClassifyOption[]>(Object.values(ClassifyOption));
   const [sortOptions, setSortOptions] = createSignal<SortOption[]>(Object.values(SortOption));
-  const [numItems, setNumItems] = createSignal<{ [key: string]: number }>({});
   const [licenseOptions, setLicenseOptions] = createSignal<string[]>([]);
   const activeGroups = () => itemsDataGetter.getGroups();
 
@@ -129,11 +127,6 @@ const Explore = (props: Props) => {
 
       return false;
     }
-  };
-
-  const checkVisibleItemsNumber = (numItemsPerGroup: { [key: string]: number }) => {
-    setNumItems(numItemsPerGroup);
-    setNumVisibleItems(numItemsPerGroup[selectedGroup() || ALL_OPTION]);
   };
 
   const maturityOptions = itemsDataGetter.getMaturityOptions();
@@ -167,24 +160,31 @@ const Explore = (props: Props) => {
       }
     }
 
-    batch(() => {
-      const data = itemsDataGetter.queryItems(currentFilters, selectedGroup() || ALL_OPTION, classify()!);
-      checkVisibleItemsNumber(data.numItems);
-      setGroupsData(data.grid);
-      setCardData(data.card);
-      setCardMenu(data.menu);
-    });
-
     return currentFilters;
   };
 
   {/* prettier-ignore */}
   const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>(getActiveFiltersFromUrl());
 
+  const refreshVisibleData = (
+    filters: ActiveFilters = activeFilters(),
+    group: string = selectedGroup() || ALL_OPTION,
+    classifyOption: ClassifyOption = classify()
+  ) => {
+    const data = itemsDataGetter.queryGroupItems(filters, group, classifyOption);
+
+    batch(() => {
+      setNumVisibleItems(data.numItems);
+      setGroupsData(data.grid);
+      setCardData(data.card);
+      setCardMenu(data.menu);
+    });
+  };
+
   const getHash = (): string | undefined => {
     let hash: string = '';
     if (viewMode() === ViewMode.Card && !isUndefined(cardMenu()) && !isEmpty(cardMenu())) {
-      const selectedGroupMenu = cardMenu()![selectedGroup() || ALL_OPTION];
+      const selectedGroupMenu = cardMenu()!;
       if (selectedGroupMenu && !isEmpty(selectedGroupMenu)) {
         const title = Object.keys(selectedGroupMenu)[0];
         if (title) {
@@ -373,17 +373,14 @@ const Explore = (props: Props) => {
       setClassifyOptions(options[selectedGroup() || ALL_OPTION].classify);
       setSortOptions(options[selectedGroup() || ALL_OPTION].sort);
       setLicenseOptions(itemsDataGetter.getLicenseOptionsPerGroup(selectedGroup() || ALL_OPTION));
+      const filtersFromUrl = getActiveFiltersFromUrl();
 
       // Full data is only applied when card view is active or filters are not empty to avoid re-render grid
       // After this when filters are applied or view mode changes, we use fullData if available
       if (viewMode() === ViewMode.Card || checkIfFullDataRequired()) {
         batch(() => {
-          const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classify()!);
-          checkVisibleItemsNumber(data.numItems);
-          setGroupsData(data.grid);
-          setCardData(data.card);
-          setCardMenu(data.menu);
-          setActiveFilters(getActiveFiltersFromUrl());
+          setActiveFilters(filtersFromUrl);
+          refreshVisibleData(filtersFromUrl, selectedGroup() || ALL_OPTION, classify());
 
           setFullDataApplied(true);
           setReadyData(true);
@@ -411,38 +408,34 @@ const Explore = (props: Props) => {
   );
 
   createEffect(
-    on(selectedGroup, () => {
-      if (groupsData()) {
-        setNumVisibleItems(numItems()[selectedGroup() || ALL_OPTION]);
+    on(
+      selectedGroup,
+      () => {
+        if (visibleLoading()) {
+          return;
+        }
         setLicenseOptions(itemsDataGetter.getLicenseOptionsPerGroup(selectedGroup() || ALL_OPTION));
-      }
-    })
+        refreshVisibleData(activeFilters(), selectedGroup() || ALL_OPTION, classify());
+      },
+      { defer: true }
+    )
   );
 
   createEffect(
-    on(classify, () => {
-      batch(() => {
-        const data = itemsDataGetter.queryItems(activeFilters(), selectedGroup() || ALL_OPTION, classify()!);
-        setCardData(data.card);
-        setCardMenu(data.menu);
-      });
-    })
+    on(
+      classify,
+      () => {
+        refreshVisibleData(activeFilters(), selectedGroup() || ALL_OPTION, classify());
+      },
+      { defer: true }
+    )
   );
 
   createEffect(
     on(viewMode, () => {
       if (viewMode() === ViewMode.Card && !fullDataApplied() && !isUndefined(landscapeData())) {
-        if (!isEmpty(activeFilters())) {
-          applyFilters(activeFilters());
-        } else {
-          batch(() => {
-            const data = itemsDataGetter.queryItems({}, selectedGroup() || ALL_OPTION, classify()!);
-            checkVisibleItemsNumber(data.numItems);
-            setGroupsData(data.grid);
-            setCardData(data.card);
-            setCardMenu(data.menu);
-          });
-        }
+        refreshVisibleData(activeFilters(), selectedGroup() || ALL_OPTION, classify());
+        setFullDataApplied(true);
       }
       // Check if select for groups has to be visible
       checkContainerWidth();
@@ -487,11 +480,7 @@ const Explore = (props: Props) => {
     setTimeout(() => {
       batch(() => {
         setActiveFilters(newFilters);
-        const data = itemsDataGetter.queryItems(newFilters, selectedGroup() || ALL_OPTION, classify()!);
-        checkVisibleItemsNumber(data.numItems);
-        setGroupsData(data.grid);
-        setCardData(data.card);
-        setCardMenu(data.menu);
+        refreshVisibleData(newFilters, selectedGroup() || ALL_OPTION, classify());
       });
 
       updateFiltersQueryString(newFilters);
@@ -545,6 +534,7 @@ const Explore = (props: Props) => {
 
   onMount(() => {
     setReadyData(!checkIfFullDataRequired());
+    refreshVisibleData(activeFilters(), selectedGroup() || ALL_OPTION, classify());
 
     if (from() === 'header') {
       scrollToTop(false);
@@ -932,15 +922,9 @@ const Explore = (props: Props) => {
                   <ExploreMobileIndex
                     openMenuStatus={openMenuStatus()}
                     closeMenuStatus={closeMenuStatus}
-                    data={
-                      isUndefined(props.initialData.groups)
-                        ? { ...groupsData() }[ALL_OPTION]
-                        : selectedGroup()
-                          ? { ...groupsData() }[selectedGroup()!]
-                          : undefined
-                    }
-                    cardData={{ ...cardData() }[selectedGroup() || ALL_OPTION]}
-                    menu={!isUndefined(cardMenu()) ? cardMenu()![selectedGroup() || ALL_OPTION] : undefined}
+                    data={groupsData()}
+                    cardData={cardData()}
+                    menu={cardMenu()}
                     categories_overridden={props.initialData.categories_overridden}
                     classify={classify()}
                     sorted={sorted()}
@@ -960,69 +944,18 @@ const Explore = (props: Props) => {
                   // On Windows, we add a class to prevent flattening the items of the grid
                   class={`d-flex flex-column flex-grow-1 w-100 ${styles.container} zoom-${zoom()} ${navigator.userAgent.indexOf('Win') != -1 ? styles.containerWindows : ''}`}
                 >
-                  <Show when={readyData()}>
-                    <Show
-                      when={activeGroups() && activeGroups()!.length > 0}
-                      fallback={
-                        <Show
-                          when={isUndefined(props.initialData.groups)}
-                          fallback={
-                            <Content
-                              data={{}}
-                              initialSelectedGroup={ALL_OPTION}
-                              group={ALL_OPTION}
-                              cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
-                              menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
-                              categories_overridden={props.initialData.categories_overridden}
-                              classify={classify()}
-                              sorted={sorted()}
-                              direction={sortDirection()}
-                            />
-                          }
-                        >
-                          <Content
-                            data={{ ...groupsData() }[ALL_OPTION]}
-                            cardData={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
-                            menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
-                            categories_overridden={props.initialData.categories_overridden}
-                            classify={classify()}
-                            sorted={sorted()}
-                            direction={sortDirection()}
-                          />
-                        </Show>
-                      }
-                    >
-                      <div
-                        class={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION ? 'd-block' : 'd-none'}
-                      >
-                        <CardCategory
-                          initialIsVisible={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION}
-                          data={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
-                          menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
-                          group={ALL_OPTION}
-                          classify={classify()}
-                          sorted={sorted()}
-                          direction={sortDirection()}
-                        />
-                      </div>
-                      <For each={activeGroups()}>
-                        {(group: string) => {
-                          return (
-                            <Content
-                              group={group}
-                              initialSelectedGroup={selectedGroup()}
-                              data={{ ...groupsData() }[group]}
-                              cardData={!isUndefined(cardData()) ? cardData()![group] : undefined}
-                              menu={!isUndefined(cardMenu()) ? cardMenu()![group] : undefined}
-                              categories_overridden={props.initialData.categories_overridden}
-                              classify={classify()}
-                              sorted={sorted()}
-                              direction={sortDirection()}
-                            />
-                          );
-                        }}
-                      </For>
-                    </Show>
+                  <Show when={readyData() && !isUndefined(groupsData())}>
+                    <Content
+                      group={selectedGroup() || ALL_OPTION}
+                      initialSelectedGroup={selectedGroup()}
+                      data={groupsData()!}
+                      cardData={cardData()}
+                      menu={cardMenu()}
+                      categories_overridden={props.initialData.categories_overridden}
+                      classify={classify()}
+                      sorted={sorted()}
+                      direction={sortDirection()}
+                    />
                   </Show>
                 </div>
               </div>

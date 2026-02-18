@@ -51,17 +51,6 @@ export const ItemsList = (props: ItemsListProps) => {
   const [items, setItems] = createSignal<(BaseItem | Item)[]>();
   const [itemsPerRow, setItemsPerRow] = createSignal<number>(0);
 
-  const updateItemsPerRow = () => {
-    setItemsPerRow(
-      calculateGridItemsPerRow(
-        percentage(),
-        gridWidth(),
-        props.itemWidth || ZOOM_LEVELS[zoom()][0],
-        !isUndefined(props.itemWidth)
-      )
-    );
-  };
-
   const prepareItems = () => {
     setItems((prev) => {
       const tmpItems: (BaseItem | Item)[] = [];
@@ -79,23 +68,21 @@ export const ItemsList = (props: ItemsListProps) => {
     });
   };
 
-  createEffect(() => {
-    const newItemsPerRow = calculateGridItemsPerRow(
-      percentage(),
-      gridWidth(),
-      props.itemWidth || ZOOM_LEVELS[zoom()][0],
-      !isUndefined(props.itemWidth)
-    );
-    if (newItemsPerRow !== itemsPerRow()) {
-      setItemsPerRow(newItemsPerRow);
-    } else {
-      if (!isUndefined(items()) && initialItems().length !== items()!.length) {
+  createEffect(
+    on([gridWidth, initialItems, percentage, zoom, () => props.itemWidth], () => {
+      const newItemsPerRow = calculateGridItemsPerRow(
+        percentage(),
+        gridWidth(),
+        props.itemWidth || ZOOM_LEVELS[zoom()][0],
+        !isUndefined(props.itemWidth)
+      );
+      if (newItemsPerRow !== itemsPerRow()) {
+        setItemsPerRow(newItemsPerRow);
+      } else if (!isUndefined(items()) && initialItems().length !== items()!.length) {
         prepareItems();
       }
-    }
-  });
-
-  createEffect(on(initialItems, () => updateItemsPerRow()));
+    })
+  );
 
   createEffect(
     on(itemsPerRow, () => {
@@ -120,13 +107,12 @@ const Grid = (props: Props) => {
   const { countFeaturedItems, withEffectiveFeatured } = useFeaturedItems();
   const [grid, setGrid] = createSignal<GridCategoryLayout | undefined>();
   const gridWidth = useGridWidth();
-  const [prevSubcategories, setPrevSubcategories] = createSignal<SubcategoryDetails[]>();
   const subcategories = () => props.subcategories;
   const data = () => props.initialCategoryData;
 
-  createEffect(() => {
-    if (gridWidth() === 0) return;
-    setGrid((prev) => {
+  createEffect(
+    on([gridWidth, zoom, subcategories], () => {
+      if (gridWidth() === 0) return;
       const newGrid = getGridCategoryLayout({
         containerWidth: gridWidth(),
         itemWidth: ZOOM_LEVELS[zoom()][0],
@@ -134,14 +120,7 @@ const Grid = (props: Props) => {
         isOverriden: props.isOverriden,
         subcategories: subcategories(),
       });
-
-      return !isEqual(newGrid, prev) || !isEqual(subcategories(), prevSubcategories()) ? newGrid : prev;
-    });
-  });
-
-  createEffect(
-    on(grid, () => {
-      setPrevSubcategories(subcategories());
+      setGrid((prev) => (!isEqual(newGrid, prev) ? newGrid : prev));
     })
   );
 

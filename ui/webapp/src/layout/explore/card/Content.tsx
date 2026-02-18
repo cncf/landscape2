@@ -8,11 +8,9 @@ import { COLORS, GUIDE_PATH } from '../../../data';
 import { BaseItem, Category, ClassifyOption, Item, SortDirection, SortOption, Subcategory } from '../../../types';
 import isSectionInGuide from '../../../utils/isSectionInGuide';
 import buildNormalizedId from '../../../utils/normalizeId';
-import sortItems from '../../../utils/sortItems';
 import sortMaturityStatusTitles from '../../../utils/sortMenuOptions';
-import { useUpdateActiveItemId } from '../../stores/activeItem';
-import Card from './Card';
 import styles from './Content.module.css';
+import VirtualizedCardList from './VirtualizedCardList';
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,46 +20,6 @@ interface Props {
   direction: SortDirection;
   isVisible: boolean;
 }
-
-interface ListProps {
-  items: BaseItem[];
-  sorted: SortOption;
-  direction: SortDirection;
-  isVisible: boolean;
-}
-
-const CardList = (props: ListProps) => {
-  const updateActiveItemId = useUpdateActiveItemId();
-  const itemsList = () => props.items;
-  const items = () => sortItems(itemsList(), props.sorted, props.direction);
-
-  return (
-    <div class="row g-4 mb-4" role="list">
-      <For each={items()}>
-        {(item: Item) => {
-          return (
-            <div class="col-12 col-lg-6 col-xxl-4 col-xxxl-3" role="listitem">
-              <div
-                class={`card rounded-0 p-3 ${styles.card}`}
-                onClick={() => updateActiveItemId(item.id)}
-                classList={{
-                  [styles.archived]: !isUndefined(item.maturity) && item.maturity === 'archived',
-                }}
-              >
-                <Card
-                  item={item}
-                  logoClass={styles.logo}
-                  class={`h-100 ${styles.cardContent}`}
-                  isVisible={props.isVisible}
-                />
-              </div>
-            </div>
-          );
-        }}
-      </For>
-    </div>
-  );
-};
 
 const Content = (props: Props) => {
   const bgColor = COLORS[0];
@@ -97,7 +55,21 @@ const Content = (props: Props) => {
     <Show when={!isUndefined(data())}>
       <Switch>
         <Match when={Array.isArray(data())}>
-          <CardList items={data()} isVisible={props.isVisible} sorted={props.sorted} direction={props.direction} />
+          <VirtualizedCardList
+            archivedClassName={styles.archived}
+            cardClassName={styles.card}
+            cardContentClassName={styles.cardContent}
+            colClassName="col-12 col-lg-6 col-xxl-4 col-xxxl-3"
+            direction={props.direction}
+            isVisible={props.isVisible}
+            items={data() as Item[]}
+            logoClassName={styles.logo}
+            rowClassName="row g-4"
+            rowSpacingPx={24}
+            sorted={props.sorted}
+            variant="desktop"
+            wrapperClassName="row g-4 mb-4"
+          />
         </Match>
         <Match when={!Array.isArray(data())}>
           <For each={sortMaturityStatusTitles(Object.keys(data()))}>
@@ -166,11 +138,20 @@ const Content = (props: Props) => {
                                   </div>
                                 </div>
                               </div>
-                              <CardList
-                                items={items()}
-                                isVisible={props.isVisible}
-                                sorted={props.sorted}
+                              <VirtualizedCardList
+                                archivedClassName={styles.archived}
+                                cardClassName={styles.card}
+                                cardContentClassName={styles.cardContent}
+                                colClassName="col-12 col-lg-6 col-xxl-4 col-xxxl-3"
                                 direction={props.direction}
+                                isVisible={props.isVisible}
+                                items={items() as Item[]}
+                                logoClassName={styles.logo}
+                                rowClassName="row g-4"
+                                rowSpacingPx={24}
+                                sorted={props.sorted}
+                                variant="desktop"
+                                wrapperClassName="row g-4 mb-4"
                               />
                             </div>
                           );
@@ -191,11 +172,20 @@ const Content = (props: Props) => {
                             </div>
                           </div>
                         </div>
-                        <CardList
-                          items={content() as (BaseItem | Item)[]}
-                          isVisible={props.isVisible}
-                          sorted={props.sorted}
+                        <VirtualizedCardList
+                          archivedClassName={styles.archived}
+                          cardClassName={styles.card}
+                          cardContentClassName={styles.cardContent}
+                          colClassName="col-12 col-lg-6 col-xxl-4 col-xxxl-3"
                           direction={props.direction}
+                          isVisible={props.isVisible}
+                          items={content() as Item[]}
+                          logoClassName={styles.logo}
+                          rowClassName="row g-4"
+                          rowSpacingPx={24}
+                          sorted={props.sorted}
+                          variant="desktop"
+                          wrapperClassName="row g-4 mb-4"
                         />
                       </div>
                     </Match>

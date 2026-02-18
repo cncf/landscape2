@@ -8,15 +8,13 @@ import { CardMenu, ClassifyOption, Item, SortDirection, SortOption, ViewMode } f
 import getGroupName from '../../../utils/getGroupName';
 import { CategoriesData } from '../../../utils/itemsDataGetter';
 import buildNormalizedId from '../../../utils/normalizeId';
-import sortItems from '../../../utils/sortItems';
 import sortItemsByOrderValue from '../../../utils/sortItemsByOrderValue';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { Sidebar } from '../../common/Sidebar';
-import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useGroupActive } from '../../stores/groupActive';
 import { useViewMode } from '../../stores/viewMode';
 import Menu from '../card/Menu';
-import Card from './Card';
+import VirtualizedCardList from '../card/VirtualizedCardList';
 import styles from './ExploreMobileIndex.module.css';
 import MobileGrid from './MobileGrid';
 
@@ -31,39 +29,6 @@ interface Props {
   sorted: SortOption;
   direction: SortDirection;
 }
-
-interface ListProps {
-  items: Item[];
-  sorted: SortOption;
-  direction: SortDirection;
-}
-
-const CardsList = (props: ListProps) => {
-  const updateActiveItemId = useUpdateActiveItemId();
-  const items = () => props.items;
-
-  return (
-    <div class="row g-2 mb-2">
-      <For each={sortItems(items(), props.sorted, props.direction)}>
-        {(item: Item) => {
-          return (
-            <div class="col-12 col-sm-6">
-              <div
-                class={`card rounded-0 p-3 ${styles.card}`}
-                classList={{
-                  [styles.archived]: !isUndefined(item.maturity) && item.maturity === 'archived',
-                }}
-                onClick={() => updateActiveItemId(item.id)}
-              >
-                <Card item={item} logoClass={styles.logo} class={`h-100 ${styles.cardContent}`} isVisible />
-              </div>
-            </div>
-          );
-        }}
-      </For>
-    </div>
-  );
-};
 
 const ExploreMobileIndex = (props: Props) => {
   const data = () => props.data;
@@ -172,7 +137,21 @@ const ExploreMobileIndex = (props: Props) => {
                                     <div class="text-white text-nowrap text-truncate">{subtitle}</div>
                                   </div>
                                 </div>
-                                <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                                <VirtualizedCardList
+                                  archivedClassName={styles.archived}
+                                  cardClassName={styles.card}
+                                  cardContentClassName={styles.cardContent}
+                                  colClassName="col-12 col-sm-6"
+                                  direction={props.direction}
+                                  isVisible
+                                  items={items()}
+                                  logoClassName={styles.logo}
+                                  rowClassName="row g-2"
+                                  rowSpacingPx={8}
+                                  sorted={props.sorted}
+                                  variant="mobile"
+                                  wrapperClassName="row g-2 mb-2"
+                                />
                               </div>
                             );
                           }}
@@ -213,7 +192,21 @@ const ExploreMobileIndex = (props: Props) => {
                                   <div class="text-white text-nowrap text-truncate text-uppercase">{subtitle}</div>
                                 </div>
                               </div>
-                              <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                              <VirtualizedCardList
+                                archivedClassName={styles.archived}
+                                cardClassName={styles.card}
+                                cardContentClassName={styles.cardContent}
+                                colClassName="col-12 col-sm-6"
+                                direction={props.direction}
+                                isVisible
+                                items={items()}
+                                logoClassName={styles.logo}
+                                rowClassName="row g-2"
+                                rowSpacingPx={8}
+                                sorted={props.sorted}
+                                variant="mobile"
+                                wrapperClassName="row g-2 mb-2"
+                              />
                             </>
                           );
                         }}
@@ -255,7 +248,21 @@ const ExploreMobileIndex = (props: Props) => {
                                   </div>
                                 </div>
                               </div>
-                              <CardsList items={items()} sorted={props.sorted} direction={props.direction} />
+                              <VirtualizedCardList
+                                archivedClassName={styles.archived}
+                                cardClassName={styles.card}
+                                cardContentClassName={styles.cardContent}
+                                colClassName="col-12 col-sm-6"
+                                direction={props.direction}
+                                isVisible
+                                items={items()}
+                                logoClassName={styles.logo}
+                                rowClassName="row g-2"
+                                rowSpacingPx={8}
+                                sorted={props.sorted}
+                                variant="mobile"
+                                wrapperClassName="row g-2 mb-2"
+                              />
                             </>
                           );
                         }}
@@ -266,7 +273,21 @@ const ExploreMobileIndex = (props: Props) => {
               </Show>
             </Match>
             <Match when={props.classify === ClassifyOption.None}>
-              <CardsList items={cardData() as Item[]} sorted={props.sorted} direction={props.direction} />
+              <VirtualizedCardList
+                archivedClassName={styles.archived}
+                cardClassName={styles.card}
+                cardContentClassName={styles.cardContent}
+                colClassName="col-12 col-sm-6"
+                direction={props.direction}
+                isVisible
+                items={cardData() as Item[]}
+                logoClassName={styles.logo}
+                rowClassName="row g-2"
+                rowSpacingPx={8}
+                sorted={props.sorted}
+                variant="mobile"
+                wrapperClassName="row g-2 mb-2"
+              />
             </Match>
           </Switch>
           <ButtonToTopScroll />

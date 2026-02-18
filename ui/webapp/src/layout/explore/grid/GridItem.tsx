@@ -50,13 +50,13 @@ const GridItem = (props: Props) => {
   // Get featured data considering group exclusions
   const effectiveFeatured = createMemo(() => getEffectiveFeatured(props.item));
 
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        setItem(itemsDataGetter.getItemById(props.item.id));
-      }
-    })
-  );
+  const ensureItemData = () => {
+    if (!isUndefined(item()) || !fullDataReady()) {
+      return;
+    }
+
+    setItem(itemsDataGetter.getItemById(props.item.id));
+  };
 
   const calculateTooltipPosition = () => {
     if (!isUndefined(wrapper())) {
@@ -94,6 +94,7 @@ const GridItem = (props: Props) => {
         setDropdownTimeout(
           setTimeout(() => {
             if (onLinkHover() || onDropdownHover()) {
+              ensureItemData();
               calculateTooltipPosition();
               setVisibleDropdown(true);
             }
@@ -112,6 +113,14 @@ const GridItem = (props: Props) => {
       }
     }
   });
+
+  createEffect(
+    on(fullDataReady, () => {
+      if (fullDataReady() && visibleDropdown()) {
+        ensureItemData();
+      }
+    })
+  );
 
   onCleanup(() => {
     if (!isUndefined(dropdownTimeout())) {

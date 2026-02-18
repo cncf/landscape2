@@ -21,6 +21,7 @@ import {
   Category,
   ClassifyOption,
   CrunchbaseData,
+  FilterCategory,
   FilterOption,
   GithubData,
   Group,
@@ -78,6 +79,14 @@ export interface ClassifyAndSortOptions {
   sort: SortOption[];
 }
 
+export interface GroupQueryResult {
+  card: unknown | undefined;
+  grid: CategoriesData;
+  group: string;
+  menu: CardMenu | undefined;
+  numItems: number;
+}
+
 export class ItemsDataGetter {
   private updateStatus?: ItemsDataStatus;
   private ready = false;
@@ -85,6 +94,9 @@ export class ItemsDataGetter {
   private landscapeData?: LandscapeData;
   private classifyAndSortOptions: { [key: string]: ClassifyAndSortOptions } | undefined;
   private allDataGrouped: { [key: string]: (Item | BaseItem)[] } | undefined;
+  private itemById: Map<string, Item> = new Map();
+  private itemByName: Map<string, Item> = new Map();
+  private groupQueryCache: Map<string, GroupQueryResult> = new Map();
 
   // Subscribe to the updateStatus
   public subscribe(updateStatus: ItemsDataStatus) {
@@ -134,6 +146,11 @@ export class ItemsDataGetter {
     const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
     // Search engine initialization
     search.init(extendedItems);
+    this.allDataGrouped = undefined;
+    this.classifyAndSortOptions = undefined;
+    this.groupQueryCache.clear();
+    this.itemById = new Map(extendedItems.map((item) => [item.id, item]));
+    this.itemByName = new Map(extendedItems.map((item) => [item.name, item]));
     this.landscapeData = {
       ...data,
       items: extendedItems,
@@ -577,6 +594,70 @@ export class ItemsDataGetter {
   private saveData() {
     const groupedItemsList = this.getGroupedData();
     this.prepareClassifyAndSortOptions(groupedItemsList);
+    this.groupQueryCache.clear();
+  }
+
+  private getAvailableClassifyOption(group: string, classify: ClassifyOption): ClassifyOption {
+    if (
+      !isUndefined(this.classifyAndSortOptions) &&
+      !isUndefined(this.classifyAndSortOptions[group]) &&
+      this.classifyAndSortOptions[group].classify.includes(classify)
+    ) {
+      return classify;
+    }
+
+    return DEFAULT_CLASSIFY;
+  }
+
+  private getFiltersCacheKey(input: ActiveFilters): string {
+    if (isEmpty(input)) {
+      return '';
+    }
+
+    return Object.keys(input)
+      .sort()
+      .map((filterId: string) => {
+        const values = [...(input[filterId as FilterCategory] || [])].sort();
+        return `${filterId}:${values.join(',')}`;
+      })
+      .join('|');
+  }
+
+  private getGroupQueryCacheKey(input: ActiveFilters, activeGroup: string, classify: ClassifyOption): string {
+    return `${activeGroup}::${classify}::${this.getFiltersCacheKey(input)}`;
+  }
+
+  public queryGroupItems(input: ActiveFilters, activeGroup: string, classify: ClassifyOption): GroupQueryResult {
+    const classifyOption = this.getAvailableClassifyOption(activeGroup, classify);
+    const cacheKey = this.getGroupQueryCacheKey(input, activeGroup, classifyOption);
+    const cached = this.groupQueryCache.get(cacheKey);
+    if (!isUndefined(cached)) {
+      return cached;
+    }
+
+    const allGroupedItems = this.getGroupedData();
+    const groupItems = allGroupedItems[activeGroup] || [];
+    const filteredItems = !isEmpty(input) ? filterData(groupItems as Item[], input) : groupItems;
+
+    let activeCategoryFilters: string[] | undefined;
+    if (classifyOption === ClassifyOption.Category && !isUndefined(input.category) && !isEmpty(input.category)) {
+      activeCategoryFilters = input.category;
+    }
+
+    const groupedItems = { [activeGroup]: filteredItems };
+    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
+    const classifyGroup = this.classifyItems(filteredItems, classifyOption, activeGroup, activeCategoryFilters);
+    const result: GroupQueryResult = {
+      card: classifyGroup,
+      grid: gridData[activeGroup] || {},
+      group: activeGroup,
+      menu: this.getMenuOptions(classifyGroup, classifyOption),
+      numItems: filteredItems.length,
+    };
+
+    this.groupQueryCache.set(cacheKey, result);
+
+    return result;
   }
 
   // Prepare menu options
@@ -615,46 +696,23 @@ export class ItemsDataGetter {
 
   // Query items
   public queryItems(input: ActiveFilters, activeGroup: string, classify: ClassifyOption) {
+    const activeResult = this.queryGroupItems(input, activeGroup, classify);
     const allGroupedItems = this.getGroupedData();
-    // Filter only the active group
-    const filteredItems = !isEmpty(input)
-      ? filterData(allGroupedItems[activeGroup], input)
-      : allGroupedItems[activeGroup];
-    const groupedItems = { ...allGroupedItems, [activeGroup]: filteredItems };
-
-    let activeCategoryFilters: string[] | undefined;
-    if (classify === ClassifyOption.Category && !isUndefined(input.category) && !isEmpty(input.category)) {
-      activeCategoryFilters = input.category;
-    }
-
-    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
-
+    const gridData: GroupData = { [activeGroup]: activeResult.grid };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifyCardData: any = {};
-    const menuData: { [key: string]: CardMenu | undefined } = {};
-    const numItems: { [key: string]: number } = {};
+    const classifyCardData: any = { [activeGroup]: activeResult.card };
+    const menuData: { [key: string]: CardMenu | undefined } = { [activeGroup]: activeResult.menu };
+    const numItems: { [key: string]: number } = { [activeGroup]: activeResult.numItems };
 
-    Object.keys(groupedItems).forEach((group: string) => {
+    Object.keys(allGroupedItems).forEach((group: string) => {
       if (group === activeGroup) {
-        // Update group active data
-        const classifyGroup = this.classifyItems(
-          groupedItems[activeGroup],
-          classify,
-          activeGroup,
-          activeCategoryFilters
-        );
-        classifyCardData[activeGroup] = classifyGroup;
-        menuData[activeGroup] = this.getMenuOptions(classifyGroup, classify);
-        numItems[activeGroup] = groupedItems[activeGroup] ? groupedItems[activeGroup].length : 0;
-      } else {
-        const classifiedOption =
-          !isUndefined(this.classifyAndSortOptions) && this.classifyAndSortOptions[group].classify.includes(classify)
-            ? classify
-            : DEFAULT_CLASSIFY;
-        const classifiedGroup = this.classifyItems(allGroupedItems[group], classifiedOption, group);
-        classifyCardData[group] = classifiedGroup;
-        menuData[group] = this.getMenuOptions(classifiedGroup, classifiedOption);
+        return;
       }
+
+      const classifiedOption = this.getAvailableClassifyOption(group, classify);
+      const classifiedGroup = this.classifyItems(allGroupedItems[group], classifiedOption, group);
+      classifyCardData[group] = classifiedGroup;
+      menuData[group] = this.getMenuOptions(classifiedGroup, classifiedOption);
     });
 
     return { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
@@ -662,15 +720,15 @@ export class ItemsDataGetter {
 
   // Get item by id
   public getItemById(id: string): Item | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.find((i: Item) => id === i.id);
+    if (this.ready) {
+      return this.itemById.get(id);
     }
   }
 
   // Get item by name
   public getItemByName(name: string): Item | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.find((i: Item) => name === i.name);
+    if (this.ready) {
+      return this.itemByName.get(name);
     }
   }
 
