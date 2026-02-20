@@ -835,7 +835,7 @@ export class ItemsDataGetter {
           },
           {
             value: 'enduser-notsupporters',
-            name: 'End user members (excluding End User Supporters)',
+            name: 'End user members (excluding End User Supporter and Contributor)',
           },
         ],
       });

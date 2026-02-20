@@ -75,7 +75,8 @@ const Logos = () => {
                 break;
 
               case 'enduser-notsupporters':
-                list = itemsDataGetter.getItemsByEndUser(['End User Supporter']) || [];
+                // This case use End User Supporter and Contributor subcategory
+                list = itemsDataGetter.getItemsByEndUser(['End User Supporter and Contributor']) || [];
                 break;
 
               default:
