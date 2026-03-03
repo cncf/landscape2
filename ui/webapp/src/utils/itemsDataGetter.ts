@@ -463,66 +463,90 @@ export class ItemsDataGetter {
     activeCategoryFilters?: string[]
   ) {
     const data: GroupData = {};
-    if (!isUndefined(grouped)) {
-      const groupedItems = { ...grouped };
-      if (!withAllOption) {
-        delete groupedItems[ALL_OPTION];
-      }
+    if (isUndefined(grouped)) return data;
+    const groupedItems = { ...grouped };
+    if (!withAllOption) { 
+      delete groupedItems[ALL_OPTION];
+    }
 
-      const addItem = (group: string, category: string, subcategory: string, item: Item | BaseItem) => {
-        const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
-        if (data[group][category]) {
-          if (data[group][category][subcategory]) {
-            data[group][category][subcategory].items.push(preparedItem);
-            data[group][category][subcategory].itemsCount++;
-            if (preparedItem.featured) {
-              data[group][category][subcategory].itemsFeaturedCount++;
-            }
-          } else {
-            data[group][category][subcategory] = {
-              items: [preparedItem],
-              itemsCount: 1,
-              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
-            };
-          }
-        } else {
-          data[group][category] = {
-            [subcategory]: {
-              items: [preparedItem],
-              itemsCount: 1,
-              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
-            },
-          };
+    const allGroupsFromSettings = window.baseDS.groups || [];
+
+    Object.keys(grouped).forEach((groupName: string) => {
+      data[groupName] = {};
+
+      const itemsForGroup = grouped[groupName] || [];
+      if (itemsForGroup.length === 0) return;
+
+      // Find the group definition from settings to get the correct category order
+      const groupDefinition = allGroupsFromSettings.find(
+        (g: Group) => g.normalized_name === groupName
+      );
+
+      // Use the category order from settings, or fallback to a dynamically created list if not defined (for 'all' group)
+      const orderedCategories = groupDefinition
+        ? groupDefinition.categories
+        : uniq(itemsForGroup.map((item) => item.category)).sort();
+
+      // Create a map of items by their primary category for efficient lookup
+      const itemsByCategory: { [key: string]: (Item | BaseItem)[] } = {};
+      itemsForGroup.forEach((item) => {
+        if (!itemsByCategory[item.category]) {
+          itemsByCategory[item.category] = [];
         }
-      };
+        itemsByCategory[item.category].push(item);
+      });
 
-      const validateCategory = (category: string, group: string): boolean => {
-        if (!checkIfCategoryInGroup(category, group)) return false;
-        if (activeCategoryFilters && activeCategoryFilters.length > 0) {
-          return activeCategoryFilters.includes(category);
-        }
-        return true;
-      };
-
-      Object.keys(groupedItems).forEach((group: string) => {
-        data[group] = {};
-        const items = groupedItems![group];
-        if (!isUndefined(items)) {
-          items.forEach((item: BaseItem | Item) => {
-            if (validateCategory(item.category, group)) {
-              addItem(group, item.category, item.subcategory, item);
+      // Create a map of items by their additional categories
+      const itemsByAdditionalCategory: { [key: string]: (Item | BaseItem)[] } = {};
+      itemsForGroup.forEach((item) => {
+        if (item.additional_categories) {
+          item.additional_categories.forEach((ac) => {
+            if (!itemsByAdditionalCategory[ac.category]) {
+              itemsByAdditionalCategory[ac.category] = [];
             }
-            if (item.additional_categories) {
-              for (const ac of item.additional_categories) {
-                if (validateCategory(ac.category, group)) {
-                  addItem(group, ac.category, ac.subcategory, item);
-                }
-              }
-            }
+            itemsByAdditionalCategory[ac.category].push(item);
           });
         }
       });
-    }
+
+      // Iterate through the correctly ordered categories
+      orderedCategories.forEach((categoryName: string) => {
+        const itemsInThisCategory = itemsByCategory[categoryName] || [];
+        const itemsInThisAdditionalCategory = itemsByAdditionalCategory[categoryName] || [];
+        const allItemsForCategory = uniqWith([...itemsInThisCategory, ...itemsInThisAdditionalCategory], isEqual);
+
+        if (allItemsForCategory.length === 0) return;
+        if (activeCategoryFilters && activeCategoryFilters.length > 0 && !activeCategoryFilters.includes(categoryName)) {
+            return;
+        }
+
+        data[groupName][categoryName] = {};
+
+        // Group items by subcategory within this category
+        const itemsBySubCategory: { [key: string]: (Item | BaseItem)[] } = {};
+        allItemsForCategory.forEach((item) => {
+            const isPrimary = item.category === categoryName;
+            const subCategoryName = isPrimary ? item.subcategory : item.additional_categories!.find(ac => ac.category === categoryName)!.subcategory;
+
+            if (!itemsBySubCategory[subCategoryName]) {
+                itemsBySubCategory[subCategoryName] = [];
+            }
+            itemsBySubCategory[subCategoryName].push(item);
+        });
+
+        // Add subcategories to the final data structure
+        Object.keys(itemsBySubCategory).forEach((subcategoryName) => {
+            const items = itemsBySubCategory[subcategoryName];
+            const preparedItems = items.map(item => this.prepareItemForCategory(item, categoryName, subcategoryName, activeCategoryFilters));
+
+            data[groupName][categoryName][subcategoryName] = {
+                items: preparedItems,
+                itemsCount: preparedItems.length,
+                itemsFeaturedCount: preparedItems.filter(item => item.featured).length,
+            };
+        });
+      });
+    });
 
     return this.sortSubcategoriesInGridData(data);
   }
