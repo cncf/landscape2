@@ -972,9 +972,11 @@ fn find_available_port() -> Option<u16> {
 }
 
 #[allow(
+    clippy::inline_always,
     clippy::ref_option_ref,
     clippy::trivially_copy_pass_by_ref,
-    clippy::unnecessary_wraps
+    clippy::unnecessary_wraps,
+    clippy::unused_self
 )]
 mod filters {
     use super::settings::Analytics;
