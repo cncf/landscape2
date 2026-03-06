@@ -1,47 +1,40 @@
 version: 2
+
+multi-ecosystem-groups:
+  backend:
+    schedule:
+      interval: "monthly"
+  frontend:
+    schedule:
+      interval: "monthly"
+  infra:
+    schedule:
+      interval: "monthly"
+
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
-    schedule:
-      interval: "monthly"
+    patterns:
+      - "*"
     ignore:
       - dependency-name: "markdown"
       - dependency-name: "usvg"
-    groups:
-      cli:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: "npm"
-    directory: "/ui"
-    schedule:
-      interval: "monthly"
-    groups:
-      web-application:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    groups:
-      github-actions:
-        patterns:
-          - "*"
+    multi-ecosystem-group: "backend"
 
   - package-ecosystem: "docker"
     directory: "/crates/cli"
-    schedule:
-      interval: "monthly"
-    groups:
-      docker:
-        patterns:
-          - "*"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "infra"
 
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "infra"
+
+  - package-ecosystem: "npm"
+    directory: "/ui"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "frontend"
