@@ -50,7 +50,7 @@ qrcode = "0.14.1"
 rand = "0.8.5" # do-not-upgrade
 regex = "1.12.3"
 reqwest = { version = "0.12.28", features = ["json",  "multipart", "native-tls-vendored"] } # do-not-upgrade
-reqwest-middleware = "0.5.1"
+reqwest-middleware = "0.4.2" # do-not-upgrade
 rust-embed = "8.11.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
