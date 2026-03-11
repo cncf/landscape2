@@ -97,7 +97,7 @@ const Footer = () => {
                         when={!isUndefined(foundationLink())}
                         fallback={
                           <div class={styles.logoWrapper}>
-                            <Image class={styles.logo} name="Logo" logo={window.baseDS.footer!.logo!} height={34} />
+                            <Image class={styles.logo} name="Logo" logo={window.baseDS.footer!.logo!} />
                           </div>
                         }
                       >
@@ -107,7 +107,6 @@ const Footer = () => {
                               class={`pe-none ${styles.logo}`}
                               name="Logo"
                               logo={window.baseDS.footer!.logo!}
-                              height={34}
                             />
                           </div>
                         </ExternalLink>

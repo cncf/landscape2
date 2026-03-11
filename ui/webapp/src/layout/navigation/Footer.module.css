@@ -8,7 +8,9 @@
 }
 
 .logo {
-  height: 40px;
+  width: auto;
+  height: auto;
+  max-height: 40px;
   max-width: 250px;
 }
 
@@ -84,7 +86,7 @@
 
 @media only screen and (max-width: 575.98px) {
   .logo {
-    height: 34px;
+    max-height: 34px;
     max-width: 250px;
   }
 }
