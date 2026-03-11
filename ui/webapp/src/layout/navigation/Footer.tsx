@@ -103,11 +103,7 @@ const Footer = () => {
                       >
                         <ExternalLink href={foundationLink()!}>
                           <div class={styles.logoWrapper}>
-                            <Image
-                              class={`pe-none ${styles.logo}`}
-                              name="Logo"
-                              logo={window.baseDS.footer!.logo!}
-                            />
+                            <Image class={`pe-none ${styles.logo}`} name="Logo" logo={window.baseDS.footer!.logo!} />
                           </div>
                         </ExternalLink>
                       </Show>
