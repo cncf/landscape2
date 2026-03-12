@@ -1,0 +1,234 @@
+.kioskContainer {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logoWrapper {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+}
+
+.projectName {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.statsBar {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.statItem {
+  text-align: center;
+  min-width: 80px;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #212529;
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.actionCard {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.actionCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.6rem;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cardLink:hover {
+  background-color: #f0f4f8;
+}
+
+.cardLinkIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.badges {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.notFoundTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #212529;
+  margin-bottom: 0.75rem;
+}
+
+.notFoundMessage {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+
+.poweredBy {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .kioskContainer {
+    background-color: #1a1b1e;
+    color: #e1e3e6;
+  }
+
+  .projectName {
+    color: #e1e3e6;
+  }
+
+  .description {
+    color: #9ca3af;
+  }
+
+  .statsBar {
+    background-color: #25262b;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .statValue {
+    color: #e1e3e6;
+  }
+
+  .statLabel {
+    color: #9ca3af;
+  }
+
+  .actionCard {
+    background-color: #25262b;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .actionCard:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .cardLink {
+    color: #e1e3e6;
+  }
+
+  .cardLink:hover {
+    background-color: #2c2d32;
+  }
+
+  .cardTitle {
+    color: #e1e3e6;
+  }
+
+  .notFoundTitle {
+    color: #e1e3e6;
+  }
+
+  .notFoundMessage {
+    color: #9ca3af;
+  }
+
+  .poweredBy {
+    border-top-color: #373a40;
+    color: #9ca3af;
+  }
+
+  .poweredBy a {
+    color: #7cb3f0;
+  }
+}
+
+@media (max-width: 768px) {
+  .kioskContainer {
+    padding: 1rem;
+  }
+
+  .cardsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardLink {
+    padding: 0.8rem;
+  }
+}
