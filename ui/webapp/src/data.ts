@@ -36,6 +36,7 @@ export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
 export const MODAL_PARAM = 'modal';
 export const ITEM_PARAM = 'item';
+export const VIEW_PARAM = 'view';
 export const CATEGORY_PARAM = 'category';
 export const SUBCATEGORY_PARAM = 'subcategory';
 export const PAGE_PARAM = 'page';
