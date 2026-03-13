@@ -52,10 +52,7 @@ const Layout = (props: Props) => {
 
   return (
     <FullDataProvider>
-      <Show
-        when={!isKioskView()}
-        fallback={<KioskWrapper itemId={kioskItemId()} />}
-      >
+      <Show when={!isKioskView()} fallback={<KioskWrapper itemId={kioskItemId()} />}>
         <ActiveItemProvider>
           <ViewModeProvider>
             <GroupActiveProvider>

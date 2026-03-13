@@ -169,9 +169,7 @@ const KioskView = (props: Props) => {
         <div class={styles.kioskContainer}>
           <div class={styles.notFound}>
             <div class={styles.notFoundTitle}>Project not found</div>
-            <div class={styles.notFoundMessage}>
-              The requested project could not be found in the landscape.
-            </div>
+            <div class={styles.notFoundMessage}>The requested project could not be found in the landscape.</div>
             <div class={styles.poweredBy}>
               <ExternalLink href="https://landscape.cncf.io">Browse the CNCF Landscape</ExternalLink>
             </div>
@@ -228,9 +226,7 @@ const KioskView = (props: Props) => {
                     </Show>
                     <Show when={!isUndefined(gh().latest_release)}>
                       <div class={styles.statItem}>
-                        <div class={styles.statValue}>
-                          {new Date(gh().latest_release!.ts).toLocaleDateString()}
-                        </div>
+                        <div class={styles.statValue}>{new Date(gh().latest_release!.ts).toLocaleDateString()}</div>
                         <div class={styles.statLabel}>Latest Release</div>
                       </div>
                     </Show>
@@ -333,8 +329,7 @@ const KioskView = (props: Props) => {
 
               {/* Footer */}
               <div class={styles.poweredBy}>
-                Powered by{' '}
-                <ExternalLink href="https://landscape.cncf.io">CNCF Landscape</ExternalLink>
+                Powered by <ExternalLink href="https://landscape.cncf.io">CNCF Landscape</ExternalLink>
               </div>
             </div>
           );
