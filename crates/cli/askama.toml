@@ -2,5 +2,6 @@
 dirs = [
     "templates",
     "../../ui/embed-item/dist",
+    "../../ui/kiosk",
     "../../ui/webapp/dist"
 ]

@@ -15,6 +15,7 @@ fn main() -> Result<()> {
     println!("cargo:rerun-if-changed=../../ui/embed-item/public/embed-item.js");
     println!("cargo:rerun-if-changed=../../ui/embed-item/src");
     println!("cargo:rerun-if-changed=../../ui/embed-item/embed-item.html");
+    println!("cargo:rerun-if-changed=../../ui/kiosk/kiosk.html");
     println!("cargo:rerun-if-changed=../../ui/webapp/src");
     println!("cargo:rerun-if-changed=../../ui/webapp/static");
     println!("cargo:rerun-if-changed=../../ui/webapp/index.html");
