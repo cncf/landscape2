@@ -224,7 +224,8 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
         &args.output_dir,
     )?;
 
-    // Render index and embed-item html files and write them to the output dir
+    // Render index, embed-item, and kiosk html files and write them to the
+    // output dir
     render_index_html(
         settings.analytics.as_ref(),
         &datasets,
@@ -232,6 +233,12 @@ pub async fn build(args: &BuildArgs) -> Result<()> {
         &args.output_dir,
     )?;
     render_embed_item_html(settings.colors.as_ref(), &args.output_dir)?;
+    render_kiosk_html(
+        &settings.foundation,
+        &settings.url,
+        settings.colors.as_ref(),
+        &args.output_dir,
+    )?;
 
     // Copy embed and web application assets files to the output directory
     copy_embed_assets(&args.output_dir)?;
@@ -933,6 +940,32 @@ fn render_embed_item_html(colors: Option<&Colors>, output_dir: &Path) -> Result<
     let path = output_dir.join(EMBED_PATH).join("embed-item.html");
     let html = EmbedItemHtml { colors }.render()?;
     File::create(path)?.write_all(html.as_bytes())?;
+
+    Ok(())
+}
+
+/// Template for the kiosk html document.
+#[derive(Debug, Clone, Template)]
+#[template(path = "kiosk.html", escape = "none")]
+struct KioskHtml<'a> {
+    foundation: &'a str,
+    url: &'a str,
+
+    colors: Option<&'a Colors>,
+}
+
+/// Render kiosk html file and write it to the output directory.
+#[instrument(skip_all, err)]
+fn render_kiosk_html(foundation: &str, url: &str, colors: Option<&Colors>, output_dir: &Path) -> Result<()> {
+    debug!("rendering kiosk.html file");
+
+    let html = KioskHtml {
+        foundation,
+        url,
+        colors,
+    }
+    .render()?;
+    File::create(output_dir.join("kiosk.html"))?.write_all(html.as_bytes())?;
 
     Ok(())
 }

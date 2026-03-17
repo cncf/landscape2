@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ foundation }} Landscape</title>
+    <meta name="landscape-foundation" content="{{ foundation }}" />
+    <meta name="landscape-url" content="{{ url }}" />
+    {% if let Some(colors) = colors -%}
+      <meta name="landscape-color1" content="{{ colors.color1 }}" />
+      <meta name="landscape-color2" content="{{ colors.color2 }}" />
+      <meta name="landscape-color3" content="{{ colors.color3 }}" />
+      <meta name="landscape-color4" content="{{ colors.color4 }}" />
+      <meta name="landscape-color5" content="{{ colors.color5 }}" />
+      <meta name="landscape-color6" content="{{ colors.color6 }}" />
+      <meta name="landscape-color7" content="{{ colors.color7 }}" />
+    {% endif -%}
+  </head>
+  <body>
+    <main>Kiosk view</main>
+  </body>
+</html>
