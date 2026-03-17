@@ -4,19 +4,958 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ foundation }} Landscape</title>
-    <meta name="landscape-foundation" content="{{ foundation }}" />
-    <meta name="landscape-url" content="{{ url }}" />
-    {% if let Some(colors) = colors -%}
-      <meta name="landscape-color1" content="{{ colors.color1 }}" />
-      <meta name="landscape-color2" content="{{ colors.color2 }}" />
-      <meta name="landscape-color3" content="{{ colors.color3 }}" />
-      <meta name="landscape-color4" content="{{ colors.color4 }}" />
-      <meta name="landscape-color5" content="{{ colors.color5 }}" />
-      <meta name="landscape-color6" content="{{ colors.color6 }}" />
-      <meta name="landscape-color7" content="{{ colors.color7 }}" />
-    {% endif -%}
+    <style>
+      :root {
+        color-scheme: light;
+        --color1: rgba(0, 107, 204, 1);
+        --color2: rgba(214, 34, 147, 1);
+        --color3: rgba(96, 149, 214, 1);
+        --color4: rgba(0, 42, 81, 0.7);
+        --color5: rgba(1, 107, 204, 0.7);
+        --color6: rgba(0, 42, 81, 0.7);
+        --color7: rgba(180, 219, 255, 1);
+        {% if let Some(colors) = colors -%}
+          --color1: {{ colors.color1 }};
+          --color2: {{ colors.color2 }};
+          --color3: {{ colors.color3 }};
+          --color4: {{ colors.color4 }};
+          --color5: {{ colors.color5 }};
+          --color6: {{ colors.color6 }};
+          --color7: {{ colors.color7 }};
+        {% endif -%}
+        --page-bg: #f8f9fa;
+        --surface: #ffffff;
+        --surface-soft: #f8f9fa;
+        --text: #10233a;
+        --muted: #586579;
+        --border: rgba(16, 35, 58, 0.12);
+        --shadow: 0 10px 28px rgba(16, 35, 58, 0.06);
+        --badge-muted-bg: rgba(16, 35, 58, 0.08);
+        --pill-border: rgba(16, 35, 58, 0.08);
+        --focus-ring: rgba(0, 107, 204, 0.1);
+        --link-hover-bg: rgba(16, 35, 58, 0.04);
+        --radius: 14px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --page-bg: #08131f;
+          --surface: #102133;
+          --surface-soft: #13283f;
+          --text: #f1f7ff;
+          --muted: #aac0d5;
+          --border: rgba(180, 219, 255, 0.12);
+          --shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+          --badge-muted-bg: rgba(180, 219, 255, 0.14);
+          --pill-border: rgba(180, 219, 255, 0.12);
+          --focus-ring: rgba(96, 149, 214, 0.18);
+          --link-hover-bg: rgba(180, 219, 255, 0.08);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--page-bg);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Helvetica,
+          Arial,
+          sans-serif,
+          Roboto,
+          "Noto Sans",
+          Ubuntu,
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        color: var(--text);
+        background: var(--page-bg);
+      }
+
+      a {
+        color: var(--color1);
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .page {
+        min-height: 100vh;
+        padding: 16px 14px 28px;
+      }
+
+      .shell {
+        width: min(100%, 860px);
+        margin: 0 auto;
+      }
+
+      .status-card,
+      .hero,
+      .section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+
+      .status-card {
+        min-height: calc(100vh - 52px);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .status-content {
+        width: min(100%, 440px);
+        text-align: center;
+      }
+
+      .spinner {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 18px;
+        border: 4px solid rgba(0, 107, 204, 0.18);
+        border-top-color: var(--color1);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .status-title {
+        margin: 0 0 10px;
+        font-size: 1.45rem;
+        line-height: 1.15;
+      }
+
+      .status-text {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .status-actions {
+        margin-top: 20px;
+      }
+
+      .button-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid var(--color1);
+        background: var(--color1);
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .hero {
+        padding: 24px 18px 30px;
+      }
+
+      .hero-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 72px;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .hero-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .hero-logo {
+        justify-self: end;
+      }
+
+      .project-logo,
+      .logo-fallback {
+        width: 72px;
+        height: 72px;
+      }
+
+      .project-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        object-fit: contain;
+      }
+
+      .logo-fallback {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color1);
+        font-size: 2rem;
+        font-weight: 500;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 1.2rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .description {
+        margin: 26px 0 24px;
+        color: var(--muted);
+        font-size: 0.98rem;
+        line-height: 1.6;
+      }
+
+      .badge-row,
+      .stat-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge-row {
+        margin-top: 10px;
+      }
+
+      .badge,
+      .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        padding: 5px 10px;
+        font-size: 0.74rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+
+      .badge {
+        border-radius: 999px;
+      }
+
+      .badge-foundation {
+        background: var(--color1);
+        color: #ffffff;
+      }
+
+      .badge-maturity {
+        background: var(--badge-muted-bg);
+        color: var(--text);
+      }
+
+      .badge-maturity.archived {
+        background: #f59f00;
+        color: #ffffff;
+      }
+
+      .stat-row {
+        margin-top: 16px;
+        gap: 10px;
+      }
+
+      .stat-pill {
+        gap: 8px;
+        justify-content: flex-start;
+        flex: 0 0 100%;
+        background: var(--surface-soft);
+        border: 1px solid var(--pill-border);
+        border-radius: 8px;
+        color: var(--text);
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 8px 12px;
+      }
+
+      .stat-pill:nth-child(-n + 2) {
+        flex-basis: calc((100% - 10px) / 2);
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-weight: 600;
+      }
+
+      .sections {
+        display: grid;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .section-card {
+        padding: 18px 20px;
+      }
+
+      .section-title {
+        margin: 0 0 18px;
+        font-size: 0.96rem;
+        font-weight: 700;
+      }
+
+      .link-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .link-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 34px;
+        padding: 4px 8px 4px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: inherit;
+        background: transparent;
+        border: 0;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          background-color 0.16s ease,
+          color 0.16s ease;
+      }
+
+      .link-item:focus-visible {
+        background: var(--link-hover-bg);
+        color: var(--color1);
+        box-shadow: none;
+        outline: none;
+      }
+
+      .link-icon {
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        overflow: visible;
+      }
+
+      .link-item:focus-visible .link-icon {
+        color: var(--color1);
+      }
+
+      .link-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+
+      .link-copy {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .link-label {
+        font-weight: 400;
+        font-size: 0.98rem;
+        line-height: 1.35;
+      }
+
+      .footer-card {
+        margin-top: 20px;
+        padding: 0 16px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 0.84rem;
+        font-weight: 400;
+      }
+
+      .footer-card a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (min-width: 720px) {
+        .page {
+          padding: 24px 20px 40px;
+        }
+
+        .shell {
+          min-height: calc(100vh - 64px);
+          display: flex;
+          flex-direction: column;
+        }
+
+        .hero {
+          padding: 28px 24px 34px;
+        }
+
+        .hero-top {
+          grid-template-columns: minmax(0, 1fr) 96px;
+          gap: 24px;
+        }
+
+        .project-logo,
+        .logo-fallback {
+          width: 96px;
+          height: 96px;
+        }
+
+        .title {
+          font-size: 2.05rem;
+        }
+
+        .stat-pill,
+        .stat-pill:nth-child(-n + 2) {
+          flex: 0 0 auto;
+        }
+
+        .sections {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .footer-card {
+          margin-top: auto;
+          padding-top: 22px;
+        }
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .link-item:hover {
+          background: var(--link-hover-bg);
+          color: var(--color1);
+          box-shadow: none;
+          outline: none;
+        }
+
+        .link-item:hover .link-icon {
+          color: var(--color1);
+        }
+      }
+    </style>
   </head>
   <body>
-    <main>Kiosk view</main>
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+      <symbol id="icon-world" viewBox="0 0 512 512">
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32" d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208 208-93.13 208-208S370.87 48 256 48z"></path>
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32" d="M256 48c-58.07 0-112.67 93.13-112.67 208S197.93 464 256 464s112.67-93.13 112.67-208S314.07 48 256 48z"></path>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M117.33 117.33c38.24 27.15 86.38 43.34 138.67 43.34s100.43-16.19 138.67-43.34m0 277.34c-38.24-27.15-86.38-43.34-138.67-43.34s-100.43 16.19-138.67 43.34"></path>
+        <path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32" d="M256 48v416m208-208H48"></path>
+      </symbol>
+      <symbol id="icon-github" viewBox="0 0 496 512">
+        <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path>
+      </symbol>
+      <symbol id="icon-discussions" viewBox="0 0 24 24">
+        <path d="M1.75 1h12.5c.966 0 1.75.784 1.75 1.75v9.5A1.75 1.75 0 0 1 14.25 14H8.061l-2.574 2.573A1.458 1.458 0 0 1 3 15.543V14H1.75A1.75 1.75 0 0 1 0 12.25v-9.5C0 1.784.784 1 1.75 1ZM1.5 2.75v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25Z"></path>
+        <path d="M22.5 8.75a.25.25 0 0 0-.25-.25h-3.5a.75.75 0 0 1 0-1.5h3.5c.966 0 1.75.784 1.75 1.75v9.5A1.75 1.75 0 0 1 22.25 20H21v1.543a1.457 1.457 0 0 1-2.487 1.03L15.939 20H10.75A1.75 1.75 0 0 1 9 18.25v-1.465a.75.75 0 0 1 1.5 0v1.465c0 .138.112.25.25.25h5.5a.75.75 0 0 1 .53.22l2.72 2.72v-2.19a.75.75 0 0 1 .75-.75h2a.25.25 0 0 0 .25-.25v-9.5Z"></path>
+      </symbol>
+      <symbol id="icon-goodfirstissues" viewBox="0 0 24 24">
+        <path d="M24 12L18.3431 17.6569L16.9289 16.2426L21.1716 12L16.9289 7.75736L18.3431 6.34315L24 12ZM2.82843 12L7.07107 16.2426L5.65685 17.6569L0 12L5.65685 6.34315L7.07107 7.75736L2.82843 12ZM9.78845 21H7.66009L14.2116 3H16.3399L9.78845 21Z"></path>
+      </symbol>
+      <symbol id="icon-blog" viewBox="0 0 512 512">
+        <path d="M192 32c0 17.7 14.3 32 32 32c123.7 0 224 100.3 224 224c0 17.7 14.3 32 32 32s32-14.3 32-32C512 128.9 383.1 0 224 0c-17.7 0-32 14.3-32 32zm0 96c0 17.7 14.3 32 32 32c70.7 0 128 57.3 128 128c0 17.7 14.3 32 32 32s32-14.3 32-32c0-106-86-192-192-192c-17.7 0-32 14.3-32 32zM96 144c0-26.5-21.5-48-48-48S0 117.5 0 144V368c0 79.5 64.5 144 144 144s144-64.5 144-144s-64.5-144-144-144H128v96h16c26.5 0 48 21.5 48 48s-21.5 48-48 48s-48-21.5-48-48V144z"></path>
+      </symbol>
+      <symbol id="icon-twitter" viewBox="0 0 512 512">
+        <path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"></path>
+      </symbol>
+      <symbol id="icon-youtube" viewBox="0 0 576 512">
+        <path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"></path>
+      </symbol>
+      <symbol id="icon-linkedin" viewBox="0 0 16 16">
+        <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"></path>
+      </symbol>
+      <symbol id="icon-slack" viewBox="0 0 448 512">
+        <path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"></path>
+      </symbol>
+      <symbol id="icon-discord" viewBox="0 0 640 512">
+        <path d="M524.531,69.836a1.5,1.5,0,0,0-.764-.7A485.065,485.065,0,0,0,404.081,32.03a1.816,1.816,0,0,0-1.923.91,337.461,337.461,0,0,0-14.9,30.6,447.848,447.848,0,0,0-134.426,0,309.541,309.541,0,0,0-15.135-30.6,1.89,1.89,0,0,0-1.924-.91A483.689,483.689,0,0,0,116.085,69.137a1.712,1.712,0,0,0-.788.676C39.068,183.651,18.186,294.69,28.43,404.354a2.016,2.016,0,0,0,.765,1.375A487.666,487.666,0,0,0,176.02,479.918a1.9,1.9,0,0,0,2.063-.676A348.2,348.2,0,0,0,208.12,430.4a1.86,1.86,0,0,0-1.019-2.588,321.173,321.173,0,0,1-45.868-21.853,1.885,1.885,0,0,1-.185-3.126c3.082-2.309,6.166-4.711,9.109-7.137a1.819,1.819,0,0,1,1.9-.256c96.229,43.917,200.41,43.917,295.5,0a1.812,1.812,0,0,1,1.924.233c2.944,2.426,6.027,4.851,9.132,7.16a1.884,1.884,0,0,1-.162,3.126,301.407,301.407,0,0,1-45.89,21.83,1.875,1.875,0,0,0-1,2.611,391.055,391.055,0,0,0,30.014,48.815,1.864,1.864,0,0,0,2.063.7A486.048,486.048,0,0,0,610.7,405.729a1.882,1.882,0,0,0,.765-1.352C623.729,277.594,590.933,167.465,524.531,69.836ZM222.491,337.58c-28.972,0-52.844-26.587-52.844-59.239S193.056,219.1,222.491,219.1c29.665,0,53.306,26.82,52.843,59.239C275.334,310.993,251.924,337.58,222.491,337.58Zm195.38,0c-28.971,0-52.843-26.587-52.843-59.239S388.437,219.1,417.871,219.1c29.667,0,53.307,26.82,52.844,59.239C470.715,310.993,447.538,337.58,417.871,337.58Z"></path>
+      </symbol>
+      <symbol id="icon-mailing" viewBox="0 0 24 24">
+        <path fill="none" d="M0 0h24v24H0z"></path>
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"></path>
+      </symbol>
+      <symbol id="icon-stackoverflow" viewBox="0 0 16 16">
+        <path d="M16 10v6h-16v-6h2v4h12v-4zM3 11h10v2h-10zM3.237 8.835l0.433-1.953 9.763 2.164-0.433 1.953zM4.37 4.821l0.845-1.813 9.063 4.226-0.845 1.813zM15.496 5.648l-1.218 1.587-7.934-6.088 0.88-1.147h0.91z"></path>
+      </symbol>
+      <symbol id="icon-bluesky" viewBox="0 0 576 512">
+        <path d="M407.8 294.7c-3.3-.4-6.7-.8-10-1.3c3.4 .4 6.7 .9 10 1.3zM288 227.1C261.9 176.4 190.9 81.9 124.9 35.3C61.6-9.4 37.5-1.7 21.6 5.5C3.3 13.8 0 41.9 0 58.4S9.1 194 15 213.9c19.5 65.7 89.1 87.9 153.2 80.7c3.3-.5 6.6-.9 10-1.4c-3.3 .5-6.6 1-10 1.4C74.3 308.6-9.1 342.8 100.3 464.5C220.6 589.1 265.1 437.8 288 361.1c22.9 76.7 49.2 222.5 185.6 103.4c102.4-103.4 28.1-156-65.8-169.9c-3.3-.4-6.7-.8-10-1.3c3.4 .4 6.7 .9 10 1.3c64.1 7.1 133.6-15.1 153.2-80.7C566.9 194 576 75 576 58.4s-3.3-44.7-21.6-52.9c-15.8-7.1-40-14.9-103.2 29.8C385.1 81.9 314.1 176.4 288 227.1z"></path>
+      </symbol>
+      <symbol id="icon-reddit" viewBox="0 0 512 512">
+        <path d="M283.5 345.5c2.7 2.7 2.7 7.1 0 9.9-25.3 25.3-66.4 25.3-91.7 0-2.7-2.7-2.7-7.1 0-9.9 2.7-2.7 7.1-2.7 9.9 0 19.8 19.8 52.1 19.8 71.9 0 2.8-2.8 7.2-2.8 9.9 0zm-51-41.3c0-13.7-11.1-24.8-24.8-24.8s-24.8 11.1-24.8 24.8 11.1 24.8 24.8 24.8 24.8-11.1 24.8-24.8zm95.5-24.8c-13.7 0-24.8 11.1-24.8 24.8s11.1 24.8 24.8 24.8 24.8-11.1 24.8-24.8-11.1-24.8-24.8-24.8z"></path>
+        <path d="M436.3 228.5c.7-4.9 1.1-9.8 1.1-14.8 0-68.7-56.1-124.8-124.8-124.8-34.1 0-65.1 13.8-87.7 36.1-22.6-14.2-48.7-22.4-76.8-22.4-81.2 0-147.2 66-147.2 147.2 0 4.6.2 9.1.6 13.6C16 270.8 0 294.1 0 321c0 42.2 34.4 76.6 76.6 76.6 6.1 0 12-0.8 17.7-2.1 25.2 32.1 63.2 52.8 106 52.8 28 0 53.8-8.9 74.9-23.9 20.6 12.8 44.8 20.2 70.8 20.2 74.7 0 135.5-60.8 135.5-135.5 0-35.4-13.7-67.7-36.2-91.8zm-90.3 185.6c-24.2 0-46.7-7.2-65.5-19.4-23 16.8-51.3 26.8-81.8 26.8-39.7 0-75.5-16.9-100.7-43.8-6.7 2.4-13.8 3.7-21.2 3.7-34.5 0-62.5-28-62.5-62.5 0-23.7 13.2-44.3 32.7-54.9-.9-5.4-1.4-10.9-1.4-16.6 0-68.1 55.4-123.5 123.5-123.5 26.4 0 50.8 8.3 70.8 22.5 21.1-24.2 52.1-39.5 86.6-39.5 63.7 0 115.5 51.8 115.5 115.5 0 7.3-.7 14.5-2 21.4 20.7 21.1 33.5 50 33.5 81.9.1 64-52 116.4-116 116.4z"></path>
+      </symbol>
+    </svg>
+    <main id="app" class="page" aria-live="polite"></main>
+    <script>
+      (() => {
+        const app = document.getElementById('app');
+        const landscapeUrl = {{ url|json|safe }};
+        const landscapeFoundation = {{ foundation|json|safe }};
+
+        /**
+         * Normalize text used in plain UI strings.
+         *
+         * @param {unknown} value
+         * @returns {string}
+         */
+        const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+
+        /**
+         * Keep only safe URLs for links and images.
+         *
+         * @param {unknown} value
+         * @returns {string}
+         */
+        const sanitizeUrl = (value) => {
+          if (typeof value !== 'string') {
+            return '';
+          }
+
+          const trimmedValue = value.trim();
+
+          if (!trimmedValue) {
+            return '';
+          }
+
+          try {
+            const parsedUrl = new URL(trimmedValue, window.location.origin);
+
+            if (!['http:', 'https:', 'mailto:', 'tel:'].includes(parsedUrl.protocol)) {
+              return '';
+            }
+
+            return parsedUrl.href;
+          } catch (error) {
+            return '';
+          }
+        };
+
+        /**
+         * Escape HTML before injecting dynamic content.
+         *
+         * @param {unknown} value
+         * @returns {string}
+         */
+        const escapeHtml = (value) =>
+          String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        /**
+         * Format numeric repository stats for display.
+         *
+         * @param {unknown} value
+         * @returns {string}
+         */
+        const formatNumber = (value) => {
+          if (typeof value !== 'number' || Number.isNaN(value)) {
+            return '';
+          }
+
+          if (value >= 999500) {
+            return `${new Intl.NumberFormat('en-US', {
+              maximumFractionDigits: value >= 10000000 ? 0 : 1,
+              minimumFractionDigits: 0,
+            }).format(value / 1000000)}M`;
+          }
+
+          if (value >= 999.5) {
+            return `${new Intl.NumberFormat('en-US', {
+              maximumFractionDigits: value >= 10000 ? 0 : 1,
+              minimumFractionDigits: 0,
+            }).format(value / 1000)}k`;
+          }
+
+          return new Intl.NumberFormat('en-US', {
+            maximumFractionDigits: 0,
+          }).format(value);
+        };
+
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          timeZone: 'UTC',
+        });
+
+        /**
+         * Format a project or release date for the kiosk UI.
+         *
+         * @param {string | number | Date | null | undefined} value
+         * @returns {string}
+         */
+        const formatDate = (value) => {
+          if (!value) {
+            return '';
+          }
+
+          const date = new Date(value);
+
+          if (Number.isNaN(date.getTime())) {
+            return escapeHtml(value);
+          }
+
+          return dateFormatter
+            .format(date)
+            .replace(/\b([a-z])/, (match, character) => character.toUpperCase());
+        };
+
+        const getQueryItem = () => {
+          const params = new URLSearchParams(window.location.search);
+          return (params.get('item') || '').trim();
+        };
+
+        /**
+         * Pick the main repository to show project stats and links.
+         *
+         * @param {Record<string, unknown>} item
+         * @returns {Record<string, unknown> | null}
+         */
+        const getPrimaryRepository = (item) => {
+          const repositories = Array.isArray(item && item.repositories) ? item.repositories : [];
+          return repositories.find((repository) => repository && repository.primary) || repositories[0] || null;
+        };
+
+        /**
+         * Select the best available summary line for the project.
+         *
+         * @param {Record<string, unknown>} item
+         * @returns {string}
+         */
+        const getDescription = (item) => {
+          const summary = item && item.summary ? item.summary : {};
+
+          return [
+            item && item.description,
+            summary.use_case,
+            summary.business_use_case,
+            summary.integrations,
+            summary.integration,
+          ].find((value) => typeof value === 'string' && value.trim()) || '';
+        };
+
+        /**
+         * Render a site icon from the inline SVG sprite.
+         *
+         * @param {string} icon
+         * @returns {string}
+         */
+        const renderIcon = (icon) =>
+          `<span class="link-icon" aria-hidden="true"><svg fill="currentColor" xmlns="http://www.w3.org/2000/svg"><use href="#icon-${icon}"></use></svg></span>`;
+
+        /**
+         * Build an API URL relative to the current kiosk page.
+         *
+         * @param {string} itemId
+         * @returns {string}
+         */
+        const getProjectApiUrl = (itemId) => {
+          const currentUrl = new URL(window.location.href);
+          const apiUrl = new URL(`api/projects/${encodeURIComponent(itemId)}.json`, currentUrl);
+          return apiUrl.href;
+        };
+
+        /**
+         * Build the link groups shown below the hero card.
+         *
+         * @param {Record<string, unknown>} item
+         * @param {Record<string, unknown> | null} primaryRepository
+         * @returns {Array<{title: string, links: Array<{icon: string, label: string, url: string}>}>}
+         */
+        const buildSections = (item, primaryRepository) => {
+          const summary = item.summary || {};
+          const sections = [
+            {
+              title: 'Get Started',
+              links: [
+                { icon: 'world', label: 'Website', url: item.homepage_url },
+                { icon: 'blog', label: 'Intro', url: summary.intro_url },
+              ],
+            },
+            {
+              title: 'Contribute',
+              links: [
+                {
+                  icon: 'github',
+                  label: 'Repository',
+                  url: primaryRepository && primaryRepository.url,
+                },
+                {
+                  icon: 'goodfirstissues',
+                  label: 'Good first issues',
+                  url:
+                    item.maturity !== 'archived' &&
+                    primaryRepository && primaryRepository.url
+                      ? `${primaryRepository.url}/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22`
+                      : '',
+                },
+              ],
+            },
+            {
+              title: 'Community',
+              links: [
+                { icon: 'slack', label: 'Slack', url: item.slack_url },
+                { icon: 'discord', label: 'Discord', url: item.discord_url },
+                { icon: 'mailing', label: 'Mailing List', url: item.mailing_list_url },
+                { icon: 'discussions', label: 'GitHub Discussions', url: item.github_discussions_url },
+                { icon: 'stackoverflow', label: 'Stack Overflow', url: item.stack_overflow_url },
+              ],
+            },
+            {
+              title: 'Social',
+              links: [
+                { icon: 'blog', label: 'Blog', url: item.blog_url },
+                { icon: 'twitter', label: 'X / Twitter', url: item.twitter_url },
+                { icon: 'bluesky', label: 'Bluesky', url: item.bluesky_url },
+                { icon: 'youtube', label: 'YouTube', url: item.youtube_url },
+                { icon: 'linkedin', label: 'LinkedIn', url: item.linkedin_url },
+                { icon: 'reddit', label: 'Reddit', url: item.reddit_url },
+              ],
+            },
+          ];
+
+          return sections
+            .map((section) => ({
+              title: section.title,
+              links: section.links
+                .map((link) => ({
+                  ...link,
+                  url: sanitizeUrl(link.url),
+                }))
+                .filter((link) => link.url),
+            }))
+            .filter((section) => section.links.length > 0);
+        };
+
+        /**
+         * Render a loading or empty state card.
+         *
+         * @param {object} options
+         * @param {string} options.title
+         * @param {string} options.message
+         * @param {boolean} [options.loading]
+         * @param {string} [options.actionLabel]
+         * @param {string} [options.actionUrl]
+         * @returns {void}
+         */
+        const renderStatus = ({ title, message, loading = false, actionLabel = '', actionUrl = '' }) => {
+          const resolvedActionUrl = sanitizeUrl(actionUrl || landscapeUrl);
+          const actionsMarkup =
+            !loading && actionLabel && resolvedActionUrl
+              ? `
+                  <div class="status-actions">
+                    <a class="button-link" href="${escapeHtml(resolvedActionUrl)}">${escapeHtml(actionLabel)}</a>
+                  </div>
+                `
+              : '';
+
+          app.innerHTML = `
+            <div class="shell">
+              <section class="status-card">
+                <div class="status-content">
+                  ${loading ? '<div class="spinner" aria-hidden="true"></div>' : ''}
+                  <h1 class="status-title">${escapeHtml(title)}</h1>
+                  <p class="status-text">${escapeHtml(message)}</p>
+                  ${actionsMarkup}
+                </div>
+              </section>
+            </div>
+          `;
+        };
+
+        /**
+         * Render the loaded project data into the kiosk layout.
+         *
+         * @param {Record<string, unknown>} item
+         * @returns {void}
+         */
+        const renderProject = (item) => {
+          const foundation = landscapeFoundation;
+          const description = getDescription(item);
+          const primaryRepository = getPrimaryRepository(item);
+          const sections = buildSections(item, primaryRepository);
+          const maturity = item.maturity ? String(item.maturity).trim() : '';
+          const maturityClass = maturity.toLowerCase() === 'archived' ? ' archived' : '';
+          const stats = [
+            primaryRepository && typeof primaryRepository.stars === 'number'
+              ? { label: 'Stars', value: formatNumber(primaryRepository.stars) }
+              : null,
+            primaryRepository && typeof primaryRepository.contributors === 'number'
+              ? { label: 'Contributors', value: formatNumber(primaryRepository.contributors) }
+              : null,
+            primaryRepository && primaryRepository.license
+              ? { label: 'License', value: primaryRepository.license }
+              : null,
+            primaryRepository && primaryRepository.latest_release
+              ? { label: 'Latest release', value: formatDate(primaryRepository.latest_release) }
+              : null,
+          ].filter(Boolean);
+
+          const statsMarkup =
+            stats.length > 0
+              ? `<div class="stat-row">${stats
+                  .map(
+                    (stat) => `
+                      <div class="stat-pill">
+                        <span class="stat-label">${escapeHtml(stat.label)}</span>
+                        <span class="stat-value">${escapeHtml(stat.value)}</span>
+                      </div>
+                    `
+                  )
+                  .join('')}</div>`
+              : '';
+
+          const sectionsMarkup =
+            sections.length > 0
+              ? `
+                <section class="sections">
+                  ${sections
+                    .map(
+                      (section) => `
+                        <article class="section-card">
+                          <h2 class="section-title">${escapeHtml(section.title)}</h2>
+                          <div class="link-list">
+                            ${section.links
+                              .map(
+                                (link) => `
+                                  <a class="link-item" href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer noopener">
+                                    ${renderIcon(link.icon)}
+                                    <span class="link-copy">
+                                      <span class="link-label">${escapeHtml(link.label)}</span>
+                                    </span>
+                                  </a>
+                                `
+                              )
+                              .join('')}
+                          </div>
+                        </article>
+                      `
+                    )
+                    .join('')}
+                </section>
+              `
+              : '';
+
+          const projectLogoUrl = sanitizeUrl(item.logo_url);
+          const logoMarkup = projectLogoUrl
+            ? `<img class="project-logo" src="${escapeHtml(projectLogoUrl)}" alt="${escapeHtml(item.name)} logo" loading="eager" />`
+            : `<span class="logo-fallback">${escapeHtml(item.name.charAt(0) || '?')}</span>`;
+
+          const titleName = normalizeText(item.name);
+          const titleLandscape = normalizeText(foundation ? `${foundation} Landscape` : 'Landscape');
+          document.title = `${titleName} | ${titleLandscape}`;
+
+          app.innerHTML = `
+            <div class="shell">
+              <section class="hero">
+                <div class="hero-top">
+                  <div class="hero-copy">
+                    <h1 class="title">${escapeHtml(item.name)}</h1>
+                    <div class="badge-row">
+                      ${foundation ? `<span class="badge badge-foundation">${escapeHtml(foundation)}</span>` : ''}
+                      ${maturity ? `<span class="badge badge-maturity${maturityClass}">${escapeHtml(maturity)}</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="hero-logo">${logoMarkup}</div>
+                </div>
+                ${description ? `<p class="description">${escapeHtml(description)}</p>` : ''}
+                ${statsMarkup}
+              </section>
+              ${sectionsMarkup}
+              <footer class="footer-card">Powered by <a href="${escapeHtml(landscapeUrl)}">${escapeHtml(foundation ? `${foundation} Landscape` : 'Landscape')}</a></footer>
+            </div>
+          `;
+        };
+
+        /**
+         * Fetch the requested item and update the page state.
+         *
+         * @returns {Promise<void>}
+         */
+        const loadProject = async () => {
+          const item = getQueryItem();
+
+          if (!item) {
+            renderStatus({
+              title: 'No data available',
+              message: 'Add an item query parameter to load a project from the landscape.',
+              actionLabel: 'Browse the landscape',
+            });
+            return;
+          }
+
+          renderStatus({
+            title: 'Loading project',
+            message: 'Fetching the latest project details from the landscape API.',
+            loading: true,
+          });
+
+          try {
+            const response = await fetch(getProjectApiUrl(item), {
+              headers: {
+                Accept: 'application/json',
+              },
+            });
+
+            if (!response.ok) {
+              renderStatus({
+                title: 'No data available',
+                message: 'We could not find project data for the requested item.',
+                actionLabel: 'Browse the landscape',
+              });
+              return;
+            }
+
+            const project = await response.json();
+
+            if (!project || typeof project !== 'object' || !project.id) {
+              renderStatus({
+                title: 'No data available',
+                message: 'The project response did not include usable data.',
+                actionLabel: 'Browse the landscape',
+              });
+              return;
+            }
+
+            renderProject(project);
+          } catch (error) {
+            renderStatus({
+              title: 'No data available',
+              message: 'Something went wrong while loading project data.',
+              actionLabel: 'Browse the landscape',
+            });
+          }
+        };
+
+        loadProject();
+      })();
+    </script>
   </body>
 </html>
