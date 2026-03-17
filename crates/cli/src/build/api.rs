@@ -8,7 +8,7 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -105,11 +105,12 @@ impl<'a> Api<'a> {
         );
 
         // Projects
-        self.endpoints.insert("projects/all.json".to_string(), to_json(&self.projects_all()));
-        self.endpoints.insert(
-            "projects/count.json".to_string(),
-            count_to_json(self.projects_count()),
-        );
+        let projects = self.projects_all();
+        self.endpoints.insert("projects/all.json".to_string(), to_json(&projects));
+        self.endpoints.insert("projects/count.json".to_string(), count_to_json(projects.len()));
+        for project in &projects {
+            self.endpoints.insert(format!("projects/{}.json", project.id), to_json(project));
+        }
     }
 
     /// Return all the items in the category provided.
@@ -159,11 +160,6 @@ impl<'a> Api<'a> {
             })
             .sorted_by(|a, b| Ord::cmp(&a.name.to_lowercase(), &b.name.to_lowercase()))
             .collect()
-    }
-
-    /// Return the number of landscape items that are projects.
-    fn projects_count(&self) -> usize {
-        self.sources.landscape_data.items.iter().filter(|i| i.maturity.is_some()).count()
     }
 
     /// Return all the items in the category and subcategory provided.
@@ -279,6 +275,9 @@ pub(crate) struct Item {
     pub lfx_slug: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub linkedin_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub mailing_list_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -292,6 +291,9 @@ pub(crate) struct Item {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub other_links: Option<Vec<ItemLink>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package_manager_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pinterest_url: Option<String>,
@@ -362,6 +364,7 @@ impl Item {
             latest_annual_review_at: item.latest_annual_review_at,
             latest_annual_review_url: item.latest_annual_review_url.clone(),
             lfx_slug: item.lfx_slug.clone(),
+            linkedin_url: item.linkedin_url.clone(),
             logo_url: format!(
                 "{}/{}",
                 landscape_url.strip_suffix('/').unwrap_or(landscape_url),
@@ -373,6 +376,7 @@ impl Item {
             openssf_best_practices_url: item.openssf_best_practices_url.clone(),
             oss: item.oss,
             other_links: item.other_links.clone(),
+            package_manager_url: item.package_manager_url.clone(),
             pinterest_url: item.pinterest_url.clone(),
             reddit_url: item.reddit_url.clone(),
             repositories: item.repositories.as_ref().map(|repos| repos.iter().map(Into::into).collect()),
@@ -399,10 +403,22 @@ pub(crate) struct Repository {
     pub branch: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub contributors: Option<usize>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub languages: Option<BTreeMap<String, i64>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub latest_release: Option<DateTime<Utc>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub primary: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stars: Option<i64>,
 }
 
 impl From<&data::Repository> for Repository {
@@ -410,8 +426,15 @@ impl From<&data::Repository> for Repository {
         Self {
             url: r.url.clone(),
             branch: r.branch.clone(),
+            contributors: r.github_data.as_ref().map(|gh| gh.contributors.count),
             languages: r.github_data.as_ref().and_then(|gh| gh.languages.clone()),
+            latest_release: r
+                .github_data
+                .as_ref()
+                .and_then(|gh| gh.latest_release.as_ref().and_then(|release| release.ts)),
+            license: r.github_data.as_ref().and_then(|gh| gh.license.clone()),
             primary: r.primary,
+            stars: r.github_data.as_ref().map(|gh| gh.stars),
         }
     }
 }
