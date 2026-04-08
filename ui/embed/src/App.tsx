@@ -371,7 +371,10 @@ const App = () => {
     return [];
   });
 
-  const headerlessItems = createMemo(() => {
+  /**
+   * Build the flat item list used when section headers are hidden.
+   */
+  const visibleItemsWithoutHeaders = createMemo(() => {
     if (classifyBy() !== ClassifyType.Category) {
       return getSortedItems(allVisibleItems());
     }
@@ -753,7 +756,7 @@ const App = () => {
             when={displayHeader()}
             fallback={
               <StyleView
-                items={headerlessItems()}
+                items={visibleItemsWithoutHeaders()}
                 foundation={currentFoundation()}
                 style={itemsStyleView()}
                 size={itemsSize()}
