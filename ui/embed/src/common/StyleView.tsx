@@ -15,7 +15,7 @@ interface Props {
   itemNameSize: number;
   spacing?: number;
   displayItemModal: boolean;
-  setActiveItemId: (id: string) => void;
+  setActiveItemId: (itemId: string) => void;
 }
 
 type CardSizes = {
