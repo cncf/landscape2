@@ -203,18 +203,59 @@ const App = () => {
     return a.every((value, index) => value === b[index]);
   };
 
+  /**
+   * Align an item with the category view that is rendering it.
+   */
+  const prepareItemForCategoryView = (item: BaseItem, categoryName: string, subcategoryName: string): BaseItem => {
+    if (item.category === categoryName && item.subcategory === subcategoryName) {
+      return item;
+    }
+
+    const remainingAdditionalCategories = item.additional_categories?.filter(
+      (additionalCategory) =>
+        additionalCategory.category !== categoryName || additionalCategory.subcategory !== subcategoryName
+    );
+    const remappedAdditionalCategories = [
+      { category: item.category, subcategory: item.subcategory },
+      ...(remainingAdditionalCategories ?? []),
+    ].filter(
+      (additionalCategory, index, categories) =>
+        categories.findIndex(
+          (candidateCategory) =>
+            candidateCategory.category === additionalCategory.category &&
+            candidateCategory.subcategory === additionalCategory.subcategory
+        ) === index
+    );
+
+    return {
+      ...item,
+      category: categoryName,
+      subcategory: subcategoryName,
+      additional_categories: remappedAdditionalCategories.length > 0 ? remappedAdditionalCategories : undefined,
+    };
+  };
+
   const filterItemsBySubcategory = (items: BaseItem[], categoryName: string, subcategoryName: string): BaseItem[] => {
-    const filtered = items.filter((item) => {
+    const filtered = items.flatMap((item) => {
       if (item.category === categoryName && item.subcategory === subcategoryName) {
-        return true;
+        return [item];
       }
       if (!item.additional_categories) {
-        return false;
+        return [];
       }
-      return item.additional_categories.some((additionalCategory) => {
+      const matchedAdditionalCategory = item.additional_categories.find((additionalCategory) => {
         return additionalCategory.category === categoryName && additionalCategory.subcategory === subcategoryName;
       });
+
+      if (!matchedAdditionalCategory) {
+        return [];
+      }
+
+      return [
+        prepareItemForCategoryView(item, matchedAdditionalCategory.category, matchedAdditionalCategory.subcategory),
+      ];
     });
+
     return getSortedItems(filtered);
   };
 
@@ -328,6 +369,53 @@ const App = () => {
       return data()!.items;
     }
     return [];
+  });
+
+  /**
+   * Build the flat item list used when section headers are hidden.
+   */
+  const visibleItemsWithoutHeaders = createMemo(() => {
+    if (classifyBy() !== ClassifyType.Category) {
+      return getSortedItems(allVisibleItems());
+    }
+
+    const dedupeItemsById = (items: BaseItem[]): BaseItem[] => {
+      const seenItemIds = new Set<string>();
+
+      return items.filter((item) => {
+        if (seenItemIds.has(item.id)) {
+          return false;
+        }
+
+        seenItemIds.add(item.id);
+        return true;
+      });
+    };
+
+    if (isMultiCategorySelection()) {
+      return getSortedItems(
+        dedupeItemsById(
+          multiCategoryEntries().flatMap((entry) =>
+            entry.category.subcategories.flatMap((subcategory) =>
+              filterItemsBySubcategory(entry.items, entry.category.name, subcategory.name)
+            )
+          )
+        )
+      );
+    }
+
+    if (!data()) {
+      return [];
+    }
+
+    const categoryClassification = data()!.classification as CategoryClassification;
+    return getSortedItems(
+      dedupeItemsById(
+        categoryClassification.category.subcategories.flatMap((subcategory) =>
+          filterItemsBySubcategory(data()!.items, categoryClassification.category.name, subcategory.name)
+        )
+      )
+    );
   });
 
   const currentFoundation = createMemo(() => {
@@ -612,8 +700,8 @@ const App = () => {
 
   createEffect(
     on(activeItemId, () => {
-      const currentId = activeItemId();
-      if (currentId === null) {
+      const currentItemId = activeItemId();
+      if (currentItemId === null) {
         return;
       }
       const multiSelection = isMultiCategorySelection();
@@ -625,7 +713,7 @@ const App = () => {
       window.parent.postMessage(
         {
           type: 'showItemDetails',
-          itemId: currentId,
+          itemId: currentItemId,
           classifyBy: classifyBy(),
           key: effectiveKey,
           foundation: currentFoundation(),
@@ -668,7 +756,7 @@ const App = () => {
             when={displayHeader()}
             fallback={
               <StyleView
-                items={getSortedItems(allVisibleItems())}
+                items={visibleItemsWithoutHeaders()}
                 foundation={currentFoundation()}
                 style={itemsStyleView()}
                 size={itemsSize()}

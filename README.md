@@ -200,7 +200,7 @@ Some operations like collecting data from external sources or processing a lot o
 
 ### Embeddable views
 
-**Landscape2** allows other websites to embed a view to display the items in a category or subcategory. The embed code can be easily obtained from the corresponding landscape website by visiting `/embed-setup` (i.e. in the case of the CNCF landscape, the url would be <https://landscape.cncf.io/embed-setup>). The customization options available can be adjusted as needed, and the generated embed code will be updated accordingly.
+**Landscape2** allows other websites to embed a view to display the items in one or more categories or subcategories. The embed code can be easily obtained from the corresponding landscape website by visiting `/embed-setup` (i.e. in the case of the CNCF landscape, the url would be <https://landscape.cncf.io/embed-setup>). The customization options available can be adjusted as needed, and the generated embed code will be updated accordingly.
 
 ![embed-setup](docs/screenshots/embed-setup.png)
 

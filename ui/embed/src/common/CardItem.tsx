@@ -56,6 +56,20 @@ const CardClass = css`
   }
 `;
 
+const CardButtonClass = css`
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+`;
+
+const CardButtonWrapperClass = css`
+  position: relative;
+`;
+
 const CardHeaderClass = css`
   width: 100%;
   display: flex;
@@ -159,6 +173,7 @@ const FoundationBadgeClass = css`
 const IconClass = css`
   margin-top: 0.5rem;
   position: relative;
+  z-index: 2;
   color: inherit;
   height: 18px;
   line-height: 22px;
@@ -192,60 +207,71 @@ const DescriptionClass = css`
 `;
 
 const CardItem = (props: Props) => {
-  return (
-    <div class={ColClass}>
-      <ExternalLink href={`${getUrl()}?item=${props.item.id}`} class={LinkClass}>
-        <div class={CardClass}>
-          <div class={CardHeaderClass}>
-            <div class={ImageWrapperClass}>
-              <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
-            </div>
-            <div class={CardItemContentClass}>
-              <div class={ItemNameClass}>{props.item.name}</div>
-              <div class={OrgNameClass}>
-                <Show when={props.item.organization_name}>{props.item.organization_name}</Show>
-              </div>
-              <div class={ItemInfoWrapper}>
-                <Show
-                  when={props.item.maturity}
-                  fallback={
-                    <Show when={props.item.member_subcategory}>
-                      <div
-                        title={`${props.item.member_subcategory} member`}
-                        class={`${BadgeClass} ${MemberBadgeClass}`}
-                      >
-                        {props.item.member_subcategory} member
-                      </div>
-                    </Show>
-                  }
-                >
-                  <>
-                    <div title={props.item.maturity} class={`${BadgeClass} ${FoundationBadgeClass}`}>
-                      {props.foundation}
-                    </div>
-                    <div title={props.item.maturity} class={`${BadgeClass} ${MaturityBadgeClass}`}>
-                      {props.item.maturity}
-                    </div>
-                  </>
-                </Show>
-                <Show when={props.item.website}>
-                  <ExternalLink title="Website" class={IconClass} href={props.item.website!}>
-                    <SVGIcon kind={SVGIconKind.World} />
-                  </ExternalLink>
-                </Show>
-                <Show when={props.item.primary_repository_url}>
-                  <ExternalLink title="Repository" class={IconClass} href={props.item.primary_repository_url!}>
-                    <SVGIcon kind={SVGIconKind.GitHubCircle} />
-                  </ExternalLink>
-                </Show>
-              </div>
-            </div>
+  const cardContent = () => (
+    <div class={CardClass}>
+      <div class={CardHeaderClass}>
+        <div class={ImageWrapperClass}>
+          <Image name={props.item.name} class={ImageClass} logo={props.item.logo} />
+        </div>
+        <div class={CardItemContentClass}>
+          <div class={ItemNameClass}>{props.item.name}</div>
+          <div class={OrgNameClass}>
+            <Show when={props.item.organization_name}>{props.item.organization_name}</Show>
           </div>
-          <div class={DescriptionClass}>
-            {props.item.description || 'This item does not have a description available yet'}
+          <div class={ItemInfoWrapper}>
+            <Show
+              when={props.item.maturity}
+              fallback={
+                <Show when={props.item.member_subcategory}>
+                  <div title={`${props.item.member_subcategory} member`} class={`${BadgeClass} ${MemberBadgeClass}`}>
+                    {props.item.member_subcategory} member
+                  </div>
+                </Show>
+              }
+            >
+              <>
+                <div title={props.item.maturity} class={`${BadgeClass} ${FoundationBadgeClass}`}>
+                  {props.foundation}
+                </div>
+                <div title={props.item.maturity} class={`${BadgeClass} ${MaturityBadgeClass}`}>
+                  {props.item.maturity}
+                </div>
+              </>
+            </Show>
+            <Show when={props.item.website}>
+              <ExternalLink title="Website" class={IconClass} href={props.item.website!}>
+                <SVGIcon kind={SVGIconKind.World} />
+              </ExternalLink>
+            </Show>
+            <Show when={props.item.primary_repository_url}>
+              <ExternalLink title="Repository" class={IconClass} href={props.item.primary_repository_url!}>
+                <SVGIcon kind={SVGIconKind.GitHubCircle} />
+              </ExternalLink>
+            </Show>
           </div>
         </div>
-      </ExternalLink>
+      </div>
+      <div class={DescriptionClass}>
+        {props.item.description || 'This item does not have a description available yet'}
+      </div>
+    </div>
+  );
+
+  return (
+    <div class={ColClass}>
+      <Show
+        when={props.onClick}
+        fallback={
+          <ExternalLink href={`${getUrl()}?item=${props.item.id}`} class={LinkClass}>
+            {cardContent()}
+          </ExternalLink>
+        }
+      >
+        <div class={CardButtonWrapperClass}>
+          <button class={CardButtonClass} onClick={() => props.onClick!()} aria-label={`${props.item.name} info`} />
+          {cardContent()}
+        </div>
+      </Show>
     </div>
   );
 };
