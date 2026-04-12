@@ -253,7 +253,11 @@ export const RepositoriesSection = (props: Props) => {
         </select>
 
         <Show when={!isUndefined(selectedRepo())}>
-          <RepositoryInfo boxClass={props.boxClass} projectMaturity={props.projectMaturity} repository={selectedRepo()!} />
+          <RepositoryInfo
+            boxClass={props.boxClass}
+            projectMaturity={props.projectMaturity}
+            repository={selectedRepo()!}
+          />
         </Show>
       </div>
     </Show>
