@@ -204,7 +204,7 @@ async fn collect_organization_data(cb: DynCB, cb_url: &str) -> Result<Organizati
 }
 
 /// Crunchbase API base url.
-const CRUNCHBASE_API_URL: &str = "https://api.crunchbase.com/api/v4";
+const CRUNCHBASE_API_URL: &str = "https://api.crunchbase.com/v4/data";
 
 /// Type alias to represent a CB trait object.
 type DynCB = Arc<dyn CB + Send + Sync>;
