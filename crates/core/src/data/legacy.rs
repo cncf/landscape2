@@ -301,10 +301,16 @@ mod tests {
                             ..Default::default()
                         }]),
                         blog_url: Some("https://blog.url".to_string()),
-                        other_links: Some(vec![ItemLink {
-                            name: "link".to_string(),
-                            url: "https://link.url".to_string(),
-                        }]),
+                        other_links: Some(vec![
+                            ItemLink {
+                                name: "email".to_string(),
+                                url: "mailto:team@example.com".to_string(),
+                            },
+                            ItemLink {
+                                name: "link".to_string(),
+                                url: "https://link.url".to_string(),
+                            },
+                        ]),
                         ..Default::default()
                     }),
                     ..Default::default()
