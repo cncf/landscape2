@@ -451,7 +451,8 @@
                                   "type": "string",
                                   "format": "uri",
                                   "examples": [
-                                    "https://link.url"
+                                    "https://link.url",
+                                    "mailto:team@example.com"
                                   ]
                                 }
                               },

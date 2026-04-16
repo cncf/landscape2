@@ -25,6 +25,10 @@ const LinkClass = css`
 `;
 
 export const ExternalLink = (props: Props) => {
+  const isMailtoLink = () => /^mailto:/i.test(props.href);
+  const linkRel = () => (isMailtoLink() ? undefined : 'noopener noreferrer');
+  const linkTarget = () => (isMailtoLink() ? undefined : props.target || '_blank');
+
   const getData = () => {
     return (
       <>
@@ -54,7 +58,11 @@ export const ExternalLink = (props: Props) => {
             if (props.onClick) props.onClick();
 
             if (isUndefined(props.disabled) || !props.disabled) {
-              window.open(props.href, props.target || '_blank');
+              if (isMailtoLink()) {
+                window.location.href = props.href;
+              } else {
+                window.open(props.href, linkTarget());
+              }
             }
           }}
           aria-label={props.label || 'Open external link'}
@@ -68,8 +76,8 @@ export const ExternalLink = (props: Props) => {
           title={props.title}
           class={`link ${LinkClass} ${props.class}`}
           href={props.href}
-          target={props.target || '_blank'}
-          rel="noopener noreferrer"
+          target={linkTarget()}
+          rel={linkRel()}
           onClick={(e) => {
             e.stopPropagation();
 

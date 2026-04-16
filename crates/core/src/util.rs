@@ -58,6 +58,9 @@ pub(crate) fn validate_url(kind: &str, url: Option<&String>) -> Result<()> {
         };
 
         // Check scheme
+        if kind == "other_link" && url.scheme() == "mailto" {
+            return Ok(());
+        }
         if url.scheme() != "http" && url.scheme() != "https" {
             return invalid_url("invalid scheme");
         }
@@ -148,6 +151,11 @@ mod tests {
     }
 
     #[test]
+    fn validate_url_mailto_other_link_succeeds() {
+        validate_url("other_link", Some("mailto:team@example.com".to_string()).as_ref()).unwrap();
+    }
+
+    #[test]
     #[should_panic(expected = "relative URL without a base")]
     fn validate_url_error_parsing() {
         validate_url("", Some("invalid url".to_string()).as_ref()).unwrap();
@@ -187,5 +195,16 @@ mod tests {
             let expected_error = format!("invalid {kind} url");
             assert!(error.starts_with(expected_error.as_str()));
         }
+    }
+
+    #[test]
+    fn validate_url_mailto_other_field_fails() {
+        let error = validate_url(
+            "mailing_list",
+            Some("mailto:team@example.com".to_string()).as_ref(),
+        )
+        .unwrap_err()
+        .to_string();
+        assert_eq!(error, "invalid mailing_list url: invalid scheme");
     }
 }

@@ -218,7 +218,8 @@ categories:
               #   - # Name of the link (required).
               #     name: Link name
               #     # URL of the link (required).
-              #     url: https://link.url
+              #     # Supports `https://...` and `mailto:...`.
+              #     url: mailto:team@example.com
               other_links: []
 
               # Package manager URL (optional). Link to the package manager where the item is
