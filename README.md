@@ -180,6 +180,11 @@ One option to serve your landscape in production is to use a static site hosting
 > [!NOTE]
 > The resulting website when building a landscape is a [single-page application](https://en.wikipedia.org/wiki/Single-page_application) that handles routing on the client side. This means that you'll need to configure your webserver to serve the `index.html` file for the SPA route paths (like '/guide', '/stats', etc). One way of doing this would be to serve that file when a non existent path is requested. The `serve` subcommand included in **landscape2** already handles this for us. In the GitHub pages example mentioned above, this is achieved by copying the content of the `index.html` file to the `404.html` file, which will be served when a non existent path is requested.
 
+> [!NOTE]
+> If you plan to host the generated landscape in a subpath instead of at the
+> root of your domain (for example `/landscape`), make sure to set the
+> `base_path` field in your `settings.yml` file accordingly.
+
 ### Validating data, settings and guide files
 
 The **landscape2** CLI tool includes a subcommand named `validate` that allows you to check that your landscape data, settings and guide files are valid. If you are interested in integrating this validation in your CI workflows (i.e. to enforce that those files are valid before merging a PR), please take a look at the [landscape2-validate-action](https://github.com/cncf/landscape2-validate-action).
