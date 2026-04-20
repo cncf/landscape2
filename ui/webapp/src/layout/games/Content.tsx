@@ -5,6 +5,7 @@ import { createSignal, For, onMount, Show } from 'solid-js';
 
 import init, { Quiz, QuizOptions, State } from '../../../wasm/quiz/landscape2_quiz';
 import pattern from '../../media/pattern_quiz.png';
+import getLandscapeUrl from '../../utils/getLandscapeUrl';
 import isWasmSupported from '../../utils/isWasmSupported';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import styles from './Content.module.css';
@@ -18,7 +19,9 @@ const Content = () => {
   const [error, setError] = createSignal<string | undefined>();
 
   const startGame = async (initiated?: boolean) => {
-    const options = new QuizOptions(import.meta.env.MODE === 'development' ? 'http://localhost:8000' : location.origin);
+    const options = new QuizOptions(
+      import.meta.env.MODE === 'development' ? 'http://localhost:8000' : getLandscapeUrl()
+    );
     const quiz = await Quiz.new(options);
     setActiveQuiz(quiz);
     if (initiated) setQuizState(quiz.state());
