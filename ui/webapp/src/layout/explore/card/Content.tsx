@@ -66,6 +66,7 @@ const CardList = (props: ListProps) => {
 const Content = (props: Props) => {
   const bgColor = COLORS[0];
   const data = () => props.data();
+  const getTitles = (): string[] => sortMaturityStatusTitles(Object.keys(data()));
 
   const getSubtitles = (content: { [key: string]: unknown }, title: string): string[] => {
     let subtitles = Object.keys(content).sort();
@@ -100,7 +101,7 @@ const Content = (props: Props) => {
           <CardList items={data()} isVisible={props.isVisible} sorted={props.sorted} direction={props.direction} />
         </Match>
         <Match when={!Array.isArray(data())}>
-          <For each={sortMaturityStatusTitles(Object.keys(data()))}>
+          <For each={getTitles()}>
             {(title: string) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const content = () => (data() as any)[title] as { [key: string]: unknown } | (BaseItem | Item)[];

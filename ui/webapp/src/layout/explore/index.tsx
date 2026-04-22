@@ -999,7 +999,6 @@ const Explore = (props: Props) => {
                           initialIsVisible={viewMode() === ViewMode.Card && selectedGroup() === ALL_OPTION}
                           data={!isUndefined(cardData()) ? cardData()![ALL_OPTION] : undefined}
                           menu={!isUndefined(cardMenu()) ? cardMenu()![ALL_OPTION] : undefined}
-                          group={ALL_OPTION}
                           classify={classify()}
                           sorted={sorted()}
                           direction={sortDirection()}
