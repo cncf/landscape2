@@ -33,6 +33,7 @@ import {
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
 import search from './search';
+import sortCategoriesByGroupOrder from './sortCategoriesByGroupOrder';
 import sortMenuOptions from './sortMenuOptions';
 
 export interface ItemsDataStatus {
@@ -532,7 +533,7 @@ export class ItemsDataGetter {
 
     Object.keys(data).forEach((group: string) => {
       sortedData[group] = {};
-      Object.keys(data[group]).forEach((category: string) => {
+      sortCategoriesByGroupOrder(Object.keys(data[group]), group).forEach((category: string) => {
         const isOverriden =
           !isUndefined(window.baseDS.categories_overridden) && window.baseDS.categories_overridden.includes(category);
         if (!isOverriden) {

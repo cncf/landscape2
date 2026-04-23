@@ -1,6 +1,5 @@
 import isUndefined from 'lodash/isUndefined';
 
-import { ALL_OPTION } from '../../data';
 import { CardMenu, ClassifyOption, SortDirection, SortOption, ViewMode } from '../../types';
 import { CategoriesData } from '../../utils/itemsDataGetter';
 import { useViewMode } from '../stores/viewMode';
@@ -28,7 +27,6 @@ const Content = (props: Props) => {
       <div class={selectedViewMode() === ViewMode.Card ? 'd-block' : 'd-none'}>
         <CardCategory
           initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Card}
-          group={props.group || ALL_OPTION}
           data={props.cardData}
           menu={props.menu}
           classify={props.classify}

@@ -17,7 +17,6 @@ import Menu from './Menu';
 
 interface Props {
   initialIsVisible: boolean;
-  group: string;
   classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
