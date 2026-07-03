@@ -256,5 +256,47 @@ fn md5sum(path: &Path) -> Result<String> {
     hasher.update(fs::read(path)?);
     let result = hasher.finalize();
 
-    Ok(format!("{result:x}"))
+    let mut checksum = String::with_capacity(result.len() * 2);
+    for byte in result {
+        write!(&mut checksum, "{byte:02x}")?;
+    }
+
+    Ok(checksum)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        env,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    use super::*;
+
+    #[test]
+    fn md5sum_changes_with_file_contents() -> Result<()> {
+        // Setup a temporary file with known content
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time to be after unix epoch")
+            .as_nanos();
+        let path = env::temp_dir().join(format!("landscape2-md5sum-{timestamp}.txt"));
+        std::fs::write(&path, b"hello world")?;
+
+        // Run the checksum calculation
+        let checksum = md5sum(&path)?;
+
+        // Check the digest matches the known value
+        assert_eq!(checksum, "5eb63bbbe01eeed093cb22bb8f5acdc3");
+
+        // Change the file contents and calculate the checksum again
+        std::fs::write(&path, b"hello landscape2")?;
+        let changed_checksum = md5sum(&path)?;
+        std::fs::remove_file(&path)?;
+
+        // Check content changes produce a different digest
+        assert_ne!(checksum, changed_checksum);
+
+        Ok(())
+    }
 }

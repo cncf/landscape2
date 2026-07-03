@@ -11,53 +11,53 @@ members = [
 version = "1.1.0"
 license = "Apache-2.0"
 edition = "2024"
-rust-version = "1.93.1"
+rust-version = "1.96.1"
 authors = ["Sergio Castaño Arteaga", "Cintia Sanchez Garcia"]
 homepage = "https://github.com/cncf/landscape2"
 
 [workspace.dependencies]
-anyhow = "1.0.102"
-askama = { version = "0.15.4", features = ["serde_json"] }
+anyhow = "1.0.103"
+askama = { version = "0.16.0", features = ["serde_json"] }
 async-trait = "0.1.89"
-aws-config = "1.8.15"
-aws-sdk-s3 = "1.125.0"
-axum = "0.8.8"
+aws-config = "1.8.18"
+aws-sdk-s3 = "1.137.0"
+axum = "0.8.9"
 base64 = "0.22.1"
-cached = { version = "0.56.0", default-features = false, features = ["async", "proc_macro"] }
-chrono = { version = "0.4.44", features = ["serde"] }
-clap = { version = "4.5.60", features = ["derive"] }
+cached = { version = "2.0.2", default-features = false, features = ["async", "proc_macro"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+clap = { version = "4.6.1", features = ["derive"] }
 csv = "1.4.0"
 deadpool = "0.13.0"
 dirs = "6.0.0"
 futures = "0.3.32"
-gloo-console = "0.3.0"
-gloo-net = { version = "0.6.0", default-features = false, features = ["http", "json"] }
-headless_chrome = "1.0.21"
+gloo-console = "0.4.0"
+gloo-net = { version = "0.7.0", default-features = false, features = ["http", "json"] }
+headless_chrome = "1.0.22"
 hex = "0.4.3"
 imagesize = "0.14.0"
-itertools = "0.14.0"
+itertools = "0.15.0"
 leaky-bucket = "1.1.2"
 markdown = "1.0.0"
-md-5 = "0.10.6"
+md-5 = "0.11.0"
 mime_guess = "2.0.5"
-mockall = "0.14.0"
+mockall = "0.15.0"
 mockito = "1.7.2"
 num_cpus = "1.17.0"
 octorust = "0.10.0"
-parse_link_header = "0.4.0"
+parse_link_header = "0.4.1"
 pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
 rand = "0.8.5" # do-not-upgrade
-regex = "1.12.3"
+regex = "1.12.4"
 reqwest = { version = "0.12.28", features = ["json",  "multipart", "native-tls-vendored"] } # do-not-upgrade
 reqwest-middleware = "0.4.2" # do-not-upgrade
 rust-embed = "8.11.0"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
+serde_json = "1.0.150"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
-sha2 = "0.10.9"
-tokio = { version = "1.50.0", features = [
+sha2 = "0.11.0"
+tokio = { version = "1.52.3", features = [
     "macros",
     "process",
     "rt-multi-thread",
@@ -65,16 +65,16 @@ tokio = { version = "1.50.0", features = [
     "time",
 ] }
 tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 tower = "0.5.3"
-tower-http = { version = "0.6.8", features = ["fs", "set-header"] }
+tower-http = { version = "0.7.0", features = ["fs", "set-header"] }
 url = "2.5.8"
 usvg = "0.37.0" # do-not-upgrade
 walkdir = "2.5.0"
-wasm-bindgen = "0.2.114"
-wasm-bindgen-futures = "0.4.64"
-web-sys = { version = "0.3.76", features = ["console"] }
-which = "8.0.0"
+wasm-bindgen = "0.2.126"
+wasm-bindgen-futures = "0.4.76"
+web-sys = { version = "0.3.103", features = ["console"] }
+which = "8.0.4"
 
 [profile.release]
 lto = true
