@@ -5,8 +5,8 @@ import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
 import getFoundationNameLabel from './getFoundationNameLabel';
 
 const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
-  if (Object.keys(activeFilters).length > 0) {
-    const filteredItems: Item[] = items.filter((item: Item) => {
+  const filteredItems: Item[] = items.filter((item: Item) => {
+    if (Object.keys(activeFilters).length > 0) {
       // Filter Extra
       if (activeFilters[FilterCategory.Extra]) {
         if (
@@ -107,30 +107,32 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
           return false;
         }
       }
+    }
 
-      //  Maturity filter
-      if (activeFilters[FilterCategory.Maturity]) {
-        if (
-          isUndefined(item.maturity) &&
-          !activeFilters[FilterCategory.Maturity].includes(`non-${getFoundationNameLabel()}`)
-        ) {
-          return false;
-        } else {
-          if (!isUndefined(item.maturity)) {
-            if (!activeFilters[FilterCategory.Maturity].includes(item.maturity)) {
-              return false;
-            }
+    //  Maturity filter
+    if (activeFilters[FilterCategory.Maturity]) {
+      if (
+        isUndefined(item.maturity) &&
+        !activeFilters[FilterCategory.Maturity].includes(`non-${getFoundationNameLabel()}`)
+      ) {
+        return false;
+      } else {
+        if (!isUndefined(item.maturity)) {
+          if (!activeFilters[FilterCategory.Maturity].includes(item.maturity)) {
+            return false;
           }
         }
       }
+    } else if (!isUndefined(item.maturity) && item.maturity === 'archived') {
+      // Archived items are hidden from the default landscape view unless the
+      // user explicitly opts in via the Maturity filter.
+      return false;
+    }
 
-      return true;
-    });
+    return true;
+  });
 
-    return filteredItems;
-  } else {
-    return items;
-  }
+  return filteredItems;
 };
 
 export default filterData;

@@ -618,9 +618,7 @@ export class ItemsDataGetter {
   public queryItems(input: ActiveFilters, activeGroup: string, classify: ClassifyOption) {
     const allGroupedItems = this.getGroupedData();
     // Filter only the active group
-    const filteredItems = !isEmpty(input)
-      ? filterData(allGroupedItems[activeGroup], input)
-      : allGroupedItems[activeGroup];
+    const filteredItems = filterData(allGroupedItems[activeGroup], input);
     const groupedItems = { ...allGroupedItems, [activeGroup]: filteredItems };
 
     let activeCategoryFilters: string[] | undefined;
