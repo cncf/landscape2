@@ -12,7 +12,10 @@ describe('isDownloadAvailable', () => {
   });
 
   it('should report an existing document as available', async () => {
-    fetchMock.mockResolvedValue({ ok: true });
+    fetchMock.mockResolvedValue({
+      headers: new Headers({ 'content-type': 'application/pdf' }),
+      ok: true,
+    });
 
     await expect(isDownloadAvailable('./docs/landscape.pdf')).resolves.toBe(true);
     expect(fetchMock).toHaveBeenCalledWith('./docs/landscape.pdf', {
@@ -26,8 +29,26 @@ describe('isDownloadAvailable', () => {
     await expect(isDownloadAvailable('./docs/landscape.png')).resolves.toBe(false);
   });
 
+  it('should report an HTML fallback response as unavailable', async () => {
+    fetchMock.mockResolvedValue({
+      headers: new Headers({ 'content-type': 'Text/HTML; charset=utf-8' }),
+      ok: true,
+    });
+
+    await expect(isDownloadAvailable('./docs/html-fallback.pdf')).resolves.toBe(false);
+  });
+
   it('should allow an unexpected HTTP failure to be retried', async () => {
-    fetchMock.mockResolvedValueOnce({ ok: false, status: 503 }).mockResolvedValueOnce({ ok: true });
+    fetchMock
+      .mockResolvedValueOnce({
+        headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
+        ok: false,
+        status: 503,
+      })
+      .mockResolvedValueOnce({
+        headers: new Headers({ 'content-type': 'application/pdf' }),
+        ok: true,
+      });
 
     await expect(isDownloadAvailable('./docs/retry-http.pdf')).rejects.toThrow(
       'Unable to check document availability: 503'
@@ -38,7 +59,10 @@ describe('isDownloadAvailable', () => {
   });
 
   it('should reuse the availability request for the same document', async () => {
-    fetchMock.mockResolvedValue({ ok: true });
+    fetchMock.mockResolvedValue({
+      headers: new Headers({ 'content-type': 'application/octet-stream' }),
+      ok: true,
+    });
 
     await Promise.all([isDownloadAvailable('./docs/items.csv'), isDownloadAvailable('./docs/items.csv')]);
 
@@ -46,7 +70,10 @@ describe('isDownloadAvailable', () => {
   });
 
   it('should allow a failed availability request to be retried', async () => {
-    fetchMock.mockRejectedValueOnce(new TypeError('Network error')).mockResolvedValueOnce({ ok: true });
+    fetchMock.mockRejectedValueOnce(new TypeError('Network error')).mockResolvedValueOnce({
+      headers: new Headers({ 'content-type': 'application/pdf' }),
+      ok: true,
+    });
 
     await expect(isDownloadAvailable('./docs/retry.pdf')).rejects.toThrow('Network error');
     await expect(isDownloadAvailable('./docs/retry.pdf')).resolves.toBe(true);

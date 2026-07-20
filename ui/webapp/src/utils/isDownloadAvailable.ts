@@ -14,7 +14,9 @@ const isDownloadAvailable = (url: string): Promise<boolean> => {
   const request = fetch(url, { method: 'head' })
     .then((response) => {
       if (response.ok) {
-        return true;
+        // Some SPA hosts return index.html with 200 for missing document paths.
+        const contentType = response.headers.get('content-type')?.toLowerCase();
+        return !contentType?.includes('text/html');
       }
       if (MISSING_STATUS_CODES.has(response.status)) {
         return false;

@@ -25,6 +25,11 @@ const getDownloadBlob = async ({
     throw new Error(`Unable to download document: ${response.status}`);
   }
 
+  // Some SPA hosts return index.html with 200 for missing document paths.
+  if (response.headers.get('content-type')?.toLowerCase().includes('text/html')) {
+    throw new Error('Unable to download document: unexpected HTML response');
+  }
+
   // Preserve binary responses while assigning the expected MIME type to text exports.
   if (responseAsBlob) {
     return response.blob();
