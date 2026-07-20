@@ -103,11 +103,7 @@ const App = () => {
       );
       if (requestId !== activeRequestId) return;
 
-      const loadedItem = itemsDataGetter.getItemById(
-        selectedItem.classifyBy,
-        selectedItem.key,
-        selectedItem.itemId
-      );
+      const loadedItem = itemsDataGetter.getItemById(selectedItem.classifyBy, selectedItem.key, selectedItem.itemId);
       batch(() => {
         setItemInfo(loadedItem);
         setItemLoadStatus(loadedItem ? 'ready' : 'not-found');

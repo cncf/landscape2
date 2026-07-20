@@ -94,12 +94,13 @@ const GuideIndex = () => {
   };
 
   onMount(() => {
-    if (isUndefined(guideContent())) {
+    const cachedGuide = guideContent();
+    if (isUndefined(cachedGuide) || cachedGuide === null) {
       void fetchGuide();
     } else {
       setTimeout(() => {
         setFirstItem(guideToc()![0].id);
-        setGuide(guideContent());
+        setGuide(cachedGuide);
         setToc(guideToc());
         setGuideLoadStatus('ready');
         if (from() === 'header' && location.hash === '') {

@@ -45,7 +45,7 @@ const ItemModal = (props: Props) => {
             <NoData>
               <div class="d-flex flex-column align-items-center py-5">
                 <div class="fs-5">We couldn't load this item.</div>
-                <button type="button" class="btn btn-secondary mt-3" onClick={props.onRetry}>
+                <button type="button" class="btn btn-secondary mt-3" onClick={() => props.onRetry()}>
                   Try again
                 </button>
               </div>
