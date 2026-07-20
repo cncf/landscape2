@@ -37,8 +37,10 @@ import sortCategoriesByGroupOrder from './sortCategoriesByGroupOrder';
 import sortMenuOptions from './sortMenuOptions';
 
 export interface ItemsDataStatus {
-  updateStatus(status: boolean): void;
+  updateStatus(status: ItemsDataLoadStatus): void;
 }
+
+export type ItemsDataLoadStatus = 'error' | 'loading' | 'ready';
 
 export interface LogosOptionsGroup {
   id: LogosPreviewOptions;
@@ -81,7 +83,8 @@ export interface ClassifyAndSortOptions {
 
 export class ItemsDataGetter {
   private updateStatus?: ItemsDataStatus;
-  private ready = false;
+  private status: ItemsDataLoadStatus = 'loading';
+  private pendingRequest?: Promise<void>;
   private groups: string[] | undefined;
   private landscapeData?: LandscapeData;
   private classifyAndSortOptions: { [key: string]: ClassifyAndSortOptions } | undefined;
@@ -92,19 +95,44 @@ export class ItemsDataGetter {
     this.updateStatus = updateStatus;
   }
 
+  private get ready(): boolean {
+    return this.status === 'ready';
+  }
+
+  private setStatus(status: ItemsDataLoadStatus) {
+    this.status = status;
+    this.updateStatus?.updateStatus(status);
+  }
+
   // Initialize the data
   public init(landscapeData?: LandscapeData) {
-    if (!this.ready) {
-      if (landscapeData) {
-        this.prepareGroups();
-        this.initialDataPreparation(landscapeData);
-      } else {
-        fetch(import.meta.env.MODE === 'development' ? '../../static/data/full.json' : './data/full.json')
-          .then((res) => res.json())
-          .then((data: LandscapeData) => {
-            this.initialDataPreparation(data);
-          });
+    if (this.status === 'ready' || this.pendingRequest) return;
+
+    this.setStatus('loading');
+    if (landscapeData) {
+      this.prepareGroups();
+      this.initialDataPreparation(landscapeData);
+      return;
+    }
+
+    this.pendingRequest = this.loadData().finally(() => {
+      this.pendingRequest = undefined;
+    });
+  }
+
+  private async loadData(): Promise<void> {
+    try {
+      const response = await fetch(
+        import.meta.env.MODE === 'development' ? '../../static/data/full.json' : './data/full.json'
+      );
+      if (!response.ok) {
+        throw new Error(`Unable to load full data: ${response.status}`);
       }
+
+      const data = (await response.json()) as LandscapeData;
+      this.initialDataPreparation(data);
+    } catch {
+      this.setStatus('error');
     }
   }
 
@@ -139,20 +167,21 @@ export class ItemsDataGetter {
       ...data,
       items: extendedItems,
     };
-    this.ready = true;
-    if (this.updateStatus) {
-      this.updateStatus.updateStatus(true);
-    }
+    this.setStatus('ready');
     this.saveData();
   }
 
   public isReady(): boolean {
-    return this.ready;
+    return this.status === 'ready';
+  }
+
+  public getStatus(): ItemsDataLoadStatus {
+    return this.status;
   }
 
   // Get all items
   public getAll(): Item[] {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items;
     }
     return [];
@@ -160,7 +189,7 @@ export class ItemsDataGetter {
 
   // Get crunchbase data
   public getCrunchbaseData(): CrunchbaseData | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.crunchbase_data) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.crunchbase_data) {
       return this.landscapeData.crunchbase_data;
     }
     return undefined;

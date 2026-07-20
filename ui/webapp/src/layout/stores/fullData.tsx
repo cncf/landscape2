@@ -1,19 +1,21 @@
 import { createContext, createEffect, createSignal, ParentComponent, useContext } from 'solid-js';
 
-import itemsDataGetter from '../../utils/itemsDataGetter';
+import itemsDataGetter, { type ItemsDataLoadStatus } from '../../utils/itemsDataGetter';
 
 function useFullDataProvider() {
-  const [fullDataReady, setFullDataReady] = createSignal(itemsDataGetter.isReady());
+  const [fullDataStatus, setFullDataStatus] = createSignal<ItemsDataLoadStatus>(itemsDataGetter.getStatus());
+  const fullDataReady = () => fullDataStatus() === 'ready';
+  const retryFullData = () => itemsDataGetter.init();
 
   createEffect(() => {
     itemsDataGetter.subscribe({
-      updateStatus: (currentStatus: boolean) => {
-        setFullDataReady(currentStatus);
+      updateStatus: (currentStatus: ItemsDataLoadStatus) => {
+        setFullDataStatus(currentStatus);
       },
     });
   });
 
-  return { fullDataReady };
+  return { fullDataReady, fullDataStatus, retryFullData };
 }
 
 export type ContextFullDataType = ReturnType<typeof useFullDataProvider>;
@@ -35,4 +37,12 @@ export function useFullData() {
 
 export function useFullDataReady() {
   return useFullData().fullDataReady;
+}
+
+export function useFullDataStatus() {
+  return useFullData().fullDataStatus;
+}
+
+export function useRetryFullData() {
+  return useFullData().retryFullData;
 }
