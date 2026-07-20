@@ -1,4 +1,4 @@
-import { ItemModalContent, ItemModalMobileContent, Loading, Modal, useBreakpointDetect } from 'common';
+import { ItemModalContent, ItemModalMobileContent, Loading, Modal, NoData, useBreakpointDetect } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, Show } from 'solid-js';
@@ -38,7 +38,7 @@ const ItemModal = () => {
         } else {
           setParentInfo(undefined);
         }
-        setItemInfo(itemTmp);
+        setItemInfo(itemTmp ?? null);
       } catch {
         setItemInfo(null);
       }
@@ -63,33 +63,49 @@ const ItemModal = () => {
         id={ITEM_VIEW}
       >
         <Show
-          when={!isUndefined(itemInfo()) && !isNull(itemInfo())}
+          when={!isUndefined(itemInfo())}
           fallback={
-            <div class={`d-flex flex-column p-5 ${styles.loadingWrapper}`}>
+            <div class={`d-flex flex-column p-5 ${styles.stateWrapper}`}>
               <Loading />
             </div>
           }
         >
           <Show
-            when={isUndefined(point()) || !SMALL_DEVICES_BREAKPOINTS.includes(point()!)}
+            when={!isNull(itemInfo())}
             fallback={
-              <ItemModalMobileContent
+              <div
+                class={`d-flex flex-column align-items-center justify-content-center p-5 ${styles.stateWrapper}`}
+              >
+                <NoData>
+                  <>
+                    <div class="fs-4">We couldn't find this item.</div>
+                    <p class="h6 mt-3 mb-0 lh-base">It may have been removed or the link may be incorrect.</p>
+                  </>
+                </NoData>
+              </div>
+            }
+          >
+            <Show
+              when={isUndefined(point()) || !SMALL_DEVICES_BREAKPOINTS.includes(point()!)}
+              fallback={
+                <ItemModalMobileContent
+                  item={itemInfo()}
+                  foundation={FOUNDATION}
+                  parentInfo={parentInfo()}
+                  onClose={() => updateActiveItemId()}
+                  hideOrganizationSection={HIDE_ORGANIZATION_SECTION_IN_PROJECTS}
+                />
+              }
+            >
+              <ItemModalContent
                 item={itemInfo()}
                 foundation={FOUNDATION}
+                basePath={BASE_PATH}
                 parentInfo={parentInfo()}
                 onClose={() => updateActiveItemId()}
                 hideOrganizationSection={HIDE_ORGANIZATION_SECTION_IN_PROJECTS}
               />
-            }
-          >
-            <ItemModalContent
-              item={itemInfo()}
-              foundation={FOUNDATION}
-              basePath={BASE_PATH}
-              parentInfo={parentInfo()}
-              onClose={() => updateActiveItemId()}
-              hideOrganizationSection={HIDE_ORGANIZATION_SECTION_IN_PROJECTS}
-            />
+            </Show>
           </Show>
         </Show>
       </Modal>
