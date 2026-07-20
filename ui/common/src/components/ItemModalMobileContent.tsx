@@ -216,7 +216,7 @@ export const ItemModalMobileContent = (props: Props) => {
                     <Show when={!isUndefined(itemInfo()!.member_subcategory)}>
                       <div
                         title={`${itemInfo()!.member_subcategory} member`}
-                        class={`badge rounded-0 text-uppercase me-2 ${BadgeOutlineDark} badgeOutlineDark`}
+                        class={`badge rounded-0 text-truncate text-uppercase me-2 ${BadgeOutlineDark} badgeOutlineDark`}
                       >
                         {itemInfo()!.member_subcategory} member
                       </div>
