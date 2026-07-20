@@ -16,7 +16,7 @@ const getDeviceConfig = (width: number): Breakpoint | undefined => {
     return Breakpoint.LG;
   } else if (width >= 1200 && width < 1400) {
     return Breakpoint.XL;
-  } else if (width >= 1400) {
+  } else if (width >= 1400 && width < 1920) {
     return Breakpoint.XXL;
   } else if (width >= 1920) {
     return Breakpoint.XXXL;
