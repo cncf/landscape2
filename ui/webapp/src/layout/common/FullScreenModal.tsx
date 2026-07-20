@@ -1,6 +1,6 @@
-import { useBodyScroll, useOutsideClick } from 'common';
+import { useBodyScroll, useModalFocus, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { Accessor, createEffect, createSignal, JSXElement, onCleanup, onMount, Show } from 'solid-js';
+import { Accessor, createEffect, createSignal, JSXElement, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
 import { BANNER_ID } from '../../data';
@@ -17,12 +17,8 @@ interface Props {
 
 const FullScreenModal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
+  const [modalRef, setModalRef] = createSignal<HTMLDivElement>();
   const excludedIds = () => (props.excludedIds ? [BANNER_ID, ...props.excludedIds] : [BANNER_ID]);
-
-  useBodyScroll(openStatus, 'modal');
-  useOutsideClick(props.initialRefs || [], excludedIds(), openStatus, () => {
-    closeModal();
-  });
 
   const closeModal = () => {
     setOpenStatus(false);
@@ -31,36 +27,26 @@ const FullScreenModal = (props: Props) => {
     }
   };
 
+  useBodyScroll(openStatus, 'modal');
+  useModalFocus(modalRef, openStatus, closeModal);
+  useOutsideClick(props.initialRefs || [], excludedIds(), openStatus, closeModal);
+
   createEffect(() => {
     if (!isUndefined(props.open)) {
       setOpenStatus(props.open);
     }
   });
 
-  const handleEsc = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      closeModal();
-    }
-  };
-
-  onMount(() => {
-    window.addEventListener('keydown', handleEsc, { passive: true });
-  });
-
-  onCleanup(() => {
-    window.removeEventListener('keydown', handleEsc);
-  });
-
   return (
     <Show when={openStatus()}>
       <Portal>
         <div
+          ref={setModalRef}
           class={`position-fixed overflow-hidden p-3 top-0 bottom-0 start-0 end-0 ${styles.modal}`}
           role="dialog"
           tabIndex={-1}
           aria-label={`${props.title} modal`}
           aria-modal={true}
-          aria-hidden={true}
         >
           <div class={`position-absolute ${styles.closeWrapper}`}>
             <button

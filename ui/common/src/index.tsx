@@ -24,7 +24,7 @@ export {
 } from './utils';
 
 // Hooks
-export { useBodyScroll, useBreakpointDetect, useOutsideClick } from './hooks';
+export { useBodyScroll, useBreakpointDetect, useModalFocus, useOutsideClick } from './hooks';
 
 // Types
 export type { GithubRepository, Item, Organization, Repository } from './types/types';
