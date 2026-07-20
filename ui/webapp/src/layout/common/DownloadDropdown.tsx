@@ -1,5 +1,5 @@
 import { SVGIcon, SVGIconKind, useOutsideClick } from 'common';
-import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
+import { createSignal, createUniqueId, For, onCleanup, onMount, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
 import getDownloadBlob from '../../utils/getDownloadBlob';
@@ -16,6 +16,12 @@ enum Format {
   CSV = 'csv',
   PDF = 'pdf',
   PNG = 'png',
+}
+
+enum ScreenshotAvailabilityStatus {
+  Checking = 'checking',
+  Error = 'error',
+  Ready = 'ready',
 }
 
 interface DownloadMenuItemProps {
@@ -91,19 +97,48 @@ const LANDSCAPE_DOWNLOAD_OPTIONS: DownloadOption[] = [
 const SCREENSHOT_FORMATS = [Format.PDF, Format.PNG];
 
 const DownloadDropdown = () => {
-  const [ref, setRef] = createSignal<HTMLDivElement>();
-  const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
-  const [downloadingFile, setDownloadingFile] = createSignal<DownloadOption>();
+  const dropdownId = createUniqueId();
   const [availableScreenshotFormats, setAvailableScreenshotFormats] = createSignal<Set<Format>>(new Set());
+  const [downloadError, setDownloadError] = createSignal<string>();
+  const [downloadingFile, setDownloadingFile] = createSignal<DownloadOption>();
+  const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [screenshotAvailabilityStatus, setScreenshotAvailabilityStatus] = createSignal<ScreenshotAvailabilityStatus>(
+    ScreenshotAvailabilityStatus.Checking
+  );
+  const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
+  let componentMounted = false;
   useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
 
   // Keep each successfully generated screenshot format available independently.
   const availableLandscapeDownloads = () =>
     LANDSCAPE_DOWNLOAD_OPTIONS.filter((option) => availableScreenshotFormats().has(option.format));
 
-  const isDownloading = (option: DownloadOption) => {
-    const currentDownload = downloadingFile();
-    return currentDownload?.doc === option.doc && currentDownload.format === option.format;
+  const checkScreenshotAvailability = async () => {
+    setScreenshotAvailabilityStatus(ScreenshotAvailabilityStatus.Checking);
+    const results = await Promise.all(
+      SCREENSHOT_FORMATS.map(async (format) => {
+        try {
+          return {
+            available: await isDownloadAvailable(getDocumentUrl({ doc: DocType.Landscape, format })),
+            failed: false,
+            format,
+          };
+        } catch {
+          return { available: false, failed: true, format };
+        }
+      })
+    );
+
+    if (componentMounted) {
+      setAvailableScreenshotFormats(
+        new Set(results.filter((result) => result.available).map((result) => result.format))
+      );
+      setScreenshotAvailabilityStatus(
+        results.some((result) => result.failed)
+          ? ScreenshotAvailabilityStatus.Error
+          : ScreenshotAvailabilityStatus.Ready
+      );
+    }
   };
 
   const downloadFile = async (option: DownloadOption) => {
@@ -111,6 +146,7 @@ const DownloadDropdown = () => {
       return;
     }
 
+    setDownloadError();
     setDownloadingFile(option);
 
     try {
@@ -131,41 +167,28 @@ const DownloadDropdown = () => {
         link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
+        setVisibleDropdown(false);
       } finally {
         link.remove();
         window.URL.revokeObjectURL(objectUrl);
       }
     } catch {
-      return;
+      setDownloadError('Unable to download the file. Please try again.');
     } finally {
       // Always clear the pending state, including when the file is missing.
       setDownloadingFile();
-      setVisibleDropdown(false);
     }
+  };
+
+  const isDownloading = (option: DownloadOption) => {
+    const currentDownload = downloadingFile();
+    return currentDownload?.doc === option.doc && currentDownload.format === option.format;
   };
 
   onMount(() => {
     // Screenshot generation is optional, so only expose artifacts that exist.
-    let componentMounted = true;
-
-    void Promise.all(
-      SCREENSHOT_FORMATS.map(async (format) => ({
-        available: await isDownloadAvailable(getDocumentUrl({ doc: DocType.Landscape, format })),
-        format,
-      }))
-    )
-      .then((results) => {
-        if (componentMounted) {
-          setAvailableScreenshotFormats(
-            new Set(results.filter((result) => result.available).map((result) => result.format))
-          );
-        }
-      })
-      .catch(() => {
-        if (componentMounted) {
-          setAvailableScreenshotFormats(new Set<Format>());
-        }
-      });
+    componentMounted = true;
+    void checkScreenshotAvailability();
 
     onCleanup(() => {
       componentMounted = false;
@@ -180,34 +203,61 @@ const DownloadDropdown = () => {
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          setVisibleDropdown(!visibleDropdown());
+          const nextVisibleDropdown = !visibleDropdown();
+          if (nextVisibleDropdown) {
+            setDownloadError();
+          }
+          setVisibleDropdown(nextVisibleDropdown);
         }}
-        aria-label="Open dropdown"
+        aria-controls={dropdownId}
+        aria-expanded={visibleDropdown()}
+        aria-label="Download files"
       >
         <SVGIcon kind={SVGIconKind.Download} />
       </button>
 
       <div
-        role="complementary"
+        id={dropdownId}
         class={`dropdown-menu rounded-0 p-0 ${styles.dropdown}`}
         classList={{ show: visibleDropdown() }}
       >
         <div class={`d-block position-absolute ${styles.arrow}`} />
         <ul class={`m-0 p-0 ${styles.menuList}`}>
-          <Show when={availableLandscapeDownloads().length > 0}>
-            <li>
-              <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
+          <li>
+            <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
+          </li>
+          <For each={availableLandscapeDownloads()}>
+            {(option) => (
+              <DownloadMenuItem
+                disabled={downloadingFile() !== undefined}
+                downloading={isDownloading(option)}
+                onDownload={() => void downloadFile(option)}
+                option={option}
+              />
+            )}
+          </For>
+          <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Checking}>
+            <li class="text-muted fst-italic px-3 py-2" role="status">
+              Checking landscape downloads...
             </li>
-            <For each={availableLandscapeDownloads()}>
-              {(option) => (
-                <DownloadMenuItem
-                  disabled={downloadingFile() !== undefined}
-                  downloading={isDownloading(option)}
-                  onDownload={() => void downloadFile(option)}
-                  option={option}
-                />
-              )}
-            </For>
+          </Show>
+          <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Error}>
+            <li>
+              <div class="alert alert-danger rounded-0 m-0 px-3 py-2" role="alert">
+                <div>Unable to check every landscape download.</div>
+                <button class="btn btn-link p-0" type="button" onClick={() => void checkScreenshotAvailability()}>
+                  Try again
+                </button>
+              </div>
+            </li>
+          </Show>
+          <Show
+            when={
+              screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Ready &&
+              availableLandscapeDownloads().length === 0
+            }
+          >
+            <li class="text-muted fst-italic px-3 py-2">No landscape downloads available.</li>
           </Show>
           <li>
             <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>
@@ -222,6 +272,13 @@ const DownloadDropdown = () => {
               />
             )}
           </For>
+          <Show when={downloadError()}>
+            <li>
+              <div class="alert alert-danger rounded-0 m-0 px-3 py-2" role="alert">
+                {downloadError()}
+              </div>
+            </li>
+          </Show>
         </ul>
       </div>
     </div>

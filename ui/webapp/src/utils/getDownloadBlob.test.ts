@@ -28,6 +28,32 @@ describe('getDownloadBlob', () => {
     expect(result).toBe(expectedBlob);
   });
 
+  it('should convert a text response to a blob with the requested type', async () => {
+    const textMock = jest.fn().mockResolvedValue('name,category\nProject,Database');
+    fetchMock.mockResolvedValue({
+      ok: true,
+      text: textMock,
+    });
+
+    const result = await getDownloadBlob({
+      blobType: 'text/csv',
+      contentType: 'text/csv;charset=UTF-8',
+      responseAsBlob: false,
+      url: './docs/items.csv',
+    });
+
+    const reader = new FileReader();
+    const resultText = new Promise<string>((resolve, reject) => {
+      reader.addEventListener('load', () => resolve(reader.result as string), { once: true });
+      reader.addEventListener('error', () => reject(reader.error), { once: true });
+    });
+    reader.readAsText(result);
+
+    expect(textMock).toHaveBeenCalledTimes(1);
+    expect(result.type).toBe('text/csv');
+    await expect(resultText).resolves.toBe('name,category\nProject,Database');
+  });
+
   it('should reject when the document does not exist', async () => {
     fetchMock.mockResolvedValue({
       ok: false,

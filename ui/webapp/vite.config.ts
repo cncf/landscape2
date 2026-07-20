@@ -1,8 +1,9 @@
 import fs from 'node:fs';
-import isNull from 'lodash/isNull';
-import isUndefined from 'lodash/isUndefined';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import isNull from 'lodash/isNull';
+import isUndefined from 'lodash/isUndefined';
 import { defineConfig, loadEnv } from 'vite';
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid';
@@ -12,23 +13,16 @@ if (!process.env.SASS_SILENCE_DEPRECATIONS) {
 }
 
 const projectDir = fileURLToPath(new URL('.', import.meta.url));
-const scssIncludePaths = [
-  path.resolve(projectDir, 'node_modules'),
-  path.resolve(projectDir, '../../node_modules'),
-].filter((p) => fs.existsSync(p));
-
 const bootstrapDir = [
   path.resolve(projectDir, 'node_modules/bootstrap'),
   path.resolve(projectDir, '../../node_modules/bootstrap'),
 ].find((candidate) => fs.existsSync(candidate));
-
-const regex = /<link rel="stylesheet" crossorigin href="(.*?)">/g;
-const DEVELOPMENT_PROXY_PATHS = [
-  '/static/data',
-  '/static/docs',
-  '/static/images',
-  '/static/logos',
-];
+const CSS_HREF_PATTERN = /<link rel="stylesheet" crossorigin href="(.*?)">/;
+const DEVELOPMENT_PROXY_PATHS = ['/static/data', '/static/docs', '/static/images', '/static/logos'];
+const scssIncludePaths = [
+  path.resolve(projectDir, 'node_modules'),
+  path.resolve(projectDir, '../../node_modules'),
+].filter((candidate) => fs.existsSync(candidate));
 
 export default defineConfig(({ mode }) => ({
   base: '', // Default '/', static path
@@ -46,34 +40,33 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  plugins: [ViteEjsPlugin(), solid(), {
-    name: 'inject-css-preload',
-    transformIndexHtml(html) {
-      const assetHref = getCSSHref(html);
-      if (!isUndefined(assetHref)) {
-        return [
-          {
-            tag: 'link',
-            attrs: { rel: 'preload', href: assetHref, as: 'style', crossorigin: true },
-            injectTo: 'head-prepend',
-          },
-        ]
-      } else {
-        return html;
-      }
+  plugins: [
+    ViteEjsPlugin(),
+    solid(),
+    {
+      name: 'inject-css-preload',
+      transformIndexHtml(html) {
+        const assetHref = getCSSHref(html);
+        if (!isUndefined(assetHref)) {
+          return [
+            {
+              tag: 'link',
+              attrs: { rel: 'preload', href: assetHref, as: 'style', crossorigin: true },
+              injectTo: 'head-prepend',
+            },
+          ];
+        } else {
+          return html;
+        }
+      },
     },
-  }],
+  ],
   preview: {
     port: 8000,
   },
   server: getDevelopmentServerConfig(mode),
   resolve: {
-    dedupe: [
-      "lodash",
-      "moment",
-      "solid-js",
-      "solid-js/web"
-    ],
+    dedupe: ['lodash', 'moment', 'solid-js', 'solid-js/web'],
     ...(bootstrapDir ? { alias: { bootstrap: bootstrapDir } } : {}),
   },
   css: {
@@ -85,6 +78,16 @@ export default defineConfig(({ mode }) => ({
   },
 }));
 
+/** Extracts the generated stylesheet URL from rendered HTML. */
+const getCSSHref = (html: string) => {
+  const match = CSS_HREF_PATTERN.exec(html);
+  if (!isNull(match)) {
+    return match[1];
+  } else {
+    return undefined;
+  }
+};
+
 /** Creates an opt-in dev proxy for datasets and their generated assets. */
 const getDevelopmentServerConfig = (mode: string) => {
   const proxyTarget = loadEnv(mode, process.cwd(), '').VITE_PROXY_TARGET;
@@ -94,8 +97,7 @@ const getDevelopmentServerConfig = (mode: string) => {
 
   const targetUrl = new URL(proxyTarget);
   const targetBasePath = targetUrl.pathname.replace(/\/+$/, '');
-  const rewritePath = (requestPath: string) =>
-    `${targetBasePath}${requestPath.replace(/^\/static/, '')}`;
+  const rewritePath = (requestPath: string) => `${targetBasePath}${requestPath.replace(/^\/static/, '')}`;
 
   return {
     proxy: Object.fromEntries(
@@ -109,13 +111,4 @@ const getDevelopmentServerConfig = (mode: string) => {
       ])
     ),
   };
-};
-
-const getCSSHref = (str: string) => {
-  const match = regex.exec(str);
-  if (!isNull(match)) {
-    return match[1];
-  } else {
-    return undefined;
-  }
 };

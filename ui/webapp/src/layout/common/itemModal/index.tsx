@@ -73,9 +73,7 @@ const ItemModal = () => {
           <Show
             when={!isNull(itemInfo())}
             fallback={
-              <div
-                class={`d-flex flex-column align-items-center justify-content-center p-5 ${styles.stateWrapper}`}
-              >
+              <div class={`d-flex flex-column align-items-center justify-content-center p-5 ${styles.stateWrapper}`}>
                 <NoData>
                   <>
                     <div class="fs-4">We couldn't find this item.</div>
