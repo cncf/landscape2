@@ -1,6 +1,5 @@
 import { SVGIcon, SVGIconKind, useOutsideClick } from 'common';
-import isUndefined from 'lodash/isUndefined';
-import { createSignal, onCleanup, onMount, Show } from 'solid-js';
+import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
 import getDownloadBlob from '../../utils/getDownloadBlob';
@@ -19,53 +18,115 @@ enum Format {
   PNG = 'png',
 }
 
-interface DocTypeDownloading {
+interface DownloadMenuItemProps {
+  disabled: boolean;
+  downloading: boolean;
+  onDownload: () => void;
+  option: DownloadOption;
+}
+
+interface DownloadOption {
+  description: string;
   doc: DocType;
   format: Format;
 }
 
-const contentType = {
-  [Format.CSV]: 'text/csv;charset=UTF-8',
-  [Format.PDF]: 'application/pdf',
-  [Format.PNG]: 'image/x-png',
+interface FormatConfig {
+  blobType: string;
+  contentType: string;
+  icon: SVGIconKind;
+  responseAsBlob: boolean;
+}
+
+// Data exports are always generated, so they do not need availability checks.
+const DATA_DOWNLOAD_OPTIONS: DownloadOption[] = [
+  {
+    description: 'CSV file that contains information about all items available in the landscape',
+    doc: DocType.Items,
+    format: Format.CSV,
+  },
+  {
+    description: 'CSV file that contains information about all the projects that are part of the foundation',
+    doc: DocType.Projects,
+    format: Format.CSV,
+  },
+];
+
+// Keep MIME handling and icons aligned for every format.
+const FORMAT_CONFIG: Record<Format, FormatConfig> = {
+  [Format.CSV]: {
+    blobType: 'text/csv',
+    contentType: 'text/csv;charset=UTF-8',
+    icon: SVGIconKind.CSV,
+    responseAsBlob: false,
+  },
+  [Format.PDF]: {
+    blobType: 'application/pdf',
+    contentType: 'application/pdf',
+    icon: SVGIconKind.PDF,
+    responseAsBlob: true,
+  },
+  [Format.PNG]: {
+    blobType: 'image/png',
+    contentType: 'image/x-png',
+    icon: SVGIconKind.PNG,
+    responseAsBlob: true,
+  },
 };
 
-const contentBlob = {
-  [Format.CSV]: 'text/csv',
-  [Format.PDF]: 'application/pdf',
-  [Format.PNG]: 'image/png',
-};
+// Screenshot exports are optional and are filtered by availability.
+const LANDSCAPE_DOWNLOAD_OPTIONS: DownloadOption[] = [
+  {
+    description: 'Landscape in PDF format',
+    doc: DocType.Landscape,
+    format: Format.PDF,
+  },
+  {
+    description: 'Landscape in PNG format',
+    doc: DocType.Landscape,
+    format: Format.PNG,
+  },
+];
+
+const SCREENSHOT_FORMATS = [Format.PDF, Format.PNG];
 
 const DownloadDropdown = () => {
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
-  const [downloadingFile, setDownloadingFile] = createSignal<DocTypeDownloading | undefined>();
+  const [downloadingFile, setDownloadingFile] = createSignal<DownloadOption>();
   const [availableScreenshotFormats, setAvailableScreenshotFormats] = createSignal<Set<Format>>(new Set());
   useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
 
-  const getDocumentUrl = (doc: DocType, format: Format) =>
-    import.meta.env.MODE === 'development' ? `../../static/docs/${doc}.${format}` : `./docs/${doc}.${format}`;
+  // Keep each successfully generated screenshot format available independently.
+  const availableLandscapeDownloads = () =>
+    LANDSCAPE_DOWNLOAD_OPTIONS.filter((option) => availableScreenshotFormats().has(option.format));
 
-  const downloadFile = async (doc: DocType, format: Format) => {
-    if (!isUndefined(downloadingFile())) {
+  const isDownloading = (option: DownloadOption) => {
+    const currentDownload = downloadingFile();
+    return currentDownload?.doc === option.doc && currentDownload.format === option.format;
+  };
+
+  const downloadFile = async (option: DownloadOption) => {
+    if (downloadingFile()) {
       return;
     }
 
-    setDownloadingFile({ doc, format });
+    setDownloadingFile(option);
 
     try {
+      const formatConfig = FORMAT_CONFIG[option.format];
       const blob = await getDownloadBlob({
-        blobType: contentBlob[format],
-        contentType: contentType[format],
-        responseAsBlob: [Format.PDF, Format.PNG].includes(format),
-        url: getDocumentUrl(doc, format),
+        blobType: formatConfig.blobType,
+        contentType: formatConfig.contentType,
+        responseAsBlob: formatConfig.responseAsBlob,
+        url: getDocumentUrl(option),
       });
       const link: HTMLAnchorElement = document.createElement('a');
       const objectUrl = window.URL.createObjectURL(blob);
 
       // Use a temporary link to preserve the generated file name.
       try {
-        link.download = `${doc}.${format}`;
+        link.download = getDocumentName(option);
         link.href = objectUrl;
         link.style.display = 'none';
         document.body.appendChild(link);
@@ -85,26 +146,30 @@ const DownloadDropdown = () => {
 
   onMount(() => {
     // Screenshot generation is optional, so only expose artifacts that exist.
-    const abortController = new AbortController();
+    let componentMounted = true;
 
     void Promise.all(
-      [Format.PDF, Format.PNG].map(async (format) => ({
-        available: await isDownloadAvailable(getDocumentUrl(DocType.Landscape, format), abortController.signal),
+      SCREENSHOT_FORMATS.map(async (format) => ({
+        available: await isDownloadAvailable(getDocumentUrl({ doc: DocType.Landscape, format })),
         format,
       }))
     )
       .then((results) => {
-        setAvailableScreenshotFormats(
-          new Set(results.filter((result) => result.available).map((result) => result.format))
-        );
+        if (componentMounted) {
+          setAvailableScreenshotFormats(
+            new Set(results.filter((result) => result.available).map((result) => result.format))
+          );
+        }
       })
       .catch(() => {
-        if (!abortController.signal.aborted) {
+        if (componentMounted) {
           setAvailableScreenshotFormats(new Set<Format>());
         }
       });
 
-    onCleanup(() => abortController.abort());
+    onCleanup(() => {
+      componentMounted = false;
+    });
   });
 
   return (
@@ -112,9 +177,9 @@ const DownloadDropdown = () => {
       <button
         type="button"
         class={`btn btn-md p-0 rounded-0 lh-1 ${styles.btn}`}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
           setVisibleDropdown(!visibleDropdown());
         }}
         aria-label="Open dropdown"
@@ -129,155 +194,34 @@ const DownloadDropdown = () => {
       >
         <div class={`d-block position-absolute ${styles.arrow}`} />
         <ul class={`m-0 p-0 ${styles.menuList}`}>
-          <Show when={availableScreenshotFormats().size > 0}>
+          <Show when={availableLandscapeDownloads().length > 0}>
             <li>
               <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
             </li>
-          </Show>
-          <Show when={availableScreenshotFormats().has(Format.PDF)}>
-            <li>
-              <button
-                class="dropdown-item py-3 border-top"
-                disabled={!isUndefined(downloadingFile())}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-
-                  void downloadFile(DocType.Landscape, Format.PDF);
-                }}
-                aria-label="Download landscape in PDF format"
-              >
-                <div class="d-flex flex-row align-items-start">
-                  <div class="me-3 position-relative">
-                    <Show
-                      when={
-                        !isUndefined(downloadingFile()) &&
-                        downloadingFile()!.doc === DocType.Landscape &&
-                        downloadingFile()!.format === Format.PDF
-                      }
-                    >
-                      <div class={`position-absolute ${styles.spinner}`}>
-                        <div class="spinner-border text-secondary" role="status">
-                          <span class="visually-hidden">Loading...</span>
-                        </div>
-                      </div>
-                    </Show>
-
-                    <SVGIcon class={styles.icon} kind={SVGIconKind.PDF} />
-                  </div>
-                  <div class={styles.contentBtn}>
-                    <div class="fw-semibold mb-2">landscape.pdf</div>
-                    <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in PDF format</div>
-                  </div>
-                </div>
-              </button>
-            </li>
-          </Show>
-          <Show when={availableScreenshotFormats().has(Format.PNG)}>
-            <li>
-              <button
-                class="dropdown-item py-3 border-top"
-                disabled={!isUndefined(downloadingFile())}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-
-                  void downloadFile(DocType.Landscape, Format.PNG);
-                }}
-                aria-label="Download landscape in PNG format"
-              >
-                <div class="d-flex flex-row align-items-start">
-                  <div class="me-3 position-relative">
-                    <Show
-                      when={
-                        !isUndefined(downloadingFile()) &&
-                        downloadingFile()!.doc === DocType.Landscape &&
-                        downloadingFile()!.format === Format.PNG
-                      }
-                    >
-                      <div class={`position-absolute ${styles.spinner}`}>
-                        <div class="spinner-border text-secondary" role="status">
-                          <span class="visually-hidden">Loading...</span>
-                        </div>
-                      </div>
-                    </Show>
-                    <SVGIcon class={styles.icon} kind={SVGIconKind.PNG} />
-                  </div>
-                  <div class={styles.contentBtn}>
-                    <div class="fw-semibold mb-2">landscape.png</div>
-                    <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>Landscape in PNG format</div>
-                  </div>
-                </div>
-              </button>
-            </li>
+            <For each={availableLandscapeDownloads()}>
+              {(option) => (
+                <DownloadMenuItem
+                  disabled={downloadingFile() !== undefined}
+                  downloading={isDownloading(option)}
+                  onDownload={() => void downloadFile(option)}
+                  option={option}
+                />
+              )}
+            </For>
           </Show>
           <li>
             <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>
           </li>
-          <li>
-            <button
-              class="dropdown-item py-3 border-top"
-              disabled={!isUndefined(downloadingFile())}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-
-                void downloadFile(DocType.Items, Format.CSV);
-              }}
-              aria-label="Download items in CSV format"
-            >
-              <div class="d-flex flex-row align-items-start">
-                <div class="me-3 position-relative">
-                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Items}>
-                    <div class={`position-absolute ${styles.spinner}`}>
-                      <div class="spinner-border text-secondary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  </Show>
-                  <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
-                </div>
-                <div class={styles.contentBtn}>
-                  <div class="fw-semibold mb-2">items.csv</div>
-                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
-                    CSV file that contains information about all items available in the landscape
-                  </div>
-                </div>
-              </div>
-            </button>
-          </li>
-          <li>
-            <button
-              class="dropdown-item py-3 border-top"
-              disabled={!isUndefined(downloadingFile())}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-
-                void downloadFile(DocType.Projects, Format.CSV);
-              }}
-              aria-label="Download projects in CSV format"
-            >
-              <div class="d-flex flex-row align-items-start">
-                <div class="me-3 position-relative">
-                  <Show when={!isUndefined(downloadingFile()) && downloadingFile()!.doc === DocType.Projects}>
-                    <div class={`position-absolute ${styles.spinner}`}>
-                      <div class="spinner-border text-secondary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  </Show>
-                  <SVGIcon class={styles.icon} kind={SVGIconKind.CSV} />
-                </div>
-                <div class={styles.contentBtn}>
-                  <div class="fw-semibold mb-2">projects.csv</div>
-                  <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>
-                    CSV file that contains information about all the projects that are part of the foundation
-                  </div>
-                </div>
-              </div>
-            </button>
-          </li>
+          <For each={DATA_DOWNLOAD_OPTIONS}>
+            {(option) => (
+              <DownloadMenuItem
+                disabled={downloadingFile() !== undefined}
+                downloading={isDownloading(option)}
+                onDownload={() => void downloadFile(option)}
+                option={option}
+              />
+            )}
+          </For>
         </ul>
       </div>
     </div>
@@ -285,3 +229,43 @@ const DownloadDropdown = () => {
 };
 
 export default DownloadDropdown;
+
+// Reuse identical markup and pending behavior for every download option.
+const DownloadMenuItem = (props: DownloadMenuItemProps) => (
+  <li>
+    <button
+      class="dropdown-item py-3 border-top"
+      disabled={props.disabled}
+      onClick={(event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        props.onDownload();
+      }}
+      aria-label={`Download ${props.option.doc} in ${props.option.format.toUpperCase()} format`}
+    >
+      <div class="d-flex flex-row align-items-start">
+        <div class="me-3 position-relative">
+          <Show when={props.downloading}>
+            <div class={`position-absolute ${styles.spinner}`}>
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </Show>
+          <SVGIcon class={styles.icon} kind={FORMAT_CONFIG[props.option.format].icon} />
+        </div>
+        <div class={styles.contentBtn}>
+          <div class="fw-semibold mb-2">{getDocumentName(props.option)}</div>
+          <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>{props.option.description}</div>
+        </div>
+      </div>
+    </button>
+  </li>
+);
+
+const getDocumentName = (option: Pick<DownloadOption, 'doc' | 'format'>) => `${option.doc}.${option.format}`;
+
+const getDocumentUrl = (option: Pick<DownloadOption, 'doc' | 'format'>) =>
+  import.meta.env.MODE === 'development'
+    ? `../../static/docs/${getDocumentName(option)}`
+    : `./docs/${getDocumentName(option)}`;

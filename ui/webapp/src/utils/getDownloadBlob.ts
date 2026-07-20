@@ -25,6 +25,7 @@ const getDownloadBlob = async ({
     throw new Error(`Unable to download document: ${response.status}`);
   }
 
+  // Preserve binary responses while assigning the expected MIME type to text exports.
   if (responseAsBlob) {
     return response.blob();
   }
