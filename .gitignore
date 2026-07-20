@@ -18,6 +18,7 @@ ui/embed/static/*
 ui/embed-item/dist
 ui/embed-item/node_modules
 ui/webapp/dist
+ui/webapp/.env.local
 ui/webapp/node_modules
 ui/webapp/static/*
 yarn-debug.log*

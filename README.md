@@ -96,6 +96,33 @@ Commands:
   help      Print this message or the help of the given subcommand(s)
 ```
 
+### UI development
+
+The SolidJS web application is located in `ui/webapp`. Install its dependencies
+and start the Vite development server from the repository root:
+
+```text
+yarn --cwd ui/webapp install
+yarn --cwd ui/webapp dev
+```
+
+By default, the development server loads datasets and generated assets from
+`ui/webapp/static`. To develop against data from an existing landscape, copy the
+example environment file and configure the landscape URL:
+
+```text
+cp ui/webapp/.env.local.example ui/webapp/.env.local
+```
+
+```text
+VITE_PROXY_TARGET=https://landscape.cncf.io
+```
+
+Restart the development server after changing `.env.local`. The proxy handles
+datasets, documents, images, and logos during development only; production
+builds are not affected. Remove `VITE_PROXY_TARGET` to use the local generated
+assets again.
+
 ## Usage
 
 To see **landscape2** in action, we will go through the process of creating, building and serving a new landscape from scratch. The following instructions will assume that the `landscape2` binary is available in your PATH. Alternatively, you can launch a container from the [image provided](https://github.com/cncf/landscape2/pkgs/container/landscape2) where the **landscape2** CLI tool is ready to use.

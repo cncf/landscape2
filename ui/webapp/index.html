@@ -37,17 +37,7 @@
                     src="https://cmp.osano.com/{{ osano.customer_id }}/{{ osano.customer_configuration_id }}/osano.js"></script>
         {% endif %}
         <% } %>
-        <% if (isDev) { %>
-        <script>
-      fetch("./static/data/base.json")
-      .then(res => res.json())
-      .then(data => window.baseDS = data);
-
-      fetch("./static/data/stats.json")
-      .then(res => res.json())
-      .then(data => window.statsDS = data);
-        </script>
-        <% } else { %>
+        <% if (!isDev) { %>
         <script>
       window.baseDS = {{ datasets.base|json|safe }};
       window.statsDS = {{ datasets.stats|json|safe }};
@@ -99,6 +89,33 @@
         {% endif %}
         <% } %>
         <div id="landscape"></div>
+        <% if (isDev) { %>
+        <script type="module">
+        /** Loads a development dataset before the application initializes. */
+        const fetchDataset = async (path) => {
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error(`Unable to load ${path}: ${response.status}`);
+            }
+            return response.json();
+        };
+
+        try {
+            [window.baseDS, window.statsDS] = await Promise.all([
+                fetchDataset("./static/data/base.json"),
+                fetchDataset("./static/data/stats.json"),
+            ]);
+            await import("/src/index.tsx");
+        } catch (error) {
+            console.error("Unable to load development data", error);
+            const alert = document.createElement("div");
+            alert.setAttribute("role", "alert");
+            alert.textContent = "Unable to load development data.";
+            document.getElementById("landscape").appendChild(alert);
+        }
+        </script>
+        <% } else { %>
         <script type="module" src="/src/index.tsx"></script>
+        <% } %>
     </body>
 </html>

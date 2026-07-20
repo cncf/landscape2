@@ -554,7 +554,7 @@ const EmbedModal = () => {
   createEffect(
     on(displayItemModal, () => {
       if (displayItemModal()) {
-        import(`${embedOrigin()}/embed-item.js`).then(() => {
+        import(/* @vite-ignore */ `${embedOrigin()}/embed-item.js`).then(() => {
           setEmbedScriptLoaded(true);
         });
       }
