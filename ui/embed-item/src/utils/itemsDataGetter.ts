@@ -21,14 +21,20 @@ export interface GithubData {
 export class ItemsDataGetter {
   private updateStatus?: ItemsDataStatus;
   private landscapeData: { [key: string]: EmbedData } = {};
+  private pendingRequests = new Map<string, Promise<void>>();
 
   // Subscribe to the updateStatus
   public subscribe(updateStatus: ItemsDataStatus) {
     this.updateStatus = updateStatus;
   }
 
-  public fetchItems(classifyBy: string, key: string, basePath: string, categories?: string[]) {
+  public fetchItems(classifyBy: string, key: string, basePath: string, categories?: string[]): Promise<void> {
     const name = `${classifyBy}_${key}`;
+    if (this.isReady(name)) return Promise.resolve();
+
+    const pendingRequest = this.pendingRequests.get(name);
+    if (pendingRequest) return pendingRequest;
+
     const shouldLoadFullDataset = Array.isArray(categories) && categories.length > 0;
     const url = shouldLoadFullDataset
       ? import.meta.env.MODE === 'development'
@@ -38,15 +44,22 @@ export class ItemsDataGetter {
         ? `http://localhost:8000/data/embed_full_${name}.json`
         : `${basePath}/data/embed_full_${name}.json`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data: EmbedData) => {
-        this.initialDataPreparation(data, name).then(() => {
-          if (this.updateStatus) {
-            this.updateStatus.updateStatus(true);
-          }
-        });
-      });
+    const request = this.loadItems(url, name).finally(() => {
+      this.pendingRequests.delete(name);
+    });
+    this.pendingRequests.set(name, request);
+    return request;
+  }
+
+  private async loadItems(url: string, name: string): Promise<void> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Unable to load item data: ${response.status}`);
+    }
+
+    const data = (await response.json()) as EmbedData;
+    await this.initialDataPreparation(data, name);
+    this.updateStatus?.updateStatus(true);
   }
 
   private async initialDataPreparation(data: EmbedData, name: string) {

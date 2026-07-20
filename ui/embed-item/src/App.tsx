@@ -1,11 +1,11 @@
 import './styles/App.css';
 
-import { batch, createEffect, createSignal, on, onMount, Show } from 'solid-js';
+import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
 import('../../webapp/src/styles/bootstrap.scss');
 
-import { Item, Loading } from 'common';
+import { Item } from 'common';
 
-import ItemModal from './common/ItemModal';
+import ItemModal, { type ItemLoadStatus } from './common/ItemModal';
 import { DEFAULT_COLOR_1, DEFAULT_COLOR_2, DEFAULT_COLOR_3, DEFAULT_COLOR_4 } from './types';
 import itemsDataGetter from './utils/itemsDataGetter';
 
@@ -22,7 +22,8 @@ interface CurrrentItem {
 const App = () => {
   const [currentItem, setCurrentItem] = createSignal<CurrrentItem | null>(null);
   const [itemInfo, setItemInfo] = createSignal<Item | undefined>(undefined);
-  const [availableKeys, setAvailableKeys] = createSignal<string[]>(itemsDataGetter.getAvailableKeys());
+  const [itemLoadStatus, setItemLoadStatus] = createSignal<ItemLoadStatus>('loading');
+  let activeRequestId = 0;
 
   let COLOR_1 = DEFAULT_COLOR_1;
   let COLOR_2 = DEFAULT_COLOR_2;
@@ -53,67 +54,81 @@ const App = () => {
   };
 
   onMount(() => {
-    // Listen for messages from the parent frame
-    window.addEventListener('message', (event) => {
-      // If the message is to show the item details
-      if (event.data.type === 'showItemDetails') {
-        // Set the current item
-        setCurrentItem({
-          ...event.data,
-          hideOrganizationSection: event.data.hideOrganizationSection,
-          categories: event.data.categories,
-        });
+    const handleMessage = (event: MessageEvent<Partial<CurrrentItem> & { type?: string }>) => {
+      if (event.source !== window.parent || event.data?.type !== 'showItemDetails') return;
+
+      const { basePath, classifyBy, foundation, itemId, key } = event.data;
+      if (
+        typeof basePath !== 'string' ||
+        typeof classifyBy !== 'string' ||
+        typeof foundation !== 'string' ||
+        typeof itemId !== 'string' ||
+        typeof key !== 'string'
+      ) {
+        return;
       }
-    });
-    // Subscribe to the itemsDataGetter to get the available keys
-    itemsDataGetter.subscribe({
-      updateStatus: (currentStatus: boolean) => {
-        if (currentStatus) {
-          setAvailableKeys(itemsDataGetter.getAvailableKeys());
-        }
-      },
-    });
+
+      setCurrentItem({
+        basePath,
+        categories: event.data.categories,
+        classifyBy,
+        foundation,
+        hideOrganizationSection: event.data.hideOrganizationSection,
+        itemId,
+        key,
+      });
+    };
+
+    window.addEventListener('message', handleMessage);
     loadColors();
+
+    onCleanup(() => {
+      window.removeEventListener('message', handleMessage);
+    });
   });
 
-  createEffect(
-    on(currentItem, () => {
-      // When the currentItem is set
-      if (currentItem() !== null) {
-        if (!availableKeys().includes(`${currentItem()!.classifyBy}_${currentItem()!.key}`)) {
-          // Fetch the items data
-          itemsDataGetter.fetchItems(
-            currentItem()!.classifyBy,
-            currentItem()!.key,
-            currentItem()!.basePath,
-            currentItem()!.categories
-          );
-        } else {
-          // If the item is already available, set the item info
-          setItemInfo(
-            itemsDataGetter.getItemById(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.itemId)
-          );
-        }
+  const loadItem = async (selectedItem: CurrrentItem) => {
+    const requestId = ++activeRequestId;
+    batch(() => {
+      setItemInfo(undefined);
+      setItemLoadStatus('loading');
+    });
+
+    try {
+      await itemsDataGetter.fetchItems(
+        selectedItem.classifyBy,
+        selectedItem.key,
+        selectedItem.basePath,
+        selectedItem.categories
+      );
+      if (requestId !== activeRequestId) return;
+
+      const loadedItem = itemsDataGetter.getItemById(
+        selectedItem.classifyBy,
+        selectedItem.key,
+        selectedItem.itemId
+      );
+      batch(() => {
+        setItemInfo(loadedItem);
+        setItemLoadStatus(loadedItem ? 'ready' : 'not-found');
+      });
+    } catch {
+      if (requestId === activeRequestId) {
+        setItemLoadStatus('error');
       }
-    })
-  );
+    }
+  };
 
   createEffect(
-    on(availableKeys, () => {
-      // When the available keys are updated and the currentItem is set,
-      // set the item info
-      if (currentItem() !== null && itemInfo() === undefined) {
-        const name = `${currentItem()!.classifyBy}_${currentItem()!.key}`;
-        if (availableKeys().includes(name)) {
-          setItemInfo(
-            itemsDataGetter.getItemById(currentItem()!.classifyBy, currentItem()!.key, currentItem()!.itemId)
-          );
-        }
+    on(currentItem, (selectedItem) => {
+      if (selectedItem) {
+        void loadItem(selectedItem);
       }
     })
   );
 
   const onClose = () => {
+    activeRequestId += 1;
     batch(() => {
       setCurrentItem(null);
       setItemInfo(undefined);
@@ -127,20 +142,19 @@ const App = () => {
   };
 
   return (
-    <>
-      <Show when={itemInfo() === undefined && currentItem() !== null}>
-        <Loading />
-      </Show>
-      <Show when={itemInfo() !== undefined}>
+    <Show when={currentItem()}>
+      {(selectedItem) => (
         <ItemModal
-          foundation={currentItem()!.foundation}
-          activeItemId={currentItem()!.itemId}
+          foundation={selectedItem().foundation}
+          activeItemId={selectedItem().itemId}
           itemInfo={itemInfo()}
+          itemLoadStatus={itemLoadStatus()}
           onClose={onClose}
-          hideOrganizationSection={currentItem()!.hideOrganizationSection}
+          onRetry={() => void loadItem(selectedItem())}
+          hideOrganizationSection={selectedItem().hideOrganizationSection}
         />
-      </Show>
-    </>
+      )}
+    </Show>
   );
 };
 
