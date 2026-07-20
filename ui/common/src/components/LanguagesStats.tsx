@@ -36,7 +36,7 @@ export const LanguagesStats = (props: Props) => {
           return (
             <Box
               class={props.boxClass}
-              value={`${Number.isInteger(value()) ? value() : value().toFixed(2)}%`}
+              value={formatPercentage(value())}
               legend={lang}
               fillBgPercentage={value()}
               description={`${lang} language percentage`}
@@ -46,4 +46,13 @@ export const LanguagesStats = (props: Props) => {
       </For>
     </div>
   );
+};
+
+/** Formats positive values below two-decimal precision without displaying zero. */
+const formatPercentage = (value: number) => {
+  if (value > 0 && value.toFixed(2) === '0.00') {
+    return '<0.01%';
+  }
+
+  return `${Number.isInteger(value) ? value : value.toFixed(2)}%`;
 };
