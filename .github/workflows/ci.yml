@@ -48,6 +48,24 @@ jobs:
         working-directory: ./ui/webapp
         run: yarn test
 
+  lint-common:
+    runs-on:
+      labels: ubuntu-latest-8-cores
+    env:
+      NODE_OPTIONS: --max_old_space_size=4096
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Install dependencies
+        working-directory: ./ui/common
+        run: yarn install --network-concurrency 1
+      - name: Run prettier
+        working-directory: ./ui/common
+        run: yarn format:diff
+      - name: Run eslint
+        working-directory: ./ui/common
+        run: yarn lint
+
   lint-and-test-embed:
     runs-on:
       labels: ubuntu-latest-8-cores
@@ -64,4 +82,22 @@ jobs:
         run: yarn format:diff
       - name: Run eslint
         working-directory: ./ui/embed
+        run: yarn lint
+
+  lint-embed-item:
+    runs-on:
+      labels: ubuntu-latest-8-cores
+    env:
+      NODE_OPTIONS: --max_old_space_size=4096
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Install dependencies
+        working-directory: ./ui/embed-item
+        run: yarn install --network-concurrency 1
+      - name: Run prettier
+        working-directory: ./ui/embed-item
+        run: yarn format:diff
+      - name: Run eslint
+        working-directory: ./ui/embed-item
         run: yarn lint
