@@ -28,6 +28,15 @@ export class ItemsDataGetter {
     this.updateStatus = updateStatus;
   }
 
+  /**
+   * Load and cache the item data for a classification.
+   *
+   * @param classifyBy Classification field used by the dataset.
+   * @param key Classification value used by the dataset.
+   * @param basePath Base URL for generated landscape data.
+   * @param categories Categories that require the full dataset.
+   * @returns A promise that resolves when cached data is ready and rejects on failure.
+   */
   public fetchItems(classifyBy: string, key: string, basePath: string, categories?: string[]): Promise<void> {
     const name = `${classifyBy}_${key}`;
     if (this.isReady(name)) return Promise.resolve();

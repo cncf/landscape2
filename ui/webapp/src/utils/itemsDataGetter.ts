@@ -175,6 +175,7 @@ export class ItemsDataGetter {
     return this.status === 'ready';
   }
 
+  /** Return the current full-data loading status. */
   public getStatus(): ItemsDataLoadStatus {
     return this.status;
   }

@@ -3,7 +3,7 @@ import './styles/App.css';
 import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
 import('../../webapp/src/styles/bootstrap.scss');
 
-import { Item } from 'common';
+import type { Item } from 'common';
 
 import ItemModal, { type ItemLoadStatus } from './common/ItemModal';
 import { DEFAULT_COLOR_1, DEFAULT_COLOR_2, DEFAULT_COLOR_3, DEFAULT_COLOR_4 } from './types';

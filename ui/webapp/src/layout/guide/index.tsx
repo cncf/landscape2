@@ -6,6 +6,7 @@ import { createEffect, createMemo, createSignal, For, Match, on, onMount, Show, 
 import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
 import { CategoryGuide, Guide, StateContent, SubcategoryGuide, ToCTitle } from '../../types';
 import goToElement from '../../utils/goToElement';
+import { getGuideUrl } from '../../utils/guideData';
 import isElementInView from '../../utils/isElementInView';
 import buildNormalizedId from '../../utils/normalizeId';
 import scrollToTop from '../../utils/scrollToTop';
@@ -74,9 +75,7 @@ const GuideIndex = () => {
     try {
       let data = window.guide;
       if (isUndefined(data)) {
-        const response = await fetch(
-          import.meta.env.MODE === 'development' ? '../../static/data/guide.json' : './data/guide.json'
-        );
+        const response = await fetch(getGuideUrl());
         if (!response.ok) {
           throw new Error(`Unable to load guide: ${response.status}`);
         }

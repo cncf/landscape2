@@ -1,7 +1,7 @@
 import { ItemModalContent, ItemModalMobileContent, Loading, Modal, NoData, useBreakpointDetect } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { batch, createEffect, createSignal, Show } from 'solid-js';
 
 import {
   BASE_PATH,
@@ -25,29 +25,42 @@ const ItemModal = () => {
   const [itemInfo, setItemInfo] = createSignal<Item | null | undefined>(undefined);
   const [parentInfo, setParentInfo] = createSignal<Item>();
   const { point } = useBreakpointDetect();
+  let activeRequestId = 0;
 
-  createEffect(() => {
-    async function fetchItemInfo() {
-      try {
-        const itemTmp = await itemsDataGetter.getItemById(visibleItemId()! as string);
-        if (!isUndefined(itemTmp) && !isUndefined(itemTmp!.parent_project)) {
-          const parentItem = await itemsDataGetter.getItemByName(itemTmp.parent_project);
-          if (!isUndefined(parentItem)) {
-            setParentInfo(parentItem);
-          }
-        } else {
-          setParentInfo(undefined);
-        }
-        setItemInfo(itemTmp ?? null);
-      } catch {
+  const fetchItemInfo = async (itemId: string, requestId: number) => {
+    try {
+      const item = await itemsDataGetter.getItemById(itemId);
+      const parentItem = !isUndefined(item?.parent_project)
+        ? await itemsDataGetter.getItemByName(item.parent_project)
+        : undefined;
+      if (requestId !== activeRequestId) return;
+
+      batch(() => {
+        setItemInfo(item ?? null);
+        setParentInfo(parentItem);
+      });
+    } catch {
+      if (requestId === activeRequestId) {
         setItemInfo(null);
       }
     }
+  };
 
-    if (visibleItemId() && fullDataReady()) {
-      fetchItemInfo();
+  createEffect(() => {
+    const itemId = visibleItemId();
+    const requestId = ++activeRequestId;
+
+    if (itemId && fullDataReady()) {
+      batch(() => {
+        setItemInfo(undefined);
+        setParentInfo(undefined);
+      });
+      void fetchItemInfo(itemId, requestId);
     } else {
-      setItemInfo(undefined);
+      batch(() => {
+        setItemInfo(undefined);
+        setParentInfo(undefined);
+      });
     }
   });
 

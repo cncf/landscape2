@@ -1,4 +1,4 @@
-import getDownloadBlob from './getDownloadBlob';
+import getDownloadBlob from '../getDownloadBlob';
 
 const fetchMock = jest.fn();
 

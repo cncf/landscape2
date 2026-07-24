@@ -2,6 +2,7 @@ import { SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import { createSignal, createUniqueId, For, onCleanup, onMount, Show } from 'solid-js';
 
 import { BANNER_ID } from '../../data';
+import { getDownloadDocumentName, getDownloadDocumentUrl } from '../../utils/downloadDocument';
 import getDownloadBlob from '../../utils/getDownloadBlob';
 import isDownloadAvailable from '../../utils/isDownloadAvailable';
 import styles from './DownloadDropdown.module.css';
@@ -119,7 +120,7 @@ const DownloadDropdown = () => {
       SCREENSHOT_FORMATS.map(async (format) => {
         try {
           return {
-            available: await isDownloadAvailable(getDocumentUrl({ doc: DocType.Landscape, format })),
+            available: await isDownloadAvailable(getDownloadDocumentUrl({ doc: DocType.Landscape, format })),
             failed: false,
             format,
           };
@@ -155,14 +156,14 @@ const DownloadDropdown = () => {
         blobType: formatConfig.blobType,
         contentType: formatConfig.contentType,
         responseAsBlob: formatConfig.responseAsBlob,
-        url: getDocumentUrl(option),
+        url: getDownloadDocumentUrl(option),
       });
       const link: HTMLAnchorElement = document.createElement('a');
       const objectUrl = window.URL.createObjectURL(blob);
 
       // Use a temporary link to preserve the generated file name.
       try {
-        link.download = getDocumentName(option);
+        link.download = getDownloadDocumentName(option);
         link.href = objectUrl;
         link.style.display = 'none';
         document.body.appendChild(link);
@@ -312,17 +313,10 @@ const DownloadMenuItem = (props: DownloadMenuItemProps) => (
           <SVGIcon class={styles.icon} kind={FORMAT_CONFIG[props.option.format].icon} />
         </div>
         <div class={styles.contentBtn}>
-          <div class="fw-semibold mb-2">{getDocumentName(props.option)}</div>
+          <div class="fw-semibold mb-2">{getDownloadDocumentName(props.option)}</div>
           <div class={`text-wrap text-muted fst-italic ${styles.legend}`}>{props.option.description}</div>
         </div>
       </div>
     </button>
   </li>
 );
-
-const getDocumentName = (option: Pick<DownloadOption, 'doc' | 'format'>) => `${option.doc}.${option.format}`;
-
-const getDocumentUrl = (option: Pick<DownloadOption, 'doc' | 'format'>) =>
-  import.meta.env.MODE === 'development'
-    ? `../../static/docs/${getDocumentName(option)}`
-    : `./docs/${getDocumentName(option)}`;

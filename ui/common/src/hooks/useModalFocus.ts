@@ -24,19 +24,22 @@ export const useModalFocus = (
     if (!modal) return;
 
     const previouslyFocusedElement = document.activeElement as HTMLElement | null;
-    const focusableElements = () => Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    const focusableElements = () =>
+      Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isVisible);
     const animationFrame = requestAnimationFrame(() => {
       (focusableElements()[0] || modal).focus();
     });
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' && event.key !== 'Tab') return;
+
+      event.stopPropagation();
+
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
         return;
       }
-
-      if (event.key !== 'Tab') return;
 
       const availableElements = focusableElements();
       if (availableElements.length === 0) {
@@ -56,14 +59,17 @@ export const useModalFocus = (
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    modal.addEventListener('keydown', handleKeyDown);
 
     onCleanup(() => {
       cancelAnimationFrame(animationFrame);
-      document.removeEventListener('keydown', handleKeyDown);
+      modal.removeEventListener('keydown', handleKeyDown);
       if (previouslyFocusedElement?.isConnected) {
         previouslyFocusedElement.focus();
       }
     });
   });
 };
+
+const isVisible = (element: HTMLElement) =>
+  element.getClientRects().length > 0 && window.getComputedStyle(element).visibility !== 'hidden';

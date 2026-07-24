@@ -39,10 +39,12 @@ export function useFullDataReady() {
   return useFullData().fullDataReady;
 }
 
+/** Return the current full-data loading status accessor. */
 export function useFullDataStatus() {
   return useFullData().fullDataStatus;
 }
 
+/** Return the callback that retries loading the full dataset. */
 export function useRetryFullData() {
   return useFullData().retryFullData;
 }

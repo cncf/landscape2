@@ -1,4 +1,4 @@
-import isDownloadAvailable from './isDownloadAvailable';
+import isDownloadAvailable from '../isDownloadAvailable';
 
 const fetchMock = jest.fn();
 

@@ -1,5 +1,6 @@
 import { createEffect, createSignal, For, on } from 'solid-js';
 
+import { formatPercentage } from '../utils/formatPercentage';
 import { sortObjectByValue } from '../utils/sortObjectByValue';
 import { Box } from './Box';
 
@@ -46,13 +47,4 @@ export const LanguagesStats = (props: Props) => {
       </For>
     </div>
   );
-};
-
-/** Formats positive values below two-decimal precision without displaying zero. */
-const formatPercentage = (value: number) => {
-  if (value > 0 && value.toFixed(2) === '0.00') {
-    return '<0.01%';
-  }
-
-  return `${Number.isInteger(value) ? value : value.toFixed(2)}%`;
 };

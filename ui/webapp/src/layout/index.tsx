@@ -24,31 +24,6 @@ interface Props {
   children?: JSXElement;
 }
 
-const FullDataContent = (props: Props) => {
-  const fullDataStatus = useFullDataStatus();
-  const retryFullData = useRetryFullData();
-
-  return (
-    <Show
-      when={fullDataStatus() !== 'error'}
-      fallback={
-        <main class="container-fluid px-3 px-lg-4 py-5">
-          <NoData>
-            <div class="d-flex flex-column align-items-center">
-              <div class="fs-5">We couldn't load the landscape data.</div>
-              <button type="button" class="btn btn-secondary mt-3" onClick={retryFullData}>
-                Try again
-              </button>
-            </div>
-          </NoData>
-        </main>
-      }
-    >
-      <div class="d-flex flex-column flex-grow-1">{props.children}</div>
-    </Show>
-  );
-};
-
 const Layout = (props: Props) => {
   const [statsVisible, setStatsVisible] = createSignal<boolean>(true);
 
@@ -76,8 +51,7 @@ const Layout = (props: Props) => {
                             <Header statsVisible={statsVisible()} />
                             <FullDataContent>{props.children}</FullDataContent>
                           </div>
-                          <ItemModal />
-                          <ZoomModal />
+                          <FullDataModals />
                           <UpcomingEvents />
                         </EventsProvider>
                       </FinancesDataProvider>
@@ -93,4 +67,40 @@ const Layout = (props: Props) => {
   );
 };
 
+const FullDataModals = () => {
+  const fullDataStatus = useFullDataStatus();
+
+  return (
+    <Show when={fullDataStatus() !== 'error'}>
+      <ItemModal />
+      <ZoomModal />
+    </Show>
+  );
+};
+
 export default Layout;
+
+const FullDataContent = (props: Props) => {
+  const fullDataStatus = useFullDataStatus();
+  const retryFullData = useRetryFullData();
+
+  return (
+    <Show
+      when={fullDataStatus() !== 'error'}
+      fallback={
+        <main class="container-fluid px-3 px-lg-4 py-5">
+          <NoData>
+            <div class="d-flex flex-column align-items-center">
+              <div class="fs-5">We couldn't load the landscape data.</div>
+              <button type="button" class="btn btn-secondary mt-3" onClick={retryFullData}>
+                Try again
+              </button>
+            </div>
+          </NoData>
+        </main>
+      }
+    >
+      <div class="d-flex flex-column flex-grow-1">{props.children}</div>
+    </Show>
+  );
+};
