@@ -5,10 +5,6 @@ import { defineConfig } from 'vite';
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid';
 
-if (!process.env.SASS_SILENCE_DEPRECATIONS) {
-  process.env.SASS_SILENCE_DEPRECATIONS = 'import,global-builtin,color-functions';
-}
-
 const projectDir = fileURLToPath(new URL('.', import.meta.url));
 const scssIncludePaths = [
   path.resolve(projectDir, 'node_modules'),
@@ -48,6 +44,7 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         includePaths: scssIncludePaths,
+        silenceDeprecations: ['color-functions', 'global-builtin', 'if-function', 'import'],
       },
     },
   },

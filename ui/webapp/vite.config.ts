@@ -8,10 +8,6 @@ import { defineConfig, loadEnv } from 'vite';
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid';
 
-if (!process.env.SASS_SILENCE_DEPRECATIONS) {
-  process.env.SASS_SILENCE_DEPRECATIONS = 'import,global-builtin,color-functions';
-}
-
 const projectDir = fileURLToPath(new URL('.', import.meta.url));
 const bootstrapDir = [
   path.resolve(projectDir, 'node_modules/bootstrap'),
@@ -73,6 +69,7 @@ export default defineConfig(({ mode }) => ({
     preprocessorOptions: {
       scss: {
         includePaths: scssIncludePaths,
+        silenceDeprecations: ['color-functions', 'global-builtin', 'if-function', 'import'],
       },
     },
   },
