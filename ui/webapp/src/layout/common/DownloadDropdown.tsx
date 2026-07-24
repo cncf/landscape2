@@ -114,6 +114,9 @@ const DownloadDropdown = () => {
   const availableLandscapeDownloads = () =>
     LANDSCAPE_DOWNLOAD_OPTIONS.filter((option) => availableScreenshotFormats().has(option.format));
 
+  const shouldShowLandscapeDownloads = () =>
+    screenshotAvailabilityStatus() !== ScreenshotAvailabilityStatus.Ready || availableLandscapeDownloads().length > 0;
+
   const checkScreenshotAvailability = async () => {
     setScreenshotAvailabilityStatus(ScreenshotAvailabilityStatus.Checking);
     const results = await Promise.all(
@@ -224,41 +227,35 @@ const DownloadDropdown = () => {
       >
         <div class={`d-block position-absolute ${styles.arrow}`} />
         <ul class={`m-0 p-0 ${styles.menuList}`}>
-          <li>
-            <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
-          </li>
-          <For each={availableLandscapeDownloads()}>
-            {(option) => (
-              <DownloadMenuItem
-                disabled={downloadingFile() !== undefined}
-                downloading={isDownloading(option)}
-                onDownload={() => void downloadFile(option)}
-                option={option}
-              />
-            )}
-          </For>
-          <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Checking}>
-            <li class="text-muted fst-italic px-3 py-2" role="status">
-              Checking landscape downloads...
-            </li>
-          </Show>
-          <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Error}>
+          <Show when={shouldShowLandscapeDownloads()}>
             <li>
-              <div class="alert alert-danger rounded-0 m-0 px-3 py-2" role="alert">
-                <div>Unable to check every landscape download.</div>
-                <button class="btn btn-link p-0" type="button" onClick={() => void checkScreenshotAvailability()}>
-                  Try again
-                </button>
-              </div>
+              <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Landscape</div>
             </li>
-          </Show>
-          <Show
-            when={
-              screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Ready &&
-              availableLandscapeDownloads().length === 0
-            }
-          >
-            <li class="text-muted fst-italic px-3 py-2">No landscape downloads available.</li>
+            <For each={availableLandscapeDownloads()}>
+              {(option) => (
+                <DownloadMenuItem
+                  disabled={downloadingFile() !== undefined}
+                  downloading={isDownloading(option)}
+                  onDownload={() => void downloadFile(option)}
+                  option={option}
+                />
+              )}
+            </For>
+            <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Checking}>
+              <li class="text-muted fst-italic px-3 py-2" role="status">
+                Checking landscape downloads...
+              </li>
+            </Show>
+            <Show when={screenshotAvailabilityStatus() === ScreenshotAvailabilityStatus.Error}>
+              <li>
+                <div class="alert alert-danger rounded-0 m-0 px-3 py-2" role="alert">
+                  <div>Unable to check every landscape download.</div>
+                  <button class="btn btn-link p-0" type="button" onClick={() => void checkScreenshotAvailability()}>
+                    Try again
+                  </button>
+                </div>
+              </li>
+            </Show>
           </Show>
           <li>
             <div class={`text-uppercase text-center fw-semibold p-2 ${styles.dropdownHeader}`}>Data files</div>

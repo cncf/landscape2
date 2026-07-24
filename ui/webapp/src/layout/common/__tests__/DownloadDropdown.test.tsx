@@ -84,6 +84,20 @@ describe('DownloadDropdown', () => {
     expect(projectsButton.disabled).toBe(false);
   });
 
+  it('should omit the landscape section when no screenshot formats are available', async () => {
+    isDownloadAvailableMock.mockResolvedValue(false);
+    dispose = render(() => <DownloadDropdown />, container);
+    await flushPromises();
+
+    getButton(container, 'Download files')!.click();
+
+    expect(getElementByText(container, 'Landscape')).toBeUndefined();
+    expect(getElementByText(container, 'No landscape downloads available.')).toBeUndefined();
+    expect(getElementByText(container, 'Data files')).not.toBeUndefined();
+    expect(getButton(container, 'Download items in CSV format')).not.toBeNull();
+    expect(getButton(container, 'Download projects in CSV format')).not.toBeNull();
+  });
+
   it('should show a recoverable download error', async () => {
     isDownloadAvailableMock.mockResolvedValue(false);
     getDownloadBlobMock.mockRejectedValue(new TypeError('Network error'));
@@ -113,3 +127,6 @@ const getButton = (container: HTMLElement, label: string) =>
 
 const getButtonByText = (container: HTMLElement, text: string) =>
   Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.trim() === text);
+
+const getElementByText = (container: HTMLElement, text: string) =>
+  Array.from(container.querySelectorAll('*')).find((element) => element.textContent?.trim() === text);
