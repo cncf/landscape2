@@ -44,7 +44,7 @@ export const ItemModalMobileContent = (props: ItemContentProps) => {
   void props;
   return createTextElement('Mobile item content');
 };
-export const Loading = (props: { spinnerClass?: string }) => {
+export const Loading = (props: { spinnerClass?: string; transparentBg?: boolean }) => {
   void props;
   return createTextElement('Loading...');
 };

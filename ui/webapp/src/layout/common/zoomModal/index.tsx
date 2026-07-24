@@ -85,7 +85,7 @@ const ZoomModal = () => {
     <Show when={!isUndefined(visibleZoomSection())}>
       <FullScreenModal
         open
-        initialRefs={!isUndefined(modal()) ? [modal as Accessor<HTMLDivElement>] : undefined}
+        initialRefs={[modal as Accessor<HTMLDivElement>]}
         excludedIds={[ITEM_VIEW]}
         onClose={() => updateActiveSection()}
         title={`${visibleZoomSection()!.category} / ${visibleZoomSection()!.subcategory}`}
