@@ -5,7 +5,9 @@
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
-      "common": ["src/test-utils/commonMock.tsx"]
+      "common": ["src/test-utils/commonMock.tsx"],
+      "solid-js": ["node_modules/solid-js"],
+      "solid-js/*": ["node_modules/solid-js/*"]
     },
     "allowImportingTsExtensions": false,
     "noEmit": false,
