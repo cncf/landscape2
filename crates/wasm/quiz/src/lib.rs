@@ -1,7 +1,7 @@
 //! This module contains the quiz game types and logic.
 
 #[cfg(not(test))]
-use cached::proc_macro::cached;
+use cached::cached;
 #[cfg(not(test))]
 use gloo_net::http::Request;
 use landscape2_core::games::Question;
@@ -197,7 +197,7 @@ async fn pick_questions(landscape_url: String) -> Result<Vec<Question>, String> 
 }
 
 /// Fetch the questions available for the quiz.
-#[cfg_attr(not(test), cached(result = true, sync_writes = "default"))]
+#[cfg_attr(not(test), cached(sync_writes = true))]
 async fn fetch_questions(landscape_url: String) -> Result<Vec<Question>, String> {
     let url = format!("{}/{}", landscape_url.trim_end_matches('/'), QUIZ_DATA_PATH);
 

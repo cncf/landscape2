@@ -723,7 +723,7 @@ async fn prepare_screenshot(width: u32, output_dir: &Path) -> Result<()> {
     });
 
     // Setup headless browser and navigate to screenshot url
-    const TIMEOUT: Duration = Duration::from_secs(600);
+    const TIMEOUT: Duration = Duration::from_mins(10);
     let options = LaunchOptions {
         args: vec![
             OsStr::new("--force-device-scale-factor=2"),
