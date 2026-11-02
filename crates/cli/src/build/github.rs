@@ -91,13 +91,9 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
 
             // Use cached data when available if it hasn't expired yet
             if let Some(cached_repo) = cached_data.as_ref().and_then(|cache| {
-                cache.get(&url).and_then(|repo| {
-                    if repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now() {
-                        Some(repo)
-                    } else {
-                        None
-                    }
-                })
+                cache
+                    .get(&url)
+                    .filter(|repo| repo.generated_at + chrono::Duration::days(GITHUB_CACHE_TTL) > Utc::now())
             }) {
                 (url, Ok(cached_repo.clone()))
             }
