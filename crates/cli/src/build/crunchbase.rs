@@ -86,12 +86,8 @@ pub(crate) async fn collect_crunchbase_data(
 
             // Use cached data when available if it hasn't expired yet
             if let Some(cached_org) = cached_data.as_ref().and_then(|cache| {
-                cache.get(&url).and_then(|org| {
-                    if org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now() {
-                        Some(org)
-                    } else {
-                        None
-                    }
+                cache.get(&url).filter(|org| {
+                    org.generated_at + chrono::Duration::days(CRUNCHBASE_CACHE_TTL) > Utc::now()
                 })
             }) {
                 (url, Ok(cached_org.clone()))
