@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="responsive-embedded-sizing" content="allow-origins=*" />
     <title>Landscape</title>
   </head>
   <body>
@@ -17,6 +18,23 @@
           script.setAttribute('src', './assets/iframeResizer.contentWindow-v4.3.9.min.js');
           document.body.appendChild(script);
         }
+      })();
+    </script>
+    <script>
+      (() => {
+        if (window.parent === window || !('requestResize' in window) || !('ResizeObserver' in window)) {
+          return;
+        }
+        let pending = false;
+        const requestResize = () => {
+          if (pending) return;
+          pending = true;
+          requestAnimationFrame(() => {
+            pending = false;
+            window.requestResize();
+          });
+        };
+        new ResizeObserver(requestResize).observe(document.body);
       })();
     </script>
   </body>
