@@ -141,7 +141,7 @@ jobs:
           ${{ matrix.packages_install }}
       - name: Install wasm-pack
         run: |
-          cargo install wasm-pack
+          cargo install --locked wasm-pack
       - name: Build artifacts
         run: |
           # Actually do builds and make zips and whatnot
