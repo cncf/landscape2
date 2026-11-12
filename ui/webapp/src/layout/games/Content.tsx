@@ -1,58 +1,133 @@
 import { Image, Loading, NoData, SVGIcon, SVGIconKind } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { batch, createMemo, createSignal, For, onMount, Show } from 'solid-js';
 
 import init, { Quiz, QuizOptions, State } from '../../../wasm/quiz/landscape2_quiz';
 import pattern from '../../media/pattern_quiz.png';
+import getDevOrigin from '../../utils/getDevOrigin';
 import getLandscapeUrl from '../../utils/getLandscapeUrl';
 import isWasmSupported from '../../utils/isWasmSupported';
 import itemsDataGetter from '../../utils/itemsDataGetter';
+import overlayData from '../../utils/overlayData';
 import styles from './Content.module.css';
 import Title from './Title';
 
+/** Message shown when the quiz bindings fail to load. */
+const LOAD_ERROR_MESSAGE = "The game couldn't be loaded";
+
+/** Message shown when the quiz can't be created (its questions failed to load or there are none). */
+const QUIZ_ERROR_MESSAGE = "The quiz questions couldn't be loaded";
+
+/** Message shown when the landscape has no games. */
+const UNAVAILABLE_MESSAGE = 'Games are not available for this landscape';
+
+/** Message shown when the browser can't run the quiz bindings. */
+const WASM_ERROR_MESSAGE = "This game requires WebAssembly, but your browser doesn't seem to support it";
+
+/** Loading status of the game. */
+type GameStatus = 'error' | 'loading' | 'ready' | 'unavailable';
+
 const Content = () => {
-  const [loaded, setLoaded] = createSignal<boolean>(false);
+  const [status, setStatus] = createSignal<GameStatus>(
+    isUndefined(window.baseDS.games_available) ? 'unavailable' : 'loading'
+  );
   const [activeQuiz, setActiveQuiz] = createSignal<Quiz | null>(null);
   const [quizState, setQuizState] = createSignal<State | undefined>();
+  const [questionsCount, setQuestionsCount] = createSignal<number>(0);
   const [selectedAnswer, setSelectedAnswer] = createSignal<number | null>(null);
-  const [error, setError] = createSignal<string | undefined>();
+  const [error, setError] = createSignal<string>();
+  const currentQuestion = createMemo(() =>
+    quizState() && activeQuiz() ? activeQuiz()!.current_question() : undefined
+  );
+  const questionState = createMemo(() => quizState()?.current_question);
+  const score = createMemo(() => quizState()?.score);
+  const message = () => (status() === 'unavailable' ? UNAVAILABLE_MESSAGE : error());
+  const [nextButtonRef, setNextButtonRef] = createSignal<HTMLButtonElement>();
+  const [playAgainButtonRef, setPlayAgainButtonRef] = createSignal<HTMLButtonElement>();
+
+  // Result of the answered question and score, the only game changes announced
+  const announcement = createMemo(() => {
+    const currentScore = score();
+    const answer = selectedAnswer();
+    if (!questionState()?.answered || isUndefined(currentScore) || isNull(answer)) return '';
+    const options = currentQuestion()?.options ?? [];
+    const result = options[answer]?.correct
+      ? 'Correct answer.'
+      : `Wrong answer. The correct answer is ${options.find((option) => option.correct)?.item ?? 'unknown'}.`;
+    return `${result} Score: ${currentScore.correct} correct, ${currentScore.wrong} wrong.`;
+  });
+
+  const answerQuestion = (index: number) => {
+    batch(() => {
+      setSelectedAnswer(index);
+      setQuizState(activeQuiz()!.check_player_guess(index));
+    });
+    // The answered options are disabled, so the focus moves on to the next step
+    (nextButtonRef() ?? playAgainButtonRef())?.focus();
+  };
+
+  const showError = (errorMessage: string) => {
+    batch(() => {
+      setError(errorMessage);
+      setStatus('error');
+    });
+  };
 
   const startGame = async (initiated?: boolean) => {
     const options = new QuizOptions(
-      import.meta.env.MODE === 'development' ? 'http://localhost:8000' : getLandscapeUrl()
+      getDevOrigin(getLandscapeUrl()),
+      overlayData.isActiveOverlay() ? overlayData.getQuizQuestionsJson() : undefined
     );
-    const quiz = await Quiz.new(options);
-    setActiveQuiz(quiz);
-    if (initiated) setQuizState(quiz.state());
-  };
-
-  const startNewGame = () => {
-    setQuizState(undefined);
-    setSelectedAnswer(null);
-    startGame(true);
-  };
-
-  const importGames = async () => {
-    if (!isWasmSupported()) {
-      setError("This game requires WebAssembly, but your browser doesn't seem to support it");
-      setLoaded(true);
-      return Promise.reject('WebAssembly is not supported in this browser');
-    } else {
-      await init();
-      setLoaded(true);
-      startGame();
+    try {
+      const quiz = await Quiz.new(options);
+      batch(() => {
+        setQuestionsCount(quiz.questions_count());
+        setActiveQuiz(quiz);
+        if (initiated) setQuizState(quiz.state());
+        setStatus('ready');
+      });
+    } catch {
+      showError(QUIZ_ERROR_MESSAGE);
     }
   };
 
+  const startNewGame = async () => {
+    // The board stays hidden behind the spinner until the new quiz is ready
+    batch(() => {
+      setQuizState(undefined);
+      setSelectedAnswer(null);
+      setActiveQuiz(null);
+      setStatus('loading');
+    });
+    await startGame(true);
+  };
+
+  const loadGames = async () => {
+    if (!isWasmSupported()) {
+      showError(WASM_ERROR_MESSAGE);
+      return;
+    }
+    try {
+      await init();
+    } catch {
+      showError(LOAD_ERROR_MESSAGE);
+      return;
+    }
+    await startGame();
+  };
+
   onMount(() => {
-    if (!isUndefined(window.baseDS.games_available)) {
-      importGames();
+    if (status() === 'loading') {
+      void loadGames();
     }
   });
 
   return (
-    <div class={`d-flex flex-column h-100 ${styles.wrapper}`} aria-relevant="all" aria-live="assertive">
+    <div class={`d-flex flex-column h-100 ${styles.wrapper}`}>
+      <div class="visually-hidden" aria-live="polite">
+        {announcement()}
+      </div>
       <div
         style={{ 'background-image': `url(${pattern})` }}
         class={`d-flex flex-column border flex-grow-1 mt-3 ${styles.game}`}
@@ -64,27 +139,18 @@ const Content = () => {
           <div class="col">
             <Show when={!isUndefined(quizState())}>
               <div class="d-flex flex-row justify-content-between justify-content-xl-start text-light">
-                <div
-                  class="fw-semibold"
-                  aria-label={`question ${quizState()!.current_question.index + 1} of ${activeQuiz()!.questions().length}`}
-                >
-                  {quizState()!.current_question.index + 1} / {activeQuiz()!.questions().length}
+                <div class="fw-semibold" aria-label={`question ${questionState()!.index + 1} of ${questionsCount()}`}>
+                  {questionState()!.index + 1} / {questionsCount()}
                 </div>
                 <div class="d-flex flex-row align-items-center ms-4 ms-xl-5">
                   <div class={`border border-2 border-light ${styles.dot} ${styles.dotCorrect}`} />
-                  <div
-                    class={`ms-2 fw-semibold ${styles.score}`}
-                    aria-label={`${quizState()!.score.correct} correct guesses`}
-                  >
-                    {quizState()!.score.correct}
+                  <div class="ms-2 fw-semibold" aria-label={`${score()!.correct} correct guesses`}>
+                    {score()!.correct}
                   </div>
 
                   <div class={`ms-3 ms-xl-4 border border-2 border-light ${styles.dot} ${styles.dotWrong}`} />
-                  <div
-                    class={`ms-2 fw-semibold ${styles.score}`}
-                    aria-label={`${quizState()!.score.correct} wrong guesses`}
-                  >
-                    {quizState()!.score.wrong}
+                  <div class="ms-2 fw-semibold" aria-label={`${score()!.wrong} wrong guesses`}>
+                    {score()!.wrong}
                   </div>
                 </div>
               </div>
@@ -96,6 +162,7 @@ const Content = () => {
           <div class="d-none d-xl-block col text-end">
             <Show when={!isUndefined(quizState())}>
               <button
+                type="button"
                 class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
                 onClick={startNewGame}
                 aria-label="Start new game"
@@ -105,18 +172,19 @@ const Content = () => {
             </Show>
           </div>
         </div>
-        <Show when={!loaded()}>
+        <Show when={status() === 'loading'}>
           <Loading />
         </Show>
-        <Show when={!isUndefined(error())}>
+        <Show when={status() === 'error' || status() === 'unavailable'}>
           <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center h-100 w-100">
-            <NoData class="bg-light fs-5">{error()}</NoData>
+            <NoData class="bg-light fs-5">{message()}</NoData>
           </div>
         </Show>
-        <Show when={!isNull(activeQuiz()) && isUndefined(quizState())}>
+        <Show when={status() === 'ready' && !isNull(activeQuiz()) && isUndefined(quizState())}>
           <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center h-100 w-100">
             {/* Init Quiz state */}
             <button
+              type="button"
               class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
               onClick={() => setQuizState(activeQuiz()!.state())}
               aria-label="Start game"
@@ -125,41 +193,38 @@ const Content = () => {
             </button>
           </div>
         </Show>
-        <Show when={!isUndefined(quizState()) && !isNull(quizState())}>
+        <Show when={!isUndefined(quizState())}>
           <div class="d-flex flex-column h-100">
             <div class={`flex-grow-1 d-flex flex-column mx-auto py-4 ${styles.quizContent}`}>
               <div
                 class={`d-flex align-items-center justify-content-center border border-4 border-dark text-center mb-3 mb-xl-5 bg-white ${styles.title}`}
               >
-                <Title content={activeQuiz()!.questions()[quizState()!.current_question.index]!.title} />
+                <Title content={currentQuestion()!.title} />
               </div>
 
               <div class="d-flex flex-column flex-lg-row flex-wrap justify-content-center mt-0 mt-lg-3">
-                <For each={activeQuiz()!.questions()[quizState()!.current_question.index]!.options}>
+                <For each={currentQuestion()?.options}>
                   {(option, index) => {
                     const logo = itemsDataGetter.getLogoItem(option.item, option.category, option.subcategory);
 
                     if (isNull(logo)) return null;
 
-                    const isCorrect = () => quizState()!.current_question.answered && option.correct;
-                    const isWrong = () =>
-                      quizState()!.current_question.answered && !option.correct && selectedAnswer() === index();
+                    const isCorrect = () => questionState()!.answered && option.correct;
+                    const isWrong = () => questionState()!.answered && !option.correct && selectedAnswer() === index();
 
                     return (
-                      <div
-                        class={`d-flex flex-row flex-lg-column border border-4 border-dark bg-white mx-auto mx-lg-4 my-2 my-md-3 ${styles.option}`}
+                      <button
+                        type="button"
+                        class={`d-flex flex-row flex-lg-column border border-4 border-dark bg-white mx-auto mx-lg-4 my-2 my-md-3 p-0 ${styles.option}`}
                         classList={{
-                          [styles.answered]: quizState()!.current_question.answered,
+                          [styles.answered]: questionState()!.answered,
                           [styles.selected]: selectedAnswer() === index(),
                           [styles.correct]: isCorrect(),
                           [styles.wrong]: isWrong(),
                         }}
-                        onClick={() => {
-                          if (quizState()!.current_question.answered) return;
-                          setSelectedAnswer(index());
-                          setQuizState(activeQuiz()!.check_player_guess(index()));
-                        }}
-                        role="button"
+                        aria-pressed={selectedAnswer() === index()}
+                        disabled={questionState()!.answered}
+                        onClick={() => answerQuestion(index())}
                       >
                         <div class={`d-flex align-items-center ${styles.logoContent}`}>
                           <div
@@ -181,7 +246,7 @@ const Content = () => {
                         >
                           <div class={`w-100 text-lg-center text-truncate ${styles.itemName}`}>{option.item}</div>
                         </div>
-                      </div>
+                      </button>
                     );
                   }}
                 </For>
@@ -191,9 +256,10 @@ const Content = () => {
               class={`position-relative d-flex flex-row justify-content-between mt-auto py-2 py-xl-4 ${styles.buttons}`}
             >
               {/* Start new game */}
-              <Show when={!isUndefined(quizState()) && !quizState()!.current_question.is_last}>
+              <Show when={questionState()?.is_last === false}>
                 <div class="d-block d-xl-none">
                   <button
+                    type="button"
                     class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
                     onClick={startNewGame}
                     aria-label="Start new game"
@@ -207,8 +273,10 @@ const Content = () => {
               <Show when={quizState()!.game_over}>
                 <div class="w-100 text-center">
                   <button
+                    ref={setPlayAgainButtonRef}
+                    type="button"
                     class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
-                    disabled={!quizState()!.current_question.answered}
+                    disabled={!questionState()!.answered}
                     onClick={startNewGame}
                     aria-label="Play again"
                   >
@@ -218,11 +286,13 @@ const Content = () => {
               </Show>
 
               {/* Next question */}
-              <Show when={!quizState()!.current_question.is_last}>
+              <Show when={!questionState()!.is_last}>
                 <div class="ms-auto">
                   <button
+                    ref={setNextButtonRef}
+                    type="button"
                     class={`btn btn-secondary rounded-0 text-uppercase border border-4 border-light ${styles.btn}`}
-                    disabled={!quizState()!.current_question.answered}
+                    disabled={!questionState()!.answered}
                     onClick={() => {
                       setSelectedAnswer(null);
                       setQuizState(activeQuiz()!.next_question());

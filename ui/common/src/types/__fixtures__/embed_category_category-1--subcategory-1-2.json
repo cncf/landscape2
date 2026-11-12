@@ -1,0 +1,16 @@
+{
+  "classification": {
+    "category": {
+      "name": "Category 1",
+      "normalized_name": "category-1",
+      "subcategories": [
+        {
+          "name": "Subcategory 1-2",
+          "normalized_name": "subcategory-1-2"
+        }
+      ]
+    }
+  },
+  "foundation": "Foundation",
+  "items": []
+}

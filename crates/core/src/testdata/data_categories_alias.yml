@@ -1,0 +1,15 @@
+categories:
+  - name: Category 1
+    subcategories:
+      - name: Subcategory 1-1
+        items:
+          - name: Item 1
+            homepage_url: https://cncf.io
+            logo: cncf.svg
+  - name: Category 2
+    subcategories:
+      - name: Subcategory 2-1
+        items:
+          - name: Item 2
+            homepage_url: https://item-2.example
+            logo: item-2.svg

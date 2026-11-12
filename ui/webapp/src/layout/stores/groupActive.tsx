@@ -1,73 +1,59 @@
-import { useNavigate, useSearchParams } from '@solidjs/router';
-import isArray from 'lodash/isArray';
-import isNull from 'lodash/isNull';
-import isUndefined from 'lodash/isUndefined';
-import { createContext, createSignal, ParentComponent, useContext } from 'solid-js';
+import { useLocation, useNavigate, useSearchParams } from '@solidjs/router';
+import { createContext, createEffect, createMemo, ParentComponent, useContext } from 'solid-js';
 
-import { ALL_OPTION, BASE_PATH, EXPLORE_PATH, GROUP_PARAM } from '../../data';
+import { ALL_OPTION, GROUP_PARAM } from '../../data';
+import { findGroupByAliasPath } from '../../utils/groupAlias';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
-import prepareLink from '../../utils/prepareLink';
+import { buildPath, RawParam, withParams } from '../../utils/urlParams';
 
-const getInitialGroupName = (groupParam: string | string[] | null): string | undefined => {
-  const navigate = useNavigate();
-  const groups = itemsDataGetter.getGroups();
-  const aliasGroup = (() => {
-    if (!window.baseDS || !window.baseDS.groups) {
-      return undefined;
-    }
-    const baseExplorePath = EXPLORE_PATH.endsWith('/') ? EXPLORE_PATH : `${EXPLORE_PATH}/`;
-    if (!location.pathname.startsWith(baseExplorePath)) {
-      return undefined;
-    }
-    const remainder = location.pathname.slice(baseExplorePath.length);
-    const sanitizedPath = remainder.replace(/^\/+|\/+$/g, '');
-    if (sanitizedPath === '') {
-      return undefined;
-    }
-    const match = window.baseDS.groups.find((group) => {
-      if (!group.alias) {
-        return false;
-      }
-      const sanitizedAlias = group.alias.trim().replace(/^\/+|\/+$/g, '');
-      return sanitizedAlias !== '' && sanitizedAlias === sanitizedPath;
-    });
-    return match?.normalized_name;
-  })();
-
-  if (isUndefined(groups)) {
-    return undefined;
-  } else {
-    const firstGroup = groups[0];
-    if (aliasGroup && groups.includes(aliasGroup)) {
-      return aliasGroup;
-    } else {
-      if (isNull(groupParam) || isArray(groupParam)) {
-        return firstGroup;
-      } else {
-        const isValidGroup = groups.includes(groupParam);
-        if (isValidGroup || groupParam === ALL_OPTION) {
-          return groupParam;
-        } else {
-          if (isExploreSection(location.pathname)) {
-            navigate(prepareLink(BASE_PATH, `group=${firstGroup}`), {
-              replace: true,
-            });
-          }
-          return firstGroup;
-        }
-      }
-    }
-  }
-};
-
-function useGroupActiveProvider() {
-  const [searchParams] = useSearchParams();
-  const [group, setGroup] = createSignal<string | undefined>(getInitialGroupName(searchParams[GROUP_PARAM] || null));
-  return { group: group, setGroup: setGroup };
+/** Inputs of the active group resolution. */
+interface ResolveGroupInput {
+  /** Group query param. */
+  groupParam: RawParam;
+  /** Normalized names of the groups with categories, `undefined` when the landscape has no groups. */
+  groups: string[] | undefined;
+  /** Current pathname, which may be a group alias. */
+  pathname: string;
 }
 
-export type ContextGroupActiveType = ReturnType<typeof useGroupActiveProvider>;
+function useGroupActiveProvider() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const group = createMemo(() =>
+    resolveGroup({
+      groupParam: searchParams[GROUP_PARAM],
+      groups: itemsDataGetter.getGroups(),
+      pathname: location.pathname,
+    })
+  );
+
+  // Correct an invalid group param on Explore, keeping every other param and the hash
+  createEffect(() => {
+    const groupParam = searchParams[GROUP_PARAM];
+    const groups = itemsDataGetter.getGroups();
+    const firstGroup = groups?.[0];
+    if (
+      groupParam === undefined ||
+      groups === undefined ||
+      firstGroup === undefined ||
+      !isExploreSection(location.pathname) ||
+      isValidGroupParam(groupParam, groups)
+    ) {
+      return;
+    }
+
+    navigate(buildPath(location.pathname, withParams(location.search, { [GROUP_PARAM]: firstGroup }), location.hash), {
+      replace: true,
+      scroll: false,
+    });
+  });
+
+  return { group };
+}
+
+type ContextGroupActiveType = ReturnType<typeof useGroupActiveProvider>;
 
 const GroupActiveContext = createContext<ContextGroupActiveType | undefined>(undefined);
 
@@ -76,18 +62,39 @@ export const GroupActiveProvider: ParentComponent = (props) => {
   return <GroupActiveContext.Provider value={value}>{props.children}</GroupActiveContext.Provider>;
 };
 
-export function useGroupA() {
+function useGroupActiveContext() {
   const context = useContext(GroupActiveContext);
   if (context === undefined) {
-    throw new Error(`useGroupA must be used within a GroupActiveProvider`);
+    throw new Error(`useGroupActiveContext must be used within a GroupActiveProvider`);
   }
   return context;
 }
 
+/** Returns the active group accessor, which gives the all option when the landscape has no groups. */
 export function useGroupActive() {
-  return useGroupA().group || ALL_OPTION;
+  const group = useResolvedGroup();
+  return () => group() ?? ALL_OPTION;
 }
 
-export function useSetGroupActive() {
-  return useGroupA().setGroup;
+/** Returns the resolved group accessor, which gives `undefined` when the landscape has no groups. */
+export function useResolvedGroup() {
+  return useGroupActiveContext().group;
+}
+
+/** Checks whether the group param names one of the groups or the all option. */
+function isValidGroupParam(groupParam: RawParam, groups: string[]): groupParam is string {
+  return typeof groupParam === 'string' && (groupParam === ALL_OPTION || groups.includes(groupParam));
+}
+
+/**
+ * Resolves the active group: the group of an alias path, else a valid group param or
+ * the all option, else the first group. `undefined` when the landscape has no groups.
+ */
+function resolveGroup({ groupParam, groups, pathname }: ResolveGroupInput): string | undefined {
+  if (groups === undefined) return undefined;
+
+  const aliasGroup = findGroupByAliasPath(pathname, window.baseDS?.groups);
+  if (aliasGroup !== undefined && groups.includes(aliasGroup)) return aliasGroup;
+
+  return isValidGroupParam(groupParam, groups) ? groupParam : groups[0];
 }

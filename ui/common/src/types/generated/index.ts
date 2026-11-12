@@ -1,0 +1,52 @@
+// Barrel of the types generated from the Rust datasets and the overlay data
+// (maintained by hand: the landscape2-core contract test and the
+// landscape2-overlay types test fail when a generated file has no line here).
+
+export type * from './core/Acquisition';
+export type * from './core/AdditionalCategory';
+export type * from './core/BaseData';
+export type * from './core/BaseItem';
+export type * from './core/Category';
+export type * from './core/CategoryProjectsStats';
+export type * from './core/Classification';
+export type * from './core/ClassificationOption';
+export type * from './core/Commit';
+export type * from './core/Contributors';
+export type * from './core/EmbedItem';
+export type * from './core/EmbedView';
+export type * from './core/Footer';
+export type * from './core/FooterLinks';
+export type * from './core/FullDataset';
+export type * from './core/FullItem';
+export type * from './core/FullRepository';
+export type * from './core/FundingRound';
+export type * from './core/GridItemsSize';
+export type * from './core/Group';
+export type * from './core/Guide';
+export type * from './core/GuideCategory';
+export type * from './core/GuideSubcategory';
+export type * from './core/Header';
+export type * from './core/HeaderLinks';
+export type * from './core/Images';
+export type * from './core/ItemAudit';
+export type * from './core/ItemFeatured';
+export type * from './core/ItemLink';
+export type * from './core/ItemSummary';
+export type * from './core/LandscapeColors';
+export type * from './core/LandscapeGames';
+export type * from './core/MembersStats';
+export type * from './core/Organization';
+export type * from './core/OrganizationsStats';
+export type * from './core/ProjectsStats';
+export type * from './core/Question';
+export type * from './core/QuestionOption';
+export type * from './core/Quiz';
+export type * from './core/Release';
+export type * from './core/RepositoriesStats';
+export type * from './core/RepositoryGithubData';
+export type * from './core/Stats';
+export type * from './core/Subcategory';
+export type * from './core/UpcomingEvent';
+export type * from './core/ViewMode';
+export type * from './overlay/OverlayData';
+export type * from './overlay/OverlayDatasets';

@@ -1,14 +1,13 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import { Loading, NoData, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
+import { Loading, NoData, SMALL_DEVICES_BREAKPOINTS, SVGIcon, SVGIconKind, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createMemo, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
 
-import { GUIDE_PATH, SMALL_DEVICES_BREAKPOINTS } from '../../data';
-import { CategoryGuide, Guide, StateContent, SubcategoryGuide, ToCTitle } from '../../types';
+import { GUIDE_PATH } from '../../data';
+import { Guide, GuideCategory, GuideSubcategory, StateContent, ToCTitle } from '../../types';
+import { getAnchorId } from '../../utils/anchorIds';
 import goToElement from '../../utils/goToElement';
 import { getGuideUrl } from '../../utils/guideData';
-import isElementInView from '../../utils/isElementInView';
-import buildNormalizedId from '../../utils/normalizeId';
 import scrollToTop from '../../utils/scrollToTop';
 import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import { Sidebar } from '../common/Sidebar';
@@ -17,7 +16,7 @@ import { useGuideFileContent, useGuideTOC, useSetGuideFileContent, useSetGuideTO
 import { useMobileTOCStatus, useSetMobileTOCStatus } from '../stores/mobileTOC';
 import styles from './Guide.module.css';
 import SubcategoryExtended from './SubcategoryExtended';
-import ToC from './ToC';
+import ToC, { getToCOptionId } from './ToC';
 
 type GuideLoadStatus = 'error' | 'loading' | 'ready';
 
@@ -37,25 +36,29 @@ const GuideIndex = () => {
   const openMenuTOCFromHeader = useMobileTOCStatus();
   const setMenuTOCFromHeader = useSetMobileTOCStatus();
   const { point } = useBreakpointDetect();
-  const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
+  const onSmallDevice = () => SMALL_DEVICES_BREAKPOINTS.includes(point());
+  const [desktopToC, setDesktopToC] = createSignal<HTMLDivElement>();
   const from = () => (state() as StateContent).from || undefined;
 
   const prepareToC = (data: Guide) => {
     const content: ToCTitle[] = [];
-    data.categories.forEach((cat: CategoryGuide) => {
+    (data.categories ?? []).forEach((cat: GuideCategory) => {
+      const id = getAnchorId({ title: cat.category }, data);
+      if (isUndefined(id)) return;
+
       const subcategories: ToCTitle[] = [];
       if (cat.subcategories) {
-        cat.subcategories.forEach((subcat: SubcategoryGuide) => {
-          subcategories.push({
-            title: subcat.subcategory,
-            id: buildNormalizedId({ title: cat.category, subtitle: subcat.subcategory, grouped: true }),
-          });
+        cat.subcategories.forEach((subcat: GuideSubcategory) => {
+          const subcategoryId = getAnchorId({ title: cat.category, subtitle: subcat.subcategory, grouped: true }, data);
+          if (!isUndefined(subcategoryId)) {
+            subcategories.push({ title: subcat.subcategory, id: subcategoryId });
+          }
         });
       }
 
       content.push({
         title: cat.category,
-        id: buildNormalizedId({ title: cat.category }),
+        id,
         options: subcategories,
       });
     });
@@ -97,30 +100,33 @@ const GuideIndex = () => {
     if (isUndefined(cachedGuide) || cachedGuide === null) {
       void fetchGuide();
     } else {
-      setTimeout(() => {
-        setFirstItem(guideToc()![0].id);
-        setGuide(cachedGuide);
-        setToc(guideToc());
-        setGuideLoadStatus('ready');
-        if (from() === 'header' && location.hash === '') {
-          scrollToTop(false);
-          updateRoute(guideToc()![0].id);
-        }
-      }, 5);
+      const cachedToc = guideToc() ?? [];
+      const firstId = cachedToc[0]?.id;
+      setFirstItem(firstId);
+      setGuide(cachedGuide);
+      setToc(cachedToc);
+      setGuideLoadStatus('ready');
+      if (from() === 'header' && location.hash === '' && !isUndefined(firstId)) {
+        scrollToTop(false);
+        updateRoute(firstId);
+      }
     }
   });
 
   createEffect(
     on(toc, () => {
-      if (toc().length > 0 && firstItem()) {
+      const firstId = firstItem();
+      if (toc().length > 0 && firstId) {
         const cleanHash = location.hash.replace('#', '');
-        if (cleanHash !== '' && cleanHash !== firstItem()) {
-          if (!isUndefined(from())) {
-            if (['header', 'mobileHeader'].includes(from()!)) {
-              updateRoute(firstItem()!);
+        if (cleanHash !== '' && cleanHash !== firstId) {
+          const origin = from();
+          if (!isUndefined(origin)) {
+            if (['header', 'mobileHeader'].includes(origin)) {
+              updateRoute(firstId);
             } else {
               updateActiveTitle(cleanHash, true);
-              scrollInToC();
+              // The desktop ToC is only mounted once the guide renders
+              setTimeout(scrollInToC, 50);
             }
           } else {
             setTimeout(() => {
@@ -129,7 +135,7 @@ const GuideIndex = () => {
             }, 50);
           }
         } else {
-          updateRoute(firstItem()!);
+          updateRoute(firstId);
         }
       }
     })
@@ -145,7 +151,6 @@ const GuideIndex = () => {
     navigate(`${GUIDE_PATH}${location.search}#${title}`, {
       replace: true,
       scroll: false,
-      state: { fromMenu: true },
     });
   };
 
@@ -156,11 +161,11 @@ const GuideIndex = () => {
 
   const updateActiveTitle = (title: string, onLoad?: boolean) => {
     updateRoute(title);
-    if (onSmallDevice) {
+    if (onSmallDevice()) {
       openStatusChange(false);
     }
     if (title === firstItem()) {
-      scrollToTop(onSmallDevice);
+      scrollToTop(onSmallDevice());
     } else {
       if (!isUndefined(onLoad) && onLoad) {
         setTimeout(() => {
@@ -174,18 +179,16 @@ const GuideIndex = () => {
 
   const scrollInToC = () => {
     const cleanHash = location.hash.replace('#', '');
-    if (!isElementInView(`btn_${cleanHash}`)) {
-      const target = window.document.getElementById(`btn_${cleanHash}`);
-      if (target) {
-        target.scrollIntoView({ block: 'nearest' });
-      }
-    }
+    // Does nothing when the ToC option is already visible
+    desktopToC()
+      ?.querySelector(`#${CSS.escape(getToCOptionId('desktop', cleanHash))}`)
+      ?.scrollIntoView({ block: 'nearest' });
   };
 
   return (
     <>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
-        <Show when={guideLoadStatus() === 'ready'}>
+        <Show when={guideLoadStatus() === 'ready' && toc().length > 0}>
           <div class="d-block d-lg-none">
             <Sidebar
               label="Index"
@@ -197,7 +200,7 @@ const GuideIndex = () => {
               onOpenStatusChange={openStatusChange}
             >
               <div class="position-relative">
-                <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky={false} />
+                <ToC idPrefix="mobile" toc={toc()} updateActiveTitle={updateActiveTitle} sticky={false} />
               </div>
             </Sidebar>
           </div>
@@ -219,54 +222,57 @@ const GuideIndex = () => {
                 </NoData>
               </div>
             </Match>
+            <Match when={guideLoadStatus() === 'ready' && toc().length === 0}>
+              <div class="w-100 py-5">
+                <NoData>
+                  <div class="fs-5">This guide has no content yet.</div>
+                </NoData>
+              </div>
+            </Match>
             <Match when={guideLoadStatus() === 'ready'}>
-              <div class="d-none d-lg-flex">
-                <ToC toc={toc()} updateActiveTitle={updateActiveTitle} sticky />
+              <div ref={setDesktopToC} class="d-none d-lg-flex">
+                <ToC idPrefix="desktop" toc={toc()} updateActiveTitle={updateActiveTitle} sticky />
               </div>
               <div class="py-3 px-0 p-lg-4 pe-lg-0">
                 <div class={`position-relative ${styles.guide}`}>
                   <For each={guide()!.categories}>
                     {(cat, index) => {
-                      const id = buildNormalizedId({ title: cat.category });
+                      const id = getAnchorId({ title: cat.category }, guide());
                       const hasSubcategories = !isUndefined(cat.subcategories) && cat.subcategories.length > 0;
 
                       return (
                         <>
                           <div
-                            id={`section_${id}`}
+                            id={isUndefined(id) ? undefined : `section_${id}`}
                             class={styles.section}
                             classList={{ [styles.catSection]: !hasSubcategories }}
                           >
-                            <h1
-                              class={`border-bottom mb-3 mb-lg-4 pb-2 ${styles.title}`}
-                              classList={{ 'mt-4 mt-lg-5': index() !== 0 }}
-                            >
+                            <h1 class="border-bottom mb-3 mb-lg-4 pb-2" classList={{ 'mt-4 mt-lg-5': index() !== 0 }}>
                               {cat.category}
                             </h1>
                             <Show when={!isUndefined(cat.content)}>
-                              {/* eslint-disable-next-line solid/no-innerhtml */}
+                              {/* eslint-disable-next-line solid/no-innerhtml -- the guide content is markdown rendered to HTML by the build */}
                               <div innerHTML={cat.content} />
                             </Show>
                           </div>
                           <Show when={hasSubcategories}>
                             <For each={cat.subcategories}>
                               {(subcat, index) => {
-                                const id = buildNormalizedId({
-                                  title: cat.category,
-                                  subtitle: subcat.subcategory,
-                                  grouped: true,
-                                });
+                                const id = getAnchorId(
+                                  { title: cat.category, subtitle: subcat.subcategory, grouped: true },
+                                  guide()
+                                );
 
                                 return (
                                   <div
-                                    id={`section_${id}`}
+                                    id={isUndefined(id) ? undefined : `section_${id}`}
                                     class={styles.section}
-                                    classList={{ [styles.catSection]: index() === cat.subcategories.length - 1 }}
+                                    classList={{
+                                      [styles.catSection]: index() === (cat.subcategories?.length ?? 0) - 1,
+                                    }}
                                   >
-                                    <h2 class={`mt-4 mt-lg-5 mb-3 mb-lg-4 pb-2 border-bottom ${styles.subtitle}`}>
-                                      {subcat.subcategory}
-                                    </h2>
-                                    {/* eslint-disable-next-line solid/no-innerhtml */}
+                                    <h2 class="mt-4 mt-lg-5 mb-3 mb-lg-4 pb-2 border-bottom">{subcat.subcategory}</h2>
+                                    {/* eslint-disable-next-line solid/no-innerhtml -- the guide content is markdown rendered to HTML by the build */}
                                     <div innerHTML={subcat.content} />
                                     <SubcategoryExtended
                                       keywords={subcat.keywords}

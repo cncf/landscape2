@@ -1,3 +1,5 @@
+// Local copy of the common `NoData` component: the common one depends on
+// Bootstrap, which the third-party embed deliberately does not load.
 import { JSXElement } from 'solid-js';
 import { css } from 'solid-styled-components';
 

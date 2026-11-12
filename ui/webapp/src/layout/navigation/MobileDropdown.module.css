@@ -39,10 +39,6 @@
   color: var(--color1);
 }
 
-.link:global(.activeLink) {
-  color: var(--color1);
-}
-
 .link:global(.activeLink)::before {
   content: '';
   position: absolute;

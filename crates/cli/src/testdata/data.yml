@@ -1,0 +1,16 @@
+categories:
+  - name: Category 1
+    subcategories:
+      - name: Subcategory 1-1
+        items:
+          - name: Item 1
+            crunchbase: https://www.crunchbase.com/organization/item-1
+            description: This is the description of item 1
+            homepage_url: https://item-1.example
+            logo: sample.svg
+            project: graduated
+            repo_url: https://github.com/example/item-1
+          - name: Item 2
+            description: This is the description of item 2
+            homepage_url: https://item-2.example
+            logo: sample.png

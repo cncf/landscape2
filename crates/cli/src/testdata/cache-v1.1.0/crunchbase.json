@@ -1,0 +1,42 @@
+{
+  "https://www.crunchbase.com/organization/full": {
+    "generated_at": "2025-10-01T12:30:45Z",
+    "acquisitions": [
+      {
+        "acquiree_cb_permalink": "acquiree",
+        "acquiree_name": "Acquiree",
+        "announced_on": "2024-05-06",
+        "price": 1000000
+      }
+    ],
+    "city": "San Francisco",
+    "company_type": "for_profit",
+    "country": "United States",
+    "description": "Full organization",
+    "funding": 5000000,
+    "funding_rounds": [
+      {
+        "amount": 2000000,
+        "announced_on": "2023-01-02",
+        "kind": "series_a"
+      }
+    ],
+    "homepage_url": "https://full.example",
+    "categories": [
+      "Cloud",
+      "Software"
+    ],
+    "kind": "funding",
+    "linkedin_url": "https://www.linkedin.com/company/full",
+    "name": "Full",
+    "num_employees_max": 500,
+    "num_employees_min": 251,
+    "region": "California",
+    "stock_exchange": "nasdaq",
+    "ticker": "FULL",
+    "twitter_url": "https://twitter.com/full"
+  },
+  "https://www.crunchbase.com/organization/minimal": {
+    "generated_at": "2025-10-01T12:30:45Z"
+  }
+}

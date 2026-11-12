@@ -1,50 +1,10 @@
 // Required
 @import 'bootstrap/scss/functions';
 
-$spacer: 1rem;
+// Shared configuration (spacer, gutters, breakpoints, container widths and font stack)
+@import 'common/styles/_bootstrap-config.scss';
+
 $btn-hover-bg-tint-amount: 35%;
-$gutters: (
-  0: 0,
-  1: $spacer * 0.05,
-  2: $spacer * 0.5,
-  3: $spacer,
-  4: $spacer * 1.5,
-  5: $spacer * 3,
-);
-
-$grid-breakpoints: (
-  xs: 0,
-  sm: 576px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px,
-  xxl: 1400px,
-  xxxl: 1920px,
-);
-
-$container-max-widths: (
-  sm: 540px,
-  md: 720px,
-  lg: 930px,
-  xl: 1080px,
-  xxl: 1320px,
-  xxxl: 1860px,
-);
-
-$font-family-sans-serif:
-  system-ui,
-  -apple-system,
-  BlinkMacSystemFont,
-  Segoe UI,
-  Helvetica,
-  Arial,
-  sans-serif,
-  Roboto,
-  'Noto Sans',
-  Ubuntu,
-  Apple Color Emoji,
-  Segoe UI Emoji,
-  Segoe UI Symbol;
 
 // Required
 @import 'bootstrap/scss/variables';

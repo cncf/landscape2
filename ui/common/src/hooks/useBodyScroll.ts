@@ -3,7 +3,7 @@ import { Accessor, createEffect, onCleanup } from 'solid-js';
 const bodyScrollLocks = new Map<string, Set<symbol>>();
 
 /** Keeps body scrolling locked while the provided accessor is blocked. */
-export const useBodyScroll = (blocked: Accessor<boolean>, elType: string) => {
+export const useBodyScroll = (blocked: Accessor<boolean>, elType: 'modal' | 'sidebar') => {
   const className = `noScroll-${elType}`;
   const lockId = Symbol(className);
 

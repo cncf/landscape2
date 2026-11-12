@@ -1,8 +1,8 @@
-import { getItemDescription, Image, Loading } from 'common';
+import { DEFAULT_ITEM_DESCRIPTION, Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createMemo, createSignal, on, onCleanup, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, onCleanup, Show } from 'solid-js';
 
-import { BaseItem, Item } from '../../../types';
+import { Item, LandscapeItem } from '../../../types';
 import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
@@ -12,7 +12,7 @@ import Card from '../card/Card';
 import styles from './GridItem.module.css';
 
 interface Props {
-  item: BaseItem | Item;
+  item: LandscapeItem;
   borderColor?: string;
   showMoreInfo: boolean;
   activeDropdown: boolean;
@@ -26,7 +26,6 @@ const DEFAULT_DROPDOWN_HEIGHT = 213 + 10; // Height + arrow with gap
 const DEFAULT_MARGIN = 35;
 
 const GridItem = (props: Props) => {
-  let ref;
   const fullDataReady = useFullDataReady();
   const { getEffectiveFeatured } = useFeaturedItems();
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
@@ -38,8 +37,7 @@ const GridItem = (props: Props) => {
   const [tooltipVerticalAlignment, setTooltipVerticalAlignment] = createSignal<'top' | 'bottom'>('bottom');
   const [dropdownTimeout, setDropdownTimeout] = createSignal<ReturnType<typeof setTimeout>>();
   const [elWidth, setElWidth] = createSignal<number>(0);
-  const [item, setItem] = createSignal<Item | undefined>();
-  const description = () => getItemDescription(props.item);
+  const description = () => props.item.description ?? DEFAULT_ITEM_DESCRIPTION;
   const containerWidth = () => (!isUndefined(props.container) ? props.container.clientWidth : window.innerWidth);
   const containerHeight = () => (!isUndefined(props.container) ? props.container.clientHeight : window.innerHeight);
   const touchDevice = () => isTouchDevice();
@@ -50,17 +48,15 @@ const GridItem = (props: Props) => {
   // Get featured data considering group exclusions
   const effectiveFeatured = createMemo(() => getEffectiveFeatured(props.item));
 
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        setItem(itemsDataGetter.getItemById(props.item.id));
-      }
-    })
+  // The full item is only needed by the dropdown, so it is resolved when the dropdown opens
+  const item = createMemo<Item | undefined>(() =>
+    visibleDropdown() && fullDataReady() ? itemsDataGetter.getItemById(props.item.id) : undefined
   );
 
   const calculateTooltipPosition = () => {
-    if (!isUndefined(wrapper())) {
-      const bounding = wrapper()!.getBoundingClientRect();
+    const wrapperEl = wrapper();
+    if (!isUndefined(wrapperEl)) {
+      const bounding = wrapperEl.getBoundingClientRect();
       setElWidth(bounding.width);
       const overflowTooltip = (DEFAULT_DROPDOWN_WIDTH - bounding.width) / 2;
       const margin = !isUndefined(props.container) ? props.container?.getBoundingClientRect().x : DEFAULT_MARGIN;
@@ -119,54 +115,70 @@ const GridItem = (props: Props) => {
     }
   });
 
+  // Logo and featured label of the item rendered without dropdown (touch devices and tablets)
+  const fallbackContent = () => (
+    <>
+      <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
+
+      <Show when={effectiveFeatured()?.label}>
+        <div
+          class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
+          style={effectiveFeatured() ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
+        >
+          {effectiveFeatured()!.label}
+        </div>
+      </Show>
+    </>
+  );
+
   return (
     <Show
       when={activeDropdown()}
       fallback={
         <div
           role="listitem"
-          style={effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.borderColor}` } : {}}
+          style={effectiveFeatured()?.label ? { border: `2px solid ${props.borderColor}` } : {}}
           class={`card rounded-0 position-relative p-0 ${styles.card}`}
           classList={{
             bigCard: !isUndefined(effectiveFeatured()),
-            withLabel: !isUndefined(effectiveFeatured()) && !isUndefined(effectiveFeatured()!.label),
-            whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
+            withLabel: !isUndefined(effectiveFeatured()?.label),
+            withoutRepo: isUndefined(props.item.oss) || !props.item.oss,
             archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
-          }}
-          onClick={() => {
-            if (props.showMoreInfo) {
-              updateActiveItemId(props.item.id);
-            }
           }}
         >
           <div class="w-100 h-100">
-            <div
-              class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
-              classList={{ noCursor: !props.activeDropdown && !props.showMoreInfo }}
-            >
-              <Image name={props.item.name} class={`m-auto ${styles.logo}`} logo={props.item.logo} />
-
-              <Show when={effectiveFeatured() && effectiveFeatured()!.label}>
+            <Show
+              when={props.showMoreInfo}
+              fallback={
                 <div
-                  class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
-                  style={effectiveFeatured() ? { 'border-top': `2px solid ${props.borderColor}` } : {}}
+                  class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
+                  classList={{ noCursor: !props.activeDropdown }}
                 >
-                  {effectiveFeatured()!.label}
+                  {fallbackContent()}
                 </div>
-              </Show>
-            </div>
+              }
+            >
+              <button
+                type="button"
+                class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
+                onClick={() => updateActiveItemId(props.item.id)}
+                aria-label={`Open ${props.item.name} details`}
+              >
+                {fallbackContent()}
+              </button>
+            </Show>
           </div>
         </div>
       }
     >
       <div
         role="listitem"
-        style={effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.borderColor}` } : {}}
+        style={effectiveFeatured()?.label ? { border: `2px solid ${props.borderColor}` } : {}}
         class={`card rounded-0 position-relative p-0 ${styles.card}`}
         classList={{
           bigCard: !isUndefined(effectiveFeatured()),
-          withLabel: !isUndefined(effectiveFeatured()) && !isUndefined(effectiveFeatured()!.label),
-          whithoutRepo: isUndefined(props.item.oss) || !props.item.oss,
+          withLabel: !isUndefined(effectiveFeatured()?.label),
+          withoutRepo: isUndefined(props.item.oss) || !props.item.oss,
           archived: !isUndefined(props.item.maturity) && props.item.maturity === 'archived',
         }}
         aria-label={props.item.name}
@@ -174,7 +186,6 @@ const GridItem = (props: Props) => {
         <div class="position-absolute opacity-100">
           <Show when={visibleDropdown()}>
             <div
-              ref={ref}
               role="complementary"
               class={`dropdown-menu rounded-0 p-3 popover show ${styles.dropdown} ${
                 styles[`${tooltipAlignment()}Aligned`]
@@ -201,6 +212,7 @@ const GridItem = (props: Props) => {
 
         <div ref={setWrapper} class="w-100 h-100">
           <button
+            type="button"
             class={`btn border-0 w-100 h-100 d-flex flex-row align-items-center ${styles.cardContent}`}
             onClick={(e) => {
               e.preventDefault();
@@ -227,7 +239,7 @@ const GridItem = (props: Props) => {
               enableLazyLoad={!isUndefined(props.enableLazyLoad) ? props.enableLazyLoad : true}
             />
 
-            <Show when={effectiveFeatured() && effectiveFeatured()!.label}>
+            <Show when={effectiveFeatured()?.label}>
               <div
                 class={`text-center text-uppercase text-dark position-absolute start-0 end-0 bottom-0 text-truncate px-1 ${styles.legend}`}
                 style={effectiveFeatured() ? { 'border-top': `2px solid ${props.borderColor}` } : {}}

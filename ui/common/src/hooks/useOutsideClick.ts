@@ -1,33 +1,29 @@
-import isNull from 'lodash/isNull';
-import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, onCleanup } from 'solid-js';
 
+/**
+ * Calls `onClickOutside` on a mousedown outside every ref and every excluded element (by id), while enabled.
+ */
 export const useOutsideClick = (
-  refs: Accessor<HTMLElement | HTMLDivElement | undefined>[],
+  refs: Accessor<HTMLElement | undefined>[],
   excludedIds: string[],
   enabled: Accessor<boolean>,
   onClickOutside: (e: MouseEvent) => void
 ) => {
-  const isOutside = (e: MouseEvent) => {
-    const test = refs.map((r) => {
-      if (isUndefined(r())) return true;
-      return !r()!.contains(e.target as HTMLElement);
+  const isOutside = (target: Node) =>
+    refs.every((ref) => {
+      const element = ref();
+      return element === undefined || !element.contains(target);
     });
-    return test.every(Boolean);
-  };
 
-  const isExcluded = (e: MouseEvent) => {
-    if (excludedIds.length === 0) return false;
-    const test = excludedIds.map((id: string) => {
-      const excludedItem = document.getElementById(id);
-      if (isNull(excludedItem)) return false;
-      return e.target === excludedItem || excludedItem!.contains(e.target as HTMLElement);
+  const isExcluded = (target: Node) =>
+    excludedIds.some((id) => {
+      const excludedElement = document.getElementById(id);
+      return excludedElement !== null && excludedElement.contains(target);
     });
-    return test.some(Boolean);
-  };
 
   const onEvent = (e: MouseEvent) => {
-    if (isOutside(e) && !isExcluded(e) && enabled()) {
+    const target = e.target as Node;
+    if (enabled() && isOutside(target) && !isExcluded(target)) {
       onClickOutside(e);
     }
   };

@@ -15,7 +15,7 @@
 }
 
 .btn {
-  background-color: var(--body-bg);
+  background-color: var(--bs-body-bg);
   line-height: 1.5 !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
@@ -27,28 +27,6 @@
   border-color: #ced4da !important;
   font-size: 0.75rem;
   text-transform: capitalize;
-}
-
-.btnRemove {
-  font-size: 0.7rem;
-}
-
-.activeFilter {
-  font-size: 0.75rem;
-  padding-left: 0.35rem;
-}
-
-.closeBtn {
-  padding: 0 0.35rem 0 0;
-  margin-top: -1px;
-}
-
-.closeIcon {
-  min-width: 15px;
-}
-
-.options {
-  max-height: 300px;
 }
 
 .dropdown label {
@@ -72,7 +50,7 @@
 @media (hover: hover) {
   .btn:hover {
     filter: none;
-    background-color: var(--body-bg);
-    border-color: var(--clo-secondary) !important;
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-secondary) !important;
   }
 }

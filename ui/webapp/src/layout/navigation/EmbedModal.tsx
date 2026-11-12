@@ -1,24 +1,15 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import {
-  capitalizeFirstLetter,
-  CodeBlock,
-  formatTAGName,
-  Modal,
-  SVGIcon,
-  SVGIconKind,
-  useBreakpointDetect,
-  useOutsideClick,
-} from 'common';
-import isUndefined from 'lodash/isUndefined';
-import sortBy from 'lodash/sortBy';
-import { batch, createEffect, createMemo, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
-
-import {
   Alignment,
-  BASE_PATH_PARAM,
-  CATEGORIES_PARAM,
-  CLASSIFY_BY_PARAM,
+  ALL_OPTIONS_EMBED_KEY,
+  BANNER_ID,
+  buildEmbedKey,
+  buildEmbedUrl,
+  buildMultiCategoryKey,
+  capitalizeFirstLetter,
+  type ClassificationOption,
   ClassifyType,
+  CodeBlock,
   DEFAULT_CLASSIFY_TYPE,
   DEFAULT_DISPLAY_CATEGORY_HEADER,
   DEFAULT_DISPLAY_CATEGORY_IN_SUBCATEGORY,
@@ -31,7 +22,6 @@ import {
   DEFAULT_ITEMS_SPACING,
   DEFAULT_ITEMS_STYLE_VIEW,
   DEFAULT_TITLE_ALIGNMENT,
-  DEFAULT_TITLE_BG_COLOR,
   DEFAULT_TITLE_FG_COLOR,
   DEFAULT_TITLE_FONT_FAMILY,
   DEFAULT_TITLE_SIZE,
@@ -41,33 +31,43 @@ import {
   DISPLAY_HEADER_PARAM,
   DISPLAY_ITEM_MODAL_PARAM,
   DISPLAY_ITEM_NAME_PARAM,
+  type EmbedConfig,
   FontFamily,
-  HIDE_ORGANIZATION_SECTION_PARAM,
-  ITEM_NAME_SIZE_PARAM,
-  ITEMS_ALIGNMENT_PARAM,
-  ITEMS_SIZE_PARAM,
-  ITEMS_SPACING_PARAM,
-  ITEMS_STYLE_PARAM,
-  KEY_PARAM,
+  formatTAGName,
+  ITEM_NAME_SIZE_RANGE,
+  Modal,
   Size,
+  SMALL_DEVICES_BREAKPOINTS,
   Style,
-  SUBCATEGORIES_PARAM,
-  TITLE_ALIGNMENT_PARAM,
+  SVGIcon,
+  SVGIconKind,
   TITLE_BGCOLOR_PARAM,
   TITLE_FGCOLOR_PARAM,
-  TITLE_FONT_FAMILY_PARAM,
-  TITLE_SIZE_PARAM,
+  TITLE_SIZE_RANGE,
   UPPERCASE_TITLE_PARAM,
-} from '../../../../embed/src/types';
+  useBreakpointDetect,
+  useOutsideClick,
+} from 'common';
+import isUndefined from 'lodash/isUndefined';
+import sortBy from 'lodash/sortBy';
 import {
-  BANNER_ID,
-  BASE_PATH,
-  EMBED_SETUP_PATH,
-  HIDE_ORGANIZATION_SECTION_IN_PROJECTS,
-  REGEX_UNDERSCORE,
-  SMALL_DEVICES_BREAKPOINTS,
-} from '../../data';
+  type Accessor,
+  batch,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Match,
+  on,
+  Show,
+  Switch,
+  untrack,
+} from 'solid-js';
+
+import { BASE_PATH, EMBED_SETUP_PATH, HIDE_ORGANIZATION_SECTION_IN_PROJECTS } from '../../data';
 import { Category, Subcategory } from '../../types';
+import clampInt from '../../utils/clampInt';
+import getDevOrigin from '../../utils/getDevOrigin';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareLink from '../../utils/prepareLink';
@@ -75,24 +75,21 @@ import rgba2hex from '../../utils/rgba2hex';
 import CheckBox from '../common/Checkbox';
 import styles from './EmbedModal.module.css';
 
-enum InputType {
-  ItemsStyle = ITEMS_STYLE_PARAM,
-  ItemsSize = ITEMS_SIZE_PARAM,
-  DisplayHeaders = DISPLAY_HEADER_PARAM,
-  DisplayCategoryTitle = DISPLAY_HEADER_CATEGORY_PARAM,
-  DisplayCategoryInSubcategory = DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
-  TitleFontFamily = TITLE_FONT_FAMILY_PARAM,
-  UppercaseTitle = UPPERCASE_TITLE_PARAM,
-  TitleSize = TITLE_SIZE_PARAM,
-  TitleAlignment = TITLE_ALIGNMENT_PARAM,
-  ItemsSpacing = ITEMS_SPACING_PARAM,
-  ItemsAlignment = ITEMS_ALIGNMENT_PARAM,
-  TitleBgColor = TITLE_BGCOLOR_PARAM,
-  TitleFgColor = TITLE_FGCOLOR_PARAM,
-  DisplayItemName = DISPLAY_ITEM_NAME_PARAM,
-  ItemNameSize = ITEM_NAME_SIZE_PARAM,
-  DisplayItemModal = DISPLAY_ITEM_MODAL_PARAM,
-}
+// Embed setup checkboxes and color inputs, named after the embed url param each
+// one sets (an object rather than an enum, as enum members cannot be initialized
+// from imports with isolatedModules).
+const InputType = {
+  DisplayHeaders: DISPLAY_HEADER_PARAM,
+  DisplayCategoryTitle: DISPLAY_HEADER_CATEGORY_PARAM,
+  DisplayCategoryInSubcategory: DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM,
+  UppercaseTitle: UPPERCASE_TITLE_PARAM,
+  TitleBgColor: TITLE_BGCOLOR_PARAM,
+  TitleFgColor: TITLE_FGCOLOR_PARAM,
+  DisplayItemName: DISPLAY_ITEM_NAME_PARAM,
+  DisplayItemModal: DISPLAY_ITEM_MODAL_PARAM,
+} as const;
+
+type InputType = (typeof InputType)[keyof typeof InputType];
 
 const SIZES_LEGENDS = {
   [Size.XSmall]: 'Extra small',
@@ -102,48 +99,72 @@ const SIZES_LEGENDS = {
   [Size.XLarge]: 'Extra large',
 };
 
+// Accepted range of the custom gap between items (the embed ignores negative values)
+const ITEMS_SPACING_RANGE = { max: Number.MAX_SAFE_INTEGER, min: 0 };
+
+// Value of the title background color that makes the titles transparent
+const TRANSPARENT_BG_COLOR = 'transparent';
+
 enum SpacingType {
   Default = 'default',
   Custom = 'custom',
 }
 
-const formatOptionValue = (value: string) => {
-  return value.replace(REGEX_UNDERSCORE, '-');
-};
-
-const getCategoryKey = (category: string, subcategory?: string) => {
-  return subcategory ? `${category}--${subcategory}` : category;
-};
+/** Category, subcategory, maturity and TAG selection of the embed setup. */
+interface EmbedSelection {
+  categories: string[];
+  key: string;
+  maturity: string;
+  subcategories: string[];
+  subcategoriesList: Subcategory[];
+  tag: string;
+}
 
 const EmbedModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { point } = useBreakpointDetect();
-  const BG_COLOR =
-    !isUndefined(window.baseDS.colors) && !isUndefined(window.baseDS.colors!.color5)
-      ? rgba2hex(window.baseDS.colors.color5)
-      : DEFAULT_TITLE_BG_COLOR;
+  const BG_COLOR = rgba2hex(window.baseDS.colors.color5);
   // Icon is only visible when Explore section is loaded
   const isVisible = createMemo(() => isExploreSection(location.pathname));
   const isEmbedSetupActive = () => location.pathname === EMBED_SETUP_PATH;
   const [visibleModal, setVisibleModal] = createSignal<boolean>(isEmbedSetupActive());
-  const categoriesList = () => sortBy(itemsDataGetter.getCategoriesAndSubcategoriesWithItems(), ['name']);
-  const getInitialSubcategories = () => {
-    const firstCategory = categoriesList()[0];
-    return firstCategory ? sortBy(firstCategory.subcategories, ['name']) : [];
-  };
-  const initialSubcategories = getInitialSubcategories();
-  const [subcategoriesList, setSubcategoriesList] = createSignal<Subcategory[]>(initialSubcategories);
-  const initialCategory = categoriesList()[0];
-  const initialCategoryName = initialCategory ? initialCategory.normalized_name : '';
-  const initialSubcategoryName = initialSubcategories[0]?.normalized_name;
-  const [key, setKey] = createSignal<string>(getCategoryKey(initialCategoryName, initialSubcategoryName));
-  const [selectedClassifyBy, setSelectedClassifyBy] = createSignal<string>(DEFAULT_CLASSIFY_TYPE);
-  const initialCategoriesSelection = initialCategoryName ? [initialCategoryName] : [];
-  const [selectedCategories, setSelectedCategories] = createSignal<string[]>(initialCategoriesSelection);
-  const [selectedSubcategories, setSelectedSubcategories] = createSignal<string[]>(
-    initialSubcategoryName ? [initialSubcategoryName] : []
+  // Categories with items, and their subcategories, sorted by name once
+  const categoriesList = createMemo((): Category[] =>
+    sortBy(itemsDataGetter.getCategoriesAndSubcategoriesWithItems(), ['name']).map((category) => ({
+      ...category,
+      subcategories: sortBy(category.subcategories, ['name']),
+    }))
   );
+  const maturityOptions = itemsDataGetter.getMaturityOptions();
+  const TAGOptions = itemsDataGetter.getTagOptions();
+
+  // Selection the embed setup opens with: the first category and its first
+  // subcategory (none in a landscape without categories), and the first maturity
+  // and TAG options
+  const getDefaultSelection = (): EmbedSelection => {
+    const firstCategory = categoriesList()[0];
+    const subcategoriesList = firstCategory?.subcategories ?? [];
+    const firstSubcategory = subcategoriesList[0]?.normalized_name;
+    return {
+      categories: firstCategory ? [firstCategory.normalized_name] : [],
+      key: firstCategory ? getCategoryKey(firstCategory.normalized_name, firstSubcategory) : '',
+      maturity: getOptionKey('maturity', maturityOptions[0]),
+      subcategories: firstSubcategory ? [firstSubcategory] : [],
+      subcategoriesList,
+      tag: getOptionKey('tag', TAGOptions[0]),
+    };
+  };
+
+  // Initial values only: the defaults are read again when the modal is closed
+  const defaultSelection = untrack(getDefaultSelection);
+  const [subcategoriesList, setSubcategoriesList] = createSignal<Subcategory[]>(defaultSelection.subcategoriesList);
+  const [key, setKey] = createSignal<string>(defaultSelection.key);
+  const [selectedClassifyBy, setSelectedClassifyBy] = createSignal<ClassifyType>(DEFAULT_CLASSIFY_TYPE);
+  const [selectedCategories, setSelectedCategories] = createSignal<string[]>(defaultSelection.categories);
+  const [selectedSubcategories, setSelectedSubcategories] = createSignal<string[]>(defaultSelection.subcategories);
+  const [selectedMaturity, setSelectedMaturity] = createSignal<string>(defaultSelection.maturity);
+  const [selectedTag, setSelectedTag] = createSignal<string>(defaultSelection.tag);
   const [subcategoriesDropdownVisible, setSubcategoriesDropdownVisible] = createSignal<boolean>(false);
   const [subcategoriesDropdownRef, setSubcategoriesDropdownRef] = createSignal<HTMLDivElement>();
   const [categoriesDropdownVisible, setCategoriesDropdownVisible] = createSignal<boolean>(false);
@@ -206,83 +227,58 @@ const EmbedModal = () => {
   const [displayItemName, setDisplayItemName] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_NAME);
   const [itemNameSize, setItemNameSize] = createSignal<number>(DEFAULT_ITEM_NAME_SIZE);
   const [displayItemModal, setDisplayItemModal] = createSignal<boolean>(DEFAULT_DISPLAY_ITEM_MODAL);
-  const [hideOrganizationSection] = createSignal<boolean>(HIDE_ORGANIZATION_SECTION_IN_PROJECTS);
-  const [url, setUrl] = createSignal<string>();
+  const hideOrganizationSection = HIDE_ORGANIZATION_SECTION_IN_PROJECTS;
   const [prevHash, setPrevHash] = createSignal<string>('');
   const [prevSearch, setPrevSearch] = createSignal<string>('');
   const [embedScriptLoaded, setEmbedScriptLoaded] = createSignal<boolean>(false);
-  const embedOrigin = () =>
-    `${import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin}${BASE_PATH}/embed`;
-  const maturityOptions = itemsDataGetter.getMaturityOptions().sort();
-  const TAGOptions = itemsDataGetter.getTagOptions().sort();
-  const [selectedMaturity, setSelectedMaturity] = createSignal<string>(
-    maturityOptions.length > 0 ? formatOptionValue(maturityOptions[0]) : 'all'
-  );
-  const [selectedTag, setSelectedTag] = createSignal<string>(
-    TAGOptions.length > 0 ? formatOptionValue(TAGOptions[0]) : 'all'
-  );
+  const embedOrigin = () => `${getDevOrigin(window.location.origin)}${BASE_PATH}/embed`;
+  const embedBaseUrl = () => `${embedOrigin()}/embed.html`;
 
-  const getIFrameUrl = () => {
-    const embedUrl = new URL(`${embedOrigin()}/embed.html`);
-    const embedParams = new URLSearchParams();
+  // Configuration of the embed view, normalized the way the embed reads it
+  const config = createMemo((): EmbedConfig => {
+    const classifyBy = selectedClassifyBy();
+    const isCategoryView = classifyBy === ClassifyType.Category;
+    const isMultiCategoryView = isCategoryView && multipleCategoriesSelected();
+    const categories = isMultiCategoryView ? selectedCategories() : [];
+    const subcategories = selectedSubcategories().filter((value) => value !== 'all');
+    const keys: Record<ClassifyType, string> = {
+      [ClassifyType.Category]: isMultiCategoryView ? buildMultiCategoryKey(categories) : key(),
+      [ClassifyType.Maturity]: selectedMaturity(),
+      [ClassifyType.TAG]: selectedTag(),
+    };
+    const spacing = itemsSpacing();
 
-    if (!isUndefined(BASE_PATH)) {
-      embedParams.append(BASE_PATH_PARAM, BASE_PATH);
-    }
-
-    embedParams.append(CLASSIFY_BY_PARAM, selectedClassifyBy());
-    if (selectedClassifyBy() === ClassifyType.Category) {
-      const fallbackCategory = categoriesList()[0]?.normalized_name || '';
-      const categoriesSelection = selectedCategories();
-      if (categoriesSelection.length > 1) {
-        embedParams.append(CATEGORIES_PARAM, categoriesSelection.join(','));
-      } else {
-        const singleCategory = categoriesSelection[0] || fallbackCategory;
-        embedParams.append(KEY_PARAM, key() || singleCategory);
-        const selectedSubcategoriesParam = selectedSubcategories().filter((value) => value !== 'all');
-        if (selectedSubcategoriesParam.length > 1) {
-          embedParams.append(SUBCATEGORIES_PARAM, selectedSubcategoriesParam.join(','));
-        }
-      }
-    } else if (selectedClassifyBy() === ClassifyType.Maturity) {
-      embedParams.append(KEY_PARAM, selectedMaturity());
-    } else if (selectedClassifyBy() === ClassifyType.TAG) {
-      embedParams.append(KEY_PARAM, selectedTag());
-    }
-    embedParams.append(DISPLAY_HEADER_PARAM, displayHeader() ? 'true' : 'false');
-    embedParams.append(DISPLAY_HEADER_CATEGORY_PARAM, displayCategoryTitle() ? 'true' : 'false');
-    embedParams.append(DISPLAY_CATEGORY_IN_SUBCATEGORY_PARAM, displayCategoryInSubcategory() ? 'true' : 'false');
-    embedParams.append(UPPERCASE_TITLE_PARAM, uppercaseTitle() ? 'true' : 'false');
-    embedParams.append(TITLE_ALIGNMENT_PARAM, titleAlignment());
-    embedParams.append(TITLE_FONT_FAMILY_PARAM, titleFontFamily());
-    embedParams.append(TITLE_SIZE_PARAM, titleSize().toString());
-    embedParams.append(ITEMS_STYLE_PARAM, selectedStyle());
-    embedParams.append(TITLE_BGCOLOR_PARAM, bgColor());
-    embedParams.append(TITLE_FGCOLOR_PARAM, fgColor());
-    embedParams.append(DISPLAY_ITEM_MODAL_PARAM, displayItemModal() ? 'true' : 'false');
-    embedParams.append(
-      HIDE_ORGANIZATION_SECTION_PARAM,
-      displayItemModal() && hideOrganizationSection() ? 'true' : 'false'
-    );
-
-    if (selectedStyle() !== Style.Card) {
-      embedParams.append(DISPLAY_ITEM_NAME_PARAM, displayItemName() ? 'true' : 'false');
-      embedParams.append(ITEMS_SIZE_PARAM, selectedSize());
-      embedParams.append(ITEMS_ALIGNMENT_PARAM, itemsAlignment());
-      if (displayItemName()) {
-        embedParams.append(ITEM_NAME_SIZE_PARAM, itemNameSize().toString());
-      }
-      if (itemsSpacingType() === SpacingType.Custom && !isUndefined(itemsSpacing())) {
-        embedParams.append(ITEMS_SPACING_PARAM, itemsSpacing()!.toString());
-      }
-    }
-
-    return `${embedUrl}?${embedParams.toString()}`;
-  };
+    return {
+      basePath: BASE_PATH,
+      categories,
+      classifyBy,
+      displayCategoryInSubcategory: displayCategoryInSubcategory(),
+      displayCategoryTitle: displayCategoryTitle(),
+      displayHeader: displayHeader(),
+      displayItemModal: displayItemModal(),
+      displayItemName: displayItemName(),
+      hideOrganizationSection: displayItemModal() && hideOrganizationSection,
+      isBgTransparent: bgColor() === TRANSPARENT_BG_COLOR,
+      itemNameSize: itemNameSize(),
+      itemsAlignment: itemsAlignment(),
+      itemsSize: selectedSize(),
+      itemsStyle: selectedStyle(),
+      key: keys[classifyBy],
+      subcategories: isCategoryView && !isMultiCategoryView && subcategories.length > 1 ? subcategories : [],
+      titleAlignment: titleAlignment(),
+      titleBgColor: bgColor(),
+      titleFgColor: fgColor(),
+      titleFontFamily: titleFontFamily(),
+      titleSize: titleSize(),
+      uppercaseTitle: uppercaseTitle(),
+      ...(itemsSpacingType() === SpacingType.Custom && !isUndefined(spacing) ? { itemsSpacing: spacing } : {}),
+    };
+  });
+  const url = createMemo(() => buildEmbedUrl(config(), embedBaseUrl()));
 
   const getExtraCode = () => {
     if (displayItemModal()) {
-      return `\n<!-- Landscape embed item details view -->\n<!-- NOTE: the script and the iframe below should only be added once, even when adding multiple embed views to the page -->\n<script src="${embedOrigin()}/embed-item.js"></script>\n<iframe id="embed-item" src="${embedOrigin()}/embed-item.html" style="width:100%;height:100%;display:block;border:none;position:fixed;top:0;bottom:0;left:0;right:0;z-index:2147483647;display:none;"></iframe>`;
+      return `\n<!-- Landscape embed item details view -->\n<!-- NOTE: the script and the iframe below should only be added once, even when adding multiple embed views to the page -->\n<script src="${embedOrigin()}/embed-item.js"></script>\n<iframe id="embed-item" src="${embedOrigin()}/embed-item.html" style="width:100%;height:100%;border:none;position:fixed;top:0;bottom:0;left:0;right:0;z-index:2147483647;display:none;"></iframe>`;
     }
     return '';
   };
@@ -298,12 +294,6 @@ const EmbedModal = () => {
 
   const onChange = (type: InputType, value: string, checked?: boolean) => {
     switch (type) {
-      case InputType.ItemsStyle:
-        setSelectedStyle(value as Style);
-        break;
-      case InputType.ItemsSize:
-        setSelectedSize(value as Size);
-        break;
       case InputType.DisplayHeaders:
         setDisplayHeader(checked!);
         break;
@@ -319,24 +309,6 @@ const EmbedModal = () => {
       case InputType.DisplayItemName:
         setDisplayItemName(checked!);
         break;
-      case InputType.ItemNameSize:
-        setItemNameSize(parseInt(value));
-        break;
-      case InputType.TitleFontFamily:
-        setTitleFontFamily(value as FontFamily);
-        break;
-      case InputType.TitleSize:
-        setTitleSize(parseInt(value));
-        break;
-      case InputType.ItemsSpacing:
-        setItemsSpacing(parseInt(value));
-        break;
-      case InputType.TitleAlignment:
-        setTitleAlignment(value as Alignment);
-        break;
-      case InputType.ItemsAlignment:
-        setItemsAlignment(value as Alignment);
-        break;
       case InputType.TitleBgColor:
         setBgColor(value);
         break;
@@ -351,12 +323,27 @@ const EmbedModal = () => {
     }
   };
 
+  // Applies the number typed in an input, clamped to its range, and shows the
+  // value applied (the previous one when the input is not a number)
+  const onNumberChange = (
+    input: HTMLInputElement,
+    range: { max: number; min: number },
+    value: Accessor<number | undefined>,
+    setValue: (value: number) => void
+  ) => {
+    const number = clampInt(input.value, range.min, range.max);
+    if (!isUndefined(number)) {
+      setValue(number);
+    }
+    input.value = String(value() ?? '');
+  };
+
   const applySingleCategorySelection = (category: string) => {
     const selectedCat = categoriesList().find((cat: Category) => cat.normalized_name === category);
     if (!selectedCat) {
       return;
     }
-    const subcategories = sortBy(selectedCat.subcategories, ['name']);
+    const subcategories = selectedCat.subcategories;
     const firstSubcategory = subcategories[0]?.normalized_name;
 
     batch(() => {
@@ -390,10 +377,9 @@ const EmbedModal = () => {
 
     const first = unique[0];
     const firstCategory = categoriesList().find((category) => category.normalized_name === first);
-    const subcategories = firstCategory ? sortBy(firstCategory.subcategories, ['name']) : [];
 
     batch(() => {
-      setSubcategoriesList(subcategories);
+      setSubcategoriesList(firstCategory?.subcategories ?? []);
       setSubcategoriesDropdownVisible(false);
       setSelectedSubcategories(['all']);
       setKey(first);
@@ -484,18 +470,16 @@ const EmbedModal = () => {
 
     // Reset settings
     batch(() => {
-      const firstCategory = categoriesList()[0];
-      const subcategories = sortBy(firstCategory.subcategories, ['name']);
-      const firstSubcategory = subcategories[0]?.normalized_name;
-      setSubcategoriesList(subcategories);
-      setSelectedCategories([firstCategory.normalized_name]);
+      const selection = getDefaultSelection();
+      setSubcategoriesList(selection.subcategoriesList);
+      setSelectedCategories(selection.categories);
       setCategoriesDropdownVisible(false);
-      setSelectedSubcategories(firstSubcategory ? [firstSubcategory] : []);
+      setSelectedSubcategories(selection.subcategories);
       setSubcategoriesDropdownVisible(false);
-      setSelectedMaturity(maturityOptions[0] || 'all');
-      setSelectedTag(TAGOptions[0] || 'all');
+      setSelectedMaturity(selection.maturity);
+      setSelectedTag(selection.tag);
       setSelectedClassifyBy(DEFAULT_CLASSIFY_TYPE);
-      setKey(getCategoryKey(firstCategory.normalized_name, firstSubcategory));
+      setKey(selection.key);
       setSelectedSize(DEFAULT_ITEMS_SIZE);
       setSelectedStyle(DEFAULT_ITEMS_STYLE_VIEW);
       setTitleAlignment(DEFAULT_TITLE_ALIGNMENT);
@@ -516,17 +500,9 @@ const EmbedModal = () => {
     });
   };
 
-  onMount(() => {
-    setUrl(getIFrameUrl());
-  });
-
-  createEffect(() => {
-    setUrl(getIFrameUrl());
-  });
-
   createEffect(
     on(point, () => {
-      if (visibleModal() && !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!)) {
+      if (visibleModal() && SMALL_DEVICES_BREAKPOINTS.includes(point())) {
         onClose();
       }
     })
@@ -537,7 +513,6 @@ const EmbedModal = () => {
       if (visibleModal()) {
         setPrevSearch(location.search);
         setPrevHash(location.hash);
-        setUrl(getIFrameUrl());
       }
     })
   );
@@ -611,14 +586,18 @@ const EmbedModal = () => {
                   <div class="col-4 col-xxl-3 overflow-auto h-100 visibleScroll">
                     <div class={`p-4 ${styles.configWrapper}`}>
                       <div>
-                        <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Classify</div>
+                        <label
+                          class={`d-block text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}
+                          for="classifyBy"
+                        >
+                          Classify
+                        </label>
                         <select
-                          id="classifyEmbed"
+                          id="classifyBy"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedClassifyBy()}
-                          aria-label="Classification options"
                           onChange={(e) => {
-                            setSelectedClassifyBy(e.currentTarget.value);
+                            setSelectedClassifyBy(e.currentTarget.value as ClassifyType);
                           }}
                         >
                           <option value={ClassifyType.Category}>Category</option>
@@ -643,16 +622,18 @@ const EmbedModal = () => {
                                 class={`btn btn-sm text-start w-100 rounded-0 ${styles.dropdownButton}`}
                                 onClick={() => setCategoriesDropdownVisible(!categoriesDropdownVisible())}
                                 aria-label="Categories list"
+                                aria-controls="categoriesOptions"
                                 aria-expanded={categoriesDropdownVisible()}
                               >
                                 <span class={styles.dropdownButtonLabel}>{selectedCategoriesLabel()}</span>
                                 <SVGIcon kind={SVGIconKind.CaretDown} class={styles.dropdownButtonIcon} />
                               </button>
-                              <div
-                                role="menu"
+                              <fieldset
+                                id="categoriesOptions"
                                 class={`dropdown-menu rounded-0 shadow-none w-100 ${styles.dropdownMenu}`}
                                 classList={{ show: categoriesDropdownVisible() }}
                               >
+                                <legend class="visually-hidden">Categories</legend>
                                 <div class="px-3 py-2">
                                   <For each={categoriesList()}>
                                     {(cat: Category) => {
@@ -672,7 +653,7 @@ const EmbedModal = () => {
                                     }}
                                   </For>
                                 </div>
-                              </div>
+                              </fieldset>
                             </div>
                           </div>
                           <div class="mt-4">
@@ -698,16 +679,18 @@ const EmbedModal = () => {
                                   setSubcategoriesDropdownVisible(!subcategoriesDropdownVisible());
                                 }}
                                 aria-label="Subcategories list"
+                                aria-controls="subcategoriesOptions"
                                 aria-expanded={subcategoriesDropdownVisible()}
                               >
                                 <span class={styles.dropdownButtonLabel}>{selectedSubcategoriesLabel()}</span>
                                 <SVGIcon kind={SVGIconKind.CaretDown} class={styles.dropdownButtonIcon} />
                               </button>
-                              <div
-                                role="menu"
+                              <fieldset
+                                id="subcategoriesOptions"
                                 class={`dropdown-menu rounded-0 shadow-none w-100 ${styles.dropdownMenu}`}
                                 classList={{ show: subcategoriesDropdownVisible() }}
                               >
+                                <legend class="visually-hidden">Subcategories</legend>
                                 <div class="px-3 py-2">
                                   <CheckBox
                                     name="subcategory"
@@ -720,7 +703,7 @@ const EmbedModal = () => {
                                     labelClass={`mw-100 text-muted ${styles.optionLabel}`}
                                     class={styles.dropdownOption}
                                   />
-                                  <For each={sortBy(subcategoriesList(), ['name'])}>
+                                  <For each={subcategoriesList()}>
                                     {(subcat: Subcategory) => {
                                       return (
                                         <CheckBox
@@ -738,7 +721,7 @@ const EmbedModal = () => {
                                     }}
                                   </For>
                                 </div>
-                              </div>
+                              </fieldset>
                             </div>
                             <Show when={multipleCategoriesSelected()}>
                               <div class={`mt-2 ${styles.dropdownHint}`}>
@@ -749,22 +732,26 @@ const EmbedModal = () => {
                         </Match>
                         <Match when={selectedClassifyBy() === ClassifyType.Maturity}>
                           <div class="mt-4">
-                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>
+                            <label
+                              class={`d-block text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}
+                              for="maturity"
+                            >
                               Maturity
-                            </div>
+                            </label>
                             <select
                               id="maturity"
                               class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                               value={selectedMaturity()}
-                              aria-label="Maturity options"
                               onChange={(e) => {
                                 setSelectedMaturity(e.currentTarget.value);
                               }}
                             >
-                              <option value="all">All</option>
+                              <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
                               <For each={maturityOptions}>
-                                {(m: string) => {
-                                  return <option value={formatOptionValue(m)}>{capitalizeFirstLetter(m)}</option>;
+                                {(m: ClassificationOption) => {
+                                  return (
+                                    <option value={getOptionKey('maturity', m)}>{capitalizeFirstLetter(m.name)}</option>
+                                  );
                                 }}
                               </For>
                             </select>
@@ -772,20 +759,24 @@ const EmbedModal = () => {
                         </Match>
                         <Match when={selectedClassifyBy() === ClassifyType.TAG}>
                           <div class="mt-4">
-                            <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>TAG</div>
+                            <label
+                              class={`d-block text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}
+                              for="tag"
+                            >
+                              TAG
+                            </label>
                             <select
                               id="tag"
                               class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                               value={selectedTag()}
-                              aria-label="TAG options"
                               onChange={(e) => {
                                 setSelectedTag(e.currentTarget.value);
                               }}
                             >
-                              <option value="all">All</option>
+                              <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
                               <For each={TAGOptions}>
-                                {(t: string) => {
-                                  return <option value={formatOptionValue(t)}>{formatTAGName(t)}</option>;
+                                {(t: ClassificationOption) => {
+                                  return <option value={getOptionKey('tag', t)}>{formatTAGName(t.name)}</option>;
                                 }}
                               </For>
                             </select>
@@ -884,12 +875,16 @@ const EmbedModal = () => {
                           </div>
                         </div>
                         <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Font family:</label>
+                          <label
+                            class={`text-muted form-check-label text-nowrap ${styles.label}`}
+                            for="titleFontFamily"
+                          >
+                            Font family:
+                          </label>
                           <select
-                            id="fontFamily"
+                            id="titleFontFamily"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={titleFontFamily()}
-                            aria-label="Font family options"
                             onChange={(e) => {
                               setTitleFontFamily(e.currentTarget.value as FontFamily);
                             }}
@@ -902,32 +897,32 @@ const EmbedModal = () => {
                           </select>
                         </div>
                         <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="titleSize">
                             Font size (px):
                           </label>
                           <div>
                             <input
                               type="number"
                               id="titleSize"
-                              class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
-                              min={10}
-                              max={60}
+                              class={`form-control rounded-0 border-0 ${styles.input}`}
+                              min={TITLE_SIZE_RANGE.min}
+                              max={TITLE_SIZE_RANGE.max}
                               value={titleSize()}
-                              aria-label="Size"
                               onChange={(e) => {
-                                setTitleSize(parseInt(e.currentTarget.value));
+                                onNumberChange(e.currentTarget, TITLE_SIZE_RANGE, titleSize, setTitleSize);
                               }}
                             />
                           </div>
                         </div>
                       </div>
                       <div class="d-flex flex-column mt-3">
-                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Alignment</label>
+                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="titleAlignment">
+                          Alignment
+                        </label>
                         <select
-                          id="alignment"
+                          id="titleAlignment"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={titleAlignment()}
-                          aria-label="Title aligment options"
                           onChange={(e) => {
                             setTitleAlignment(e.currentTarget.value as Alignment);
                           }}
@@ -944,6 +939,19 @@ const EmbedModal = () => {
                       <div class="mt-4">
                         <div class={`text-uppercase text-muted fw-semibold mb-1 ${styles.labelSelect}`}>Item</div>
                       </div>
+                      <div class="form-check">
+                        <CheckBox
+                          name={InputType.DisplayItemModal}
+                          value="true"
+                          class="ps-0 my-2"
+                          labelClass={`mw-100 text-muted ${styles.label}`}
+                          label="Open details modal on click"
+                          checked={displayItemModal()}
+                          onChange={(value: string, checked: boolean) =>
+                            onChange(InputType.DisplayItemModal, value, checked)
+                          }
+                        />
+                      </div>
                       <Show when={selectedStyle() !== Style.Card}>
                         <div class="form-check">
                           <CheckBox
@@ -958,35 +966,21 @@ const EmbedModal = () => {
                             }
                           />
                         </div>
-                        <div class="form-check">
-                          <CheckBox
-                            name={InputType.DisplayItemModal}
-                            value="true"
-                            class="ps-0 my-2"
-                            labelClass={`mw-100 text-muted ${styles.label}`}
-                            label="Open details modal on click"
-                            checked={displayItemModal()}
-                            onChange={(value: string, checked: boolean) =>
-                              onChange(InputType.DisplayItemModal, value, checked)
-                            }
-                          />
-                        </div>
                         <Show when={displayItemName()}>
                           <div class="d-flex flex-column mt-3">
-                            <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
+                            <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="itemNameSize">
                               Item name font size (px):
                             </label>
                             <div>
                               <input
                                 type="number"
                                 id="itemNameSize"
-                                class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
-                                min={10}
-                                max={40}
+                                class={`form-control rounded-0 border-0 ${styles.input}`}
+                                min={ITEM_NAME_SIZE_RANGE.min}
+                                max={ITEM_NAME_SIZE_RANGE.max}
                                 value={itemNameSize()}
-                                aria-label="Size"
                                 onChange={(e) => {
-                                  setItemNameSize(parseInt(e.currentTarget.value));
+                                  onNumberChange(e.currentTarget, ITEM_NAME_SIZE_RANGE, itemNameSize, setItemNameSize);
                                 }}
                               />
                             </div>
@@ -995,12 +989,13 @@ const EmbedModal = () => {
                       </Show>
 
                       <div class="d-flex flex-column mt-3">
-                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Style</label>
+                        <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="itemsStyle">
+                          Style
+                        </label>
                         <select
-                          id="styles"
+                          id="itemsStyle"
                           class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                           value={selectedStyle()}
-                          aria-label="Style options"
                           onChange={(e) => {
                             setSelectedStyle(e.currentTarget.value as Style);
                           }}
@@ -1015,12 +1010,13 @@ const EmbedModal = () => {
 
                       <Show when={selectedStyle() !== Style.Card}>
                         <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Size</label>
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="itemsSize">
+                            Size
+                          </label>
                           <select
-                            id="sizes"
+                            id="itemsSize"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={selectedSize()}
-                            aria-label="Size options"
                             onChange={(e) => {
                               setSelectedSize(e.currentTarget.value as Size);
                             }}
@@ -1033,12 +1029,13 @@ const EmbedModal = () => {
                           </select>
                         </div>
                         <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>Alignment</label>
+                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`} for="itemsAlignment">
+                            Alignment
+                          </label>
                           <select
-                            id="alignment"
+                            id="itemsAlignment"
                             class={`form-select form-select-md border-0 rounded-0 ${styles.select}`}
                             value={itemsAlignment()}
-                            aria-label="Items aligment options"
                             onChange={(e) => {
                               setItemsAlignment(e.currentTarget.value as Alignment);
                             }}
@@ -1050,10 +1047,10 @@ const EmbedModal = () => {
                             </For>
                           </select>
                         </div>
-                        <div class="d-flex flex-column mt-3">
-                          <label class={`text-muted form-check-label text-nowrap ${styles.label}`}>
+                        <fieldset class="d-flex flex-column mt-3">
+                          <legend class={`mb-0 text-muted form-check-label text-nowrap ${styles.label}`}>
                             Gap between items:
-                          </label>
+                          </legend>
                           <div class="d-flex mt-1">
                             <For each={Object.values(SpacingType)}>
                               {(t: string | number | string[], index: () => number) => {
@@ -1066,7 +1063,6 @@ const EmbedModal = () => {
                                       id={`spacing_${t}`}
                                       value={t}
                                       checked={itemsSpacingType() === t}
-                                      aria-checked={itemsSpacingType() === t}
                                       onInput={(e) => {
                                         onUpdateSpacingType(e.currentTarget.value as SpacingType);
                                       }}
@@ -1082,19 +1078,21 @@ const EmbedModal = () => {
                           </div>
 
                           <Show when={itemsSpacingType() === SpacingType.Custom}>
+                            <label class="visually-hidden" for="itemsSpacing">
+                              Gap between items (px)
+                            </label>
                             <input
                               type="number"
                               id="itemsSpacing"
-                              min={0}
-                              class={`form-control withShadow rounded-0 border-0 ${styles.input}`}
+                              min={ITEMS_SPACING_RANGE.min}
+                              class={`form-control rounded-0 border-0 ${styles.input}`}
                               value={itemsSpacing()}
-                              aria-label="Items spacing"
                               onChange={(e) => {
-                                setItemsSpacing(parseInt(e.currentTarget.value));
+                                onNumberChange(e.currentTarget, ITEMS_SPACING_RANGE, itemsSpacing, setItemsSpacing);
                               }}
                             />
                           </Show>
-                        </div>
+                        </fieldset>
                       </Show>
                     </div>
                   </div>
@@ -1103,30 +1101,28 @@ const EmbedModal = () => {
                       <div class={`text-uppercase text-muted fw-semibold ${styles.labelSelect} ${styles.previewTitle}`}>
                         Preview
                       </div>
-                      <Show when={!isUndefined(url())}>
-                        <div class="p-4 pt-2 flex-grow-1">
-                          <iframe title="Embed grid" src={url()} class="d-block w-100 h-100 border-0 scroll-auto" />
-                          <Show when={displayItemModal() && embedScriptLoaded()}>
-                            <iframe
-                              id="embed-item"
-                              title="Embed item details view"
-                              src={`${embedOrigin()}/embed-item.html`}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'none',
-                                border: 'none',
-                                position: 'fixed',
-                                top: '0',
-                                bottom: '0',
-                                left: '0',
-                                right: '0',
-                                'z-index': '2147483647',
-                              }}
-                            />
-                          </Show>
-                        </div>
-                      </Show>
+                      <div class="p-4 pt-2 flex-grow-1">
+                        <iframe title="Embed grid" src={url()} class="d-block w-100 h-100 border-0" />
+                        <Show when={displayItemModal() && embedScriptLoaded()}>
+                          <iframe
+                            id="embed-item"
+                            title="Embed item details view"
+                            src={`${embedOrigin()}/embed-item.html`}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              display: 'none',
+                              border: 'none',
+                              position: 'fixed',
+                              top: '0',
+                              bottom: '0',
+                              left: '0',
+                              right: '0',
+                              'z-index': '2147483647',
+                            }}
+                          />
+                        </Show>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1135,18 +1131,12 @@ const EmbedModal = () => {
               <div class={`border-top p-4 ${styles.codeWrapper}`}>
                 <div class={`text-uppercase text-muted fw-semibold mb-2 ${styles.labelSelect}`}>Embed code</div>
                 <CodeBlock
-                  language="html"
-                  content={
-                    !isUndefined(url())
-                      ? `<!-- Landscape embed view -->\n<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;"></iframe>${getExtraCode()}`
-                      : ''
-                  }
+                  content={`<!-- Landscape embed view -->\n<iframe src="${url()}" style="width:100%;height:100%;display:block;border:none;"></iframe>${getExtraCode()}`}
                   alignment="top"
                   orientation="column"
                   codeClass={`bg-dark text-white ${styles.code}`}
                   btnWrapperClass="mt-2 ms-auto"
                   withCopyBtn
-                  visibleBtnText
                 />
               </div>
             </div>
@@ -1158,3 +1148,15 @@ const EmbedModal = () => {
 };
 
 export default EmbedModal;
+
+// Build the embed key of the category and subcategory normalized names selected
+const getCategoryKey = (category: string, subcategory?: string) =>
+  buildEmbedKey({
+    classify: 'category',
+    category: { normalized_name: category },
+    subcategory: subcategory ? { normalized_name: subcategory } : undefined,
+  });
+
+// Build the embed key of the maturity or TAG option selected (all options when none)
+const getOptionKey = (classify: 'maturity' | 'tag', option?: ClassificationOption) =>
+  buildEmbedKey({ classify, option });

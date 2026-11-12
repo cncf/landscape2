@@ -15,10 +15,27 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
 landscape2-core = { path = "../../core" }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-wasm-bindgen = { workspace = true }
+ts-rs = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
+
+[dev-dependencies]
+mockito = { workspace = true }
+pretty_assertions = { workspace = true }
+tempfile = { workspace = true }
+tokio = { workspace = true }
+
+[features]
+ts = ["dep:ts-rs", "landscape2-core/ts"]
+
+[package.metadata.cargo-machete]
+# Used without a direct reference: the `wasm_bindgen` macro expands async
+# exports into `wasm_bindgen_futures` calls
+ignored = ["wasm-bindgen-futures"]

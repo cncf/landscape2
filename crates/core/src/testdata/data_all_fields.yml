@@ -1,0 +1,81 @@
+# Landscape data fixture with a single item that sets every legacy item and
+# extra key, used to check they are all documented.
+
+categories:
+  - name: Category 1
+    subcategories:
+      - name: Subcategory 1-1
+        items:
+          - homepage_url: https://item-1.example
+            logo: item-1.svg
+            name: Item 1
+            additional_repos:
+              - repo_url: https://github.com/example/item-1-extra
+                branch: main
+                license: MIT
+            branch: main
+            crunchbase: https://www.crunchbase.com/organization/item-1
+            description: This is the description of item 1
+            enduser: false
+            extra:
+              accepted: "2021-01-01"
+              annotations:
+                key1: value1
+              annual_review_date: "2023-01-01"
+              annual_review_url: https://annual-review.example
+              archived: "2024-01-01"
+              artwork_url: https://artwork.example
+              audits:
+                - date: "2022-01-01"
+                  type: security
+                  url: https://audit.example
+                  vendor: Vendor 1
+              blog_url: https://blog.example
+              bluesky_url: https://bsky.app/profile/item-1
+              chat_channel: "#item-1"
+              clomonitor_name: item-1
+              dev_stats_url: https://dev-stats.example
+              discord_url: https://discord.example
+              docker_url: https://docker.example
+              documentation_url: https://docs.example
+              facebook_url: https://www.facebook.com/item-1
+              funding_url: https://funding.example
+              github_discussions_url: https://github.com/example/item-1/discussions
+              gitter_url: https://gitter.example
+              graduated: "2023-06-01"
+              incubating: "2022-06-01"
+              lfx_slug: item-1
+              linkedin_url: https://www.linkedin.com/company/item-1
+              mailing_list_url: https://mailing-list.example
+              other_links:
+                - name: Link 1
+                  url: https://link-1.example
+              package_manager_url: https://package-manager.example/item-1
+              parent_project: Item 1
+              pinterest_url: https://www.pinterest.com/item-1
+              reddit_url: https://www.reddit.com/r/item-1
+              slack_url: https://slack.example
+              specification: false
+              stack_overflow_url: https://stackoverflow.com/questions/tagged/item-1
+              summary_business_use_case: Business use case
+              summary_integration: Item 2, Item 3
+              summary_integrations: Item 2, Item 3
+              summary_intro_url: https://intro.example
+              summary_personas: Platform engineers
+              summary_release_rate: Every 3 months
+              summary_tags: security, networking
+              summary_use_case: Technical use case
+              tag:
+                - security
+              training_certifications: Certification 1
+              training_type: Course
+              youtube_url: https://www.youtube.com/@item-1
+            joined: "2020-01-01"
+            license: Apache-2.0
+            project: graduated
+            repo_url: https://github.com/example/item-1
+            second_path:
+              - Category 1 / Subcategory 1-1
+            twitter: https://twitter.com/item-1
+            unnamed_organization: false
+            url_for_bestpractices: https://www.bestpractices.dev/projects/1

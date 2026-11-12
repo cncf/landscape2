@@ -1,0 +1,12 @@
+landscape:
+  - category:
+    name: Category
+    subcategories:
+      - subcategory:
+        name: Subcategory
+        items:
+          - item:
+            homepage_url: https://item.example
+            logo: item.svg
+            name: Item
+            repo_url: https://github.com/example/item

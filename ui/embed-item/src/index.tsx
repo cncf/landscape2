@@ -2,6 +2,11 @@ import { render } from 'solid-js/web';
 
 import App from './App';
 
-const root = document.getElementById('landscape-embeddable-item-view');
+const MOUNT_NODE_ID = 'landscape-embeddable-item-view';
 
-render(() => <App />, root!);
+const root = document.getElementById(MOUNT_NODE_ID);
+if (!root) {
+  throw new Error(`Landscape embed item mount node #${MOUNT_NODE_ID} not found`);
+}
+
+render(() => <App />, root);

@@ -1,3 +1,4 @@
+import type { OverlayData as OverlayDataResult, Question } from 'common';
 import isEmpty from 'lodash/isEmpty';
 
 import {
@@ -11,6 +12,7 @@ import {
   OVERLAY_SETTINGS_PARAM,
   overrideSettings,
 } from '../data';
+import getDevOrigin from './getDevOrigin';
 import isWasmSupported from './isWasmSupported';
 import itemsDataGetter from './itemsDataGetter';
 
@@ -31,11 +33,14 @@ interface OverlayInput {
   games_url?: string;
 }
 
+/** Overlay mode state: the overlay URL params and the data built from them by the overlay wasm module. */
 export class OverlayData {
   private isActive: boolean = false;
   private params: OverlayParams | undefined = undefined;
   private query: URLSearchParams = new URLSearchParams();
+  private quizQuestions: Question[] | undefined = undefined;
 
+  /** Checks whether the URL has overlay params, initializing the overlay mode when it does. */
   public checkIfOverlayInQuery() {
     const searchParams = new URLSearchParams(window.location.search);
     for (const [key] of searchParams.entries()) {
@@ -47,6 +52,7 @@ export class OverlayData {
     return false;
   }
 
+  /** Turns the overlay mode on and keeps the overlay URL params. */
   public init() {
     this.isActive = true;
     document.body.classList.add('overlay-active');
@@ -66,7 +72,7 @@ export class OverlayData {
     // save url params
     if (dataUrl) {
       this.params.data = dataUrl;
-      this.query.set(OVERLAY_DATA_PARAM, dataUrl || '');
+      this.query.set(OVERLAY_DATA_PARAM, dataUrl);
     }
     if (settingsUrl) {
       this.params.settings = settingsUrl;
@@ -86,67 +92,77 @@ export class OverlayData {
     }
   }
 
+  /** Checks whether the overlay mode is on. */
   public isActiveOverlay() {
     return this.isActive;
   }
 
+  /** Returns the overlay URL params to keep in the app links (empty when the overlay mode is off). */
   public getUrlParams() {
     return this.isActive ? this.query.toString() : '';
   }
 
+  /**
+   * Returns the quiz questions of the overlay games as a JSON array, ready for
+   * `QuizOptions`, or `undefined` when the overlay data has no quiz questions.
+   */
+  public getQuizQuestionsJson(): string | undefined {
+    return this.quizQuestions ? JSON.stringify(this.quizQuestions) : undefined;
+  }
+
+  /** Builds the overlay datasets with the overlay wasm module, installs them and returns the base dataset. */
   public async getOverlayBaseData() {
     if (!isWasmSupported()) {
       return Promise.reject('WebAssembly is not supported in this browser');
     } else {
-      return import('../../wasm/overlay/landscape2_overlay')
-        .then(async (obj) => {
-          await obj.default();
+      return import('../../wasm/overlay/landscape2_overlay').then(async (obj) => {
+        await obj.default();
 
-          const input: OverlayInput = {
-            landscape_url: `${
-              import.meta.env.MODE === 'development' ? 'http://localhost:8000' : window.location.origin
-            }${BASE_PATH}`,
-          };
+        const input: OverlayInput = {
+          landscape_url: `${getDevOrigin(window.location.origin)}${BASE_PATH}`,
+        };
 
-          if (!isEmpty(this.params)) {
-            if (this.params.data) {
-              input.data_url = this.params.data;
-            }
-            if (this.params.settings) {
-              input.settings_url = this.params.settings;
-            }
-            if (this.params.guide) {
-              input.guide_url = this.params.guide;
-            }
-            if (this.params.logosPath) {
-              input.logos_url = this.params.logosPath;
-            }
-            if (this.params.gamesPath) {
-              input.games_url = this.params.gamesPath;
-            }
+        if (!isEmpty(this.params)) {
+          if (this.params.data) {
+            input.data_url = this.params.data;
           }
+          if (this.params.settings) {
+            input.settings_url = this.params.settings;
+          }
+          if (this.params.guide) {
+            input.guide_url = this.params.guide;
+          }
+          if (this.params.logosPath) {
+            input.logos_url = this.params.logosPath;
+          }
+          if (this.params.gamesPath) {
+            input.games_url = this.params.gamesPath;
+          }
+        }
 
-          const overlayData = await obj.get_overlay_data(input);
+        const overlayData = await obj.get_overlay_data(input);
 
-          const data = JSON.parse(overlayData);
-          window.baseDS = data.datasets.base;
-          window.statsDS = data.datasets.stats;
-          window.guide = data.guide;
-          itemsDataGetter.init(data.datasets.full);
-          overrideSettings({
-            foundationName: data.datasets.base.foundation || '',
-            gridSize: data.datasets.base.grid_items_size || DEFAULT_GRID_ITEMS_SIZE,
-            viewMode: data.datasets.base.view_mode || DEFAULT_VIEW_MODE,
-          });
-
-          return data.datasets.base;
-        })
-        .catch((err) => {
-          return Promise.reject(err);
+        const data: OverlayDataResult = JSON.parse(overlayData);
+        // Report the overlay issues (unmatched items, unknown keys) to the maintainer
+        data.warnings?.forEach((warning) => console.warn(warning));
+        window.baseDS = data.datasets.base;
+        window.statsDS = data.datasets.stats;
+        window.guide = data.guide;
+        this.quizQuestions = data.games?.quiz?.questions;
+        // The settings are overridden first, so the full data subscribers already read them
+        overrideSettings({
+          foundationName: data.datasets.base.foundation || '',
+          gridSize: data.datasets.base.grid_items_size || DEFAULT_GRID_ITEMS_SIZE,
+          viewMode: data.datasets.base.view_mode || DEFAULT_VIEW_MODE,
         });
+        itemsDataGetter.init(data.datasets.full);
+
+        return data.datasets.base;
+      });
     }
   }
 }
 
+/** Shared overlay data instance. */
 const overlayData = new OverlayData();
 export default overlayData;

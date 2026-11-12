@@ -3,10 +3,10 @@ import { createContext, createSignal, ParentComponent, useContext } from 'solid-
 function useGridWidthProvider() {
   const [containerWidth, setContainerWidth] = createSignal(0);
 
-  return { containerWidth: containerWidth, setContainerWidth: setContainerWidth };
+  return { containerWidth, setContainerWidth };
 }
 
-export type ContextGridWidthType = ReturnType<typeof useGridWidthProvider>;
+type ContextGridWidthType = ReturnType<typeof useGridWidthProvider>;
 
 const GridWidthContext = createContext<ContextGridWidthType | undefined>(undefined);
 
@@ -15,18 +15,20 @@ export const GridWidthProvider: ParentComponent = (props) => {
   return <GridWidthContext.Provider value={value}>{props.children}</GridWidthContext.Provider>;
 };
 
-export function useGridWidthContainer() {
+function useGridWidthContext() {
   const context = useContext(GridWidthContext);
   if (context === undefined) {
-    throw new Error(`useGridWidthContainer must be used within a GridWidthProvider`);
+    throw new Error(`useGridWidthContext must be used within a GridWidthProvider`);
   }
   return context;
 }
 
+/** Returns the explore grid container width accessor. */
 export function useGridWidth() {
-  return useGridWidthContainer().containerWidth;
+  return useGridWidthContext().containerWidth;
 }
 
+/** Returns the setter of the explore grid container width. */
 export function useSetGridWidth() {
-  return useGridWidthContainer().setContainerWidth;
+  return useGridWidthContext().setContainerWidth;
 }

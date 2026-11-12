@@ -1,0 +1,10 @@
+categories:
+  - name: Category 1
+    subcategories:
+      - name: Subcategory 1-1
+        items:
+          - name: Item 1
+            description: This is the description of item 1
+            homepage_url: https://item-1.example
+            logo: sample.svg
+            unknown_key: value

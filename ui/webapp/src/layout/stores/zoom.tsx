@@ -1,44 +1,42 @@
-import { useBreakpointDetect } from 'common';
-import isUndefined from 'lodash/isUndefined';
+import { Breakpoint, useBreakpointDetect } from 'common';
 import { createContext, createEffect, createSignal, ParentComponent, useContext } from 'solid-js';
 
 import { DEFAULT_ZOOM_LEVELS } from '../../data';
-import { Breakpoint } from '../../types';
 
 function useZoomLevelProvider() {
   const [zoom, setZoom] = createSignal(DEFAULT_ZOOM_LEVELS[Breakpoint.XL]);
   const { point } = useBreakpointDetect();
 
   createEffect(() => {
-    if (!isUndefined(point())) {
-      setZoom(DEFAULT_ZOOM_LEVELS[point()! as Breakpoint]);
-    }
+    setZoom(DEFAULT_ZOOM_LEVELS[point()]);
   });
 
   return { zoom, setZoom };
 }
 
-export type ContextType = ReturnType<typeof useZoomLevelProvider>;
+type ContextZoomType = ReturnType<typeof useZoomLevelProvider>;
 
-const ZoomContext = createContext<ContextType | undefined>(undefined);
+const ZoomContext = createContext<ContextZoomType | undefined>(undefined);
 
 export const ZoomProvider: ParentComponent = (props) => {
   const value = useZoomLevelProvider();
   return <ZoomContext.Provider value={value}>{props.children}</ZoomContext.Provider>;
 };
 
-export function useZoom() {
+function useZoomContext() {
   const context = useContext(ZoomContext);
   if (context === undefined) {
-    throw new Error(`useZoomLevel must be used within a ZoomProvider`);
+    throw new Error(`useZoomContext must be used within a ZoomProvider`);
   }
   return context;
 }
 
+/** Returns the grid zoom level accessor. */
 export function useZoomLevel() {
-  return useZoom().zoom;
+  return useZoomContext().zoom;
 }
 
+/** Returns the setter of the grid zoom level. */
 export function useSetZoomLevel() {
-  return useZoom().setZoom;
+  return useZoomContext().setZoom;
 }

@@ -1,14 +1,14 @@
 import { SVGIcon, SVGIconKind } from 'common';
 import orderBy from 'lodash/orderBy';
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { createSignal, createUniqueId, For, onMount, Show } from 'solid-js';
 
-import { CategoryValueStats } from '../../types';
+import { CategoryProjectsStats } from '../../types';
 import sumValues from '../../utils/sumValues';
 import styles from './CollapsableTable.module.css';
 
 interface Props {
   data: {
-    [key: string]: CategoryValueStats;
+    [key: string]: CategoryProjectsStats;
   };
 }
 
@@ -24,7 +24,7 @@ const CollapsableTable = (props: Props) => {
 
   return (
     <div>
-      <table class={`table table-bordered mb-0 mb-lg-2 ${styles.table}`} role="treegrid">
+      <table class={`table table-bordered mb-0 mb-lg-2 ${styles.table}`}>
         <thead>
           <tr>
             <th class={`border-end-0 ${styles.caretCol}`} />
@@ -36,56 +36,57 @@ const CollapsableTable = (props: Props) => {
             </th>
           </tr>
         </thead>
-        <tbody>
-          <For each={sortedCategories()}>
-            {(cat: string) => {
-              const subcategories = props.data[cat].subcategories;
-              const isExpanded = () => expanded() === cat;
+        <For each={sortedCategories()}>
+          {(cat: string) => {
+            const subcategories = props.data[cat].subcategories ?? {};
+            const isExpanded = () => expanded() === cat;
+            const rowsId = createUniqueId();
 
-              return (
-                <>
-                  <tr
-                    onClick={() => {
-                      if (isExpanded()) {
-                        setExpanded();
-                      } else {
-                        setExpanded(cat);
-                      }
-                    }}
-                    class={`${styles.grayCell} ${styles.clickable}`}
-                    aria-expanded={isExpanded()}
-                  >
+            return (
+              <>
+                <tbody>
+                  <tr class={styles.grayCell}>
                     <td class="border-end-0">
                       <Show when={isExpanded()} fallback={<SVGIcon kind={SVGIconKind.CaretDown} />}>
                         <SVGIcon kind={SVGIconKind.CaretUp} />
                       </Show>
                     </td>
-                    <td class="border-start-0" role="gridcell">
-                      {cat}
+                    <td class="border-start-0 p-0">
+                      <button
+                        type="button"
+                        class={`btn btn-link border-0 rounded-0 w-100 text-start text-reset ${styles.expandBtn}`}
+                        onClick={() => setExpanded(isExpanded() ? undefined : cat)}
+                        aria-expanded={isExpanded()}
+                        aria-controls={rowsId}
+                      >
+                        {cat}
+                      </button>
                     </td>
                     <td class="text-end">{props.data[cat].projects}</td>
                   </tr>
-                  <Show when={isExpanded()}>
-                    <For each={Object.keys(subcategories).sort()}>
-                      {(subcat: string) => (
-                        <tr>
-                          <td class="border-end-0" />
-                          <td class="border-start-0">{subcat}</td>
-                          <td class="text-end">{subcategories[subcat]}</td>
-                        </tr>
-                      )}
-                    </For>
-                  </Show>
-                </>
-              );
-            }}
-          </For>
+                </tbody>
+                <tbody id={rowsId} hidden={!isExpanded()}>
+                  <For each={Object.keys(subcategories).sort()}>
+                    {(subcat: string) => (
+                      <tr>
+                        <td class="border-end-0" />
+                        <td class="border-start-0">{subcat}</td>
+                        <td class="text-end">{subcategories[subcat]}</td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </>
+            );
+          }}
+        </For>
+        <tbody>
           <tr class={styles.grayCell}>
             <td colspan={2} class="fw-semibold text-uppercase">
               Total
             </td>
             <td class="text-end fw-semibold">
-              {sumValues(Object.values(Object.values(props.data).map((i: CategoryValueStats) => i.projects)))}
+              {sumValues(Object.values(props.data).map((i: CategoryProjectsStats) => i.projects))}
             </td>
           </tr>
         </tbody>

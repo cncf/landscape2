@@ -3,27 +3,32 @@
 
 use std::{
     fs,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
     sync::LazyLock,
 };
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail, format_err};
 use clap::Args;
-use regex::bytes::Regex;
+use landscape2_core::settings::LogosViewbox;
+use regex::bytes::{NoExpand, Regex};
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use url::Url;
 use usvg::{NodeExt, Rect, TreeParsing};
 
-use super::settings::LogosViewbox;
+/// Regular expression used to locate the SVG logos' root element start tag.
+static SVG_ROOT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<svg\b[^>]*>").expect("exprs in SVG_ROOT to be valid"));
 
-/// Regular expression used to remove the SVG logos' title.
-pub static SVG_TITLE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new("<title>.*</title>").expect("exprs in SVG_TITLE to be valid"));
+/// Regular expression used to remove the SVG logos' titles.
+static SVG_TITLE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<title\b[^>]*>.*?</title>").expect("exprs in SVG_TITLE to be valid"));
 
-/// Regular expression used to update the SVG logos' viewbox.
-pub static SVG_VIEWBOX: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"viewBox="[0-9. ]*""#).expect("expr in SVG_VIEWBOX to be valid"));
+/// Regular expression used to locate the viewbox attribute in the SVG logos'
+/// root element start tag.
+static SVG_VIEWBOX: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"viewBox\s*=\s*(?:"[^"]*"|'[^']*')"#).expect("exprs in SVG_VIEWBOX to be valid")
+});
 
 /// Landscape logos source.
 #[derive(Args, Clone, Default)]
@@ -38,84 +43,98 @@ pub struct LogosSource {
     pub logos_url: Option<String>,
 }
 
-/// Represents some information about an item's logo.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+/// Logo prepared to be published in the output directory.
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Logo {
+    /// Logo content, including the SVG adjustments when applicable.
     pub data: Vec<u8>,
-    pub extension: String,
+    /// Hex encoded SHA-256 digest of the logo content, used as file name.
     pub digest: String,
+    /// Lowercased extension of the logo file name.
+    pub extension: String,
 }
 
 /// Get logo from the source provided and apply some modifications to it when
 /// applicable.
+///
+/// SVG logos have their titles removed (identical logos sometimes use a
+/// different title) and, unless disabled or excluded, the root viewbox
+/// adjusted to the smallest rectangle in which the content fits.
 pub(crate) async fn prepare_logo(
-    http_client: reqwest::Client,
+    http_client: &reqwest::Client,
     logos_source: &LogosSource,
     logos_viewbox: &LogosViewbox,
     file_name: &str,
 ) -> Result<Logo> {
     // Get logo from the source provided
-    let mut logo_data = get_logo(http_client.clone(), logos_source, file_name).await?;
+    let logo_data = get_logo(http_client, logos_source, file_name).await?;
 
-    // Apply some modifications to the logo if it is an SVG file
+    // Process the logo in a blocking task, as parsing SVG files is CPU bound
     let extension = Path::new(file_name)
         .extension()
         .and_then(|ext| ext.to_str())
         .unwrap_or_default()
         .to_lowercase();
-    if extension == "svg" {
-        // Remove title if present (some identical logos are using a different
-        // title, so we do this before computing the digest)
-        logo_data = SVG_TITLE.replace(&logo_data, b"").into_owned();
+    let adjust_viewbox =
+        logos_viewbox.adjust && !logos_viewbox.exclude.iter().any(|excluded| excluded == file_name);
+    let logo = tokio::task::spawn_blocking(move || process_logo(logo_data, extension, adjust_viewbox))
+        .await
+        .context("error executing logo processing task")?;
 
-        // Update viewbox to the smallest rectangle in which the object fits
-        if logos_viewbox.adjust
-            && !logos_viewbox.exclude.contains(&file_name.to_string())
-            && let Ok(Some(bounding_box)) = get_svg_bounding_box(&logo_data)
-            && bounding_box.left() >= 0.0
-            && bounding_box.top() >= 0.0
-        {
-            let new_viewbox_bounds = format!(
-                "{} {} {} {}",
-                bounding_box.left(),
-                bounding_box.top(),
-                bounding_box.right() - bounding_box.left(),
-                bounding_box.bottom() - bounding_box.top()
-            );
-            let new_viewbox = format!(r#"viewBox="{new_viewbox_bounds}""#);
-            logo_data = SVG_VIEWBOX.replace(&logo_data, new_viewbox.as_bytes()).into_owned();
-        }
-    }
-
-    // Calculate digest
-    let digest = hex::encode(Sha256::digest(&logo_data));
-
-    Ok(Logo {
-        data: logo_data,
-        extension,
-        digest,
-    })
+    Ok(logo)
 }
 
 /// Get logo content from the corresponding source.
-#[allow(clippy::similar_names)]
+///
+/// Logo paths must be relative and stay inside the logos location: absolute
+/// paths, `..` components and backslashes are rejected, and local logos must
+/// resolve (symlinks included) to a file under the logos path.
 async fn get_logo(
-    http_client: reqwest::Client,
+    http_client: &reqwest::Client,
     logos_source: &LogosSource,
     file_name: &str,
 ) -> Result<Vec<u8>> {
-    // Try from path
-    if let Some(path) = &logos_source.logos_path {
-        return fs::read(path.join(file_name)).map_err(Into::into);
+    // Reject logo paths that could escape the logos location
+    let path = Path::new(file_name);
+    if file_name.contains('\\')
+        || path.components().any(|c| {
+            matches!(
+                c,
+                Component::ParentDir | Component::Prefix(_) | Component::RootDir
+            )
+        })
+    {
+        bail!("invalid logo path: {file_name}");
     }
 
-    // Try from url
+    // Try from path, making sure the resolved file stays under the logos path
+    if let Some(logos_path) = &logos_source.logos_path {
+        let logo_path = logos_path.join(path);
+        let read_err = || format!("error reading logo {}", logo_path.display());
+        let canonical_logos_path = fs::canonicalize(logos_path)
+            .with_context(|| format!("error resolving logos path {}", logos_path.display()))?;
+        let canonical_logo_path = fs::canonicalize(&logo_path).with_context(read_err)?;
+        if !canonical_logo_path.starts_with(&canonical_logos_path) {
+            bail!("logo path is outside the logos path: {file_name}");
+        }
+        return fs::read(&canonical_logo_path).with_context(read_err);
+    }
+
+    // Try from url, percent-encoding the logo path segments
     if let Some(logos_url) = &logos_source.logos_url {
-        let logos_url = logos_url.trim_end_matches('/');
-        let logo_url = format!("{logos_url}/{file_name}");
+        let invalid_url = || format!("invalid logos url: {logos_url}");
+        let mut logo_url = Url::parse(logos_url).with_context(invalid_url)?;
+        logo_url
+            .path_segments_mut()
+            .map_err(|()| format_err!(invalid_url()))?
+            .pop_if_empty()
+            .extend(file_name.split('/').filter(|segment| !segment.is_empty() && *segment != "."));
         let resp = http_client.get(logo_url).send().await?;
         if resp.status() != StatusCode::OK {
-            bail!("unexpected status code getting logo: {}", resp.status());
+            bail!(
+                "unexpected status code getting logo {file_name}: {}",
+                resp.status()
+            );
         }
         return Ok(resp.bytes().await?.to_vec());
     }
@@ -131,3 +150,64 @@ fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
 
     Ok(bounding_box)
 }
+
+/// Apply the SVG modifications to the logo data provided (when applicable)
+/// and compute its digest.
+fn process_logo(mut data: Vec<u8>, extension: String, adjust_viewbox: bool) -> Logo {
+    if extension == "svg" {
+        // Remove titles (some identical logos use a different title, so this
+        // is done before computing the digest)
+        data = SVG_TITLE.replace_all(&data, NoExpand(b"")).into_owned();
+
+        // Update the root viewbox to the smallest rectangle in which the
+        // content fits, as long as it does not start at negative coordinates
+        if adjust_viewbox
+            && let Ok(Some(bounding_box)) = get_svg_bounding_box(&data)
+            && bounding_box.left() >= 0.0
+            && bounding_box.top() >= 0.0
+        {
+            let viewbox = format!(
+                "{} {} {} {}",
+                bounding_box.left(),
+                bounding_box.top(),
+                bounding_box.right() - bounding_box.left(),
+                bounding_box.bottom() - bounding_box.top()
+            );
+            data = set_root_viewbox(&data, &viewbox);
+        }
+    }
+
+    // Calculate digest
+    let digest = hex::encode(Sha256::digest(&data));
+
+    Logo {
+        data,
+        digest,
+        extension,
+    }
+}
+
+/// Set the viewbox of the SVG root element, replacing the existing one or
+/// inserting it when missing. Nested elements (e.g. `<symbol>`) are left
+/// untouched.
+fn set_root_viewbox(svg_data: &[u8], viewbox: &str) -> Vec<u8> {
+    // Locate the root element start tag
+    let Some(root) = SVG_ROOT.find(svg_data) else {
+        return svg_data.to_vec();
+    };
+    let root_tag = root.as_bytes();
+
+    // Replace the viewbox in the root tag, or insert it right after `<svg`
+    let viewbox_attr = format!(r#"viewBox="{viewbox}""#);
+    let new_root_tag = if SVG_VIEWBOX.is_match(root_tag) {
+        SVG_VIEWBOX.replace(root_tag, NoExpand(viewbox_attr.as_bytes())).into_owned()
+    } else {
+        let (open, rest) = root_tag.split_at("<svg".len());
+        [open, b" ", viewbox_attr.as_bytes(), rest].concat()
+    };
+
+    [&svg_data[..root.start()], &new_root_tag, &svg_data[root.end()..]].concat()
+}
+
+#[cfg(test)]
+mod tests;

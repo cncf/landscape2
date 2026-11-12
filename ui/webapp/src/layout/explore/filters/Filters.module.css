@@ -15,18 +15,6 @@
   font-size: 0.8rem;
 }
 
-.fieldset {
-  padding: 1.5rem 1.75rem;
-}
-
-.fieldsetTitle {
-  font-size: 0.8rem;
-  line-height: 0.8rem;
-  color: var(--color4);
-  top: -0.35rem;
-  left: 1rem;
-}
-
 .dot {
   top: -5px;
   right: -5px;

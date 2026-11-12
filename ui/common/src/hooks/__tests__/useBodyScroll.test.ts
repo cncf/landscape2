@@ -1,4 +1,5 @@
 import { createRoot, createSignal } from 'solid-js';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { useBodyScroll } from '../useBodyScroll';
 

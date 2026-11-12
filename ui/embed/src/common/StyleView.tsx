@@ -1,21 +1,22 @@
-import { For, Match, Switch } from 'solid-js';
+import { Alignment, Size, Style } from 'common/embed';
+import type { EmbedItem } from 'common/types';
+import { For, Show } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
-import { Alignment, BaseItem, Size, Style } from '../types';
 import CardItem from './CardItem';
 import GridItem from './GridItem';
 
 interface Props {
-  style: Style;
-  size: Size;
-  foundation: string;
-  items: BaseItem[];
   alignment: Alignment;
   displayName: boolean;
+  foundation: string;
   itemNameSize: number;
+  items: EmbedItem[];
+  size: Size;
+  style: Style;
+  // Shows the details of an item in the item modal (items link to the landscape without it)
+  onItemClick?: (itemId: string) => void;
   spacing?: number;
-  displayItemModal: boolean;
-  setActiveItemId: (itemId: string) => void;
 }
 
 type CardSizes = {
@@ -123,83 +124,39 @@ const CardWrapper = css`
 
 const StyleView = (props: Props) => {
   return (
-    <>
-      <Switch>
-        <Match when={props.style === Style.Basic}>
-          <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
-            <For each={props.items}>
-              {(item: BaseItem) => {
-                return (
-                  <GridItem
-                    item={item}
-                    size={props.size}
-                    class={ItemClass}
-                    withName={props.displayName}
-                    itemNameSize={props.itemNameSize}
-                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
-                    borderless
-                  />
-                );
-              }}
-            </For>
-          </Grid>
-        </Match>
-        <Match when={props.style === Style.BorderedBasic}>
-          <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
-            <For each={props.items}>
-              {(item: BaseItem) => {
-                return (
-                  <GridItem
-                    item={item}
-                    size={props.size}
-                    class={ItemClass}
-                    withName={props.displayName}
-                    itemNameSize={props.itemNameSize}
-                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
-                    borderless={false}
-                  />
-                );
-              }}
-            </For>
-          </Grid>
-        </Match>
-        <Match when={props.style === Style.ShadowedBasic}>
-          <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
-            <For each={props.items}>
-              {(item: BaseItem) => {
-                return (
-                  <GridItem
-                    item={item}
-                    size={props.size}
-                    class={ItemClass}
-                    withName={props.displayName}
-                    itemNameSize={props.itemNameSize}
-                    borderless={false}
-                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
-                    withShadow
-                  />
-                );
-              }}
-            </For>
-          </Grid>
-        </Match>
-        <Match when={props.style === Style.Card}>
-          <div class={CardWrapper}>
-            <For each={props.items}>
-              {(item: BaseItem) => {
-                return (
-                  <CardItem
-                    item={item}
-                    foundation={props.foundation}
-                    onClick={props.displayItemModal ? () => props.setActiveItemId(item.id) : undefined}
-                  />
-                );
-              }}
-            </For>
-          </div>
-        </Match>
-      </Switch>
-    </>
+    <Show
+      when={props.style === Style.Card}
+      fallback={
+        <Grid size={props.size} alignment={props.alignment} spacing={props.spacing}>
+          <For each={props.items}>
+            {(item) => (
+              <GridItem
+                item={item}
+                size={props.size}
+                class={ItemClass}
+                withName={props.displayName}
+                itemNameSize={props.itemNameSize}
+                onClick={props.onItemClick ? () => props.onItemClick?.(item.id) : undefined}
+                borderless={props.style === Style.Basic}
+                withShadow={props.style === Style.ShadowedBasic}
+              />
+            )}
+          </For>
+        </Grid>
+      }
+    >
+      <div class={CardWrapper}>
+        <For each={props.items}>
+          {(item) => (
+            <CardItem
+              item={item}
+              foundation={props.foundation}
+              onClick={props.onItemClick ? () => props.onItemClick?.(item.id) : undefined}
+            />
+          )}
+        </For>
+      </div>
+    </Show>
   );
 };
 

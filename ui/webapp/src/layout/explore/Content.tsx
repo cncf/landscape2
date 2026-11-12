@@ -1,7 +1,7 @@
 import isUndefined from 'lodash/isUndefined';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption, ViewMode } from '../../types';
-import { CategoriesData } from '../../utils/itemsDataGetter';
+import { CardData, CategoriesData } from '../../utils/itemsDataGetter';
 import { useViewMode } from '../stores/viewMode';
 import CardCategory from './card';
 import GridCategory from './grid';
@@ -10,7 +10,7 @@ interface Props {
   group?: string;
   initialSelectedGroup?: string;
   data: CategoriesData;
-  cardData: unknown;
+  cardData?: CardData;
   categories_overridden?: string[];
   classify: ClassifyOption;
   sorted: SortOption;

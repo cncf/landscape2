@@ -1,0 +1,260 @@
+{
+  "crunchbase_data": {
+    "https://www.crunchbase.com/organization/item-2": {
+      "generated_at": "2024-06-01T00:00:00Z",
+      "description": "Item 2 organization description",
+      "homepage_url": "https://item-2.example",
+      "name": "Item 2 Inc"
+    },
+    "https://www.crunchbase.com/organization/item-3": {
+      "generated_at": "2024-06-01T00:00:00Z",
+      "description": ":rocket: Item 3 organization description",
+      "name": "Item 3 Inc"
+    },
+    "https://www.crunchbase.com/organization/member-1": {
+      "generated_at": "2024-06-01T00:00:00Z",
+      "acquisitions": [
+        {
+          "acquiree_cb_permalink": "acquired-company",
+          "acquiree_name": "Acquired Company",
+          "announced_on": "2023-11-20",
+          "price": 5000000
+        }
+      ],
+      "categories": [
+        "Cloud Computing",
+        "Software"
+      ],
+      "city": "San Francisco",
+      "company_type": "for_profit",
+      "country": "United States",
+      "description": "Member 1 organization description",
+      "funding": 25000000,
+      "funding_rounds": [
+        {
+          "amount": 25000000,
+          "announced_on": "2023-05-10",
+          "kind": "series_a"
+        }
+      ],
+      "homepage_url": "https://member-1.example",
+      "kind": "company",
+      "linkedin_url": "https://www.linkedin.com/company/member-1",
+      "name": "Member 1 Inc",
+      "num_employees_max": 500,
+      "num_employees_min": 251,
+      "region": "North America",
+      "stock_exchange": "nasdaq",
+      "ticker": "MBR",
+      "twitter_url": "https://twitter.com/member1"
+    }
+  },
+  "github_data": {
+    "https://github.com/example/item-1": {
+      "contributors": {
+        "count": 120,
+        "url": "https://github.com/example/item-1/graphs/contributors"
+      },
+      "description": "Item 1 repository description",
+      "generated_at": "2024-06-01T00:00:00Z",
+      "latest_commit": {
+        "url": "https://github.com/example/item-1/commit/2",
+        "ts": "2024-05-30T12:00:00Z"
+      },
+      "participation_stats": [
+        3,
+        5,
+        8
+      ],
+      "stars": 1500,
+      "url": "https://github.com/example/item-1",
+      "first_commit": {
+        "url": "https://github.com/example/item-1/commit/1",
+        "ts": "2019-01-10T09:00:00Z"
+      },
+      "languages": {
+        "Go": 90000,
+        "Shell": 1000
+      },
+      "latest_release": {
+        "url": "https://github.com/example/item-1/releases/tag/v1.2.0",
+        "ts": "2024-05-01T08:00:00Z"
+      },
+      "license": "Apache-2.0",
+      "topics": [
+        "cloud-native",
+        "networking"
+      ]
+    },
+    "https://github.com/example/item-2": {
+      "contributors": {
+        "count": 4,
+        "url": "https://github.com/example/item-2/graphs/contributors"
+      },
+      "description": "Item 2 repository description",
+      "generated_at": "2024-06-01T00:00:00Z",
+      "latest_commit": {
+        "url": "https://github.com/example/item-2/commit/9",
+        "ts": "2024-04-15T10:00:00Z"
+      },
+      "participation_stats": [
+        0,
+        1
+      ],
+      "stars": 20,
+      "url": "https://github.com/example/item-2"
+    },
+    "https://github.com/example/item-3": {
+      "contributors": {
+        "count": 35,
+        "url": "https://github.com/example/item-3/graphs/contributors"
+      },
+      "description": "",
+      "generated_at": "2024-06-01T00:00:00Z",
+      "latest_commit": {
+        "url": "https://github.com/example/item-3/commit/5",
+        "ts": "2024-05-20T16:00:00Z"
+      },
+      "participation_stats": [
+        2,
+        2,
+        4
+      ],
+      "stars": 300,
+      "url": "https://github.com/example/item-3",
+      "first_commit": {
+        "url": "https://github.com/example/item-3/commit/1",
+        "ts": "2021-07-01T11:00:00Z"
+      },
+      "languages": {
+        "Rust": 40000
+      },
+      "license": "Apache-2.0"
+    }
+  },
+  "items": [
+    {
+      "category": "Category 1",
+      "homepage_url": "https://item-1.example",
+      "id": "category-1--subcategory-1-1--item-1",
+      "logo": "item-1.svg",
+      "name": "Item 1",
+      "subcategory": "Subcategory 1-1",
+      "website": "https://item-1.example",
+      "accepted_at": "2021-03-01",
+      "crunchbase_url": "https://www.crunchbase.com/organization/member-1",
+      "description": "This is the description of item 1",
+      "featured": {
+        "excluded_groups": [
+          "group-2"
+        ],
+        "label": "Graduated",
+        "order": 1
+      },
+      "graduated_at": "2023-09-01",
+      "incubating_at": "2022-05-01",
+      "maturity": "graduated",
+      "member_subcategory": "Gold",
+      "oss": true,
+      "repositories": [
+        {
+          "url": "https://github.com/example/item-1",
+          "primary": true
+        }
+      ],
+      "summary": {
+        "personas": [
+          "Developer",
+          "Operator"
+        ],
+        "tags": [
+          "networking",
+          "security"
+        ],
+        "use_case": "Item 1 use case"
+      },
+      "twitter_url": "https://twitter.com/item1"
+    },
+    {
+      "category": "Category 1",
+      "homepage_url": "https://github.com/example/item-2",
+      "id": "category-1--subcategory-1-1--item-2",
+      "logo": "item-2.svg",
+      "name": "Item 2",
+      "subcategory": "Subcategory 1-1",
+      "website": "https://item-2.example",
+      "crunchbase_url": "https://www.crunchbase.com/organization/item-2",
+      "description": "Item 2 repository description",
+      "featured": {
+        "label": "Featured",
+        "order": 2
+      },
+      "repositories": [
+        {
+          "url": "https://github.com/example/item-2",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "category": "Category 2",
+      "homepage_url": "https://item-3.example",
+      "id": "category-2--subcategory-2-1--item-3",
+      "logo": "item-3.svg",
+      "name": "Item 3",
+      "subcategory": "Subcategory 2-1",
+      "website": "https://item-3.example",
+      "accepted_at": "2023-03-01",
+      "additional_categories": [
+        {
+          "category": "Category 1",
+          "subcategory": "Subcategory 1-1"
+        }
+      ],
+      "audits": [
+        {
+          "date": "2024-02-10",
+          "type": "security",
+          "url": "https://example.com/item-3-audit",
+          "vendor": "Audit vendor"
+        }
+      ],
+      "crunchbase_url": "https://www.crunchbase.com/organization/item-3",
+      "description": "Item 3 organization description",
+      "facebook_url": "https://facebook.com/item3",
+      "gitter_url": "https://gitter.im/item3",
+      "maturity": "Early Stage",
+      "oss": true,
+      "other_links": [
+        {
+          "name": "Contact",
+          "url": "mailto:item-3@example.com"
+        }
+      ],
+      "repositories": [
+        {
+          "url": "https://github.com/example/item-3",
+          "license": "MIT",
+          "primary": true
+        }
+      ],
+      "tag": [
+        "observability",
+        "security"
+      ]
+    },
+    {
+      "category": "Members",
+      "homepage_url": "https://member-1.example",
+      "id": "members--gold--member-1",
+      "logo": "member-1.svg",
+      "name": "Member 1",
+      "subcategory": "Gold",
+      "website": "https://member-1.example",
+      "crunchbase_url": "https://www.crunchbase.com/organization/member-1",
+      "description": "Member 1 organization description",
+      "joined_at": "2020-01-15",
+      "member_subcategory": "Gold"
+    }
+  ]
+}

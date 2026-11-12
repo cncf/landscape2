@@ -20,7 +20,7 @@ interface CatProps {
   catSectionNumber: number;
   bgColor: string;
   categoryName: string;
-  isOverriden: boolean;
+  isOverridden: boolean;
   content: CategoryData;
   isSafari: boolean;
 }
@@ -28,28 +28,25 @@ interface CatProps {
 const Category = (props: CatProps) => {
   const [subcategories, setSubcategories] = createSignal<SubcategoryDetails[]>();
 
-  createEffect(
-    () => {
-      if (!isUndefined(props.content)) {
-        const subcategoriesTmp: SubcategoryDetails[] = [];
-        Object.keys(props.content).forEach((subcat: string) => {
-          if (props.content[subcat].items.length !== 0) {
-            subcategoriesTmp.push({
-              name: subcat,
-              itemsCount: props.content[subcat].itemsCount,
-              itemsFeaturedCount: props.content[subcat].itemsFeaturedCount,
-            });
-          }
-        });
+  createEffect(() => {
+    if (!isUndefined(props.content)) {
+      const subcategoriesTmp: SubcategoryDetails[] = [];
+      Object.keys(props.content).forEach((subcat: string) => {
+        if (props.content[subcat].items.length !== 0) {
+          subcategoriesTmp.push({
+            name: subcat,
+            itemsCount: props.content[subcat].itemsCount,
+            itemsFeaturedCount: props.content[subcat].itemsFeaturedCount,
+          });
+        }
+      });
 
-        setSubcategories(subcategoriesTmp);
-      }
-    },
-    { refer: true }
-  );
+      setSubcategories(subcategoriesTmp);
+    }
+  });
 
   return (
-    <Show when={!isUndefined(subcategories()) && subcategories()!.length > 0}>
+    <Show when={subcategories()?.length}>
       <div class="d-flex flex-row">
         <div
           class={`text-white border border-3 border-white fw-medium border-start-0 d-flex flex-row align-items-center justify-content-end position-relative ${styles.catTitleTextWrapper}`}
@@ -76,7 +73,7 @@ const Category = (props: CatProps) => {
         <div class="d-flex flex-column w-100 align-items-stretch">
           <Grid
             categoryName={props.categoryName}
-            isOverriden={props.isOverriden}
+            isOverridden={props.isOverridden}
             subcategories={subcategories()!}
             initialCategoryData={props.content}
             backgroundColor={props.bgColor}
@@ -118,12 +115,12 @@ const GridCategory = (props: Props) => {
     <Show when={firstLoad()}>
       <For each={catWithItems()}>
         {(cat, index) => {
-          const isOverriden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
+          const isOverridden = !isUndefined(props.categories_overridden) && props.categories_overridden.includes(cat);
 
           return (
             <Category
               index={index()}
-              isOverriden={isOverriden}
+              isOverridden={isOverridden}
               categoryName={cat}
               bgColor={[...colorsList()][index()]}
               catSectionNumber={Object.keys(data()).length - 1}

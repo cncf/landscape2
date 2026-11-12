@@ -6,47 +6,52 @@
 
 # Quiz game content
 quiz:
-  # List of questions
+  # List of questions
   #
   # A subset of these questions will be randomly picked up for each quiz game.
+  # When the quiz is provided, at least one question is required.
   questions:
     - # Question title (required)
-      title: "Which of the following projects provides an open source container orchestration engine for automating deployment, scaling, and management of containerized applications?"
+      #
+      # It cannot be longer than 200 characters.
+      title: "Which of the following items is a sandbox project?"
 
       # Answer options (required)
       #
-      # At least two options must be provided. Options will be shuffled on
-      # every quiz game, so the order used here is not important.
+      # Between two and four options must be provided, and exactly one of them
+      # must be marked as correct. Options will be shuffled on every quiz game,
+      # so the order used here is not important.
       options:
         - # Name of the landscape item this option refers to (required)
           #
-          # It must match the name of the item in the landscape.yml file.
-          item: Kubernetes
+          # It must match the name of the item in the data.yml file.
+          item: My item
 
           # Category of the item in the landscape (optional)
           #
           # This field can be used when the item is not unique across the
           # landscape to avoid ambiguity.
-          category: "Orchestration & Management"
+          category: "My category"
 
           # Subcategory of the item in the landscape (optional)
           #
           # This field can be used when the item is not unique across the
-          # landscape to avoid ambiguity.
-          subcategory: "Scheduling & Orchestration"
+          # landscape to avoid ambiguity. It can only be provided along with the
+          # category.
+          subcategory: "My subcategory"
 
           # Whether this option is correct (optional)
           #
-          # It can be omitted if this not the correct option. Only one option
-          # can be marked as correct.
+          # It can be omitted if this is not the correct option. Exactly one
+          # option must be marked as correct.
           correct: true
 
         - # Name of the landscape item this option refers to (required)
           #
-          # It must match the name of the item in the landscape.yml file.
-          item: gRPC
+          # It must match the name of the item in the data.yml file.
+          item: My other item
 
         - # Name of the landscape item this option refers to (required)
           #
-          # It must match the name of the item in the landscape.yml file.
-          item: Cilium
+          # It must match the name of the item in the data.yml file.
+          item: My third item

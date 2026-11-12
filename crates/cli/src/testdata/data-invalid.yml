@@ -1,0 +1,8 @@
+categories:
+  - name: Category 1
+    subcategories:
+      - name: Subcategory 1-1
+        items:
+          - name: Item 1
+            description: This item has no homepage url
+            logo: sample.svg

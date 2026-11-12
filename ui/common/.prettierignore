@@ -1,0 +1,3 @@
+# Ignore the files generated from the Rust datasets:
+src/types/__fixtures__/
+src/types/generated/

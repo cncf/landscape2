@@ -7,13 +7,20 @@
   scroll-margin: 4rem;
 }
 
-.catTitle {
-  background-color: var(--bs-gray-100);
-}
-
 .card {
   font-size: 85%;
   cursor: pointer;
+}
+
+/* Button that opens the item details, stretched over the card */
+.cardBtn {
+  z-index: 0;
+}
+
+/* Links in the card stay above the button */
+.card :global(a) {
+  position: relative;
+  z-index: 1;
 }
 
 .archived {
@@ -26,14 +33,6 @@
 
 .archived .logo {
   filter: grayscale(1);
-}
-
-.selectLegend {
-  font-size: 0.75rem;
-}
-
-.btnIcon {
-  margin-top: -2px;
 }
 
 @media only screen and (min-width: 576px) {

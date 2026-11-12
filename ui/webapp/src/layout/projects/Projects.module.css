@@ -1,20 +1,3 @@
-.tableLayout {
-  table-layout: fixed;
-}
-
-.thead {
-  font-size: 0.8rem;
-}
-
-.thead th {
-  color: var(--bs-gray-600);
-}
-
-.tableContent td {
-  font-size: 0.8rem;
-  line-height: 2;
-}
-
 .projectNameCell {
   width: 18%;
 }
@@ -32,26 +15,13 @@
   height: auto;
 }
 
-.title {
-  font-size: 0.9rem;
-}
-
-.select {
-  border-color: #ced4da !important;
-  font-size: 0.75rem;
-  min-width: 175px;
-}
-
+/* Overrides the DataTable.module.css font sizes */
 @media (max-width: 1199.98px) {
-  .select {
-    width: 150px;
-  }
-
-  .thead {
+  .projectsTable thead {
     font-size: 0.6rem;
   }
 
-  .tableContent td {
+  .projectsTable tbody td {
     font-size: 0.65rem;
     line-height: 2;
   }
@@ -72,11 +42,11 @@
 }
 
 @media only screen and (max-width: 575.98px) {
-  .thead {
+  .projectsTable thead {
     font-size: 0.5rem;
   }
 
-  .tableContent td {
+  .projectsTable tbody td {
     font-size: 0.6rem;
     line-height: 1.75;
   }

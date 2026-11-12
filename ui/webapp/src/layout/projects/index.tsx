@@ -1,28 +1,53 @@
-import { useLocation, useNavigate } from '@solidjs/router';
 import { capitalizeFirstLetter, Image, Loading, NoData } from 'common';
-import { isEmpty, isNull, isUndefined, orderBy } from 'lodash';
-import { batch, createEffect, createSignal, For, JSXElement, on, onMount, Show } from 'solid-js';
+import isUndefined from 'lodash/isUndefined';
+import orderBy from 'lodash/orderBy';
+import { createMemo, For, JSXElement, Show } from 'solid-js';
 
-import { SORT_BY_PARAM, SORT_DIRECTION_PARAM } from '../../data';
-import { ActiveFilters, FilterCategory, FilterSection, Item, SecurityAudit, SortDirection } from '../../types';
+import { ActiveFilters, FilterCategory, FilterSection, Item } from '../../types';
+import getLastAuditDate from '../../utils/getLastAuditDate';
 import itemsDataGetter from '../../utils/itemsDataGetter';
+import { TableSort, TableSortOption } from '../../utils/tableQuery';
 import ActiveFiltersList from '../common/ActiveFiltersList';
+import tableStyles from '../common/DataTable.module.css';
 import FiltersInLine from '../common/FiltersInLine';
+import MobileFilters from '../common/MobileFilters';
+import OrderSelect from '../common/OrderSelect';
+import RequireFullData from '../common/RequireFullData';
+import useTableQueryState from '../common/useTableQueryState';
 import Footer from '../navigation/Footer';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import { useFullDataReady } from '../stores/fullData';
-import MobileFilters from './MobileFilters';
 import styles from './Projects.module.css';
 
-interface SortOption {
-  by: string;
-  direction: 'asc' | 'desc';
-  label?: string;
+/** Column of the projects table. */
+interface Column {
+  /** Classes of the header cell. */
+  class: string;
+  label: string;
+  /** Label shown below the large breakpoint. */
+  shortLabel?: string;
 }
-const DEFAULT_SORT_BY = 'name';
-const DEFAULT_SORT_DIRECTION = 'asc';
 
-const SORT_OPTIONS: SortOption[] = [
+/** Columns of the projects table, in order: they drive the header and the empty-state row span. */
+const COLUMNS: Column[] = [
+  { class: `text-center ${styles.projectNameCell}`, label: 'Project' },
+  { class: 'text-center', label: 'Maturity' },
+  { class: 'd-none d-md-table-cell text-center', label: 'Accepted' },
+  { class: 'text-center', label: 'Sandbox' },
+  { class: 'text-center', label: 'Incubating' },
+  { class: 'text-center', label: 'Graduated' },
+  { class: 'd-none d-md-table-cell text-center', label: 'Archived' },
+  { class: 'd-none d-sm-table-cell text-center text-nowrap', label: 'First commit', shortLabel: '1st commit' },
+  { class: 'd-none d-md-table-cell text-center', label: 'Audits' },
+  { class: 'd-none d-sm-table-cell text-center text-nowrap', label: 'Last audit' },
+];
+
+const DEFAULT_SORT: TableSort = { by: 'name', direction: 'asc' };
+
+/** Filter categories of the projects table. */
+const FILTER_CATEGORIES: readonly FilterCategory[] = [FilterCategory.ProjectMaturity];
+
+const SORT_OPTIONS: TableSortOption[] = [
   { label: 'Accepted date (asc)', by: 'accepted_at', direction: 'asc' },
   { label: 'Accepted date (desc)', by: 'accepted_at', direction: 'desc' },
   { label: 'Archived date (asc)', by: 'archived_at', direction: 'asc' },
@@ -44,454 +69,271 @@ const SORT_OPTIONS: SortOption[] = [
 ];
 
 const Projects = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const fullDataReady = useFullDataReady();
   const updateActiveItemId = useUpdateActiveItemId();
-  const [filters, setFilters] = createSignal<FilterSection[]>([]);
-  const [projects, setProjects] = createSignal<Item[] | undefined>();
-  const [visibleProjects, setVisibleProjects] = createSignal<Item[] | undefined>();
-  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
-  const [selectedSortOption, setSelectedSortOption] = createSignal<SortOption>({
-    by: DEFAULT_SORT_BY,
-    direction: DEFAULT_SORT_DIRECTION,
+  const tableQuery = useTableQueryState({
+    defaultSort: DEFAULT_SORT,
+    filterCategories: FILTER_CATEGORIES,
+    sortOptions: SORT_OPTIONS,
   });
+  // The maturity filter is only offered when there is more than one maturity level
+  const maturityOptions = itemsDataGetter.getMaturityOptions();
+  const filterSections: FilterSection[] =
+    maturityOptions.length > 1
+      ? [
+          {
+            value: FilterCategory.ProjectMaturity,
+            title: 'Maturity',
+            options: maturityOptions.map((opt) => ({ value: opt.name, name: capitalizeFirstLetter(opt.name) })),
+          },
+        ]
+      : [];
 
-  const prepareQuery = () => {
-    if (location.search !== '') {
-      const currentFilters: ActiveFilters = {};
-      const params = new URLSearchParams(location.search);
-      for (const [key, value] of params) {
-        const f = key as FilterCategory;
-        if (Object.values(FilterCategory).includes(f)) {
-          if (currentFilters[f]) {
-            currentFilters[f] = [...currentFilters[f]!, value];
-          } else {
-            currentFilters[f] = [value];
-          }
-        }
-      }
-
-      batch(() => {
-        setActiveFilters(currentFilters);
-        setSelectedSortOption({
-          by: params.get(SORT_BY_PARAM) || DEFAULT_SORT_BY,
-          direction: !isNull(params.get(SORT_DIRECTION_PARAM))
-            ? (params.get(SORT_DIRECTION_PARAM) as 'asc') || 'desc'
-            : DEFAULT_SORT_DIRECTION,
-        });
-      });
-    }
-  };
-
-  const sortItems = (items: Item[]) => {
-    const direction = selectedSortOption().direction;
-
-    const getValue = (date: string | undefined): number => {
-      if (date) {
-        return new Date(date).valueOf();
-      } else {
-        return direction === SortDirection.Asc ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
-      }
-    };
-
-    switch (selectedSortOption().by) {
-      case 'name':
-        return orderBy(items, [(i: Item) => i.name.toLowerCase()], [direction]);
-
-      case 'sandbox_at':
-        return orderBy(items, [(i: Item) => getValue(getSandboxDate(i))], [direction]);
-
-      case 'first_commit':
-        return orderBy(items, [(i: Item) => getValue(getFirstCommitTimestamp(i))], [direction]);
-
-      case 'num_audits':
-        return orderBy(items, [(i: Item) => (i.audits ? i.audits.length : 0)], [direction]);
-
-      case 'last_audit':
-        return orderBy(items, [(i: Item) => getValue(getLastAuditDate(i.audits))], [direction]);
-
-      default:
-        // eslint-disable-next-line solid/reactivity
-        return orderBy(items, [(i: Item) => getValue(i[selectedSortOption().by as keyof Item] as string)], [direction]);
-    }
-  };
-
-  const fetchProjects = () => {
-    const itemsData = itemsDataGetter.getItemsWithMaturity();
-    const maturityOptions = itemsDataGetter.getMaturityOptions();
-
-    if (itemsData) {
-      const sortedItems = sortItems(itemsData);
-      batch(() => {
-        if (maturityOptions.length > 1) {
-          setFilters([
-            {
-              value: FilterCategory.ProjectMaturity,
-              title: 'Maturity',
-              options: maturityOptions.map((opt: string) => ({
-                value: opt,
-                name: capitalizeFirstLetter(opt),
-              })),
-            },
-          ]);
-        }
-      });
-      setProjects(sortedItems);
-      setVisibleProjects(sortedItems);
-    } else {
-      batch(() => {
-        setProjects([]);
-        setVisibleProjects([]);
-      });
-    }
-  };
-
-  const getLastAuditDate = (audits?: SecurityAudit[]): string | undefined => {
-    if (audits) {
-      if (audits.length > 0) {
-        const sortedAudits = audits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        return sortedAudits[0].date;
-      } else {
-        return audits[0].date;
-      }
-    }
-    return undefined;
-  };
-
-  const getSandboxDate = (project: Item): string | undefined => {
-    if (
-      project.accepted_at &&
-      project.accepted_at !== project.incubating_at &&
-      project.accepted_at !== project.graduated_at
-    ) {
-      return project.accepted_at;
-    }
-    return undefined;
-  };
-
-  const getFirstCommitTimestamp = (project: Item): string | undefined => {
-    if (project.repositories && project.repositories.length > 0) {
-      const primaryRepo = project.repositories.find((repo) => repo.primary);
-      const repo = primaryRepo || project.repositories[0];
-
-      if (repo.github_data && repo.github_data!.first_commit?.ts) {
-        return repo.github_data.first_commit.ts;
-      } else {
-        return undefined;
-      }
-    }
-    return undefined;
-  };
-
-  const formatFirstCommitDate = (project: Item): string | JSXElement => {
-    const first_commit = getFirstCommitTimestamp(project);
-    if (first_commit) {
-      const date = new Date(first_commit);
-      const dateOnly = date.toISOString().split('T')[0];
-      return formatDatesForDevices(dateOnly);
-    }
-    return '-';
-  };
-
-  const applyFilters = (newFilters: ActiveFilters) => {
-    setActiveFilters(newFilters);
-    filterData();
-    updateFiltersQueryString(newFilters);
-  };
-
-  const filterData = () => {
-    let filteredProjects = projects();
-    Object.keys(activeFilters()).forEach((filterId: string) => {
-      const filter = activeFilters()[filterId as FilterCategory];
-      if (filter) {
-        filteredProjects = filteredProjects!.filter((project: Item) => {
-          return filter.includes(project.maturity!);
-        });
-      }
-    });
-
-    if (filteredProjects) {
-      setVisibleProjects(sortItems(filteredProjects!));
-    }
-  };
-
-  const updateActiveFilters = (value: FilterCategory, options: string[]) => {
-    const f: ActiveFilters = { ...activeFilters() };
-    if (options.length === 0) {
-      delete f[value];
-    } else {
-      f[value] = options;
-    }
-    applyFilters(f);
-  };
-
-  const removeFilter = (name: FilterCategory, value: string) => {
-    const tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
-    updateActiveFilters(name, tmpActiveFilters);
-  };
-
-  const updateFiltersQueryString = (filters: ActiveFilters) => {
-    const f = filters || activeFilters();
-    const params = new URLSearchParams();
-    if (!isUndefined(f) && !isEmpty(f)) {
-      Object.keys(f).forEach((filterId: string) => {
-        return f![filterId as FilterCategory]!.forEach((id: string) => {
-          params.append(filterId as string, id.toString());
-        });
-      });
-    }
-
-    const query = params.toString();
-
-    navigate(
-      `${location.pathname}?${SORT_BY_PARAM}=${
-        selectedSortOption().by
-      }&${SORT_DIRECTION_PARAM}=${selectedSortOption().direction}${query !== '' ? `&${query}` : ''}`,
-      {
-        replace: true,
-        scroll: true, // default
-      }
-    );
-  };
-
-  const updateSortQueryString = (sort: SortOption) => {
-    const updatedSearchParams = new URLSearchParams(location.search);
-    updatedSearchParams.set(SORT_BY_PARAM, sort.by);
-    updatedSearchParams.set(SORT_DIRECTION_PARAM, sort.direction);
-
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
-      replace: true,
-      scroll: true, // default
-    });
-  };
-
-  const resetFilters = () => {
-    batch(() => {
-      setActiveFilters({});
-      setVisibleProjects(sortItems(projects()!));
-    });
-  };
+  const projects = createMemo(() => (fullDataReady() ? (itemsDataGetter.getItemsWithMaturity() ?? []) : undefined));
+  const visibleProjects = createMemo(() => {
+    const items = projects();
+    return items && sortItems(filterByMaturity(items, tableQuery.filters()), tableQuery.sort());
+  });
 
   const orderSelect = () => (
-    <select
-      id="order"
-      class={`form-select form-select-sm rounded-0 ${styles.select}`}
-      value={`${selectedSortOption().by}-${selectedSortOption().direction}`}
-      aria-label="Order options"
-      onChange={(e) => {
-        const options = e.target.value.split('-');
-        const selectedOption = { by: options[0], direction: options[1] as 'asc' | 'desc' };
-        batch(() => {
-          setSelectedSortOption(selectedOption);
-          updateSortQueryString(selectedOption);
-        });
-      }}
-    >
-      <For each={SORT_OPTIONS}>
-        {(opt: SortOption) => {
-          return <option value={`${opt.by}-${opt.direction}`}>{opt.label}</option>;
-        }}
-      </For>
-    </select>
+    <OrderSelect options={SORT_OPTIONS} value={tableQuery.sort()} onChange={tableQuery.setSort} />
   );
-
-  createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        fetchProjects();
-      }
-    })
-  );
-
-  createEffect(
-    on(selectedSortOption, () => {
-      if (visibleProjects()) {
-        setVisibleProjects(sortItems(visibleProjects()!));
-      }
-    })
-  );
-
-  const formatDatesForDevices = (date: string): JSXElement => {
-    const shortDate = date.split('-');
-    shortDate.pop();
-    return (
-      <>
-        <span class="d-none d-lg-block">{date}</span>
-        <span class="d-block d-lg-none">{shortDate.join('-')}</span>
-      </>
-    );
-  };
-
-  onMount(() => {
-    prepareQuery();
-  });
 
   return (
-    <Show when={!isUndefined(visibleProjects())} fallback={<Loading spinnerClass="position-fixed top-50 start-50" />}>
-      <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
-        <div class="mt-2 mt-md-3 py-1">
-          <Show when={!isEmpty(filters())}>
+    <RequireFullData>
+      <Show when={!isUndefined(visibleProjects())} fallback={<Loading spinnerClass="position-fixed top-50 start-50" />}>
+        <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
+          <div class="mt-2 mt-md-3 py-1">
             <div class="d-flex flex-row align-items-center mb-3 mb-lg-0">
               <div class="d-block d-lg-none">
                 <MobileFilters
-                  filters={filters()}
-                  initialActiveFilters={activeFilters}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilters={resetFilters}
+                  filters={filterSections}
+                  initialActiveFilters={tableQuery.filters}
+                  updateActiveFilters={tableQuery.updateFilter}
+                  resetFilters={tableQuery.resetFilters}
                 >
                   {orderSelect()}
                 </MobileFilters>
               </div>
 
-              <div class="d-none d-lg-block">
-                <FiltersInLine
-                  filters={filters()}
-                  initialActiveFilters={activeFilters}
-                  updateActiveFilters={updateActiveFilters}
-                  resetFilters={resetFilters}
-                />
-              </div>
+              <Show when={filterSections.length > 0}>
+                <div class="d-none d-lg-block">
+                  <FiltersInLine
+                    filters={filterSections}
+                    initialActiveFilters={tableQuery.filters}
+                    updateActiveFilters={tableQuery.updateFilter}
+                  />
+                </div>
+              </Show>
 
-              <div class="d-none d-lg-block ms-4">
+              <div class="d-none d-lg-block" classList={{ 'ms-4': filterSections.length > 0 }}>
                 <div class="d-flex flex-row align-items-baseline my-2">
-                  <div class={`text-uppercase text-primary fw-bold ${styles.title}`}>Order</div>
+                  <div class={`text-uppercase text-primary fw-bold ${tableStyles.title}`}>Order</div>
                 </div>
 
                 {orderSelect()}
               </div>
             </div>
 
-            <div class="d-none d-lg-block">
-              <div class="mt-4">
-                <ActiveFiltersList
-                  activeFilters={activeFilters()}
-                  resetFilters={resetFilters}
-                  removeFilter={removeFilter}
-                />
+            <Show when={filterSections.length > 0}>
+              <div class="d-none d-lg-block">
+                <div class="mt-4">
+                  <ActiveFiltersList
+                    activeFilters={tableQuery.filters()}
+                    resetFilters={tableQuery.resetFilters}
+                    removeFilter={tableQuery.removeFilter}
+                  />
+                </div>
               </div>
-            </div>
-          </Show>
-        </div>
-        <table class={`table table-sm table-striped table-bordered mb-0 ${styles.tableLayout}`}>
-          <thead class={`text-uppercase text-muted ${styles.thead}`}>
-            <tr>
-              <th class={`text-center ${styles.projectNameCell}`} scope="col">
-                Project
-              </th>
-              <th class="text-center" scope="col">
-                Maturity
-              </th>
-              <th class="d-none d-md-table-cell text-center" scope="col">
-                Accepted
-              </th>
-              <th class="text-center" scope="col">
-                Sandbox
-              </th>
-              <th class="text-center" scope="col">
-                Incubating
-              </th>
-              <th class="text-center" scope="col">
-                Graduated
-              </th>
-              <th class="d-none d-md-table-cell text-center" scope="col">
-                Archived
-              </th>
-              <th class="d-none d-sm-table-cell text-center text-nowrap" scope="col">
-                <span class="d-none d-lg-inline">First commit</span>
-                <span class="d-inline d-lg-none">1st commit</span>
-              </th>
-              <th class="d-none d-md-table-cell text-center" scope="col">
-                Audits
-              </th>
-              <th class="d-none d-sm-table-cell text-center text-nowrap" scope="col">
-                Last audit
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <Show
-              when={visibleProjects()!.length > 0}
-              fallback={
-                <tr class={styles.tableContent}>
-                  <td colSpan={9}>
-                    <div class="py-4">
-                      <NoData class="bg-white">
-                        <div class="fs-4">No projects found.</div>
-                      </NoData>
-                    </div>
-                  </td>
-                </tr>
-              }
-            >
-              <For each={visibleProjects()}>
-                {(project: Item) => {
-                  return (
-                    <tr class={styles.tableContent}>
-                      <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
-                        <button
-                          class={`btn btn-sm p-0 btn-link fw-semibold w-100 text-start ${styles.projectBtn}`}
-                          onClick={() => updateActiveItemId(project.id)}
-                          aria-label={`Open ${project.name} details`}
-                        >
-                          <div class="d-flex flex-row align-items-center">
-                            <div
-                              class={`d-none d-xl-flex align-items-center justify-content-center me-3 ${styles.logoWrapper}`}
-                            >
-                              <Image name={project.name} logo={project.logo} class={styles.logo} enableLazyLoad />
-                            </div>
-                            <div class="text-truncate">{project.name}</div>
-                          </div>
-                        </button>
-                      </td>
-                      <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
-                        <span class={`text-uppercase ${styles.maturity}`}>{project.maturity}</span>
-                      </td>
-                      <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        {formatDatesForDevices(project.accepted_at!)}
-                      </td>
-                      <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={getSandboxDate(project)} fallback={'-'}>
-                          <>{formatDatesForDevices(getSandboxDate(project)!)}</>
-                        </Show>
-                      </td>
-                      <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={!isUndefined(project.incubating_at)} fallback={'-'}>
-                          {formatDatesForDevices(project.incubating_at!)}
-                        </Show>
-                      </td>
-                      <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={!isUndefined(project.graduated_at)} fallback={'-'}>
-                          {formatDatesForDevices(project.graduated_at!)}
-                        </Show>
-                      </td>
-                      <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={!isUndefined(project.archived_at)} fallback={'-'}>
-                          {formatDatesForDevices(project.archived_at!)}
-                        </Show>
-                      </td>
-                      <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        {formatFirstCommitDate(project)!}
-                      </td>
-                      <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        {project.audits ? project.audits.length : 0}
-                      </td>
-                      <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
-                        <Show when={project.audits} fallback={'-'}>
-                          {formatDatesForDevices(getLastAuditDate(project.audits)!)}
-                        </Show>
-                      </td>
-                    </tr>
-                  );
-                }}
-              </For>
             </Show>
-          </tbody>
-        </table>
-      </main>
-      <Footer />
-    </Show>
+          </div>
+          <table
+            class={`table table-sm table-striped table-bordered mb-0 ${tableStyles.tableLayout} ${styles.projectsTable}`}
+          >
+            <thead class={`text-uppercase text-muted ${tableStyles.thead}`}>
+              <tr>
+                <For each={COLUMNS}>
+                  {(column: Column) => (
+                    <th class={column.class} scope="col">
+                      <Show when={column.shortLabel} fallback={column.label}>
+                        <span class="d-none d-lg-inline">{column.label}</span>
+                        <span class="d-inline d-lg-none">{column.shortLabel}</span>
+                      </Show>
+                    </th>
+                  )}
+                </For>
+              </tr>
+            </thead>
+            <tbody>
+              <Show
+                when={visibleProjects()!.length > 0}
+                fallback={
+                  <tr class={tableStyles.tableContent}>
+                    <td colSpan={COLUMNS.length}>
+                      <div class="py-4">
+                        <NoData class="bg-white">
+                          <div class="fs-4">No projects found.</div>
+                        </NoData>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              >
+                <For each={visibleProjects()}>
+                  {(project: Item) => {
+                    return (
+                      <tr class={tableStyles.tableContent}>
+                        <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
+                          <button
+                            class={`btn btn-sm p-0 btn-link fw-semibold w-100 text-start ${styles.projectBtn}`}
+                            onClick={() => updateActiveItemId(project.id)}
+                            aria-label={`Open ${project.name} details`}
+                          >
+                            <div class="d-flex flex-row align-items-center">
+                              <div
+                                class={`d-none d-xl-flex align-items-center justify-content-center me-3 ${styles.logoWrapper}`}
+                              >
+                                <Image name={project.name} logo={project.logo} class={styles.logo} enableLazyLoad />
+                              </div>
+                              <div class="text-truncate">{project.name}</div>
+                            </div>
+                          </button>
+                        </td>
+                        <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
+                          <span class={`text-uppercase ${styles.maturity}`}>{project.maturity}</span>
+                        </td>
+                        <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          {formatDatesForDevices(project.accepted_at!)}
+                        </td>
+                        <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          <Show when={getSandboxDate(project)} fallback={'-'}>
+                            {(sandboxDate) => formatDatesForDevices(sandboxDate())}
+                          </Show>
+                        </td>
+                        <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          <Show when={!isUndefined(project.incubating_at)} fallback={'-'}>
+                            {formatDatesForDevices(project.incubating_at!)}
+                          </Show>
+                        </td>
+                        <td class="px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          <Show when={!isUndefined(project.graduated_at)} fallback={'-'}>
+                            {formatDatesForDevices(project.graduated_at!)}
+                          </Show>
+                        </td>
+                        <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          <Show when={!isUndefined(project.archived_at)} fallback={'-'}>
+                            {formatDatesForDevices(project.archived_at!)}
+                          </Show>
+                        </td>
+                        <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          {formatFirstCommitDate(project)}
+                        </td>
+                        <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          {project.audits?.length ?? 0}
+                        </td>
+                        <td class="d-none d-sm-table-cell px-1 px-md-2 px-lg-3 text-center text-muted text-nowrap">
+                          <Show
+                            when={project.audits?.length ? getLastAuditDate(project.audits) : undefined}
+                            fallback="-"
+                          >
+                            {(lastAuditDate) => formatDatesForDevices(lastAuditDate())}
+                          </Show>
+                        </td>
+                      </tr>
+                    );
+                  }}
+                </For>
+              </Show>
+            </tbody>
+          </table>
+        </main>
+        <Footer />
+      </Show>
+    </RequireFullData>
   );
 };
 
 export default Projects;
+
+/** Returns the projects whose maturity is one of the active maturity filters, or every project without them. */
+const filterByMaturity = (projects: Item[], activeFilters: ActiveFilters): Item[] => {
+  const maturities = activeFilters[FilterCategory.ProjectMaturity];
+  return maturities ? projects.filter((project: Item) => maturities.includes(project.maturity ?? '')) : projects;
+};
+
+/** Renders a date in full on large devices and without the day below them. */
+const formatDatesForDevices = (date: string): JSXElement => {
+  const shortDate = date.split('-');
+  shortDate.pop();
+  return (
+    <>
+      <span class="d-none d-lg-block">{date}</span>
+      <span class="d-block d-lg-none">{shortDate.join('-')}</span>
+    </>
+  );
+};
+
+/** Renders the date of the first commit of the project, or `-` when it is unknown. */
+const formatFirstCommitDate = (project: Item): JSXElement => {
+  const firstCommit = getFirstCommitTimestamp(project);
+  if (firstCommit) {
+    const dateOnly = new Date(firstCommit).toISOString().split('T')[0];
+    return formatDatesForDevices(dateOnly);
+  }
+  return '-';
+};
+
+/** Returns the first commit timestamp of the project's primary repository (or its first one). */
+const getFirstCommitTimestamp = (project: Item): string | undefined => {
+  if (project.repositories && project.repositories.length > 0) {
+    const primaryRepo = project.repositories.find((repo) => repo.primary);
+    const repo = primaryRepo || project.repositories[0];
+    return repo.github_data?.first_commit?.ts || undefined;
+  }
+  return undefined;
+};
+
+/** Returns the date the project was accepted into the sandbox, when it didn't join at a higher level. */
+const getSandboxDate = (project: Item): string | undefined => {
+  if (
+    project.accepted_at &&
+    project.accepted_at !== project.incubating_at &&
+    project.accepted_at !== project.graduated_at
+  ) {
+    return project.accepted_at;
+  }
+  return undefined;
+};
+
+/** Sorts the projects by the sort field. Projects without a date go last in both directions. */
+const sortItems = (items: Item[], sort: TableSort): Item[] => {
+  const direction = sort.direction;
+
+  const getValue = (date: string | undefined): number => {
+    if (date) {
+      return new Date(date).valueOf();
+    } else {
+      return direction === 'asc' ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER;
+    }
+  };
+
+  switch (sort.by) {
+    case 'name':
+      return orderBy(items, [(i: Item) => i.name.toLowerCase()], [direction]);
+
+    case 'sandbox_at':
+      return orderBy(items, [(i: Item) => getValue(getSandboxDate(i))], [direction]);
+
+    case 'first_commit':
+      return orderBy(items, [(i: Item) => getValue(getFirstCommitTimestamp(i))], [direction]);
+
+    case 'num_audits':
+      return orderBy(items, [(i: Item) => i.audits?.length ?? 0], [direction]);
+
+    case 'last_audit':
+      return orderBy(items, [(i: Item) => getValue(getLastAuditDate(i.audits))], [direction]);
+
+    default:
+      return orderBy(items, [(i: Item) => getValue(i[sort.by as keyof Item] as string)], [direction]);
+  }
+};

@@ -1,7 +1,6 @@
-import { SVGIcon, SVGIconKind, useOutsideClick } from 'common';
+import { BANNER_ID, SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import { createSignal, createUniqueId, For, onCleanup, onMount, Show } from 'solid-js';
 
-import { BANNER_ID } from '../../data';
 import { getDownloadDocumentName, getDownloadDocumentUrl } from '../../utils/downloadDocument';
 import getDownloadBlob from '../../utils/getDownloadBlob';
 import isDownloadAvailable from '../../utils/isDownloadAvailable';
@@ -40,7 +39,6 @@ interface DownloadOption {
 
 interface FormatConfig {
   blobType: string;
-  contentType: string;
   icon: SVGIconKind;
   responseAsBlob: boolean;
 }
@@ -59,23 +57,20 @@ const DATA_DOWNLOAD_OPTIONS: DownloadOption[] = [
   },
 ];
 
-// Keep MIME handling and icons aligned for every format.
+// Keep MIME handling and icons aligned for every format (the blob type is also the accepted type).
 const FORMAT_CONFIG: Record<Format, FormatConfig> = {
   [Format.CSV]: {
     blobType: 'text/csv',
-    contentType: 'text/csv;charset=UTF-8',
     icon: SVGIconKind.CSV,
     responseAsBlob: false,
   },
   [Format.PDF]: {
     blobType: 'application/pdf',
-    contentType: 'application/pdf',
     icon: SVGIconKind.PDF,
     responseAsBlob: true,
   },
   [Format.PNG]: {
     blobType: 'image/png',
-    contentType: 'image/x-png',
     icon: SVGIconKind.PNG,
     responseAsBlob: true,
   },
@@ -156,8 +151,8 @@ const DownloadDropdown = () => {
     try {
       const formatConfig = FORMAT_CONFIG[option.format];
       const blob = await getDownloadBlob({
+        accept: formatConfig.blobType,
         blobType: formatConfig.blobType,
-        contentType: formatConfig.contentType,
         responseAsBlob: formatConfig.responseAsBlob,
         url: getDownloadDocumentUrl(option),
       });

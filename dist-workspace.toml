@@ -7,8 +7,10 @@ members = ["cargo:."]
 cargo-dist-version = "0.30.0"
 # CI backends to support
 ci = "github"
-# Skip checking whether the specified configuration files are up to date
-allow-dirty = ["ci"]
+# Extra build-local-artifacts steps (Node, wasm-pack, prebuilt NASM), run after checkout
+github-build-setup = "../build-setup.yml"
+# Extra files to add to the release archives (third-party notices for the assets embedded in the binary)
+include = ["THIRD_PARTY_NOTICES.md"]
 # The installers to generate for each app
 installers = ["shell", "powershell", "homebrew"]
 # A GitHub repo to push Homebrew formulas to

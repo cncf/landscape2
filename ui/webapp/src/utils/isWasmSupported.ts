@@ -1,11 +1,4 @@
-const isWasmSupported = (): boolean => {
-  if (typeof WebAssembly !== 'undefined') {
-    // WebAssembly is supported
-    return true;
-  } else {
-    // WebAssembly is not supported
-    return false;
-  }
-};
+/** Checks whether the browser supports WebAssembly. */
+const isWasmSupported = (): boolean => typeof WebAssembly !== 'undefined';
 
 export default isWasmSupported;

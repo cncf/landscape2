@@ -9,6 +9,15 @@
 # file used by v2 is based on the format used by v1. There are some extra fields not available in
 # v1, and it's likely that more will be added over time. Most of the fields supported by v1 should
 # also be supported by v2, although there might be some exceptions.
+#
+# Some fields are exposed through the landscape API (`api/` in the build output, see docs/api.md)
+# and its downloadable files, but are not displayed in the web application nor included in the
+# landscape datasets. Those fields are marked below as "exposed through the API, not displayed".
+#
+# Featured items are not defined in this file: they are selected using the `featured_items` rules
+# in the settings file, which match the item's maturity (`project` field) or its primary
+# subcategory. When several rules match the same item, the last matching rule wins, and the item
+# keeps the same featured status in the additional categories it's listed in (`second_path`).
 
 # List of categories in the landscape (required) (this field can also be named `landscape`).
 categories:
@@ -28,14 +37,19 @@ categories:
             # Homepage URL (required).
             homepage_url: https://homepage.url
 
-            # File name of the logo (required). The provided logo file is expected to be located in
+            # File name of the logo (required). The provided logo file is expected to be located in
             # the landscape logos path (i.e. `hosted-logos`). URLs are not supported, it must be a
-            # file name. The logo file must be an SVG file.
+            # file name. SVG logos are recommended, but png, jpg, gif, webp, bmp and tiff images are
+            # supported as well. The viewBox adjustment and the title cleanup done during the build
+            # only apply to SVG logos.
             logo: logo.svg
 
             # Description of the item (optional). When the description is not provided, the primary
             # repository's description or the organization's description from Crunchbase will be
-            # used (in that order). This description will be indexed to power the search feature.
+            # used (in that order). GitHub emoji shortcodes (i.e. `:rocket:`) are removed from these
+            # fallback descriptions. The generated outputs (landscape datasets, embed views, API
+            # and downloads) carry this resolved description, which is also indexed to power the
+            # search feature.
             description: This is the description of item 1
 
             # Alternative `category / subcategory` where this item should be listed in (optional).
@@ -51,8 +65,9 @@ categories:
             second_path: []
 
             # Maturity of the project (optional). This field is only expected on items that
-            # represent a project that belongs to the foundation. The maturity can be any string,
-            # but there are some values that have a special meaning:
+            # represent a project that belongs to the foundation. The maturity can be any string
+            # that contains at least one letter or digit, except `all` (in any case, optionally
+            # followed by spaces or symbols), which is reserved. Some values have a special meaning:
             #
             # - "graduated, incubating, sandbox": when used in combination with the date they moved
             #   to that state (set in `extra` field), a special progress bar will be displayed in
@@ -70,12 +85,16 @@ categories:
             # for repositories hosted in GitHub.
             repo_url: https://github.com/owner/repo
 
-            # Branch to use when collecting information for the primary repository (optional).
+            # Branch to use when collecting information for the primary repository (optional). The
+            # first and latest commits are read from this branch, or from the repository default
+            # branch when not set.
             branch: main
 
             # Primary repository license (optional). This information is usually collected from
             # GitHub, but it can be overridden here. The license must be a valid SPDX license
-            # identifier (more info: https://spdx.org/licenses/).
+            # identifier (more info: https://spdx.org/licenses/). The license collected from GitHub
+            # is the license name reported by GitHub (for example "Apache License 2.0"), and it is
+            # not collected when GitHub cannot identify the license.
             license: "Apache-2.0"
 
             # List of additional repositories (optional). The structure for each repository is as
@@ -84,11 +103,15 @@ categories:
             # additional_repos:
             #   - # URL of the repository (required).
             #     repo_url: https://github.com/owner/repo
-            #     # Branch to use when collecting information for the repository (optional).
+            #     # Branch to use when collecting information for the repository (optional). The
+            #     # first and latest commits are read from this branch, or from the repository
+            #     # default branch when not set.
             #     branch: main
             #     # Repository license (optional). This information is usually collected from
             #     # GitHub, but it can be overridden here. The license must be a valid SPDX license
-            #     # identifier (more info: https://spdx.org/licenses/).
+            #     # identifier (more info: https://spdx.org/licenses/). The license collected from
+            #     # GitHub is the license name reported by GitHub (for example "Apache License
+            #     # 2.0"), and it is not collected when GitHub cannot identify the license.
             #     license: "Apache-2.0"
             additional_repos: []
 
@@ -105,6 +128,11 @@ categories:
             # boolean.
             enduser: false
 
+            # Indicate if the organization this item belongs to is unnamed (optional). The value
+            # must be a boolean. This field is kept from the legacy landscape data format. Exposed
+            # through the API, not displayed.
+            unnamed_organization: false
+
             # Extra information about the item (optional).
             extra:
               # Date at which the project was accepted in the foundation (optional). This field
@@ -115,7 +143,7 @@ categories:
               # List of user-defined annotations (optional). Annotations can be used to add custom
               # metadata to landscape items. Annotations are not used by the landscape itself, but
               # they can be used by external tools that consume the landscape data. Both keys and
-              # values are expected to be strings.
+              # values are expected to be strings. Exposed through the API, not displayed.
               annotations:
                 key1: value1
                 key2: value2
@@ -139,12 +167,13 @@ categories:
               audits: []
 
               # Date of the last annual review presented by this project (optional). This field
-              # is only expected  on items that represent a foundation's project.
-              # Format: 'YYYY-MM-DD'.
+              # is only expected on items that represent a foundation's project.
+              # Format: 'YYYY-MM-DD'. Exposed through the API, not displayed.
               annual_review_date: "2024-05-14"
 
               # URL of the last annual review presented by this project (optional). This field is
-              # only expected on items that represent a foundation's project.
+              # only expected on items that represent a foundation's project. Exposed through the
+              # API, not displayed.
               annual_review_url: https://annual.review.url
 
               # Artwork URL (optional).
@@ -156,13 +185,14 @@ categories:
               # Bluesky URL (optional).
               bluesky_url: https://bsky.app/profile/you.com
 
-              # Channel to discuss topics related to this item (optional).
+              # Channel to discuss topics related to this item (optional). Exposed through the API,
+              # not displayed.
               chat_channel: "#channel"
 
               # The name of a project listed in CLOMonitor that matches this item (optional).
               # This reference is used to pull the CLOMonitor report for this item and display it
               # in the item's details view. CLOMonitor is only enabled for a small number of
-              # foundations, so this field won't be used in most cases. 
+              # foundations, so this field won't be used in most cases.
               clomonitor_name: "project-name"
 
               # Dev stats URL (optional).
@@ -202,7 +232,8 @@ categories:
               incubating: "2024-05-14"
 
               # LFX slug (optional). This value should match the slug used by LFX to reference
-              # the project, so external integrations can link both records together.
+              # the project, so external integrations can link both records together. Exposed
+              # through the API, not displayed.
               lfx_slug: "my-project"
 
               # LinkedIn URL (optional).
@@ -281,12 +312,30 @@ categories:
               # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
               summary_use_case: "Provides security for the software supply chain"
 
-              # Technical Advisory Groups (TAG) this item is associated to (optional). When the
-              # automatic TAG mapping feature is enabled in the landscape settings, the TAG names
-              # used here must match exactly any of the TAGs listed in the landscape settings
+              # Technical Advisory Groups (TAG) this item is associated to (optional). TAG names
+              # should only use lowercase letters, digits and hyphens, and contain at least one
+              # letter or digit. The name `all` (optionally followed by hyphens) is reserved. When
+              # the automatic TAG mapping feature is enabled in the landscape settings, the TAG
+              # names used here must match exactly any of the TAGs listed in the landscape settings
               # (provided it refers to the same TAG).
               tag:
                 - security
 
+              # Training certifications offered (optional). Exposed through the API, not displayed.
+              training_certifications: "Certification name"
+
+              # Training type offered (optional). Exposed through the API, not displayed.
+              training_type: "Course"
+
               # YouTube URL (optional).
               youtube_url: https://youtube.com/url
+
+          # Other items in this subcategory, that only set the required fields. They are used as
+          # options of the quiz in the games reference file (games.yml).
+          - name: My other item
+            homepage_url: https://other-item.url
+            logo: logo.svg
+
+          - name: My third item
+            homepage_url: https://third-item.url
+            logo: logo.svg

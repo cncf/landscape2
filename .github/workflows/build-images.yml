@@ -1,13 +1,41 @@
 name: Build images
 
 on:
+  # Pull requests only build the image (no push) when they touch what the
+  # image build depends on most: base images, ignore rules, scripts and the
+  # Rust dependency lockfile
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .dockerignore
+      - .github/workflows/build-images.yml
+      - Cargo.lock
+      - crates/cli/Dockerfile
+      - scripts/**
+  # Path filters don't apply to tag pushes
   push:
     branches:
       - main
+    paths:
+      - .dockerignore
+      - .github/workflows/build-images.yml
+      - Cargo.lock
+      - Cargo.toml
+      - crates/**
+      - scripts/**
+      - ui/**
+    tags:
+      - v*.*.*
+
+# A newer run cancels an older one, so an older build never overwrites the
+# tags pushed by a newer one
+concurrency:
+  group: build-images-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-landscape2-image:
-    if: github.ref == 'refs/heads/main'
     runs-on:
       labels: ubuntu-latest-8-cores
     permissions:
@@ -16,17 +44,38 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # latest keeps tracking main (landscape2-validate-action and the
+      # landscape2-sites workflows consume it); the sha and version tags are
+      # immutable references
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+            type=semver,pattern=v{{version}}
+          labels: |
+            org.opencontainers.image.description=Landscape2 CLI tool
+            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
       - name: Build and push image
-        run: |
-          docker build -f crates/cli/Dockerfile \
-            --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
-            --label "org.opencontainers.image.description=Landscape2 CLI tool" \
-            --label "org.opencontainers.image.licenses=Apache-2.0" \
-            -t ghcr.io/${{ github.repository }}:latest .
-          docker push ghcr.io/${{ github.repository }}:latest
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: crates/cli/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

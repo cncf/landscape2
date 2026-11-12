@@ -5,13 +5,6 @@
   text-decoration: none;
 }
 
-.filterBadge {
-  padding: 0.1rem 0.35rem;
-  font-size: 0.7rem;
-  color: var(--color4);
-  border-color: var(--color4) !important;
-}
-
 .btnLegend {
   font-size: 0.75rem;
 }

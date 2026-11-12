@@ -1,0 +1,48 @@
+{
+  "crunchbase_data": {
+    "https://www.crunchbase.com/organization/item-1": {
+      "generated_at": "2024-06-01T00:00:00Z",
+      "homepage_url": "https://item-1.example",
+      "name": "Item 1 Inc"
+    }
+  },
+  "github_data": {
+    "https://github.com/example/item-1": {
+      "contributors": {
+        "count": 10,
+        "url": "https://github.com/example/item-1/graphs/contributors"
+      },
+      "description": "Item 1 repository description",
+      "generated_at": "2024-06-01T00:00:00Z",
+      "latest_commit": {
+        "url": "https://github.com/example/item-1/commit/1",
+        "ts": "2024-05-30T12:00:00Z"
+      },
+      "participation_stats": [1, 2, 3],
+      "stars": 100,
+      "url": "https://github.com/example/item-1",
+      "license": "Apache-2.0"
+    }
+  },
+  "items": [
+    {
+      "category": "Category",
+      "homepage_url": "https://github.com/example/item-1",
+      "id": "category--subcategory--item-1",
+      "logo": "logos/item-1-deployed.svg",
+      "name": "Item 1",
+      "subcategory": "Subcategory",
+      "website": "https://item-1.example",
+      "clomonitor_report_summary": "<svg>item-1</svg>"
+    },
+    {
+      "category": "Category",
+      "homepage_url": "https://item-2.example",
+      "id": "category--subcategory--item-2",
+      "logo": "logos/item-2-deployed.svg",
+      "name": "Item 2",
+      "subcategory": "Subcategory",
+      "website": "https://item-2.example"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 interface GetDownloadBlobOptions {
+  /** Media type the request accepts. */
+  accept: string;
   blobType: string;
-  contentType: string;
   responseAsBlob: boolean;
   url: string;
 }
@@ -8,17 +9,11 @@ interface GetDownloadBlobOptions {
 /**
  * Fetch a downloadable document and convert it to a blob.
  */
-const getDownloadBlob = async ({
-  blobType,
-  contentType,
-  responseAsBlob,
-  url,
-}: GetDownloadBlobOptions): Promise<Blob> => {
+const getDownloadBlob = async ({ accept, blobType, responseAsBlob, url }: GetDownloadBlobOptions): Promise<Blob> => {
+  // A GET has no body, so it states the media type it accepts rather than a content type
   const response = await fetch(url, {
     method: 'get',
-    headers: {
-      'content-type': contentType,
-    },
+    headers: { accept },
   });
 
   if (!response.ok) {

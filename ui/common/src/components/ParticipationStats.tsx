@@ -1,8 +1,8 @@
-import moment from 'moment';
 import { createSignal, For, onMount, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
 import { calculateAxisValues } from '../utils/calculateAxisValues';
+import { formatMonthYear, subtractMonths } from '../utils/dates';
 
 interface Props {
   initialStats: number[];
@@ -57,9 +57,7 @@ export const ParticipationStats = (props: Props) => {
   onMount(() => {
     setMonths(
       [...Array(5).keys()].map((n: number) => {
-        return moment()
-          .subtract(n * 3, 'months')
-          .format("MMM 'YY");
+        return formatMonthYear(subtractMonths(new Date(), n * 3));
       })
     );
   });

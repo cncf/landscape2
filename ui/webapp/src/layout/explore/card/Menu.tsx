@@ -1,13 +1,21 @@
 import { useLocation, useNavigate } from '@solidjs/router';
-import { formatTAGName, SVGIcon, SVGIconKind } from 'common';
+import { SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu } from '../../../types';
+import { getAnchorId } from '../../../utils/anchorIds';
+import getSectionLabel from '../../../utils/getSectionLabel';
 import goToElement from '../../../utils/goToElement';
-import buildNormalizedId from '../../../utils/normalizeId';
 import styles from './Menu.module.css';
+
+// Space kept between the bottom of the sticky menu and the footer or the viewport
+const MENU_BOTTOM_MARGIN = 16;
+// Smallest max-height of the sticky menu
+const MENU_MIN_HEIGHT = 200;
+// Room the landscape keeps besides the menu before the menu scrolls internally
+const MENU_OFFSET_BUFFER = 120;
 
 interface Props {
   menu: CardMenu;
@@ -20,6 +28,7 @@ const Menu = (props: Props) => {
   const bgColor = COLORS[0];
   const navigate = useNavigate();
   const location = useLocation();
+  const [root, setRoot] = createSignal<HTMLDivElement>();
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [offsetActive, setOffsetActive] = createSignal<boolean>(false);
 
@@ -30,72 +39,66 @@ const Menu = (props: Props) => {
     if (props.isVisible && props.sticky) {
       const footer = document.querySelector('footer[role="contentinfo"]');
       const landscapeEl = document.getElementById('landscape');
+      const menuRoot = root();
 
-      if (!footer || !landscapeEl) return;
+      if (!footer || !landscapeEl || !menuRoot) return;
 
       const updateMenuHeight = () => {
         const menuElement = ref();
         if (!menuElement) return;
 
+        // Read every layout value before writing, so the update causes no forced reflow
         const footerRect = footer.getBoundingClientRect();
-        const menuRect = menuElement.getBoundingClientRect();
+        // Menu's actual position in the DOM (accounts for header, MOTD, overlay, filters and spacing)
+        const menuTop = menuElement.getBoundingClientRect().top;
+        const menuContentHeight = menuElement.scrollHeight;
+        const landscapeHeight = landscapeEl.clientHeight;
         const viewportHeight = window.innerHeight;
-        const bottomMargin = 16;
-
-        // Get menu's actual position from the DOM (accounts for header, MOTD,
-        // overlay, filters, and any spacing)
-        const menuTop = menuRect.top;
 
         // Calculate available space from menu's actual position
         let maxHeight;
         if (footerRect.top > 0 && footerRect.top < viewportHeight) {
           // Footer visible: constrain between menu position and footer
-          const spaceToFooter = footerRect.top - menuTop - bottomMargin;
-          const spaceToViewportBottom = viewportHeight - menuTop - bottomMargin;
-          maxHeight = Math.max(200, Math.min(spaceToFooter, spaceToViewportBottom));
+          const spaceToFooter = footerRect.top - menuTop - MENU_BOTTOM_MARGIN;
+          const spaceToViewportBottom = viewportHeight - menuTop - MENU_BOTTOM_MARGIN;
+          maxHeight = Math.max(MENU_MIN_HEIGHT, Math.min(spaceToFooter, spaceToViewportBottom));
         } else {
           // Footer not visible: use space to viewport bottom
-          maxHeight = Math.max(200, viewportHeight - menuTop - bottomMargin);
+          maxHeight = Math.max(MENU_MIN_HEIGHT, viewportHeight - menuTop - MENU_BOTTOM_MARGIN);
         }
 
-        // Set CSS custom property for dynamic max-height
-        document.documentElement.style.setProperty('--menu-max-height', `${maxHeight}px`);
+        // The max-height belongs to this menu only
+        menuRoot.style.setProperty('--menu-max-height', `${maxHeight}px`);
 
-        // Determine if menu needs internal scrolling (offsetActive)
-        const landscapeHeight = landscapeEl.clientHeight;
-        const MENU_OFFSET_BUFFER = 120;
+        // The menu scrolls internally when its content is taller than the space it gets
         const effectiveHeight = Math.min(maxHeight, landscapeHeight - MENU_OFFSET_BUFFER);
-
-        // Use scrollHeight (content height) vs effectiveHeight
-        if (menuElement.scrollHeight > effectiveHeight) {
-          setOffsetActive(true);
-        } else {
-          setOffsetActive(false);
-        }
+        setOffsetActive(menuContentHeight > effectiveHeight);
       };
 
-      // Update menu height on scroll to continuously adjust as footer approaches
-      const handleScroll = () => {
-        updateMenuHeight();
+      // Scroll and resize events update the height at most once per frame
+      let frame: number | undefined;
+      const scheduleUpdate = () => {
+        if (frame !== undefined) return;
+        frame = requestAnimationFrame(() => {
+          frame = undefined;
+          updateMenuHeight();
+        });
       };
 
-      // Update menu height on window resize to handle viewport changes
-      const handleResize = () => {
-        updateMenuHeight();
-      };
-
-      // Set up event listeners
-      landscapeEl.addEventListener('scroll', handleScroll);
-      window.addEventListener('resize', handleResize);
+      landscapeEl.addEventListener('scroll', scheduleUpdate);
+      window.addEventListener('resize', scheduleUpdate);
 
       // Run initial calculation
       updateMenuHeight();
 
-      // Cleanup on unmount: remove listeners and reset CSS custom property
+      // Cleanup: remove listeners, cancel the pending frame and reset the max-height
       onCleanup(() => {
-        landscapeEl.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('resize', handleResize);
-        document.documentElement.style.removeProperty('--menu-max-height');
+        landscapeEl.removeEventListener('scroll', scheduleUpdate);
+        window.removeEventListener('resize', scheduleUpdate);
+        if (frame !== undefined) {
+          cancelAnimationFrame(frame);
+        }
+        menuRoot.style.removeProperty('--menu-max-height');
       });
     }
   });
@@ -109,7 +112,11 @@ const Menu = (props: Props) => {
   };
 
   return (
-    <div class={`d-flex flex-column ${styles.toc}`} classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}>
+    <div
+      ref={setRoot}
+      class={`d-flex flex-column ${styles.toc}`}
+      classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}
+    >
       <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
         <div ref={setRef}>
           <For each={Object.keys(props.menu)}>
@@ -132,36 +139,36 @@ const Menu = (props: Props) => {
                     }}
                   >
                     <For each={props.menu[title]}>
-                      {(subtitle: string) => {
-                        const hash = buildNormalizedId({ title: title, subtitle: subtitle, grouped: true });
-
-                        return (
-                          <button
-                            id={`btn_${hash}`}
-                            title={subtitle}
-                            class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
-                            classList={{
-                              [`fw-bold ${styles.selected}`]: `#${hash}` === location.hash,
-                            }}
-                            disabled={`#${hash}` === location.hash}
-                            onClick={() => {
-                              goToElement(`card_${hash}`);
-                              if (!isUndefined(props.onClickOption)) {
-                                props.onClickOption();
-                              }
-                              updateRoute(hash);
-                            }}
-                            aria-label={subtitle === 'undefined' ? 'None' : subtitle}
-                          >
-                            <Show when={`#${hash}` === location.hash}>
-                              <div class={`position-absolute ${styles.arrow}`}>
-                                <SVGIcon kind={SVGIconKind.ArrowRight} />
-                              </div>
-                            </Show>
-                            {subtitle === 'undefined' ? 'None' : isTAG ? formatTAGName(subtitle) : subtitle}
-                          </button>
-                        );
-                      }}
+                      {(subtitle: string) => (
+                        <Show when={getAnchorId({ title: title, subtitle: subtitle, grouped: true })}>
+                          {(hash) => (
+                            <button
+                              id={`btn_${hash()}`}
+                              title={subtitle}
+                              class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
+                              classList={{
+                                [`fw-bold ${styles.selected}`]: `#${hash()}` === location.hash,
+                              }}
+                              disabled={`#${hash()}` === location.hash}
+                              onClick={() => {
+                                goToElement(`card_${hash()}`);
+                                if (!isUndefined(props.onClickOption)) {
+                                  props.onClickOption();
+                                }
+                                updateRoute(hash());
+                              }}
+                              aria-label={getSectionLabel(subtitle, isTAG)}
+                            >
+                              <Show when={`#${hash()}` === location.hash}>
+                                <div class={`position-absolute ${styles.arrow}`}>
+                                  <SVGIcon kind={SVGIconKind.ArrowRight} />
+                                </div>
+                              </Show>
+                              {getSectionLabel(subtitle, isTAG)}
+                            </button>
+                          )}
+                        </Show>
+                      )}
                     </For>
                   </div>
                 </div>

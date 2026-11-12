@@ -1,14 +1,12 @@
 import { SVGIcon, SVGIconKind } from 'common';
 import isNumber from 'lodash/isNumber';
-import isString from 'lodash/isString';
-import { createEffect, createSignal, For, JSXElement, Show } from 'solid-js';
+import { createSignal, For, JSXElement, Show } from 'solid-js';
 
 import styles from './Pagination.module.css';
 
 interface Props {
   initialLimit: number;
   initialTotal: number;
-  offset: number;
   active: number;
   class?: string;
   onChange: (pageNumber: number) => void;
@@ -17,12 +15,18 @@ interface Props {
 interface ButtonProps {
   pageNumber: number;
   disabled: boolean;
-  content?: JSXElement | string;
+  content?: JSXElement;
   active: number;
+  /** Accessible name; defaults to "Open page" followed by the page number. */
+  label?: string;
   onChange: (pageNumber: number) => void;
 }
 
-const getPaginationOptions = (currentPage: number, pageCount: number): (string | number)[] => {
+/**
+ * Returns the pages to show: the first, the last, the current one and its neighbours,
+ * with '...' standing for each gap.
+ */
+export const getPaginationOptions = (currentPage: number, pageCount: number): (string | number)[] => {
   const delta = 1;
   const range = [];
   for (let i = Math.max(2, currentPage - delta); i <= Math.min(pageCount - 1, currentPage + delta); i++) {
@@ -35,7 +39,9 @@ const getPaginationOptions = (currentPage: number, pageCount: number): (string |
     range.push('...');
   }
   range.unshift(1);
-  range.push(pageCount);
+  if (pageCount > 1) {
+    range.push(pageCount);
+  }
   return range;
 };
 
@@ -55,7 +61,7 @@ const PaginationBtn = (props: ButtonProps) => {
           props.onChange(props.pageNumber);
         }
       }}
-      aria-label={`Open ${isString(props.content) ? props.content : `page ${props.pageNumber}`}`}
+      aria-label={props.label ?? `Open page ${props.pageNumber}`}
       disabled={props.disabled}
     >
       {props.content || props.pageNumber}
@@ -64,19 +70,15 @@ const PaginationBtn = (props: ButtonProps) => {
 };
 
 const Pagination = (props: Props) => {
-  const [totalPages, setTotalPages] = createSignal<number>(Math.ceil(props.initialTotal / props.initialLimit));
+  const totalPages = () => Math.ceil(props.initialTotal / props.initialLimit);
   const active = () => props.active;
-
-  createEffect(() => {
-    setTotalPages(Math.ceil(props.initialTotal / props.initialLimit));
-  });
 
   const visiblePages = () => getPaginationOptions(active(), totalPages());
 
   return (
     <Show when={totalPages() > 1}>
       <nav role="navigation" aria-label="pagination">
-        <ul class={`pagination justify-content-center ${styles.pagination} ${props.class}`}>
+        <ul class={`pagination justify-content-center ${styles.pagination} ${props.class ?? ''}`}>
           <li class="page-item" classList={{ disabled: active() === 1 }}>
             <PaginationBtn
               pageNumber={active() - 1}
@@ -90,6 +92,7 @@ const Pagination = (props: Props) => {
                 </>
               }
               active={active()}
+              label="Go to previous page"
               onChange={props.onChange}
             />
           </li>
@@ -118,7 +121,7 @@ const Pagination = (props: Props) => {
             }}
           </For>
 
-          <li class="page-item" classList={{ disabled: active === totalPages }}>
+          <li class="page-item" classList={{ disabled: active() === totalPages() }}>
             <PaginationBtn
               pageNumber={active() + 1}
               disabled={active() === totalPages()}
@@ -131,6 +134,7 @@ const Pagination = (props: Props) => {
                 </>
               }
               active={active()}
+              label="Go to next page"
               onChange={props.onChange}
             />
           </li>

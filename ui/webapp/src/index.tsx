@@ -1,3 +1,4 @@
+import 'common/styles/colors.css';
 import './styles/bootstrap.scss';
 import './App.css';
 import './styles/cookies.css';

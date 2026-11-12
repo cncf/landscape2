@@ -1,0 +1,54 @@
+{
+  "https://github.com/example/full": {
+    "contributors": {
+      "count": 42,
+      "url": "https://github.com/example/full/graphs/contributors"
+    },
+    "description": "Full repository :rocket:",
+    "generated_at": "2025-10-01T12:30:45Z",
+    "latest_commit": {
+      "ts": "2025-09-15T08:00:00Z",
+      "url": "https://github.com/example/full/commit/abc"
+    },
+    "participation_stats": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "stars": 1234,
+    "topics": [
+      "cncf",
+      "landscape"
+    ],
+    "url": "https://github.com/example/full",
+    "first_commit": {
+      "ts": "2025-09-15T08:00:00Z",
+      "url": "https://github.com/example/full/commit/000"
+    },
+    "languages": {
+      "Rust": 1000,
+      "TypeScript": 500
+    },
+    "latest_release": {
+      "ts": "2025-09-15T08:00:00Z",
+      "url": "https://github.com/example/full/releases/v1"
+    },
+    "license": "Apache License 2.0"
+  },
+  "https://github.com/example/minimal": {
+    "contributors": {
+      "count": 0,
+      "url": "https://github.com/example/minimal/graphs/contributors"
+    },
+    "description": "",
+    "generated_at": "2025-10-01T12:30:45Z",
+    "latest_commit": {
+      "ts": null,
+      "url": "https://github.com/example/minimal/commit/abc"
+    },
+    "participation_stats": [],
+    "stars": 0,
+    "url": "https://github.com/example/minimal"
+  }
+}

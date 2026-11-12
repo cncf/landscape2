@@ -4,9 +4,11 @@ import { Item } from '../types';
 
 const MAX_RESULTS = 30;
 
+/** Full-text search over the items, indexed once the full dataset is ready. */
 class Search {
   private index: MiniSearch | undefined = undefined;
 
+  /** Indexes the items given. */
   public init(items: Item[]): void {
     this.indexItems(items);
   }
@@ -25,22 +27,7 @@ class Search {
             break;
 
           case 'description':
-            if (item.description && item.description !== '') {
-              value = item.description;
-            } else if (item.repositories) {
-              for (let i = 0; i < item.repositories.length; i++) {
-                const repo = item.repositories[i];
-                if (
-                  repo.primary &&
-                  repo.github_data &&
-                  repo.github_data.description &&
-                  repo.github_data.description !== ''
-                ) {
-                  value = repo.github_data.description;
-                  break;
-                }
-              }
-            }
+            value = item.description ?? '';
             break;
 
           case 'primaryRepositoryTopics':
@@ -98,13 +85,20 @@ class Search {
     this.index = miniSearch;
   }
 
+  /**
+   * Searches the indexed items.
+   * @param term - Text to search
+   * @returns Up to `MAX_RESULTS` results, best first
+   * @throws Error while the index is being prepared
+   */
   public async searchTerm(term: string): Promise<SearchResult[]> {
     if (!this.index) {
-      return Promise.reject('Preparing search index...');
+      throw new Error('Preparing search index...');
     }
-    return Promise.resolve(this.index.search(term).slice(0, MAX_RESULTS - 1));
+    return this.index.search(term).slice(0, MAX_RESULTS);
   }
 }
 
+/** Shared search engine instance. */
 const searchEngine = new Search();
 export default searchEngine;

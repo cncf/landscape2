@@ -1,41 +1,36 @@
-// Width reserved for each column in a row (in px). This value is used to
-// calculate how many columns we'll have in a row. Columns may end up taking
-// less space if the number of items is small.
-const COLUMN_RESERVED_WIDTH = 500;
+import {
+  LAYOUT_COLUMN_CONTAINER_PADDING,
+  LAYOUT_COLUMN_ITEMS_SPACING,
+  LAYOUT_COLUMN_RESERVED_WIDTH,
+  MIN_COLUMN_ITEMS,
+} from './gridGeometry';
 
-// Minimum number of items (non featured) that must fit in a column.
-export const MIN_COLUMN_ITEMS = 4;
-
-// Lateral padding used in the container where items will be displayed (in px).
-const CONTAINER_PADDING = 14;
-
-// Space between items (in px).
-const ITEMS_SPACING = 6;
-
-// Input used to calculate the grid category layout.
+/** Input used to calculate the grid category layout. */
 export interface GetGridCategoryLayoutInput {
   categoryName: string;
   subcategories: SubcategoryDetails[];
-  isOverriden: boolean;
+  isOverridden: boolean;
   containerWidth: number;
   itemWidth: number;
 }
 
-// Some details about a subcategory.
+/** Some details about a subcategory. */
 export interface SubcategoryDetails {
   name: string;
   itemsCount: number;
   itemsFeaturedCount: number;
 }
 
-// Grid category layout representation that defines how the subcategories in
-// this category should be distributed in rows and columns (an array of rows).
+/**
+ * Grid category layout representation that defines how the subcategories in
+ * this category should be distributed in rows and columns (an array of rows).
+ */
 export type GridCategoryLayout = LayoutRow[];
 
-// Represents a row in the layout (an array of columns).
+/** Represents a row in the layout (an array of columns). */
 export type LayoutRow = LayoutColumn[];
 
-// Represents a column in a row in the layout.
+/** Represents a column in a row in the layout. */
 export interface LayoutColumn {
   subcategoryName: string;
   percentage: number;
@@ -45,14 +40,14 @@ interface Owers {
   [key: string]: number;
 }
 
-// Get the grid layout of the category provided.
-export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput): GridCategoryLayout {
+/** Gets the grid layout of the category provided. */
+const getGridCategoryLayout = (input: GetGridCategoryLayoutInput): GridCategoryLayout => {
   // Calculate number of rows needed to display the subcategories
   let rowsCount;
-  if (input.isOverriden) {
+  if (input.isOverridden) {
     rowsCount = input.subcategories.length;
   } else {
-    const maxColumns = Math.max(1, Math.floor(input.containerWidth / COLUMN_RESERVED_WIDTH));
+    const maxColumns = Math.max(1, Math.floor(input.containerWidth / LAYOUT_COLUMN_RESERVED_WIDTH));
     rowsCount = Math.ceil(input.subcategories.length / maxColumns);
   }
 
@@ -69,7 +64,7 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
 
   // Distribute subcategories in rows (one column per subcategory)
   // (we'll assign the next available largest category to each of the rows)
-  if (!input.isOverriden) {
+  if (!input.isOverridden) {
     subcategories.sort((a, b) => b.normalizedItemsCount - a.normalizedItemsCount);
   }
   const rows: LayoutRow[] = Array.from({ length: rowsCount }, () => []);
@@ -83,8 +78,11 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   }
 
   // Calculate columns width percentage from the subcategory weight in the row
+  // (equal weights when the category has no items)
   const totalItemsCount = subcategories.reduce((t, s) => (t += s.normalizedItemsCount), 0);
-  const weights = new Map(subcategories.map((s) => [s.name, s.normalizedItemsCount / totalItemsCount]));
+  const weights = new Map(
+    subcategories.map((s) => [s.name, totalItemsCount > 0 ? s.normalizedItemsCount / totalItemsCount : 1])
+  );
   for (const row of rows) {
     const rowWeights = row.reduce((t, c) => (t += weights.get(c.subcategoryName)!), 0);
     for (const col of row) {
@@ -93,7 +91,10 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   }
 
   // Adjust columns percentages to respect the minimum width for a column
-  const minWidth = 2 * CONTAINER_PADDING + (MIN_COLUMN_ITEMS - 1) * ITEMS_SPACING + input.itemWidth * MIN_COLUMN_ITEMS;
+  const minWidth =
+    2 * LAYOUT_COLUMN_CONTAINER_PADDING +
+    (MIN_COLUMN_ITEMS - 1) * LAYOUT_COLUMN_ITEMS_SPACING +
+    input.itemWidth * MIN_COLUMN_ITEMS;
   const minPercentage = (minWidth * 100) / input.containerWidth;
   for (const row of rows) {
     const owers: Owers = {};
@@ -111,6 +112,12 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
 
     // Pass 2: take percentage owed from the other columns
     if (owed > 0) {
+      // No column can give up width: the row falls back to equal shares
+      if (Object.keys(owers).length === 0) {
+        setEqualShares(row);
+        continue;
+      }
+
       const ownedPerRow = owed / Object.keys(owers).length;
       for (const col of row) {
         if (Object.keys(owers).includes(col.subcategoryName)) {
@@ -124,6 +131,14 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
         }
       }
 
+      // Every column giving up width reached the minimum: the row falls back to equal shares
+      if (Object.keys(owers).length === 0) {
+        if (owed > 0) {
+          setEqualShares(row);
+        }
+        continue;
+      }
+
       for (const col of row) {
         if (Object.keys(owers).includes(col.subcategoryName)) {
           col.percentage -= owed / Object.keys(owers).length;
@@ -133,4 +148,13 @@ export default function getGridCategoryLayout(input: GetGridCategoryLayoutInput)
   }
 
   return rows;
-}
+};
+
+export default getGridCategoryLayout;
+
+/** Gives every column in the row the same width percentage. */
+const setEqualShares = (row: LayoutRow) => {
+  for (const col of row) {
+    col.percentage = 100 / row.length;
+  }
+};

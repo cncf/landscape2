@@ -1,0 +1,26 @@
+{
+  "classification": {
+    "category": {
+      "name": "Category",
+      "normalized_name": "category",
+      "subcategories": [
+        {
+          "name": "Subcategory",
+          "normalized_name": "subcategory"
+        }
+      ]
+    }
+  },
+  "foundation": "Foundation",
+  "items": [
+    {
+      "category": "Category",
+      "id": "category--subcategory--item",
+      "logo": "item.svg",
+      "name": "Item",
+      "subcategory": "Subcategory",
+      "website": "https://item.example",
+      "primary_repository_url": "https://github.com/example/item"
+    }
+  ]
+}

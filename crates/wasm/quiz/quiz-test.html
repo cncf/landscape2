@@ -1,6 +1,20 @@
-<html>
+<!doctype html>
+<!--
+  Manual in-browser check of the quiz wasm_bindgen boundary.
+
+  Run these steps from the crates/wasm/quiz directory:
+    1. wasm-pack build --target web --dev --out-dir dist
+    2. Copy a built landscape's files into place: the build output's
+       data/quiz.json to data/quiz.json.
+    3. python3 -m http.server 8000
+    4. Open http://localhost:8000/quiz-test.html. Output goes to the console.
+
+  The dist and data directories are gitignored.
+-->
+<html lang="en">
   <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta charset="utf-8" />
+    <title>Quiz test</title>
   </head>
   <body>
     <script type="module">
@@ -10,13 +24,18 @@
         await init();
 
         const landscape_url = "http://localhost:8000";
-        const options = new QuizOptions(landscape_url);
+        // No questions JSON: the quiz fetches data/quiz.json from the landscape url
+        const options = new QuizOptions(landscape_url, undefined);
 
         const quiz1 = await Quiz.new(options);
-        console.log("quiz1.questions()", quiz1.questions());
+        console.log("quiz1.questions_count()", quiz1.questions_count());
+        const question1 = quiz1.current_question();
+        console.log("quiz1.current_question()", question1.title, question1.options);
         console.log("quiz1.state()", quiz1.state());
         console.log("quiz1.check_player_guess(0)", quiz1.check_player_guess(0));
         console.log("quiz1.next_question()", quiz1.next_question());
+        const question2 = quiz1.current_question();
+        console.log("quiz1.current_question()", question2.title, question2.options);
         console.log("quiz1.check_player_guess(1)", quiz1.check_player_guess(1));
       }
 

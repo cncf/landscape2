@@ -1,14 +1,15 @@
+import { GitHubCircle, World } from 'common/icons';
+import type { EmbedItem } from 'common/types';
+import { cx, DEFAULT_ITEM_DESCRIPTION } from 'common/utils';
 import { Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
-import { BaseItem, SVGIconKind } from '../types';
 import getUrl from '../utils/getUrl';
 import ExternalLink from './ExternalLink';
 import Image from './Image';
-import SVGIcon from './SVGIcon';
 
 interface Props {
-  item: BaseItem;
+  item: EmbedItem;
   foundation: string;
   onClick?: () => void;
 }
@@ -36,10 +37,6 @@ const ColClass = css`
   }
 `;
 
-const LinkClass = css`
-  text-decoration: none;
-`;
-
 const CardClass = css`
   position: relative;
   display: flex;
@@ -49,14 +46,20 @@ const CardClass = css`
   border: 1px solid #d2d2d2;
   padding: 1rem;
   font-size: 90%;
+`;
 
-  &:hover {
+// The details button or link covers the card as a sibling, so the hover style
+// lives on the wrapper. The icon links sit above it (z-index 2).
+const CardWrapperClass = css`
+  position: relative;
+
+  &:hover > .${CardClass} {
     border-color: var(--bg-color);
     box-shadow: 0 0 5px 0 rgba(13, 110, 253, 0.25);
   }
 `;
 
-const CardButtonClass = css`
+const CardOverlayClass = css`
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -66,27 +69,15 @@ const CardButtonClass = css`
   cursor: pointer;
 `;
 
-const CardButtonWrapperClass = css`
-  position: relative;
-`;
-
 const CardHeaderClass = css`
   width: 100%;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
 `;
 
 const ImageWrapperClass = css`
-  width: 100%;
-  height: 100%;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
   height: 90px;
   width: 70px;
@@ -95,7 +86,6 @@ const ImageWrapperClass = css`
 
 const ImageClass = css`
   margin: auto;
-  font-size: calc(var(--card-size-height) / 1.5);
   width: 100%;
   max-height: 100%;
   height: auto;
@@ -190,6 +180,7 @@ const IconClass = css`
   }
 `;
 
+// Line clamping still needs the `-webkit-box` display and its prefixed properties
 const DescriptionClass = css`
   font-size: 0.8rem;
   line-height: 1.5;
@@ -223,55 +214,60 @@ const CardItem = (props: Props) => {
               when={props.item.maturity}
               fallback={
                 <Show when={props.item.member_subcategory}>
-                  <div title={`${props.item.member_subcategory} member`} class={`${BadgeClass} ${MemberBadgeClass}`}>
+                  <div title={`${props.item.member_subcategory} member`} class={cx(BadgeClass, MemberBadgeClass)}>
                     {props.item.member_subcategory} member
                   </div>
                 </Show>
               }
             >
               <>
-                <div title={props.item.maturity} class={`${BadgeClass} ${FoundationBadgeClass}`}>
+                <div title={props.foundation} class={cx(BadgeClass, FoundationBadgeClass)}>
                   {props.foundation}
                 </div>
-                <div title={props.item.maturity} class={`${BadgeClass} ${MaturityBadgeClass}`}>
+                <div title={props.item.maturity} class={cx(BadgeClass, MaturityBadgeClass)}>
                   {props.item.maturity}
                 </div>
               </>
             </Show>
             <Show when={props.item.website}>
-              <ExternalLink title="Website" class={IconClass} href={props.item.website!}>
-                <SVGIcon kind={SVGIconKind.World} />
+              <ExternalLink title="Website" label="Website" class={IconClass} href={props.item.website}>
+                <World />
               </ExternalLink>
             </Show>
             <Show when={props.item.primary_repository_url}>
-              <ExternalLink title="Repository" class={IconClass} href={props.item.primary_repository_url!}>
-                <SVGIcon kind={SVGIconKind.GitHubCircle} />
+              <ExternalLink
+                title="Repository"
+                label="Repository"
+                class={IconClass}
+                href={props.item.primary_repository_url!}
+              >
+                <GitHubCircle />
               </ExternalLink>
             </Show>
           </div>
         </div>
       </div>
-      <div class={DescriptionClass}>
-        {props.item.description || 'This item does not have a description available yet'}
-      </div>
+      <div class={DescriptionClass}>{props.item.description ?? DEFAULT_ITEM_DESCRIPTION}</div>
     </div>
   );
 
   return (
     <div class={ColClass}>
-      <Show
-        when={props.onClick}
-        fallback={
-          <ExternalLink href={`${getUrl()}?item=${props.item.id}`} class={LinkClass}>
-            {cardContent()}
-          </ExternalLink>
-        }
-      >
-        <div class={CardButtonWrapperClass}>
-          <button class={CardButtonClass} onClick={() => props.onClick!()} aria-label={`${props.item.name} info`} />
-          {cardContent()}
-        </div>
-      </Show>
+      <div class={CardWrapperClass}>
+        <Show
+          when={props.onClick}
+          fallback={
+            <ExternalLink
+              href={`${getUrl()}?item=${props.item.id}`}
+              class={CardOverlayClass}
+              label={`${props.item.name} details`}
+            />
+          }
+        >
+          <button class={CardOverlayClass} onClick={() => props.onClick?.()} aria-label={`${props.item.name} info`} />
+        </Show>
+        {cardContent()}
+      </div>
     </div>
   );
 };

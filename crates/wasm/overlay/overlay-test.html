@@ -1,6 +1,22 @@
-<html>
+<!doctype html>
+<!--
+  Manual in-browser check of the overlay wasm_bindgen boundary.
+
+  Run these steps from the crates/wasm/overlay directory:
+    1. wasm-pack build --target web --dev --out-dir dist
+    2. Copy a built landscape's files into place: the build output's
+       data/full.json to data/full.json, and the landscape's data.yml,
+       settings.yml and guide.yml to sources/ (guide.yml is optional, and an
+       optional sources/games.yml is loaded too).
+    3. python3 -m http.server 8000
+    4. Open http://localhost:8000/overlay-test.html. Output goes to the console.
+
+  The dist, data and sources directories are gitignored.
+-->
+<html lang="en">
   <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <meta charset="utf-8" />
+    <title>Overlay test</title>
   </head>
   <body>
     <script type="module">

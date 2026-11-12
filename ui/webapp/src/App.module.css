@@ -4,16 +4,13 @@
 
 .alert {
   font-size: 0.8rem;
-  border: 0;
   border: 1px solid transparent;
   border-width: 1px 0 1px 0;
 }
 
 .alertOverlay {
   height: var(--overlay-alert-height);
-  cursor: none;
   position: relative;
-  padding-right: 3rem;
   border-color: var(--bs-warning-border-subtle);
 }
 

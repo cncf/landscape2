@@ -1,9 +1,9 @@
 import {
   cutString,
+  DEFAULT_ITEM_DESCRIPTION,
   ExternalLink,
   formatTAGName,
   FoundationBadge,
-  getItemDescription,
   getMainTag,
   Image,
   MaturityBadge,
@@ -12,44 +12,30 @@ import {
   SVGIconKind,
 } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, Match, onMount, Show, Switch } from 'solid-js';
+import { Match, Show, Switch } from 'solid-js';
 
 import { FOUNDATION } from '../../../data';
-import { Item, Repository } from '../../../types';
+import { LandscapeItem } from '../../../types';
+import { getItemStars } from '../../../utils/repositoryMetrics';
 import styles from './Card.module.css';
 
 interface Props {
-  item: Item;
+  item: LandscapeItem;
   class?: string;
   logoClass?: string;
-  isVisible?: boolean;
 }
 
 const Card = (props: Props) => {
-  const [description, setDescription] = createSignal<string>();
-  const [stars, setStars] = createSignal<number>();
-
-  onMount(() => {
-    setDescription(getItemDescription(props.item));
-    let starsCount: number | undefined;
-
-    if (props.item.repositories) {
-      props.item.repositories.forEach((repo: Repository) => {
-        if (repo.github_data) {
-          starsCount = starsCount || 0 + repo.github_data.stars;
-        }
-      });
-      setStars(starsCount);
-    }
-  });
+  const description = () => props.item.description ?? DEFAULT_ITEM_DESCRIPTION;
+  const stars = () => getItemStars(props.item);
 
   return (
-    <div class={`d-flex flex-column ${props.class}`}>
+    <div class={`d-flex flex-column ${props.class ?? ''}`}>
       <div class="d-flex flex-row align-items-center justify-content-between">
         <div class={`d-flex align-items-center justify-content-center ${styles.logoWrapper}`}>
           <Image
             name={props.item.name}
-            class={`m-auto ${styles.logo} ${props.logoClass}`}
+            class={`m-auto ${styles.logo} ${props.logoClass ?? ''}`}
             logo={props.item.logo}
             enableLazyLoad
           />
@@ -77,13 +63,18 @@ const Card = (props: Props) => {
             </Show>
 
             <Show when={!isUndefined(props.item.website)}>
-              <ExternalLink title="Website" class={`me-2 ${styles.link}`} href={props.item.website!}>
+              <ExternalLink title="Website" label="Website" class={`me-2 ${styles.link}`} href={props.item.website!}>
                 <SVGIcon kind={SVGIconKind.World} />
               </ExternalLink>
             </Show>
 
             <Show when={!isUndefined(props.item.twitter_url)}>
-              <ExternalLink title="X (Twitter)" class={`me-2 ${styles.link}`} href={props.item.twitter_url!}>
+              <ExternalLink
+                title="X (Twitter)"
+                label="X (Twitter)"
+                class={`me-2 ${styles.link}`}
+                href={props.item.twitter_url!}
+              >
                 <SVGIcon kind={SVGIconKind.Twitter} />
               </ExternalLink>
             </Show>
@@ -99,7 +90,7 @@ const Card = (props: Props) => {
             <Match when={!isUndefined(stars())}>
               <div class="d-flex flex-row align-items-baseline">
                 <small class={`me-1 ${styles.legend}`}>GitHub stars:</small>
-                <div class="fw-semibold">{stars ? prettifyNumber(stars()!, 1) : '-'}</div>
+                <div class="fw-semibold">{prettifyNumber(stars()!, 1)}</div>
               </div>
             </Match>
             <Match

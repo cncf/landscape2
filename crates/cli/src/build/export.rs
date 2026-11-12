@@ -1,72 +1,122 @@
 //! This module defines the functionality to generate the `items.csv`
 //! file from the information available in the landscape.
 
-use std::fs::File;
+use std::io;
 
 use anyhow::Result;
 use chrono::NaiveDate;
+use landscape2_core::data::{self, DATE_FORMAT, LandscapeData};
 use serde::Serialize;
-
-use crate::build::data::DATE_FORMAT;
-
-use super::{LandscapeData, data};
 
 /// Item information used for each record in the CSV file.
 ///
 /// The order in which the values in Item are defined is the order in which
-/// they will be appear in the CSV file as headers.
+/// they appear in the CSV file as headers. The file is a public output
+/// documented in `docs/api.md`, so new columns are appended at the end.
 #[derive(Default, Serialize)]
 struct Item {
+    /// Item name.
     name: String,
+    /// Name of the organization the item belongs to (from Crunchbase).
     organization: Option<String>,
+    /// Homepage url.
     homepage: String,
+    /// Logo path, relative to the landscape url.
     logo: String,
+    /// Twitter url, falling back to the Crunchbase one.
     twitter: Option<String>,
+    /// Crunchbase url of the organization the item belongs to.
     crunchbase_url: Option<String>,
+    /// Total funding raised by the organization, in USD (from Crunchbase).
     funding: Option<i64>,
+    /// Members category subcategory of the organization the item belongs to.
     member: Option<String>,
+    /// Relation with the foundation: the project maturity, or `member`.
     relation: Option<String>,
+    /// Technical Advisory Groups (TAG) the item is associated to, joined with commas.
     tag: Option<String>,
+    /// Primary repository license: the data file override, or the one detected by GitHub.
     license: Option<String>,
+    /// Headquarters location: the Crunchbase city, region and country available, joined with commas.
     headquarters: Option<String>,
+    /// Item description.
     description: Option<String>,
+    /// Organization description (from Crunchbase).
     crunchbase_description: Option<String>,
+    /// Organization homepage url (from Crunchbase).
     crunchbase_homepage: Option<String>,
+    /// City where the organization is headquartered (from Crunchbase).
     crunchbase_city: Option<String>,
+    /// Region where the organization is headquartered (from Crunchbase).
     crunchbase_region: Option<String>,
+    /// Country where the organization is headquartered (from Crunchbase).
     crunchbase_country: Option<String>,
+    /// Organization Twitter url (from Crunchbase).
     crunchbase_twitter: Option<String>,
+    /// Organization LinkedIn url (from Crunchbase).
     crunchbase_linkedin: Option<String>,
+    /// Organization stock ticker (from Crunchbase).
     crunchbase_ticker: Option<String>,
+    /// Kind of organization data (`funding` when its total funding is known).
     crunchbase_kind: Option<String>,
+    /// Minimum number of employees of the organization (from Crunchbase).
     crunchbase_min_employees: Option<i64>,
+    /// Maximum number of employees of the organization (from Crunchbase).
     crunchbase_max_employees: Option<i64>,
+    /// Name of the item's primary category.
     category: String,
+    /// Name of the item's primary subcategory.
     subcategory: String,
+    /// Whether the item is open source.
     oss: Option<bool>,
+    /// Primary repository url (from GitHub).
     github_repo: Option<String>,
+    /// Primary repository number of stars (from GitHub).
     github_stars: Option<i64>,
+    /// Primary repository description (from GitHub).
     github_description: Option<String>,
+    /// Date of the primary repository latest commit (from GitHub).
     github_latest_commit_date: Option<String>,
+    /// Url of the primary repository latest commit (from GitHub).
     github_latest_commit_link: Option<String>,
+    /// Date of the primary repository latest release (from GitHub).
     github_latest_release_date: Option<String>,
+    /// Url of the primary repository latest release (from GitHub).
     github_latest_release_link: Option<String>,
+    /// Date of the primary repository first commit (from GitHub).
     github_start_commit_date: Option<String>,
+    /// Url of the primary repository first commit (from GitHub).
     github_start_commit_link: Option<String>,
+    /// Primary repository number of contributors (from GitHub).
     github_contributors_count: Option<usize>,
+    /// Url of the primary repository contributors page (from GitHub).
     github_contributors_link: Option<String>,
+    /// Date at which the project was accepted in the foundation.
     accepted: Option<String>,
+    /// Date at which the project moved to incubating.
     incubation: Option<String>,
+    /// Date at which the project moved to graduated.
     graduated: Option<String>,
+    /// Dev stats url.
     dev_stats_url: Option<String>,
+    /// Artwork url.
     artwork_url: Option<String>,
+    /// Blog url.
     blog_url: Option<String>,
+    /// Mailing list url.
     mailing_list_url: Option<String>,
+    /// Slack url.
     slack_url: Option<String>,
+    /// YouTube url.
     youtube_url: Option<String>,
+    /// Channel to discuss topics related to the item.
     chat_channel: Option<String>,
+    /// Date of the latest security audit (by date, not by list position).
     last_audit_date: Option<String>,
+    /// Url of the latest security audit report.
     last_audit_url: Option<String>,
+    /// Item identifier.
+    id: String,
 }
 
 impl From<&data::Item> for Item {
@@ -83,10 +133,11 @@ impl From<&data::Item> for Item {
             category: di.category.clone(),
             chat_channel: di.chat_channel.clone(),
             crunchbase_url: di.crunchbase_url.clone(),
-            description: di.description().cloned(),
+            description: di.description.clone(),
             dev_stats_url: di.devstats_url.clone(),
             graduated: di.graduated_at.map(fmt_date),
             homepage: di.homepage_url.clone(),
+            id: di.id.clone(),
             incubation: di.incubating_at.map(fmt_date),
             logo: di.logo.clone(),
             mailing_list_url: di.mailing_list_url.clone(),
@@ -174,9 +225,9 @@ impl From<&data::Item> for Item {
             }
         }
 
-        // Last audit values
+        // Last audit values (the latest by date)
         if let Some(audits) = &di.audits
-            && let Some(last_audit) = audits.last()
+            && let Some(last_audit) = audits.iter().max_by_key(|a| a.date)
         {
             item.last_audit_date = Some(fmt_date(last_audit.date));
             item.last_audit_url = Some(String::from(&last_audit.url));
@@ -202,11 +253,17 @@ impl From<&data::Item> for Item {
 }
 
 /// Generate CSV file with some information about each item.
-pub(crate) fn generate_items_csv(mut w: csv::Writer<File>, landscape_data: &LandscapeData) -> Result<()> {
+pub(crate) fn generate_items_csv<W: io::Write>(
+    mut w: csv::Writer<W>,
+    landscape_data: &LandscapeData,
+) -> Result<()> {
     let mut items: Vec<Item> = landscape_data.items.iter().map(Item::from).collect();
-    items.sort_by_key(|i| i.name.to_lowercase());
+    items.sort_by_cached_key(|i| i.name.to_lowercase());
     items.iter().try_for_each(|i| w.serialize(i))?;
     w.flush()?;
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests;

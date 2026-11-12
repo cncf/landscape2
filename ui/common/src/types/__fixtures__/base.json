@@ -1,0 +1,174 @@
+{
+  "colors": {
+    "color1": "rgba(0, 107, 204, 1)",
+    "color2": "rgba(255, 0, 170, 1)",
+    "color3": "rgba(96, 149, 214, 1)",
+    "color4": "rgba(0, 42, 81, 0.7)",
+    "color5": "rgba(1, 107, 204, 0.7)",
+    "color6": "rgba(0, 42, 81, 0.7)",
+    "color7": "rgb(180, 219, 255)"
+  },
+  "finances_available": true,
+  "foundation": "Foundation",
+  "url": "https://landscape.example.org",
+  "categories": [
+    {
+      "name": "Category 1",
+      "normalized_name": "category-1",
+      "subcategories": [
+        {
+          "name": "Subcategory 1-1",
+          "normalized_name": "subcategory-1-1"
+        },
+        {
+          "name": "Subcategory 1-2",
+          "normalized_name": "subcategory-1-2"
+        }
+      ]
+    },
+    {
+      "name": "Category 2",
+      "normalized_name": "category-2",
+      "subcategories": [
+        {
+          "name": "Subcategory 2-1",
+          "normalized_name": "subcategory-2-1"
+        }
+      ]
+    },
+    {
+      "name": "Members",
+      "normalized_name": "members",
+      "subcategories": [
+        {
+          "name": "Gold",
+          "normalized_name": "gold"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "links": {
+      "github": "https://github.com/example"
+    },
+    "text": "<p>Footer <strong>text</strong></p>"
+  },
+  "games_available": [
+    "quiz"
+  ],
+  "grid_items_size": "medium",
+  "groups": [
+    {
+      "categories": [
+        "Category 1"
+      ],
+      "name": "Group 1",
+      "alias": "group-one",
+      "normalized_name": "group-1"
+    },
+    {
+      "categories": [
+        "Category 2",
+        "Members"
+      ],
+      "name": "Group 2",
+      "normalized_name": "group-2"
+    }
+  ],
+  "guide_summary": {
+    "Category 1": [
+      "Subcategory 1-1"
+    ],
+    "Category 2": []
+  },
+  "header": {
+    "links": {
+      "github": "https://github.com/example/landscape"
+    },
+    "motd": "<p>Message of the <strong>day</strong></p>"
+  },
+  "items": [
+    {
+      "category": "Category 1",
+      "id": "category-1--subcategory-1-1--item-1",
+      "logo": "item-1.svg",
+      "name": "Item 1",
+      "subcategory": "Subcategory 1-1",
+      "featured": {
+        "excluded_groups": [
+          "group-2"
+        ],
+        "label": "Graduated",
+        "order": 1
+      },
+      "maturity": "graduated",
+      "oss": true
+    },
+    {
+      "category": "Category 1",
+      "id": "category-1--subcategory-1-1--item-2",
+      "logo": "item-2.svg",
+      "name": "Item 2",
+      "subcategory": "Subcategory 1-1",
+      "featured": {
+        "label": "Featured",
+        "order": 2
+      }
+    },
+    {
+      "category": "Category 2",
+      "id": "category-2--subcategory-2-1--item-3",
+      "logo": "item-3.svg",
+      "name": "Item 3",
+      "subcategory": "Subcategory 2-1",
+      "additional_categories": [
+        {
+          "category": "Category 1",
+          "subcategory": "Subcategory 1-1"
+        }
+      ],
+      "maturity": "Early Stage",
+      "oss": true,
+      "tag": [
+        "observability",
+        "security"
+      ]
+    },
+    {
+      "category": "Members",
+      "id": "members--gold--member-1",
+      "logo": "member-1.svg",
+      "name": "Member 1",
+      "subcategory": "Gold"
+    }
+  ],
+  "maturity_options": [
+    {
+      "name": "Early Stage",
+      "normalized_name": "early-stage"
+    },
+    {
+      "name": "graduated",
+      "normalized_name": "graduated"
+    }
+  ],
+  "qr_code": "images/qr-code.svg",
+  "tag_options": [
+    {
+      "name": "observability",
+      "normalized_name": "observability"
+    },
+    {
+      "name": "security",
+      "normalized_name": "security"
+    }
+  ],
+  "upcoming_event": {
+    "banner_url": "https://landscape.example.org/images/event-banner.png",
+    "details_url": "https://landscape.example.org/events/upcoming",
+    "end": "2024-07-03",
+    "name": "Upcoming event",
+    "start": "2024-07-01"
+  },
+  "view_mode": "card"
+}

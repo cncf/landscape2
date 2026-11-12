@@ -1,24 +1,26 @@
-import { createSignal, Show } from 'solid-js';
+// Local copy of the common `Image` component: the common one depends on
+// Bootstrap, which the third-party embed deliberately does not load. It keeps
+// the same behavior: absolute logo urls used as they are, lazy loading and a
+// decorative fallback icon when the logo cannot be loaded.
+import { Size } from 'common/embed';
+import { REGEX_URL } from 'common/utils';
+import { createMemo, createSignal, Show } from 'solid-js';
 import { styled } from 'solid-styled-components';
 
-import { Size } from '../types';
+import { getDataOrigin } from '../utils/dataOrigin';
 
 interface Props {
-  name: string;
   logo: string;
-  size?: Size;
+  name: string;
   class?: string;
-}
-
-interface ItemProps {
   size?: Size;
 }
 
-type FontSize = {
-  [key in Size]: string;
-};
+interface PlaceholderProps {
+  size?: Size;
+}
 
-const FONT_SIZES: FontSize = {
+const FONT_SIZES: Record<Size, string> = {
   [Size.XSmall]: '2rem',
   [Size.Small]: '3rem',
   [Size.Medium]: '4rem',
@@ -29,11 +31,12 @@ const FONT_SIZES: FontSize = {
 const PlaceholderImage = styled('div')`
   display: flex;
   opacity: 0.25;
-  font-size: ${(props: ItemProps) => FONT_SIZES[props.size || Size.Medium]};
+  font-size: ${(props: PlaceholderProps) => FONT_SIZES[props.size || Size.Medium]};
 `;
 
 const Image = (props: Props) => {
   const [error, setError] = createSignal(false);
+  const url = createMemo(() => (REGEX_URL.test(props.logo) ? props.logo : `${getDataOrigin()}/${props.logo}`));
 
   return (
     <Show
@@ -41,6 +44,7 @@ const Image = (props: Props) => {
       fallback={
         <PlaceholderImage size={props.size}>
           <svg
+            aria-hidden="true"
             stroke="currentColor"
             fill="currentColor"
             stroke-width="0"
@@ -55,12 +59,7 @@ const Image = (props: Props) => {
         </PlaceholderImage>
       }
     >
-      <img
-        alt={`${props.name} logo`}
-        class={props.class}
-        src={import.meta.env.MODE === 'development' ? `http://localhost:8000/${props.logo}` : `../${props.logo}`}
-        onError={() => setError(true)}
-      />
+      <img alt={`${props.name} logo`} class={props.class} loading="lazy" src={url()} onError={() => setError(true)} />
     </Show>
   );
 };

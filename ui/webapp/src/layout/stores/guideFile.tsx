@@ -6,10 +6,10 @@ function useGuideFileProvider() {
   const [guide, setGuide] = createSignal<Guide | null>();
   const [toc, setToc] = createSignal<ToCTitle[]>([]);
 
-  return { guide: guide, setGuide: setGuide, toc: toc, setToc: setToc };
+  return { guide, setGuide, toc, setToc };
 }
 
-export type ContextGuideFileType = ReturnType<typeof useGuideFileProvider>;
+type ContextGuideFileType = ReturnType<typeof useGuideFileProvider>;
 
 const GuideFileContext = createContext<ContextGuideFileType | undefined>(undefined);
 
@@ -18,26 +18,30 @@ export const GuideFileProvider: ParentComponent = (props) => {
   return <GuideFileContext.Provider value={value}>{props.children}</GuideFileContext.Provider>;
 };
 
-export function useGuideFile() {
+function useGuideFileContext() {
   const context = useContext(GuideFileContext);
   if (context === undefined) {
-    throw new Error(`useGuideFileProvider must be used within a GuideFileProvider`);
+    throw new Error(`useGuideFileContext must be used within a GuideFileProvider`);
   }
   return context;
 }
 
+/** Returns the accessor of the guide loaded in this session. */
 export function useGuideFileContent() {
-  return useGuideFile().guide;
+  return useGuideFileContext().guide;
 }
 
+/** Returns the setter of the guide. */
 export function useSetGuideFileContent() {
-  return useGuideFile().setGuide;
+  return useGuideFileContext().setGuide;
 }
 
+/** Returns the guide table of contents accessor. */
 export function useGuideTOC() {
-  return useGuideFile().toc;
+  return useGuideFileContext().toc;
 }
 
+/** Returns the setter of the guide table of contents. */
 export function useSetGuideTOC() {
-  return useGuideFile().setToc;
+  return useGuideFileContext().setToc;
 }

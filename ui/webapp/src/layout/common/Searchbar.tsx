@@ -1,10 +1,10 @@
-import { FoundationBadge, Image, MaturityBadge, SVGIcon, SVGIconKind, useOutsideClick } from 'common';
+import { BANNER_ID, FoundationBadge, Image, MaturityBadge, SVGIcon, SVGIconKind, useOutsideClick } from 'common';
 import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
 import { SearchResult } from 'minisearch';
-import { batch, createEffect, createSignal, For, on, onCleanup, onMount, Show } from 'solid-js';
+import { batch, createEffect, createSignal, createUniqueId, For, on, onCleanup, onMount, Show } from 'solid-js';
 
-import { BANNER_ID, FOUNDATION } from '../../data';
+import { FOUNDATION } from '../../data';
 import searchEngine from '../../utils/search';
 import { useUpdateActiveItemId } from '../stores/activeItem';
 import HoverableItem from './HoverableItem';
@@ -20,16 +20,26 @@ const MIN_CHARACTERS_SEARCH = 2;
 
 const Searchbar = (props: Props) => {
   const updateActiveItemId = useUpdateActiveItemId();
+  const listId = `search-list-${createUniqueId()}`;
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
-  const [dropdownRef, setDropdownRef] = createSignal<HTMLInputElement>();
+  const [wrapperRef, setWrapperRef] = createSignal<HTMLDivElement>();
+  const [dropdownRef, setDropdownRef] = createSignal<HTMLDivElement>();
   const [value, setValue] = createSignal<string>('');
   const [itemsList, setItemsList] = createSignal<SearchResult[] | null>(null);
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [highlightedItem, setHighlightedItem] = createSignal<number | null>(null);
-  const [dropdownTimeout, setDropdownTimeout] = createSignal<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = createSignal<string | null>(null);
+  let searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  useOutsideClick([dropdownRef], [BANNER_ID], visibleDropdown, () => {
+  const optionId = (index: number): string => `${listId}-opt${index}`;
+  const visibleResults = () => visibleDropdown() && (itemsList()?.length ?? 0) > 0;
+  const activeDescendant = () => {
+    const index = highlightedItem();
+    return visibleResults() && !isNull(index) ? optionId(index) : undefined;
+  };
+
+  // The input belongs to the search bar too, so pressing in it keeps the results
+  useOutsideClick([wrapperRef, dropdownRef], [BANNER_ID], visibleDropdown, () => {
     setValue('');
     cleanItemsSearch();
   });
@@ -40,26 +50,26 @@ const Searchbar = (props: Props) => {
         cleanItemsSearch();
         return;
       case 'ArrowDown':
-        updateHighlightedItem('down');
-        return;
       case 'ArrowUp':
-        updateHighlightedItem('up');
-        return;
-      case 'Enter':
-        e.preventDefault();
-        if (!isNull(itemsList()) && !isNull(highlightedItem())) {
-          if (highlightedItem() === itemsList()!.length) {
-            search();
-          } else {
-            const selectedProject = itemsList()![highlightedItem()!];
-            if (selectedProject) {
-              openItemModal(selectedProject.id);
-            }
-          }
-        } else {
-          search();
+        if (visibleResults()) {
+          e.preventDefault();
+          updateHighlightedItem(e.key === 'ArrowUp' ? 'up' : 'down');
         }
         return;
+      case 'Enter': {
+        e.preventDefault();
+        if (value().length < MIN_CHARACTERS_SEARCH) return;
+        const items = itemsList();
+        if (!isNull(items) && items.length > 0) {
+          // The highlighted result, or the first one when none is highlighted
+          openItemModal((items[highlightedItem() ?? 0] ?? items[0]).id);
+        } else if (isNull(items)) {
+          // The results are not listed yet, so the search runs right away
+          cleanTimeout();
+          onSearch(value());
+        }
+        return;
+      }
       default:
         return;
     }
@@ -84,48 +94,40 @@ const Searchbar = (props: Props) => {
     }
   };
 
+  const isInputFocused = (): boolean => inputEl() === document.activeElement;
+
   const onSearch = async (text: string) => {
-    await searchEngine
-      .searchTerm(text) /* eslint-disable solid/reactivity */
-      .then((filteredItems) => {
-        if (filteredItems.length > 0) {
-          const isInputFocused = inputEl() === document.activeElement;
-          // We have to be sure that input has focus to display results
-          if (isInputFocused) {
-            batch(() => {
-              setError(null);
-              setItemsList(filteredItems);
-              setVisibleDropdown(true);
-            });
-          } else {
-            cleanItemsSearch();
-          }
-        } else {
-          batch(() => {
-            setItemsList([]);
-            setVisibleDropdown(true);
-            setError(null);
-          });
-        }
-      })
-      .catch((error) => {
-        setError(error);
+    try {
+      const filteredItems = await searchEngine.searchTerm(text);
+      // Results of an older query, or arriving once the input lost the focus, are dropped
+      if (text !== value()) return;
+      if (!isInputFocused()) {
+        cleanItemsSearch();
+        return;
+      }
+      batch(() => {
+        setError(null);
+        setItemsList(filteredItems);
+        setVisibleDropdown(true);
+      });
+    } catch (err) {
+      if (text !== value()) return;
+      if (!isInputFocused()) {
+        cleanItemsSearch();
+        return;
+      }
+      batch(() => {
+        setError(err instanceof Error ? err.message : String(err));
         setItemsList([]);
         setVisibleDropdown(true);
       });
-  };
-
-  const search = () => {
-    cleanTimeout();
-    cleanItemsSearch();
-    onSearch(value());
-    forceBlur();
+    }
   };
 
   const cleanTimeout = () => {
-    if (!isNull(dropdownTimeout())) {
-      clearTimeout(dropdownTimeout()!);
-      setDropdownTimeout(null);
+    if (!isUndefined(searchTimeout)) {
+      clearTimeout(searchTimeout);
+      searchTimeout = undefined;
     }
   };
 
@@ -135,53 +137,47 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanItemsSearch = () => {
-    setError(null);
-    setItemsList(null);
-    setVisibleDropdown(false);
-    setHighlightedItem(null);
+    batch(() => {
+      setError(null);
+      setItemsList(null);
+      setVisibleDropdown(false);
+      setHighlightedItem(null);
+    });
   };
 
+  // Moves the highlight through the results, wrapping around at both ends
   const updateHighlightedItem = (arrow: 'up' | 'down') => {
-    if (!isNull(itemsList()) && visibleDropdown()) {
-      if (!isNull(highlightedItem())) {
-        let newIndex: number = arrow === 'up' ? highlightedItem()! - 1 : highlightedItem()! + 1;
-        if (newIndex > itemsList()!.length) {
-          newIndex = 0;
-        }
-        if (newIndex < 0) {
-          newIndex = itemsList()!.length;
-        }
-        setHighlightedItem(newIndex);
-        scrollToHighlightedItem(newIndex);
-      } else {
-        if (itemsList() && itemsList()!.length > 0) {
-          const newIndex = arrow === 'up' ? itemsList()!.length - 1 : 0;
-          setHighlightedItem(newIndex);
-          scrollToHighlightedItem(newIndex);
-        }
-      }
+    const resultsNumber = itemsList()?.length ?? 0;
+    if (resultsNumber === 0) return;
+
+    const currentIndex = highlightedItem();
+    let newIndex: number;
+    if (isNull(currentIndex)) {
+      newIndex = arrow === 'up' ? resultsNumber - 1 : 0;
+    } else {
+      newIndex = (currentIndex + (arrow === 'up' ? -1 : 1) + resultsNumber) % resultsNumber;
     }
+    setHighlightedItem(newIndex);
+    scrollToHighlightedItem(newIndex);
   };
 
   const scrollToHighlightedItem = (index: number) => {
-    const element = document.getElementById(`sl-opt${index}`);
-    if (element && !isUndefined(dropdownRef())) {
+    const element = dropdownRef()?.querySelector<HTMLElement>(`[id="${optionId(index)}"]`);
+    if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     }
   };
 
   createEffect(
     on(value, () => {
-      const isInputFocused = inputEl() === document.activeElement;
-      if (isInputFocused) {
+      if (isInputFocused()) {
+        cleanTimeout();
         if (value().length >= MIN_CHARACTERS_SEARCH) {
-          cleanTimeout();
-          setDropdownTimeout(
-            setTimeout(() => {
-              setHighlightedItem(null);
-              onSearch(value());
-            }, SEARCH_DELAY)
-          );
+          searchTimeout = setTimeout(() => {
+            searchTimeout = undefined;
+            setHighlightedItem(null);
+            onSearch(value());
+          }, SEARCH_DELAY);
         } else {
           cleanItemsSearch();
         }
@@ -206,29 +202,31 @@ const Searchbar = (props: Props) => {
     // We add the event listener to the document to listen to the '/' key only on desktop
     if (props.device === 'desktop') {
       document.addEventListener('keydown', docKeyDown, false);
+      onCleanup(() => {
+        document.removeEventListener('keydown', docKeyDown);
+      });
     }
   });
 
-  onCleanup(() => {
-    if (!isNull(dropdownTimeout())) {
-      clearTimeout(dropdownTimeout()!);
-    }
-    // We remove the event listener when the component is unmounted
-    if (props.device === 'desktop') {
-      document.removeEventListener('keydown', docKeyDown);
-    }
-  });
+  onCleanup(cleanTimeout);
 
   return (
     <>
       <div
-        class={`d-flex align-items-center overflow-hidden searchBar lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass} search`}
+        ref={setWrapperRef}
+        class={`d-flex align-items-center overflow-hidden lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass ?? ''}`}
       >
         <input
           id={`searchbar-${props.device}`}
           ref={setInputEl}
-          class={`flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base ${styles.input}`}
+          class="flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base"
           type="text"
+          role="combobox"
+          aria-label="Search items"
+          aria-autocomplete="list"
+          aria-expanded={visibleResults()}
+          aria-controls={listId}
+          aria-activedescendant={activeDescendant()}
           value={value()}
           autocomplete="off"
           autocorrect="off"
@@ -269,73 +267,77 @@ const Searchbar = (props: Props) => {
       <Show when={visibleDropdown() && !isNull(itemsList())}>
         <div
           ref={setDropdownRef}
-          class={`dropdown-menu dropdown-menu-left p-0 w-100 rounded-0 show noFocus overflow-auto visibleScroll ${
+          class={`dropdown-menu p-0 w-100 rounded-0 show overflow-auto visibleScroll ${
             styles.dropdown
-          } ${styles[`listLength-${itemsList()!.length}`]}`}
-          role="listbox"
-          id="search-list"
+          } ${styles[`listLength-${itemsList()!.length}`] ?? ''}`}
         >
           <Show
             when={itemsList()!.length > 0}
             fallback={
-              <div class="p-4 text-center fst-italic text-muted">
-                <small>{error() || `We couldn't find any items that match that criteria.`}</small>
+              <div class="p-4 text-center fst-italic text-muted" role="status">
+                <small>{error() ?? `We couldn't find any items that match that criteria.`}</small>
               </div>
             }
           >
             <HoverableItem onLeave={() => setHighlightedItem(null)}>
-              <For each={itemsList()!}>
-                {(item, index) => {
-                  return (
-                    <HoverableItem onHover={() => setHighlightedItem(index())} onLeave={() => setHighlightedItem(null)}>
-                      <button
-                        type="button"
-                        class={`btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3 ${styles.btnProject}`}
-                        classList={{
-                          activeDropdownItem: index() === highlightedItem(),
-                        }}
-                        onClick={() => {
-                          openItemModal(item.id);
-                        }}
-                        aria-label={`Open ${item.name} info`}
-                        role="option"
-                        aria-selected={index() === highlightedItem()}
-                        id={`sl-opt${index()}`}
+              <div id={listId} role="listbox" aria-label="Search results">
+                <For each={itemsList()!}>
+                  {(item, index) => {
+                    return (
+                      <HoverableItem
+                        onHover={() => setHighlightedItem(index())}
+                        onLeave={() => setHighlightedItem(null)}
                       >
-                        <div class="d-flex flex-row align-items-center w-100">
-                          <div
-                            class={`d-flex align-items-center justify-content-center me-3 ${styles.miniImageWrapper}`}
-                          >
-                            <Image name={item.name} class={`m-auto ${styles.logo}`} logo={item.logo} />
-                          </div>
-                          <div
-                            class={`flex-grow-1 d-flex flex-column text-start justify-content-between h-100 ${styles.truncateWrapper}`}
-                          >
-                            <div class="d-flex flex-row align-items-baseline">
-                              <span class={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
-                              <Show when={!isUndefined(item.maturity)}>
-                                <div class={`d-flex flex-nowrap position-relative ${styles.badges}`}>
-                                  <FoundationBadge
-                                    foundation={FOUNDATION}
-                                    class={`d-none d-xxl-flex ms-2 ${styles.badge}`}
-                                  />
-                                  <MaturityBadge level={item.maturity!} class={`ms-2 ${styles.badge}`} />
-                                </div>
-                              </Show>
+                        <button
+                          type="button"
+                          class={`btn btn-link text-decoration-none text-black w-100 border-bottom rounded-0 d-flex flex-row align-items-stretch p-3 ${styles.btnProject}`}
+                          classList={{
+                            activeDropdownItem: index() === highlightedItem(),
+                          }}
+                          onClick={() => {
+                            openItemModal(item.id);
+                          }}
+                          aria-label={`Open ${item.name} info`}
+                          role="option"
+                          tabIndex={-1}
+                          aria-selected={index() === highlightedItem()}
+                          id={optionId(index())}
+                        >
+                          <div class="d-flex flex-row align-items-center w-100">
+                            <div
+                              class={`d-flex align-items-center justify-content-center me-3 ${styles.miniImageWrapper}`}
+                            >
+                              <Image name={item.name} class="m-auto" logo={item.logo} />
                             </div>
-                            <div class={`text-muted ${styles.legend}`}>
-                              <span class="d-none d-md-block text-truncate">
-                                {item.category} / {item.subcategory}
-                              </span>
-                              <span class="d-block d-md-none text-truncate">{item.subcategory}</span>
+                            <div
+                              class={`flex-grow-1 d-flex flex-column text-start justify-content-between h-100 ${styles.truncateWrapper}`}
+                            >
+                              <div class="d-flex flex-row align-items-baseline">
+                                <span class={`text-truncate fw-semibold ${styles.title}`}>{item.name}</span>
+                                <Show when={!isUndefined(item.maturity)}>
+                                  <div class={`d-flex flex-nowrap position-relative ${styles.badges}`}>
+                                    <FoundationBadge
+                                      foundation={FOUNDATION}
+                                      class={`d-none d-xxl-flex ms-2 ${styles.badge}`}
+                                    />
+                                    <MaturityBadge level={item.maturity!} class={`ms-2 ${styles.badge}`} />
+                                  </div>
+                                </Show>
+                              </div>
+                              <div class={`text-muted ${styles.legend}`}>
+                                <span class="d-none d-md-block text-truncate">
+                                  {item.category} / {item.subcategory}
+                                </span>
+                                <span class="d-block d-md-none text-truncate">{item.subcategory}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </button>
-                    </HoverableItem>
-                  );
-                }}
-              </For>
+                        </button>
+                      </HoverableItem>
+                    );
+                  }}
+                </For>
+              </div>
             </HoverableItem>
           </Show>
         </div>

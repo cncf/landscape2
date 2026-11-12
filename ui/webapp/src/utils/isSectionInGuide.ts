@@ -1,26 +1,9 @@
-import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 
+/** Checks whether the guide has a section for the category, or for its subcategory when one is given. */
 const isSectionInGuide = (categoryName: string, subcategoryName?: string): boolean => {
-  const guideSummary = window.baseDS.guide_summary;
-
-  if (!isUndefined(guideSummary) && !isEmpty(guideSummary)) {
-    if (!isUndefined(subcategoryName)) {
-      if (!isUndefined(guideSummary[categoryName]) && guideSummary[categoryName].includes(subcategoryName)) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      if (!isUndefined(guideSummary[categoryName])) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  } else {
-    return false;
-  }
+  const subcategories = window.baseDS.guide_summary?.[categoryName];
+  return !isUndefined(subcategories) && (isUndefined(subcategoryName) || subcategories.includes(subcategoryName));
 };
 
 export default isSectionInGuide;

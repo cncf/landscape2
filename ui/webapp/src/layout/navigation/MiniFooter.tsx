@@ -12,13 +12,13 @@ const MiniFooter = () => {
           <div class="d-flex flex-column">
             <div>
               <Show when={!isUndefined(window.baseDS.footer) && !isUndefined(window.baseDS.footer!.text)}>
-                {/* eslint-disable-next-line solid/no-innerhtml */}
+                {/* eslint-disable-next-line solid/no-innerhtml -- the footer text is markdown rendered to HTML by the build */}
                 <div class={`pb-2 ${styles.legend}`} innerHTML={window.baseDS.footer!.text} />
               </Show>
               <div class={styles.legend}>
                 Powered by{' '}
                 <ExternalLink
-                  class="p-0 fw-semibold text-white text-underline"
+                  class="p-0 fw-semibold text-white text-decoration-underline"
                   href="https://github.com/cncf/landscape2"
                 >
                   CNCF interactive landscapes generator

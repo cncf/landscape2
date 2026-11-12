@@ -1,0 +1,6 @@
+foundation: Foundation
+url: https://landscape.example.org
+footer:
+  logo: https://example.org/footer-logo.svg
+header:
+  logo: ../artwork/logo.svg

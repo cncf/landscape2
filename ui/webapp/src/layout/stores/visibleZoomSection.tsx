@@ -5,10 +5,10 @@ import { ActiveSection } from '../../types';
 function useVisibleZoomSectionProvider() {
   const [visibleZoom, setVisibleZoom] = createSignal<ActiveSection>();
 
-  return { visibleZoom: visibleZoom, setVisibleZoom: setVisibleZoom };
+  return { visibleZoom, setVisibleZoom };
 }
 
-export type ContextVisibleZoomSectionType = ReturnType<typeof useVisibleZoomSectionProvider>;
+type ContextVisibleZoomSectionType = ReturnType<typeof useVisibleZoomSectionProvider>;
 
 const VisibleZoomSectionContext = createContext<ContextVisibleZoomSectionType | undefined>(undefined);
 
@@ -17,18 +17,20 @@ export const VisibleZoomSectionProvider: ParentComponent = (props) => {
   return <VisibleZoomSectionContext.Provider value={value}>{props.children}</VisibleZoomSectionContext.Provider>;
 };
 
-export function useVisibleZoomSection() {
+function useVisibleZoomSectionContext() {
   const context = useContext(VisibleZoomSectionContext);
   if (context === undefined) {
-    throw new Error(`useVisibleZoomSection must be used within a VisibleZoomSectionProvider`);
+    throw new Error(`useVisibleZoomSectionContext must be used within a VisibleZoomSectionProvider`);
   }
   return context;
 }
 
+/** Returns the accessor of the section shown in the zoom modal. */
 export function useVisibleZoom() {
-  return useVisibleZoomSection().visibleZoom;
+  return useVisibleZoomSectionContext().visibleZoom;
 }
 
+/** Returns the setter of the section shown in the zoom modal. */
 export function useSetVisibleZoom() {
-  return useVisibleZoomSection().setVisibleZoom;
+  return useVisibleZoomSectionContext().setVisibleZoom;
 }

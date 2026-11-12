@@ -5,22 +5,19 @@ import { css, keyframes } from 'solid-styled-components';
 import { BANNER_ID } from '../data/data';
 import { useBodyScroll, useModalFocus, useOutsideClick } from '../hooks';
 import { SVGIconKind } from '../types/types';
+import { cx } from '../utils/cx';
 import { SVGIcon } from './SVGIcon';
 
 interface Props {
   title: string;
   open: boolean;
   header?: string | JSXElement;
-  headerClass?: string;
   bodyClass?: string;
-  closeBtnClass?: string;
   modalDialogClass?: string;
   children: JSXElement;
   footer?: JSXElement;
   onClose: () => void;
   size?: string;
-  noScrollable?: boolean;
-  visibleBackdrop?: boolean;
   id?: string;
 }
 
@@ -115,6 +112,7 @@ const Btn = css`
   }
 `;
 
+/** Modal dialog shown while `open` is set; the close buttons, Escape and an outside click close it and call `onClose`. */
 export const Modal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
   const [modalRef, setModalRef] = createSignal<HTMLDivElement>();
@@ -135,9 +133,7 @@ export const Modal = (props: Props) => {
 
   return (
     <Show when={openStatus()}>
-      <Show when={isUndefined(props.visibleBackdrop) || props.visibleBackdrop}>
-        <div class={`modal-backdrop ${ActiveBackdrop}`} />
-      </Show>
+      <div class={`modal-backdrop ${ActiveBackdrop}`} />
 
       <div
         ref={setModalRef}
@@ -150,11 +146,11 @@ export const Modal = (props: Props) => {
         <div
           ref={setRef}
           role="document"
-          class={`modal-dialog modal-${props.size || 'lg'} ${ModalDialog}`}
-          classList={{
-            'modal-dialog-centered modal-dialog-scrollable': isUndefined(props.noScrollable) || !props.noScrollable,
-            [`${props.modalDialogClass}`]: !isUndefined(props.modalDialogClass),
-          }}
+          class={cx(
+            `modal-dialog modal-dialog-centered modal-dialog-scrollable modal-${props.size || 'lg'}`,
+            ModalDialog,
+            props.modalDialogClass
+          )}
         >
           <div id={props.id} class={`modal-content rounded-0 border border-2 mx-auto position-relative ${Content}`}>
             <Show when={props.header}>
@@ -176,11 +172,11 @@ export const Modal = (props: Props) => {
 
             <div class={`modal-body h-100 d-flex flex-column ${props.bodyClass || 'p-4'}`}>
               <Show when={isUndefined(props.header)}>
-                <div class={`position-absolute ${BtnCloseWrapper} ${props.closeBtnClass}`}>
+                <div class={`position-absolute ${BtnCloseWrapper}`}>
                   <button
                     type="button"
                     title="Close modal"
-                    class={`btn btn-md p-0 rounded-0 lh-1 ${Btn}`}
+                    class={`btn p-0 rounded-0 lh-1 ${Btn}`}
                     onClick={(e) => {
                       e.preventDefault();
                       closeModal();

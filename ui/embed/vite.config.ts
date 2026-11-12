@@ -1,23 +1,9 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import solid from 'vite-plugin-solid';
 
-const projectDir = fileURLToPath(new URL('.', import.meta.url));
-const scssIncludePaths = [
-  path.resolve(projectDir, 'node_modules'),
-  path.resolve(projectDir, '../webapp/node_modules'),
-  path.resolve(projectDir, '../../node_modules'),
-].filter((p) => fs.existsSync(p));
-
-const bootstrapDir = [
-  path.resolve(projectDir, 'node_modules/bootstrap'),
-  path.resolve(projectDir, '../webapp/node_modules/bootstrap'),
-  path.resolve(projectDir, '../../node_modules/bootstrap'),
-].find((candidate) => fs.existsSync(candidate));
-
-const alias = bootstrapDir ? { bootstrap: bootstrapDir } : {};
+// Packages the common source shares with this app, resolved from this app so
+// the bundle carries a single copy of each (one Solid runtime).
+const SHARED_DEPENDENCIES = ['solid-js', 'solid-js/web', 'solid-styled-components', 'goober', 'lodash'];
 
 export default defineConfig({
   base: '',
@@ -33,15 +19,7 @@ export default defineConfig({
     },
   },
   plugins: [solid()],
-  css: {
-    preprocessorOptions: {
-      scss: {
-        includePaths: scssIncludePaths,
-        silenceDeprecations: ['color-functions', 'global-builtin', 'if-function', 'import'],
-      },
-    },
-  },
   resolve: {
-    alias,
+    dedupe: SHARED_DEPENDENCIES,
   },
 });

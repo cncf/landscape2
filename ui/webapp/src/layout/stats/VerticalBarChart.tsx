@@ -1,42 +1,32 @@
 import { prettifyNumber } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { SolidApexCharts } from 'solid-apexcharts';
-import { createSignal, onMount, Show } from 'solid-js';
+import { createMemo, Show } from 'solid-js';
 
-import styles from './VerticalBarChart.module.css';
+import { buildBarSeries, CHART_FONT_FAMILY } from './chartData';
+import ChartDataTable from './ChartDataTable';
 
 interface Props {
   name: string;
   shortName?: string;
-  tooltipTitle?: string;
   data?: { [key: string]: number };
   dataType?: string;
 }
 
 const VerticalBarChart = (props: Props) => {
-  const [sortedKeys, setSortedKeys] = createSignal<string[]>([]);
-  const [series, setSeries] = createSignal<number[]>([]);
-  const [maxValue, setMaxValue] = createSignal<number>();
-
-  onMount(() => {
-    if (props.data) {
-      const keys = Object.keys(props.data).sort();
-      setMaxValue(props.data[keys[0]]);
-      setSortedKeys(keys);
-      const values: number[] = [];
-      keys.forEach((k: string) => {
-        if (props.data && props.data[k]) {
-          values.push(props.data[k]);
-        }
-      });
-      setSeries(values);
-    }
+  // One bar per year, in chronological order
+  const series = createMemo(() => {
+    const data = props.data ?? {};
+    return buildBarSeries(data, Object.keys(data).sort());
   });
+
+  const formatValue = (value: number): string =>
+    !isUndefined(props.dataType) && props.dataType === 'money' ? `$${prettifyNumber(value)}` : `${value}`;
 
   const getBarChartConfig = (): ApexCharts.ApexOptions => {
     return {
       chart: {
-        fontFamily: "'Lato', Roboto, 'Helvetica Neue', Arial, sans-serif !default",
+        fontFamily: CHART_FONT_FAMILY,
         height: 350,
         type: 'bar',
         redrawOnWindowResize: true,
@@ -67,7 +57,7 @@ const VerticalBarChart = (props: Props) => {
       },
       colors: ['var(--color-stats-1)'],
       xaxis: {
-        categories: sortedKeys(),
+        categories: series().categories,
         labels: {
           style: {
             colors: 'var(--color-font)',
@@ -95,13 +85,7 @@ const VerticalBarChart = (props: Props) => {
               return '';
             },
           },
-          formatter: (val: number): string => {
-            if (!isUndefined(props.dataType) && props.dataType === 'money') {
-              return `$${prettifyNumber(val)}`;
-            } else {
-              return `${val}`;
-            }
-          },
+          formatter: formatValue,
         },
       },
       responsive: [
@@ -113,7 +97,6 @@ const VerticalBarChart = (props: Props) => {
             },
             xaxis: {
               tickAmount: 3,
-              max: maxValue(),
             },
           },
         },
@@ -122,16 +105,21 @@ const VerticalBarChart = (props: Props) => {
   };
 
   return (
-    <Show when={series().length > 0}>
+    <Show when={series().values.length > 0}>
       <div class="card rounded-0">
-        <div class={`card-body ${styles.chart}`} aria-hidden={true}>
+        <div class="card-body" aria-hidden={true}>
           <SolidApexCharts
             options={getBarChartConfig()}
-            series={[{ name: props.name, data: series() }]}
+            series={[{ name: props.name, data: series().values }]}
             type="bar"
             height={350}
           />
         </div>
+        <ChartDataTable
+          caption={props.name}
+          columns={['Year', 'Value']}
+          rows={series().categories.map((category, index) => [category, formatValue(series().values[index])])}
+        />
       </div>
     </Show>
   );

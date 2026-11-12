@@ -3,9 +3,9 @@ import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import isUndefined from 'lodash/isUndefined';
 import some from 'lodash/some';
-import { Accessor, batch, createEffect, createSignal, For, on, Show } from 'solid-js';
+import { Accessor, createEffect, createSignal, For, on, Show } from 'solid-js';
 
-import { ALL_OPTION, CLASSIFY_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, SORT_OPTION_LABEL } from '../../../data';
+import { CLASSIFY_PARAM, FILTER_CATEGORIES_PER_TITLE, FILTERS, FOUNDATION, SORT_OPTION_LABEL } from '../../../data';
 import {
   ActiveFilters,
   BaseData,
@@ -29,16 +29,13 @@ import SearchbarSection from './SearchbarSection';
 interface Props {
   data: BaseData;
   initialLandscapeData: Accessor<Item[] | undefined>;
-  initialSelectedGroup: Accessor<string | undefined>;
+  initialSelectedGroup: Accessor<string>;
   applyFilters: (newFilters: ActiveFilters) => void;
   initialActiveFilters: Accessor<ActiveFilters>;
   sorted: SortOption;
   sortDirection: SortDirection;
   classify: ClassifyOption;
   updateQueryString: (param: string, value: string) => void;
-  setClassify: (classify: ClassifyOption) => void;
-  setSorted: (sorted: SortOption) => void;
-  setSortDirection: (direction: SortDirection) => void;
   classifyOptions: ClassifyOption[];
   sortOptions: SortOption[];
 }
@@ -66,7 +63,7 @@ const Filters = (props: Props) => {
         const opts = currentFilter.options.map((opt: FilterOption) => opt.value);
         // Add non-foundation label
         if (filter === FilterCategory.Maturity) {
-          opts.push(`non-${getFoundationNameLabel()}`);
+          opts.push(`non-${getFoundationNameLabel(FOUNDATION)}`);
         }
         if (filter === FilterCategory.License) {
           opts.push('non-oss');
@@ -84,8 +81,8 @@ const Filters = (props: Props) => {
           const f = getFiltersPerGroup();
           if (!isEmpty(f)) {
             setFiltersFromData(f);
-            setFilters(f[props.initialSelectedGroup() || ALL_OPTION].filters);
-            setFiltersOptions(f[props.initialSelectedGroup() || ALL_OPTION].options);
+            setFilters(f[props.initialSelectedGroup()].filters);
+            setFiltersOptions(f[props.initialSelectedGroup()].options);
           }
         }
         setTmpActiveFilters(cleanInitialActiveFilters());
@@ -104,8 +101,8 @@ const Filters = (props: Props) => {
   createEffect(
     on(props.initialSelectedGroup, () => {
       if (!isUndefined(filtersFromData())) {
-        setFilters(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION].filters);
-        setFiltersOptions(filtersFromData()![props.initialSelectedGroup() || ALL_OPTION].options);
+        setFilters(filtersFromData()![props.initialSelectedGroup()].filters);
+        setFiltersOptions(filtersFromData()![props.initialSelectedGroup()].options);
       }
     })
   );
@@ -185,9 +182,10 @@ const Filters = (props: Props) => {
     <>
       <div class="position-relative">
         <button
+          type="button"
           title="Filters"
           class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-0 me-lg-4 ${styles.filterBtn} btnIconMobile`}
-          classList={{ disabled: disabledBtn() }}
+          disabled={disabledBtn()}
           onClick={() => setVisibleFiltersModal(true)}
           aria-label="Open filters"
         >
@@ -225,10 +223,7 @@ const Filters = (props: Props) => {
           </div>
         }
         footer={
-          <div class="d-flex flex-row justify-content-between w-100">
-            <div>
-              <small class="d-none fst-italic text-muted">x items found</small>
-            </div>
+          <div class="d-flex flex-row justify-content-end w-100">
             <div>
               <button
                 type="button"
@@ -272,9 +267,7 @@ const Filters = (props: Props) => {
                       value={props.classify}
                       aria-label="Classify options"
                       onChange={(e) => {
-                        const classifyOpt = e.currentTarget.value as ClassifyOption;
-                        props.setClassify(classifyOpt);
-                        props.updateQueryString(CLASSIFY_PARAM, classifyOpt);
+                        props.updateQueryString(CLASSIFY_PARAM, e.currentTarget.value);
                       }}
                     >
                       <For each={props.classifyOptions}>
@@ -295,13 +288,7 @@ const Filters = (props: Props) => {
                       value={`${props.sorted}_${props.sortDirection}`}
                       aria-label="Sort options"
                       onChange={(e) => {
-                        const sortValue = e.currentTarget.value;
-                        const sortOpt = sortValue.split('_');
-                        batch(() => {
-                          props.setSorted(sortOpt[0] as SortOption);
-                          props.setSortDirection(sortOpt[1] as SortDirection);
-                        });
-                        props.updateQueryString('sort', sortValue);
+                        props.updateQueryString('sort', e.currentTarget.value);
                       }}
                     >
                       <For each={props.sortOptions}>
@@ -337,8 +324,8 @@ const Filters = (props: Props) => {
                     FilterCategory.Maturity,
                     filtersOptions().itemsWithoutMaturity
                   )}
-                  extraOptions={{ [getFoundationNameLabel()]: getSection(FilterCategory.Maturity) }}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Maturity]}
+                  extraOptions={{ [getFoundationNameLabel(FOUNDATION)]: getSection(FilterCategory.Maturity) }}
+                  activeFilters={tmpActiveFilters()[FilterCategory.Maturity]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={`overflow-auto visibleScroll ${styles.section}`}
@@ -346,7 +333,7 @@ const Filters = (props: Props) => {
                 <Section
                   title="TAG"
                   section={getSection(FilterCategory.TAG)}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.TAG]}
+                  activeFilters={tmpActiveFilters()[FilterCategory.TAG]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={`overflow-auto visibleScroll ${styles.section}`}
@@ -359,7 +346,7 @@ const Filters = (props: Props) => {
                       filtersOptions().itemsWithoutLicense
                     )}
                     extraOptions={{ oss: getSection(FilterCategory.License)! }}
-                    activeFilters={{ ...tmpActiveFilters() }[FilterCategory.License]}
+                    activeFilters={tmpActiveFilters()[FilterCategory.License]}
                     updateActiveFilters={updateActiveFilters}
                     resetFilter={resetFilter}
                     sectionClass={`overflow-auto visibleScroll ${styles.section}`}
@@ -368,7 +355,7 @@ const Filters = (props: Props) => {
                 <Section
                   title="Category"
                   section={getSection(FilterCategory.Category)}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Category]}
+                  activeFilters={tmpActiveFilters()[FilterCategory.Category]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={`overflow-auto visibleScroll ${styles.section}`}
@@ -376,7 +363,7 @@ const Filters = (props: Props) => {
                 <Section
                   title="Extra"
                   section={getSection(FilterCategory.Extra)}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.Extra]}
+                  activeFilters={tmpActiveFilters()[FilterCategory.Extra]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={`overflow-auto visibleScroll ${styles.section}`}
@@ -408,7 +395,7 @@ const Filters = (props: Props) => {
                 <Section
                   title="Type"
                   section={getSectionInPredefinedFilters(FilterCategory.OrgType)}
-                  activeFilters={{ ...tmpActiveFilters() }[FilterCategory.OrgType]}
+                  activeFilters={tmpActiveFilters()[FilterCategory.OrgType]}
                   updateActiveFilters={updateActiveFilters}
                   resetFilter={resetFilter}
                   sectionClass={`overflow-auto visibleScroll ${styles.section}`}

@@ -1,10 +1,12 @@
-const prettifyBytes = (bytes: number, decimals = 2): string => {
+const DEFAULT_DECIMALS = 2;
+const K = 1024;
+const SIZES = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+/** Formats a size in bytes with a binary unit (`1.5KB`), rounded to the given decimals without trailing zeros. */
+const prettifyBytes = (bytes: number, decimals: number = DEFAULT_DECIMALS): string => {
   if (bytes <= 0) return '0B';
-  const k = 1024;
-  const dm = decimals || 2;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(dm))}${sizes[i]}`;
+  const unitIndex = Math.min(Math.max(Math.floor(Math.log(bytes) / Math.log(K)), 0), SIZES.length - 1);
+  return `${Number.parseFloat((bytes / K ** unitIndex).toFixed(decimals))}${SIZES[unitIndex]}`;
 };
 
 export default prettifyBytes;

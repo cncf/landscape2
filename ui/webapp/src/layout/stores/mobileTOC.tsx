@@ -3,10 +3,10 @@ import { createContext, createSignal, ParentComponent, useContext } from 'solid-
 function useMobileTOCProvider() {
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
 
-  return { openStatus: openStatus, setOpenStatus: setOpenStatus };
+  return { openStatus, setOpenStatus };
 }
 
-export type ContextMobileTOCType = ReturnType<typeof useMobileTOCProvider>;
+type ContextMobileTOCType = ReturnType<typeof useMobileTOCProvider>;
 
 const MobileTOCContext = createContext<ContextMobileTOCType | undefined>(undefined);
 
@@ -15,18 +15,20 @@ export const MobileTOCProvider: ParentComponent = (props) => {
   return <MobileTOCContext.Provider value={value}>{props.children}</MobileTOCContext.Provider>;
 };
 
-export function useMobileTOC() {
+function useMobileTOCContext() {
   const context = useContext(MobileTOCContext);
   if (context === undefined) {
-    throw new Error(`useMobileTOCProvider must be used within a MobileTOCProvider`);
+    throw new Error(`useMobileTOCContext must be used within a MobileTOCProvider`);
   }
   return context;
 }
 
+/** Returns the accessor that tells whether the mobile table of contents is open. */
 export function useMobileTOCStatus() {
-  return useMobileTOC().openStatus;
+  return useMobileTOCContext().openStatus;
 }
 
+/** Returns the setter of the mobile table of contents open state. */
 export function useSetMobileTOCStatus() {
-  return useMobileTOC().setOpenStatus;
+  return useMobileTOCContext().setOpenStatus;
 }

@@ -1,67 +1,42 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![allow(
-    clippy::doc_markdown,
     clippy::blocks_in_conditions,
+    clippy::doc_markdown,
     clippy::module_name_repetitions
 )]
 
+use std::io;
+
 use anyhow::Result;
-use clap::{Parser, Subcommand};
-use landscape2::build::{BuildArgs, build};
-use landscape2::deploy::s3::{self};
-use landscape2::deploy::{DeployArgs, Provider};
-use landscape2::new::{NewArgs, new};
-use landscape2::serve::{ServeArgs, serve};
-use landscape2::validate::{
-    Target, ValidateArgs, validate_data, validate_games, validate_guide, validate_settings,
+use clap::Parser;
+use landscape2::{
+    build::build,
+    cli::{Cli, Command},
+    deploy::{Provider, s3},
+    new::new,
+    serve::serve,
+    validate::{Target, validate_data, validate_games, validate_guide, validate_settings},
 };
 use tracing_subscriber::EnvFilter;
-
-/// CLI arguments.
-#[derive(Parser)]
-#[command(
-    version,
-    about = "Landscape2 CLI tool
-
-https://github.com/cncf/landscape2#usage"
-)]
-struct Cli {
-    #[command(subcommand)]
-    command: Command,
-}
-
-/// Commands available.
-#[derive(Subcommand)]
-#[allow(clippy::large_enum_variant)]
-enum Command {
-    /// Build landscape website.
-    Build(BuildArgs),
-
-    /// Deploy landscape website (experimental).
-    Deploy(DeployArgs),
-
-    /// Create a new landscape from the built-in template.
-    New(NewArgs),
-
-    /// Serve landscape website.
-    Serve(ServeArgs),
-
-    /// Validate landscape data sources files.
-    Validate(ValidateArgs),
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    // Setup logging
-    match &cli.command {
-        Command::Build(_) | Command::Deploy(_) | Command::New(_) | Command::Serve(_) => {
-            let env_filter =
-                EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("landscape2=debug"));
-            tracing_subscriber::fmt().with_env_filter(env_filter).init();
-        }
-        Command::Validate(_) => {}
+    // Setup logging (validate only logs warnings by default, to stderr, as its
+    // output is the validation result)
+    let is_validate = matches!(cli.command, Command::Validate(_));
+    let default_filter = if is_validate {
+        "landscape2=warn"
+    } else {
+        "landscape2=debug"
+    };
+    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(default_filter));
+    let subscriber = tracing_subscriber::fmt().with_env_filter(env_filter);
+    if is_validate {
+        subscriber.with_writer(io::stderr).init();
+    } else {
+        subscriber.init();
     }
 
     // Run command
@@ -72,12 +47,15 @@ async fn main() -> Result<()> {
         },
         Command::New(args) => new(args)?,
         Command::Serve(args) => serve(args).await?,
-        Command::Validate(args) => match &args.target {
-            Target::Data(src) => validate_data(src).await?,
-            Target::Games(src) => validate_games(src).await?,
-            Target::Guide(src) => validate_guide(src).await?,
-            Target::Settings(src) => validate_settings(src).await?,
-        },
+        Command::Validate(args) => {
+            let warnings_out = &mut io::stderr();
+            match &args.target {
+                Target::Data(src) => validate_data(src, warnings_out).await?,
+                Target::Games(games_args) => validate_games(games_args, warnings_out).await?,
+                Target::Guide(src) => validate_guide(src, warnings_out).await?,
+                Target::Settings(src) => validate_settings(src, warnings_out).await?,
+            }
+        }
     }
 
     Ok(())

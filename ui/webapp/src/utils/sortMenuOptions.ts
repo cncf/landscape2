@@ -1,5 +1,6 @@
+/** Sorts the menu titles alphabetically, moving `archived` and then `undefined` to the end. */
 const sortMenuOptions = (titles: string[]): string[] => {
-  const sorted = titles.sort();
+  const sorted = [...titles].sort();
   if (sorted.includes('archived')) {
     const index = sorted.indexOf('archived');
     sorted.splice(index, 1);

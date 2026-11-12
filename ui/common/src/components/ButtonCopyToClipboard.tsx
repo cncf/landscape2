@@ -1,25 +1,24 @@
-import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, JSXElement, on, onCleanup, Show } from 'solid-js';
+import { createSignal, onCleanup, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
 import { SVGIconKind } from '../types/types';
+import { cx } from '../utils/cx';
 import { SVGIcon } from './SVGIcon';
 
 interface Props {
   text: string;
-  wrapperClass?: string;
-  className?: string;
-  tooltipClass?: string;
-  visibleBtnText?: boolean;
-  contentBtn?: string;
-  style?: { [key: string]: string };
-  icon?: JSXElement;
-  disabled?: boolean;
   label?: string;
-  tooltipType?: 'normal' | 'light';
-  noTooltip?: boolean;
-  onClick?: () => void;
+  visibleBtnText?: boolean;
+  wrapperClass?: string;
 }
+
+type CopyStatus = 'idle' | 'copied' | 'failed';
+
+const STATUS_MESSAGES: Record<Exclude<CopyStatus, 'idle'>, string> = {
+  copied: 'Copied!',
+  failed: 'Copy failed',
+};
+const STATUS_TIMEOUT = 2 * 1000;
 
 const Tooltip = css`
   bottom: -40px;
@@ -30,87 +29,93 @@ const Button = css`
   min-width: 32px;
 `;
 
+/** Copies `text` to the clipboard and announces "Copied!" or "Copy failed" in a `role="status"` region for 2 seconds. */
 export const ButtonCopyToClipboard = (props: Props) => {
-  const [copyStatus, setCopyStatus] = createSignal<boolean>(false);
-  const [copyTimeout, setCopyTimeout] = createSignal<number | undefined>();
+  const [status, setStatus] = createSignal<CopyStatus>('idle');
+  let disposed = false;
+  let statusTimeout: ReturnType<typeof setTimeout> | undefined;
+  const message = () => {
+    const current = status();
+    return current === 'idle' ? undefined : STATUS_MESSAGES[current];
+  };
 
-  async function copyToClipboard(textToCopy: string) {
+  const showStatus = (value: Exclude<CopyStatus, 'idle'>) => {
+    // The Clipboard API may settle after the button is gone
+    if (disposed) return;
+    clearTimeout(statusTimeout);
+    setStatus(value);
+    statusTimeout = setTimeout(() => setStatus('idle'), STATUS_TIMEOUT);
+  };
+
+  const copyToClipboard = async () => {
     if (!navigator.clipboard) {
-      try {
-        const textField = document.createElement('textarea');
-        textField.textContent = textToCopy;
-        document.body.appendChild(textField);
-        textField.select();
-        document.execCommand('copy');
-        textField.remove();
-        if (isUndefined(props.noTooltip) || !props.noTooltip) {
-          setCopyStatus(true);
-        }
-      } catch {
-        setCopyStatus(false);
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(textToCopy);
-        if (isUndefined(props.noTooltip) || !props.noTooltip) {
-          setCopyStatus(true);
-        }
-      } catch {
-        setCopyStatus(false);
-      }
+      showStatus(copyWithExecCommand(props.text) ? 'copied' : 'failed');
+      return;
     }
-  }
-
-  createEffect(
-    on(copyStatus, () => {
-      if (copyStatus()) {
-        // Hide tooltip after 2s
-        setCopyTimeout(setTimeout(() => setCopyStatus(false), 2 * 1000));
-      }
-    })
-  );
+    try {
+      await navigator.clipboard.writeText(props.text);
+      showStatus('copied');
+    } catch {
+      showStatus('failed');
+    }
+  };
 
   onCleanup(() => {
-    if (!isUndefined(copyTimeout())) {
-      clearTimeout(copyTimeout());
-    }
+    disposed = true;
+    clearTimeout(statusTimeout);
   });
 
   return (
-    <div class={`position-relative ${props.wrapperClass}`}>
-      <Show when={copyStatus()}>
-        <div class={`dropdown-menu rounded-0 popover show end-0 ${Tooltip} ${props.tooltipClass}`} role="tooltip">
-          <div class="tooltip-inner rounded-0">Copied!</div>
-        </div>
-      </Show>
+    <div class={cx('position-relative', props.wrapperClass)}>
+      <div role="status">
+        <Show when={message()}>
+          {(text) => (
+            <div class={`dropdown-menu rounded-0 popover show end-0 ${Tooltip}`}>
+              <div class="tooltip-inner rounded-0">{text()}</div>
+            </div>
+          )}
+        </Show>
+      </div>
       <button
         type="button"
-        class={`btn btn-sm ${props.className}`}
-        classList={{ [`btn-secondary rounded-0 ${Button}`]: isUndefined(props.className) }}
-        style={props.style}
+        class={`btn btn-sm btn-secondary rounded-0 ${Button}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          copyToClipboard(props.text);
-          if (props.onClick) {
-            props.onClick();
-          }
+          copyToClipboard();
         }}
-        disabled={props.disabled}
-        aria-label={props.contentBtn || props.label || 'Copy to clipboard'}
+        aria-label={props.label || 'Copy to clipboard'}
       >
         <div class="d-flex flex-row align-items-center" aria-hidden="true">
-          <Show when={!isUndefined(props.visibleBtnText) && props.visibleBtnText && props.contentBtn}>
-            <div class="me-2">{props.contentBtn}</div>
-          </Show>
-          <Show when={props.icon} fallback={<SVGIcon kind={SVGIconKind.Copy} />}>
-            {props.icon}
-          </Show>
-          <Show when={!isUndefined(props.visibleBtnText) && props.visibleBtnText && isUndefined(props.contentBtn)}>
+          <SVGIcon kind={SVGIconKind.Copy} />
+          <Show when={props.visibleBtnText}>
             <div class="ms-2 text-nowrap">Copy to clipboard</div>
           </Show>
         </div>
       </button>
     </div>
   );
+};
+
+/**
+ * Copies the text through a temporary off-screen, readonly textarea and
+ * `document.execCommand('copy')`, for browsers without the Clipboard API.
+ * Returns whether the browser reported a successful copy.
+ */
+const copyWithExecCommand = (text: string): boolean => {
+  const textField = document.createElement('textarea');
+  textField.value = text;
+  textField.readOnly = true;
+  textField.style.position = 'fixed';
+  textField.style.top = '0';
+  textField.style.left = '-9999px';
+  document.body.appendChild(textField);
+  try {
+    textField.select();
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    textField.remove();
+  }
 };
