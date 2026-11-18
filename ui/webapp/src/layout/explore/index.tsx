@@ -105,6 +105,9 @@ const Explore = (props: Props) => {
   });
   // Group written to the URL: the group shown, none when the landscape has no groups
   const group = () => (isUndefined(resolvedGroup()) ? undefined : selectedGroup());
+  // Group clicked, shown as active until the navigation selects a group
+  const [clickedGroup, setClickedGroup] = createSignal<string>();
+  const activeButtonGroup = () => clickedGroup() ?? selectedGroup();
 
   const maturityOptions = itemsDataGetter.getMaturityOptions().map((option) => option.name);
   const foundationLabel = getFoundationNameLabel(FOUNDATION);
@@ -300,6 +303,8 @@ const Explore = (props: Props) => {
     })
   );
 
+  createEffect(on(selectedGroup, () => setClickedGroup(undefined), { defer: true }));
+
   createEffect(
     on(viewMode, () => {
       // Check if select for groups has to be visible
@@ -463,10 +468,11 @@ const Explore = (props: Props) => {
                             title={`Group: ${group.name}`}
                             class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
                             classList={{
-                              [`active ${styles.active}`]: normalizedName === selectedGroup(),
+                              [`active ${styles.active}`]: normalizedName === activeButtonGroup(),
                             }}
                             onClick={() => {
                               setVisibleLoading(true);
+                              setClickedGroup(normalizedName);
 
                               setTimeout(() => {
                                 updateQueryString(GROUP_PARAM, normalizedName);
@@ -484,10 +490,12 @@ const Explore = (props: Props) => {
                         title="All"
                         class={`btn btn-outline-primary btn-sm rounded-0 fw-semibold text-nowrap ${styles.navLink}`}
                         classList={{
-                          [`active ${styles.active}`]: ALL_OPTION === selectedGroup() || activeGroups()?.length === 0,
+                          [`active ${styles.active}`]:
+                            ALL_OPTION === activeButtonGroup() || activeGroups()?.length === 0,
                         }}
                         onClick={() => {
                           setVisibleLoading(true);
+                          setClickedGroup(ALL_OPTION);
 
                           setTimeout(() => {
                             updateQueryString(GROUP_PARAM, ALL_OPTION);
@@ -832,13 +840,18 @@ const Explore = (props: Props) => {
                     </div>
                     <For each={activeGroups()}>
                       {(group: string) => {
+                        // A group's data keeps its reference while it doesn't change, so the hidden
+                        // groups aren't updated when the active group changes
+                        const gridData = createMemo(() => queryResult().grid[group]);
+                        const cardData = createMemo(() => queryResult().card[group]);
+                        const menu = createMemo(() => queryResult().menu[group]);
                         return (
                           <Content
                             group={group}
                             initialSelectedGroup={selectedGroup()}
-                            data={queryResult().grid[group]}
-                            cardData={queryResult().card[group]}
-                            menu={queryResult().menu[group]}
+                            data={gridData()}
+                            cardData={cardData()}
+                            menu={menu()}
                             categories_overridden={props.initialData.categories_overridden}
                             classify={classify()}
                             sorted={sorted()}

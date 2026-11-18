@@ -123,6 +123,8 @@ export class ItemsDataGetter {
   private baseDataGrouped: { grouped: GroupedItems; source: BaseData } | undefined;
   // Classification of the unfiltered groups, keyed by group and classify option
   private classifiedGroups: Map<string, ClassifiedGroup> = new Map();
+  // Grid view data of the unfiltered groups, keyed by group
+  private gridGroups: Map<string, CategoriesData> = new Map();
   // Base items of each subcategory, with the base dataset they were indexed from
   private baseItemsBySubcategory: { index: Map<string, BaseItem[]>; source: BaseData } | undefined;
 
@@ -196,6 +198,7 @@ export class ItemsDataGetter {
     // The cached groupings depend on the groups
     this.baseDataGrouped = undefined;
     this.classifiedGroups.clear();
+    this.gridGroups.clear();
   }
 
   /** Returns the normalized names of the groups with categories, `undefined` when the landscape has no groups. */
@@ -568,6 +571,7 @@ export class ItemsDataGetter {
     if (isUndefined(this.baseDataGrouped) || this.baseDataGrouped.source !== window.baseDS) {
       this.baseDataGrouped = { grouped: this.groupData(window.baseDS.items ?? []), source: window.baseDS };
       this.classifiedGroups.clear();
+      this.gridGroups.clear();
     }
     return this.baseDataGrouped.grouped;
   }
@@ -577,6 +581,7 @@ export class ItemsDataGetter {
     this.allDataGrouped = this.groupData(this.landscapeData?.items ?? []);
     this.baseDataGrouped = undefined;
     this.classifiedGroups.clear();
+    this.gridGroups.clear();
     this.prepareClassifyAndSortOptions(this.allDataGrouped);
   }
 
@@ -590,6 +595,16 @@ export class ItemsDataGetter {
       this.classifiedGroups.set(key, classifiedGroup);
     }
     return classifiedGroup;
+  }
+
+  // Grid view data of an unfiltered group, reusing the result while the grouped data doesn't change
+  private getGridGroup(items: LandscapeItem[] | undefined, group: string): CategoriesData {
+    let gridGroup = this.gridGroups.get(group);
+    if (isUndefined(gridGroup)) {
+      gridGroup = this.prepareGridData({ [group]: items ?? [] }, true)[group];
+      this.gridGroups.set(group, gridGroup);
+    }
+    return gridGroup;
   }
 
   // Prepare menu options
@@ -625,14 +640,27 @@ export class ItemsDataGetter {
       activeCategoryFilters = input.category;
     }
 
-    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
+    const isFiltered = !isEmpty(input);
+    // The unfiltered groups reuse their data, so their views keep it when the active group changes
+    const gridData: GroupData = {};
+    Object.keys(groupedItems).forEach((group: string) => {
+      gridData[group] =
+        group === activeGroup && isFiltered
+          ? this.prepareGridData({ [group]: groupedItems[group] }, true, activeCategoryFilters)[group]
+          : this.getGridGroup(allGroupedItems[group], group);
+    });
 
     const classifyCardData: { [key: string]: CardData } = {};
     const menuData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
 
     Object.keys(groupedItems).forEach((group: string) => {
-      if (group === activeGroup) {
+      if (group === activeGroup && !isFiltered) {
+        const classifiedGroup = this.getClassifiedGroup(allGroupedItems[group], classify, group);
+        classifyCardData[group] = classifiedGroup.card;
+        menuData[group] = classifiedGroup.menu;
+        numItems[group] = groupedItems[group] ? groupedItems[group].length : 0;
+      } else if (group === activeGroup) {
         // Update group active data
         const classifyGroup = this.classifyItems(
           groupedItems[activeGroup],

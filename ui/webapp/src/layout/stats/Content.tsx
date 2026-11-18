@@ -311,7 +311,7 @@ const Content = () => {
                             return (
                               <Show when={!isUndefined(num) && !isUndefined(total)}>
                                 <tr>
-                                  <td>{license}</td>
+                                  <td class="text-break">{license}</td>
                                   <td class="text-end">{(stats()!.repositories!.licenses ?? {})[license]}</td>
                                   <td class="fw-semibold text-end">
                                     <small>{((num * 100) / total).toFixed(2)}%</small>

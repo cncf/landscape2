@@ -2,6 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption, ViewMode } from '../../types';
 import { CardData, CategoriesData } from '../../utils/itemsDataGetter';
+import { FeaturedGroupProvider } from '../stores/featuredItems';
 import { useViewMode } from '../stores/viewMode';
 import CardCategory from './card';
 import GridCategory from './grid';
@@ -35,11 +36,13 @@ const Content = (props: Props) => {
         />
       </div>
       <div class={selectedViewMode() === ViewMode.Grid ? 'd-block' : 'd-none'}>
-        <GridCategory
-          initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Grid}
-          data={props.data}
-          categories_overridden={props.categories_overridden}
-        />
+        <FeaturedGroupProvider group={props.group}>
+          <GridCategory
+            initialIsVisible={isSelected() && selectedViewMode() === ViewMode.Grid}
+            data={props.data}
+            categories_overridden={props.categories_overridden}
+          />
+        </FeaturedGroupProvider>
       </div>
     </div>
   );

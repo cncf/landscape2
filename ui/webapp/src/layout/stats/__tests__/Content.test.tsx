@@ -115,6 +115,15 @@ describe('Content', () => {
       'Acquisitions cost per year (excluding undisclosed)',
     ]);
 
+    // Check the tables are hidden through their wrapper (a table can't be narrower than its content)
+    screen
+      .getAllByRole('table')
+      .filter((table) => table.querySelector('caption') !== null)
+      .forEach((table) => {
+        expect(table).not.toHaveClass('visually-hidden');
+        expect(table.parentElement).toHaveClass('visually-hidden');
+      });
+
     // Check the tables hold the series of their charts
     expect(tableRows('Projects over time (running total)')).toEqual([
       ['Month', 'Projects'],

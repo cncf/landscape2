@@ -1,9 +1,10 @@
 import { createItem } from 'common/test-utils';
+import { Show } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderWithRouter } from '../../../test-utils/render';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
-import { useFeaturedItems } from '../featuredItems';
+import { FeaturedGroupProvider, useFeaturedItems } from '../featuredItems';
 import { GroupActiveProvider } from '../groupActive';
 
 const FEATURED = { excluded_groups: ['group-2'], label: 'Graduated', order: 1 };
@@ -67,12 +68,27 @@ describe('useFeaturedItems', () => {
     expect(renderFeaturedItems(['group-1', 'group-2'], '/?group=group-2').countFeaturedItems(items)).toBe(1);
     expect(renderFeaturedItems(['group-1', 'group-2'], '/?group=group-1').countFeaturedItems(items)).toBe(2);
   });
+
+  it('uses the group provided instead of the active group', () => {
+    const item = createItem({ featured: FEATURED });
+
+    // Verify a group provided keeps its own featured information whatever the active group
+    expect(
+      renderFeaturedItems(['group-1', 'group-2'], '/?group=group-1', 'group-2').getEffectiveFeatured(item)
+    ).toBeUndefined();
+    expect(
+      renderFeaturedItems(['group-1', 'group-2'], '/?group=group-2', 'group-1').getEffectiveFeatured(item)
+    ).toEqual(FEATURED);
+  });
 });
 
 // Helpers.
 
-/** Renders the featured items store under the groups and URL provided, returning its helpers. */
-const renderFeaturedItems = (groups: string[] | undefined, url: string) => {
+/**
+ * Renders the featured items store under the groups and URL provided, returning its
+ * helpers. The store is rendered under a featured group provider when a group is given.
+ */
+const renderFeaturedItems = (groups: string[] | undefined, url: string, group?: string) => {
   vi.spyOn(itemsDataGetter, 'getGroups').mockReturnValue(groups);
   let featuredItems: ReturnType<typeof useFeaturedItems> | undefined;
   const Probe = () => {
@@ -83,7 +99,11 @@ const renderFeaturedItems = (groups: string[] | undefined, url: string) => {
   renderWithRouter(
     () => (
       <GroupActiveProvider>
-        <Probe />
+        <Show when={group !== undefined} fallback={<Probe />}>
+          <FeaturedGroupProvider group={group}>
+            <Probe />
+          </FeaturedGroupProvider>
+        </Show>
       </GroupActiveProvider>
     ),
     { url }

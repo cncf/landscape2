@@ -26,16 +26,25 @@ vi.mock('../../common/Searchbar', () => ({ default: () => createTextElement('Sea
 vi.mock('../../navigation/EmbedModal', () => ({ default: () => createTextElement('Embed modal') }));
 vi.mock('../../navigation/Footer', () => ({ default: () => createTextElement('Footer') }));
 vi.mock('../card', () => ({ default: () => createTextElement('Card view') }));
+// Groups whose content received new grid data after being rendered
+const contentDataUpdates = vi.hoisted((): (string | undefined)[] => []);
 // Content hides every group but the selected one, so only the content shown is named "Explore content"
 vi.mock('../Content', async () => {
-  const { createRenderEffect } = await import('solid-js');
+  const { createRenderEffect, on } = await import('solid-js');
   return {
-    default: (props: { group?: string; initialSelectedGroup?: string }) => {
+    default: (props: { data?: unknown; group?: string; initialSelectedGroup?: string }) => {
       const element = createTextElement('');
       createRenderEffect(() => {
         const isShown = props.group === undefined || props.group === props.initialSelectedGroup;
         element.textContent = isShown ? 'Explore content' : 'Hidden content';
       });
+      createRenderEffect(
+        on(
+          () => props.data,
+          () => contentDataUpdates.push(props.group),
+          { defer: true }
+        )
+      );
       return element;
     },
   };
@@ -169,6 +178,58 @@ describe('Explore', () => {
     await user.click(await screen.findByRole('button', { name: 'Group 2' }));
     await waitFor(() => expect(history.get()).toBe('/?group=g2&view-mode=grid'));
     expect(await screen.findByRole('button', { name: 'Group 2' })).toHaveClass('active');
+  });
+
+  it('marks the group clicked as active before the URL changes', async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { history } = renderExplore('/?group=g1&view-mode=grid');
+    await vi.runAllTimersAsync();
+
+    // Click another group
+    await user.click(screen.getByRole('button', { name: 'Group 2' }));
+
+    // Check the button is active at once, while the URL still names the previous group
+    expect(screen.getByRole('button', { name: 'Group 2' })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: 'Group 1' })).not.toHaveClass('active');
+    expect(history.get()).toBe('/?group=g1&view-mode=grid');
+
+    // Let the delayed navigation run and check the button stays active
+    await vi.runAllTimersAsync();
+    expect(history.get()).toBe('/?group=g2&view-mode=grid');
+    expect(screen.getByRole('button', { name: 'Group 2' })).toHaveClass('active');
+  });
+
+  it('marks the group of the URL as active when going back after clicking a group', async () => {
+    const user = userEvent.setup();
+    const { history } = renderExplore('/?group=g1&view-mode=grid');
+
+    // Click another group and go back once the URL names it
+    await user.click(await screen.findByRole('button', { name: 'Group 2' }));
+    await waitFor(() => expect(history.get()).toBe('/?group=g2&view-mode=grid'));
+    history.back();
+
+    // Check the previous group is active again
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Group 1' })).toHaveClass('active'));
+    expect(screen.getByRole('button', { name: 'Group 2' })).not.toHaveClass('active');
+  });
+
+  it('keeps the grid data of the groups without filters when the active group changes', async () => {
+    const user = userEvent.setup();
+    mockFullDataReady();
+
+    // Render the Grid view of a group
+    const { history } = renderExplore('/?group=g1&view-mode=grid');
+    expect(await screen.findByText('Explore content')).toBeInTheDocument();
+    contentDataUpdates.length = 0;
+
+    // Click another group and let every effect run
+    await user.click(screen.getByRole('button', { name: 'Group 2' }));
+    await waitFor(() => expect(history.get()).toBe('/?group=g2&view-mode=grid'));
+    await flushPromises();
+
+    // Check no group content received new grid data
+    expect(contentDataUpdates).toEqual([]);
   });
 
   it.each(['card', 'grid'])('queries the items once when mounted in %s view with the full data ready', async (mode) => {

@@ -26,7 +26,8 @@ import styles from './Grid.module.css';
 import GridItem from './GridItem';
 
 interface Props {
-  initialCategoryData: CategoryData;
+  // Undefined while a category left without items by the filters is being removed
+  initialCategoryData: CategoryData | undefined;
   categoryName: string;
   isOverridden: boolean;
   subcategories: SubcategoryDetails[];
@@ -120,7 +121,7 @@ const Grid = (props: Props) => {
             <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid()!.length - 1 }}>
               <For each={row}>
                 {(subcat: LayoutColumn) => {
-                  const items = () => data()[subcat.subcategoryName]?.items ?? [];
+                  const items = () => data()?.[subcat.subcategoryName]?.items ?? [];
                   // Apply effective featured status before counting and sorting
                   const sortedItems = createMemo<LandscapeItem[]>(() =>
                     sortItemsByOrderValue(withEffectiveFeatured(items()))

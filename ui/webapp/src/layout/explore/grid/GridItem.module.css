@@ -12,7 +12,10 @@
   vertical-align: top;
 }
 
+/* Featured cards take 2x2 cells */
 .card:global(.bigCard) {
+  width: calc(var(--card-size-width) * 2 + var(--card-gap));
+  height: calc(var(--card-size-height) * 2 + var(--card-gap));
   grid-column-end: span 2;
   grid-row-end: span 2;
 }

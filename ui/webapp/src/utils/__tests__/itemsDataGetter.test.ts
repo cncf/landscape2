@@ -3,7 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createBaseData } from '../../test-utils/fixtures';
 import { BaseData, ClassifyOption, FilterCategory, FullDataset, Item } from '../../types';
-import { type ClassifyAndSortOptions, ItemsDataGetter, type ItemsDataLoadStatus } from '../itemsDataGetter';
+import {
+  type CategoriesData,
+  type ClassifyAndSortOptions,
+  ItemsDataGetter,
+  type ItemsDataLoadStatus,
+} from '../itemsDataGetter';
 
 /** Items of the test landscape: `item-2` is also listed in Category B through an additional category. */
 const ITEMS: Item[] = [
@@ -281,6 +286,76 @@ describe('ItemsDataGetter', () => {
       expect(second.menu.g2).toBe(first.menu.g2);
       expect(classifyItems.mock.calls.map(([, , group]) => group)).toEqual(['g1', 'g2', 'all', 'g1']);
     });
+
+    it('keeps the data of the unfiltered groups when the active group changes', () => {
+      // Setup
+      const getter = new ItemsDataGetter();
+      getter.init(fullDataset());
+
+      // Run with g1 active, then g2, then g1 filtered
+      const first = getter.queryItems({}, 'g1', ClassifyOption.Category);
+      const second = getter.queryItems({}, 'g2', ClassifyOption.Category);
+      const filtered = getter.queryItems({ [FilterCategory.Maturity]: ['graduated'] }, 'g1', ClassifyOption.Category);
+
+      // Check: the unfiltered groups keep their grid and card data, the filtered one gets new data
+      expect(second.grid.g1).toBe(first.grid.g1);
+      expect(second.grid.g2).toBe(first.grid.g2);
+      expect(second.card.g1).toBe(first.card.g1);
+      expect(second.card.g2).toBe(first.card.g2);
+      expect(filtered.grid.g2).toBe(first.grid.g2);
+      expect(filtered.grid.g1).not.toBe(first.grid.g1);
+      expect(filtered.card.g1).not.toBe(first.card.g1);
+    });
+
+    it('gives the active group all its items again once its filters are removed', () => {
+      // Setup
+      const getter = new ItemsDataGetter();
+      getter.init(fullDataset());
+
+      // Run with g1 filtered, then without filters
+      const filtered = getter.queryItems({ [FilterCategory.Maturity]: ['graduated'] }, 'g1', ClassifyOption.Category);
+      const unfiltered = getter.queryItems({}, 'g1', ClassifyOption.Category);
+
+      // Check
+      expect(gridIds(filtered.grid.g1)).toEqual(['item-1']);
+      expect(gridIds(unfiltered.grid.g1)).toEqual(['item-1', 'item-2']);
+    });
+
+    it('builds the grid data of the groups again once the full data replaces the base data', async () => {
+      // Setup
+      const newItem = createItem({ category: 'Category B', id: 'item-5', name: 'Item 5', subcategory: 'Sub B1' });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn<() => Promise<Response>>().mockResolvedValue(Response.json({ items: [...ITEMS, newItem] }))
+      );
+      const getter = new ItemsDataGetter();
+      getter.prepareGroups();
+
+      // Run before and after the full data is loaded
+      const base = getter.queryItems({}, 'g1', ClassifyOption.Category);
+      getter.init();
+      await flushPromises();
+      const full = getter.queryItems({}, 'g1', ClassifyOption.Category);
+
+      // Check
+      expect(gridIds(base.grid.g2)).toEqual(['item-3', 'item-4', 'item-2']);
+      expect(gridIds(full.grid.g2)).toEqual(['item-3', 'item-4', 'item-5', 'item-2']);
+    });
+
+    it('builds the grid data of the groups again when the base dataset changes', () => {
+      // Setup
+      const getter = new ItemsDataGetter();
+      getter.prepareGroups();
+      const base = getter.queryItems({}, 'g1', ClassifyOption.Category);
+
+      // Run with a new base dataset
+      window.baseDS = testBaseData({ items: [createItem({ ...ITEMS[2], id: 'item-5' })] });
+      const changed = getter.queryItems({}, 'g1', ClassifyOption.Category);
+
+      // Check
+      expect(gridIds(base.grid.g2)).toEqual(['item-3', 'item-4', 'item-2']);
+      expect(gridIds(changed.grid.g2)).toEqual(['item-5']);
+    });
   });
 
   describe('getItemById', () => {
@@ -360,6 +435,13 @@ function fullDataset(): FullDataset {
 /** Returns the ids of the given items. */
 function ids(items: { id: string }[]): string[] {
   return items.map((item) => item.id);
+}
+
+/** Returns the ids of the items of the Grid view data of a group, in category and subcategory order. */
+function gridIds(data: CategoriesData): string[] {
+  return Object.values(data).flatMap((category) =>
+    Object.values(category).flatMap((subcategory) => ids(subcategory.items))
+  );
 }
 
 /** Returns the base dataset of the test landscape; overrides replace the default fields. */
