@@ -29,7 +29,12 @@ const Searchbar = (props: Props) => {
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [highlightedItem, setHighlightedItem] = createSignal<number | null>(null);
   const [error, setError] = createSignal<string | null>(null);
+  const [keyboardFocus, setKeyboardFocus] = createSignal<boolean>(false);
   let searchTimeout: ReturnType<typeof setTimeout> | undefined;
+  // Query the listed results belong to
+  let listedQuery: string | null = null;
+  // Whether the last interaction used a pointer; keyboard focus shows the focus ring of the search bar
+  let pointerInteraction = false;
 
   const optionId = (index: number): string => `${listId}-opt${index}`;
   const visibleResults = () => visibleDropdown() && (itemsList()?.length ?? 0) > 0;
@@ -60,13 +65,14 @@ const Searchbar = (props: Props) => {
         e.preventDefault();
         if (value().length < MIN_CHARACTERS_SEARCH) return;
         const items = itemsList();
-        if (!isNull(items) && items.length > 0) {
+        if (isNull(items) || listedQuery !== value()) {
+          // No results are listed for the current text: the search runs right away
+          cleanTimeout();
+          setHighlightedItem(null);
+          onSearch(value());
+        } else if (items.length > 0) {
           // The highlighted result, or the first one when none is highlighted
           openItemModal((items[highlightedItem() ?? 0] ?? items[0]).id);
-        } else if (isNull(items)) {
-          // The results are not listed yet, so the search runs right away
-          cleanTimeout();
-          onSearch(value());
         }
         return;
       }
@@ -105,6 +111,7 @@ const Searchbar = (props: Props) => {
         cleanItemsSearch();
         return;
       }
+      listedQuery = text;
       batch(() => {
         setError(null);
         setItemsList(filteredItems);
@@ -116,6 +123,7 @@ const Searchbar = (props: Props) => {
         cleanItemsSearch();
         return;
       }
+      listedQuery = text;
       batch(() => {
         setError(err instanceof Error ? err.message : String(err));
         setItemsList([]);
@@ -137,6 +145,7 @@ const Searchbar = (props: Props) => {
   };
 
   const cleanItemsSearch = () => {
+    listedQuery = null;
     batch(() => {
       setError(null);
       setItemsList(null);
@@ -185,8 +194,14 @@ const Searchbar = (props: Props) => {
     })
   );
 
+  const docPointerDown = () => {
+    pointerInteraction = true;
+  };
+
   // This function is used to focus the input when the user presses the '/' key
   const docKeyDown = (e: KeyboardEvent) => {
+    pointerInteraction = false;
+    if (props.device !== 'desktop') return;
     // We check if the body is the active element to avoid focusing the input when the focus
     // is on a different element (e.g. a input, a select, etc.)
     const isBodyElementActive = document.body === document.activeElement;
@@ -199,13 +214,14 @@ const Searchbar = (props: Props) => {
   };
 
   onMount(() => {
-    // We add the event listener to the document to listen to the '/' key only on desktop
-    if (props.device === 'desktop') {
-      document.addEventListener('keydown', docKeyDown, false);
-      onCleanup(() => {
-        document.removeEventListener('keydown', docKeyDown);
-      });
-    }
+    // We add the event listeners to the document to track the last interaction (the '/' key
+    // focuses the input only on desktop)
+    document.addEventListener('keydown', docKeyDown, false);
+    document.addEventListener('pointerdown', docPointerDown, true);
+    onCleanup(() => {
+      document.removeEventListener('keydown', docKeyDown);
+      document.removeEventListener('pointerdown', docPointerDown, true);
+    });
   });
 
   onCleanup(cleanTimeout);
@@ -215,11 +231,12 @@ const Searchbar = (props: Props) => {
       <div
         ref={setWrapperRef}
         class={`d-flex align-items-center overflow-hidden lh-base bg-white mx-0 mx-md-auto ${styles.searchBar} ${props.searchBarClass ?? ''}`}
+        classList={{ [styles.keyboardFocus]: keyboardFocus() }}
       >
         <input
           id={`searchbar-${props.device}`}
           ref={setInputEl}
-          class="flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base"
+          class={`flex-grow-1 ps-2 ps-md-3 border-0 shadow-none bg-transparent lh-base ${styles.input}`}
           type="text"
           role="combobox"
           aria-label="Search items"
@@ -235,6 +252,8 @@ const Searchbar = (props: Props) => {
           placeholder={props.device === 'desktop' ? '' : 'Search items'}
           onKeyDown={onKeyDown}
           onInput={(e) => setValue(e.target.value)}
+          onFocus={() => setKeyboardFocus(!pointerInteraction)}
+          onBlur={() => setKeyboardFocus(false)}
         />
 
         {props.device === 'desktop' && (

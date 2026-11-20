@@ -4,7 +4,7 @@ use axum::{
     body::{self, Body},
     http::{
         Request, StatusCode,
-        header::{CACHE_CONTROL, LOCATION},
+        header::{CACHE_CONTROL, IF_MODIFIED_SINCE, LAST_MODIFIED, LOCATION},
     },
     response::Response,
 };
@@ -93,6 +93,28 @@ async fn test_router_base_path_deep_route_returns_index() {
 }
 
 #[tokio::test]
+async fn test_router_base_path_directory_redirects_under_base_path() {
+    let cases = [
+        ("/landscape/logos", "/landscape/logos/"),
+        ("/landscape/logos?x=1", "/landscape/logos/?x=1"),
+        (
+            "http://localhost/landscape/logos",
+            "http://localhost/landscape/logos/",
+        ),
+        ("/logos", "/logos/"),
+    ];
+    for (uri, expected_location) in cases {
+        // Run the request
+        let resp = get(router(&fixture_dir(), Some(BASE_PATH)), uri).await;
+
+        // Check the request is redirected to the directory with a trailing
+        // slash, keeping the base path requested
+        assert_eq!(resp.status(), StatusCode::TEMPORARY_REDIRECT, "uri: {uri}");
+        assert_eq!(resp.headers()[LOCATION], expected_location, "uri: {uri}");
+    }
+}
+
+#[tokio::test]
 async fn test_router_base_path_root_redirects_to_base_path() {
     for uri in ["/", "/landscape"] {
         // Run the request
@@ -102,6 +124,18 @@ async fn test_router_base_path_root_redirects_to_base_path() {
         assert_eq!(resp.status(), StatusCode::TEMPORARY_REDIRECT, "uri: {uri}");
         assert_eq!(resp.headers()[LOCATION], "/landscape/", "uri: {uri}");
         assert_eq!(resp.headers()[CACHE_CONTROL], NO_CACHE, "uri: {uri}");
+    }
+}
+
+#[tokio::test]
+async fn test_router_base_path_root_redirects_to_base_path_keeping_query() {
+    for uri in ["/?item=x", "/landscape?item=x"] {
+        // Run the request
+        let resp = get(router(&fixture_dir(), Some(BASE_PATH)), uri).await;
+
+        // Check the request is redirected to the base path, keeping the query
+        assert_eq!(resp.status(), StatusCode::TEMPORARY_REDIRECT, "uri: {uri}");
+        assert_eq!(resp.headers()[LOCATION], "/landscape/?item=x", "uri: {uri}");
     }
 }
 
@@ -126,6 +160,33 @@ async fn test_router_missing_asset_returns_not_found_without_long_cache() {
         assert_eq!(resp.status(), StatusCode::NOT_FOUND, "uri: {uri}");
         assert_eq!(resp.headers()[CACHE_CONTROL], NO_CACHE, "uri: {uri}");
         assert_eq!(body_text(resp).await, "", "uri: {uri}");
+    }
+}
+
+#[tokio::test]
+async fn test_router_not_modified_keeps_cache_control() {
+    let cases = [
+        (None, "/assets/app.js", LONG_CACHE),
+        (None, "/index.html", NO_CACHE),
+        (None, "/logos/x.svg", LONG_CACHE),
+        (Some(BASE_PATH), "/landscape/assets/app.js", LONG_CACHE),
+    ];
+    for (base_path, uri, expected_cache_control) in cases {
+        // Run a request to get the file last modification date, and then a
+        // conditional one with it
+        let resp = get(router(&fixture_dir(), base_path), uri).await;
+        let last_modified = resp.headers()[LAST_MODIFIED].clone();
+        let req = Request::get(uri).header(IF_MODIFIED_SINCE, last_modified).body(Body::empty()).unwrap();
+        let resp = router(&fixture_dir(), base_path).oneshot(req).await.unwrap();
+
+        // Check the not modified response has the same cache control header
+        // as the successful one
+        assert_eq!(resp.status(), StatusCode::NOT_MODIFIED, "uri: {uri}");
+        assert_eq!(
+            resp.headers()[CACHE_CONTROL],
+            expected_cache_control,
+            "uri: {uri}"
+        );
     }
 }
 

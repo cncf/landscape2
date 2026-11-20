@@ -1,4 +1,4 @@
-/* Hidden while closed (after sliding out), so its content can't be focused */
+/* Hidden while closed (once it has slid out), so its content can't be focused */
 .sidebar {
   left: 0;
   -webkit-transform: translateX(-105%);
@@ -15,9 +15,17 @@
   max-width: 310px;
 }
 
+/* The sidebar itself and its scrolling content, focused when it opens, show no focus ring */
+.sidebar:focus,
+.content:focus {
+  outline: none;
+}
+
+/* Visible from the moment it starts sliding in, so it can take the focus right away */
 .active {
   -webkit-transform: none;
   transform: none;
+  transition: transform 0.15s linear;
   visibility: visible;
 }
 

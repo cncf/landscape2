@@ -137,6 +137,32 @@ describe('App', () => {
     iframe.remove();
   });
 
+  it('posts hideItemDetails when the host page asks for an item with an invalid message', async () => {
+    const postMessage = vi.spyOn(window.parent, 'postMessage');
+    render(() => <App />);
+
+    // Request an item with an invalid key, as the host page has already shown the iframe
+    postShowItemDetails({ ...SHOW_ITEM_DETAILS, key: '../data' });
+    await flushPromises();
+
+    // Check the host page is told to hide the iframe again
+    expect(postMessage).toHaveBeenCalledExactlyOnceWith({ type: 'hideItemDetails' }, '*');
+    expect(mockFetchItems).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('does not post hideItemDetails for other messages from the host page', async () => {
+    const postMessage = vi.spyOn(window.parent, 'postMessage');
+    render(() => <App />);
+
+    // Post messages that are not item requests
+    postShowItemDetails({ type: 'other' });
+    postShowItemDetails({ ...SHOW_ITEM_DETAILS, type: 'hideItemDetails' });
+    await flushPromises();
+
+    expect(postMessage).not.toHaveBeenCalled();
+  });
+
   it('posts hideItemDetails on close and does not reopen on a late fetch result', async () => {
     const user = userEvent.setup();
     const postMessage = vi.spyOn(window.parent, 'postMessage');

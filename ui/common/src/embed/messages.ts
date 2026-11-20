@@ -6,8 +6,9 @@ export const SHOW_ITEM_DETAILS_MESSAGE_TYPE = 'showItemDetails';
 /** Type of the message embed-item sends when its item details are closed. */
 export const HIDE_ITEM_DETAILS_MESSAGE_TYPE = 'hideItemDetails';
 
-// Characters `normalize_name` can emit (letters and numbers in any script, `+`, `_` and `-`)
-const KEY = /^[\p{L}\p{N}+_-]+$/u;
+// Characters `normalize_name` can emit (letters and numbers in any script, `+`, `_` and `-`, plus
+// the combining dot U+0307: the Turkish capital `İ` lowercases to `i` followed by it)
+const KEY = /^[\p{L}\p{N}\u0307+_-]+$/u;
 
 const CLASSIFY_TYPES = new Set<string>(Object.values(ClassifyType));
 

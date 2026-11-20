@@ -1,13 +1,13 @@
 import { DEFAULT_ITEM_DESCRIPTION, Image, Loading } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createMemo, createSignal, onCleanup, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, Match, onCleanup, Show, Switch } from 'solid-js';
 
 import { Item, LandscapeItem } from '../../../types';
 import isTouchDevice from '../../../utils/isTouchDevice';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFeaturedItems } from '../../stores/featuredItems';
-import { useFullDataReady } from '../../stores/fullData';
+import { useFullDataReady, useFullDataStatus } from '../../stores/fullData';
 import Card from '../card/Card';
 import styles from './GridItem.module.css';
 
@@ -27,6 +27,7 @@ const DEFAULT_MARGIN = 35;
 
 const GridItem = (props: Props) => {
   const fullDataReady = useFullDataReady();
+  const fullDataStatus = useFullDataStatus();
   const { getEffectiveFeatured } = useFeaturedItems();
   const [wrapper, setWrapper] = createSignal<HTMLDivElement>();
   const updateActiveItemId = useUpdateActiveItemId();
@@ -203,9 +204,15 @@ const GridItem = (props: Props) => {
               }}
             >
               <div class={`d-block position-absolute ${styles.arrow}`} />
-              <Show when={!isUndefined(item())} fallback={<Loading />}>
-                <Card item={item()!} />
-              </Show>
+              <Switch fallback={<Loading />}>
+                <Match when={item()}>{(fullItem) => <Card item={fullItem()} />}</Match>
+                {/* The full data failed to load (the Explore page offers to retry), or has no such item */}
+                <Match when={fullDataStatus() === 'error' || fullDataReady()}>
+                  <div class="position-absolute top-0 bottom-0 start-0 end-0 d-flex align-items-center justify-content-center text-muted text-center p-3">
+                    We couldn't load the item details.
+                  </div>
+                </Match>
+              </Switch>
             </div>
           </Show>
         </div>

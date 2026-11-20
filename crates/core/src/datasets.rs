@@ -448,8 +448,7 @@ pub mod embed {
                 for subcategory in &category.subcategories {
                     let subcategory_items = items_index
                         .get(&(category.name.as_str(), subcategory.name.as_str()))
-                        .map(Vec::as_slice)
-                        .unwrap_or_default();
+                        .map_or_default(Vec::as_slice);
                     category_items.extend(
                         subcategory_items.iter().filter(|item| category_items_ids.insert(item.id.as_str())),
                     );

@@ -3,6 +3,10 @@
 // shows the embed-item iframe (`#embed-item`) when an embed view on the page
 // asks for an item, and hides it when embed-item closes it.
 (() => {
+  // Only the first copy of the script included in a page handles the messages
+  if (window.landscape2EmbedItemHost) return;
+  window.landscape2EmbedItemHost = true;
+
   // Host page `overflow-y` saved while the item details are shown
   let savedOverflowY = null;
 

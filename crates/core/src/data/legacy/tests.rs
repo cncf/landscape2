@@ -60,6 +60,21 @@ fn test_landscape_data_validate_accepts_same_item_name_in_other_subcategory() {
 }
 
 #[test]
+fn test_landscape_data_validate_accepts_several_summary_intro_urls() {
+    // Setup an item with two summary intro urls separated by a comma
+    let landscape = landscape_with_items(vec![Item {
+        extra: Some(ItemExtra {
+            summary_intro_url: Some("https://example.com/intro-1, https://example.com/intro-2".to_string()),
+            ..Default::default()
+        }),
+        ..valid_item()
+    }]);
+
+    // Run the validation
+    landscape.validate().unwrap();
+}
+
+#[test]
 fn test_landscape_data_validate_accepts_tag_with_digits() {
     let landscape = landscape_with_items(vec![Item {
         extra: Some(ItemExtra {
@@ -503,6 +518,25 @@ fn test_landscape_data_validate_rejects_invalid_summary_intro_url() {
     let landscape = landscape_with_items(vec![Item {
         extra: Some(ItemExtra {
             summary_intro_url: Some("summary_intro_url".to_string()),
+            ..Default::default()
+        }),
+        ..valid_item()
+    }]);
+
+    // Run the validation and check the error
+    let err = landscape.validate().unwrap_err();
+    assert_eq!(
+        format!("{err:#}"),
+        "item [Item] is not valid (category: [Category] | subcategory: [Subcategory]): invalid summary_intro url: relative URL without a base"
+    );
+}
+
+#[test]
+fn test_landscape_data_validate_rejects_invalid_summary_intro_url_in_list() {
+    // Setup an item with a valid summary intro url followed by a text
+    let landscape = landscape_with_items(vec![Item {
+        extra: Some(ItemExtra {
+            summary_intro_url: Some("https://example.com/intro, Second intro".to_string()),
             ..Default::default()
         }),
         ..valid_item()

@@ -352,7 +352,7 @@ When `overlay-logos` is not provided, each item takes its logo and CLOMonitor su
 
 The overlay logs its warnings in the browser console: items not found in the deployed landscape, and unknown keys in the overlay files (prefixed with the kind of file, like `settings: unknown key …`).
 
-When `overlay-guide` or `overlay-games` is not provided, the overlay uses the deployed guide or games file, if any. A file that is missing (404) is ignored, but any other error loading it (or an invalid file) makes the overlay fail, as does any error loading a file provided explicitly.
+When `overlay-guide` or `overlay-games` is not provided, the overlay uses the deployed guide or games file, if any. A file that is missing (a 404 response, or an HTML page served instead, like the `index.html` file served for non existent paths) is ignored, but any other error loading it (or an invalid file) makes the overlay fail, as does any error loading a file provided explicitly.
 
 > [!WARNING]
 > The overlay feature is still experimental and may not work as expected in all cases. Please report any issues you find!

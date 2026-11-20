@@ -30,6 +30,49 @@ describe('GridItem', () => {
     expect(getItemById).toHaveBeenCalledWith('item');
   });
 
+  it('shows a spinner in the dropdown while the full data is loading', async () => {
+    const user = userEvent.setup();
+
+    // Render an item while the full data is loading
+    const item = createItem({ id: 'item', name: 'Item' });
+    vi.spyOn(itemsDataGetter, 'getStatus').mockReturnValue('loading');
+    renderWithExploreStores(() => <GridItem item={item} showMoreInfo activeDropdown />);
+
+    // Hover the item and check the dropdown shows the spinner
+    await user.hover(screen.getByRole('button', { name: 'Item info' }));
+    expect(await screen.findByRole('status')).toBeInTheDocument();
+    expect(screen.queryByText("We couldn't load the item details.")).not.toBeInTheDocument();
+  });
+
+  it('shows an error in the dropdown when the full data failed to load', async () => {
+    const user = userEvent.setup();
+
+    // Render an item after the full data failed to load
+    const item = createItem({ id: 'item', name: 'Item' });
+    vi.spyOn(itemsDataGetter, 'getStatus').mockReturnValue('error');
+    renderWithExploreStores(() => <GridItem item={item} showMoreInfo activeDropdown />);
+
+    // Hover the item and check the dropdown shows the error instead of a spinner
+    await user.hover(screen.getByRole('button', { name: 'Item info' }));
+    expect(await screen.findByText("We couldn't load the item details.")).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows an error in the dropdown when the full data has no such item', async () => {
+    const user = userEvent.setup();
+
+    // Render an item missing from the full data
+    const item = createItem({ id: 'item', name: 'Item' });
+    vi.spyOn(itemsDataGetter, 'getStatus').mockReturnValue('ready');
+    vi.spyOn(itemsDataGetter, 'getItemById').mockReturnValue(undefined);
+    renderWithExploreStores(() => <GridItem item={item} showMoreInfo activeDropdown />);
+    await flushPromises();
+
+    // Hover the item and check the dropdown shows the error instead of a spinner
+    await user.hover(screen.getByRole('button', { name: 'Item info' }));
+    expect(await screen.findByText("We couldn't load the item details.")).toBeInTheDocument();
+  });
+
   it('opens the item with the keyboard when rendered without dropdown', async () => {
     const user = userEvent.setup();
     const item = createItem({ id: 'item', name: 'Item' });

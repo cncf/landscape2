@@ -552,9 +552,9 @@
                           },
                           "summary_intro_url": {
                             "title": "Video URL of the item's pitch",
-                            "description": "More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
+                            "description": "Several URLs can be provided, separated by commas. More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md",
                             "type": "string",
-                            "format": "uri",
+                            "pattern": "^[\\s,]*[Hh][Tt][Tt][Pp][Ss]?://[^,]+(,[\\s,]*[Hh][Tt][Tt][Pp][Ss]?://[^,]+)*[\\s,]*$",
                             "examples": [
                               "https://summary.intro.url"
                             ]

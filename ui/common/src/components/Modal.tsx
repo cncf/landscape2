@@ -47,8 +47,21 @@ const Active = css`
   z-index: 1080;
 `;
 
+// The dialog itself shows no focus ring when it takes the focus
 const ModalClass = css`
   overflow-y: auto;
+
+  &:focus {
+    outline: none;
+  }
+`;
+
+// Scrolling area of the dialog, focused when it opens (useModalFocus), so the keyboard scrolls
+// it. It shows no focus ring and, as a group, it isn't named after its whole content
+const ModalBody = css`
+  &:focus {
+    outline: none;
+  }
 `;
 
 const ModalDialog = css`
@@ -117,6 +130,7 @@ export const Modal = (props: Props) => {
   const [openStatus, setOpenStatus] = createSignal(false);
   const [modalRef, setModalRef] = createSignal<HTMLDivElement>();
   const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [bodyRef, setBodyRef] = createSignal<HTMLDivElement>();
 
   const closeModal = () => {
     setOpenStatus(false);
@@ -124,7 +138,7 @@ export const Modal = (props: Props) => {
   };
 
   useBodyScroll(openStatus, 'modal');
-  useModalFocus(modalRef, openStatus, closeModal);
+  useModalFocus(modalRef, openStatus, closeModal, bodyRef);
   useOutsideClick([ref], [BANNER_ID], openStatus, closeModal);
 
   createEffect(() => {
@@ -170,7 +184,12 @@ export const Modal = (props: Props) => {
               </div>
             </Show>
 
-            <div class={`modal-body h-100 d-flex flex-column ${props.bodyClass || 'p-4'}`}>
+            <div
+              ref={setBodyRef}
+              role="group"
+              tabIndex={-1}
+              class={`modal-body h-100 d-flex flex-column ${ModalBody} ${props.bodyClass || 'p-4'}`}
+            >
               <Show when={isUndefined(props.header)}>
                 <div class={`position-absolute ${BtnCloseWrapper}`}>
                   <button

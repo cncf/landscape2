@@ -35,6 +35,7 @@ import { BaseData } from './types';
 import { getGroupAliasRoutes } from './utils/groupAlias';
 import itemsDataGetter from './utils/itemsDataGetter';
 import overlayData from './utils/overlayData';
+import trackKeyboardNavigation from './utils/trackKeyboardNavigation';
 import { buildPath, withParams } from './utils/urlParams';
 
 /** Redirects a group alias path to Explore with that group, keeping the other params and the hash. */
@@ -144,6 +145,8 @@ const App = () => {
     window.Osano?.cm.addEventListener('osano-cm-initialized', () => {
       document.body.classList.add('osano-loaded');
     });
+
+    onCleanup(trackKeyboardNavigation());
   });
 
   return (

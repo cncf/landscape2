@@ -61,7 +61,7 @@ pub(crate) async fn collect_crunchbase_data(
     debug!("collecting organizations information from crunchbase (this may take a while)");
 
     // Setup Crunchbase API client if an api key was provided
-    let api_key = env::var(CRUNCHBASE_API_KEY).map(|api_key| api_key.trim().to_string()).unwrap_or_default();
+    let api_key = env::var(CRUNCHBASE_API_KEY).map_or_default(|api_key| api_key.trim().to_string());
     let cb: Option<DynCB> = if api_key.is_empty() {
         warn!("crunchbase api key not provided: only cached information will be used");
         None
@@ -114,6 +114,7 @@ async fn collect_crunchbase_data_with(
         .await;
 
     // Use the fetched data, falling back to the stale cached data on failure
+    // (failures are only logged when an api key was provided)
     let mut fetched_count = 0;
     let mut stale_count = 0;
     for (url, result) in results {
@@ -124,11 +125,17 @@ async fn collect_crunchbase_data_with(
             }
             Err(err) => {
                 if let Some(stale_organization) = cached.get(url) {
-                    warn!(%url, %err, "using stale cached data");
+                    if cb.is_some() {
+                        warn!(%url, err = %format_args!("{err:#}"), "using stale cached data");
+                    }
                     crunchbase_data.insert(url.to_string(), stale_organization.clone());
                     stale_count += 1;
-                } else {
-                    warn!(%url, %err, "no crunchbase data available for organization");
+                } else if cb.is_some() {
+                    warn!(
+                        %url,
+                        err = %format_args!("{err:#}"),
+                        "no crunchbase data available for organization"
+                    );
                 }
             }
         }

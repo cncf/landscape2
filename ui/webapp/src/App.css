@@ -44,6 +44,11 @@ body {
   outline-offset: 2px;
 }
 
+/* Close buttons show their focus glow only on keyboard focus */
+.btn-close:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
 /* Scroll */
 .visibleScroll::-webkit-scrollbar {
   width: 10px;

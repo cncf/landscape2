@@ -1,5 +1,5 @@
 import { createMemoryHistory, MemoryRouter, Navigator, Route, RouteSectionProps, useNavigate } from '@solidjs/router';
-import { render, screen, waitFor } from '@solidjs/testing-library';
+import { render, screen, waitFor, within } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { createItem, createTextElement, flushPromises, tabTo } from 'common/test-utils';
 import { Show } from 'solid-js';
@@ -255,6 +255,30 @@ describe('Explore', () => {
     await waitFor(() => expect(history.get()).toBe('/?group=all&view-mode=card#category-1--sub-1'));
   });
 
+  it('keeps a non-ASCII section of the menu named by the Card view hash', async () => {
+    // The second "о" of "adоpter" is Cyrillic (U+043E), as in the OSPO landscape
+    window.baseDS.categories![1].subcategories[0] = { name: 'Sub 2', normalized_name: 'sub-2-adоpter' };
+    mockFullDataReady();
+
+    // Render the Card view at that section, with the hash encoded as the browser gives it
+    const { history } = renderExplore('/?group=all&view-mode=card#category-2--sub-2-ad%D0%BEpter');
+    expect(await screen.findByText('Card view')).toBeInTheDocument();
+    await flushPromises();
+
+    // Verify the hash still names that section
+    expect(history.get()).toBe('/?group=all&view-mode=card#category-2--sub-2-ad%D0%BEpter');
+  });
+
+  it('keeps the embed setup path when it opens the Card view at the first section of its menu', async () => {
+    mockFullDataReady();
+
+    // Render the Card view behind the embed setup, with no section in the URL
+    const { history } = renderExplore('/embed-setup?group=all&view-mode=card');
+
+    // Verify the hash names the first section of the menu and the embed setup stays open
+    await waitFor(() => expect(history.get()).toBe('/embed-setup?group=all&view-mode=card#category-1--sub-1'));
+  });
+
   it('moves the Card view hash to the first section of the new menu when the classify changes', async () => {
     const user = userEvent.setup();
     mockFullDataReady();
@@ -358,6 +382,32 @@ describe('Explore', () => {
     expect(history.get()).toBe('/?group=all&view-mode=card');
   });
 
+  it('shows the first group when switching the Card view of all groups to the Grid view', async () => {
+    const user = userEvent.setup();
+    mockFullDataReady();
+
+    // Render the Card view of all groups and switch to Grid
+    const { history } = renderExplore('/?group=all&view-mode=card');
+    await user.click(await screen.findByRole('button', { name: 'Change view mode to Grid' }));
+
+    // Check the URL and the active button name the first group
+    await waitFor(() => expect(history.get()).toBe('/?group=g1&view-mode=grid'));
+    expect(screen.getByRole('button', { name: 'Group 1' })).toHaveClass('active');
+  });
+
+  it('lists the Grid view mode before the Card view mode', async () => {
+    // Render the Grid view
+    renderExplore('/?group=g1&view-mode=grid');
+
+    // Check the order of the view mode buttons
+    const viewModeOptions = await screen.findByRole('group', { name: 'View mode options' });
+    expect(
+      within(viewModeOptions)
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+    ).toEqual(['Grid', 'Card']);
+  });
+
   it('shows the base data grid without the filters it cannot apply when the full data fails to load', async () => {
     vi.spyOn(itemsDataGetter, 'getStatus').mockReturnValue('error');
 
@@ -402,6 +452,104 @@ describe('Explore', () => {
     // Verify the URL drops the filter and gets no group param
     await waitFor(() => expect(history.get()).toBe('/?view-mode=grid'));
   });
+
+  it.each(['g1', 'all'])(
+    'hides the group selector of the Card view of a single group with every category (group=%s)',
+    async (group) => {
+      window.baseDS = {
+        ...window.baseDS,
+        groups: [{ categories: ['Category 1', 'Category 2'], name: 'Group 1', normalized_name: 'g1' }],
+      };
+      itemsDataGetter.prepareGroups();
+      mockFullDataReady();
+
+      // Render the Card view of the single group or of every item
+      const { history } = renderExplore(`/?group=${group}&view-mode=card`);
+
+      // Check the URL keeps the group and only gets the section hash
+      await waitFor(() => expect(history.get()).toBe(`/?group=${group}&view-mode=card#category-1--sub-1`));
+
+      // Check the group selector is hidden and the items are still shown
+      expect(screen.queryByRole('button', { name: 'Group 1' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('combobox', { name: 'Groups list' })).not.toBeInTheDocument();
+      if (group === 'all') {
+        expect(screen.getByText('Card view').parentElement).toHaveClass('d-block');
+      } else {
+        expect(screen.getByText('Explore content')).toBeInTheDocument();
+      }
+    }
+  );
+
+  it('shows the single group when switching its Card view of every item to the Grid view', async () => {
+    const user = userEvent.setup();
+    window.baseDS = {
+      ...window.baseDS,
+      groups: [{ categories: ['Category 1', 'Category 2'], name: 'Group 1', normalized_name: 'g1' }],
+    };
+    itemsDataGetter.prepareGroups();
+    mockFullDataReady();
+
+    // Render the filtered Card view of every item and switch to Grid
+    const { history } = renderExplore('/?group=all&view-mode=card&tag=runtime');
+    await user.click(await screen.findByRole('button', { name: 'Change view mode to Grid' }));
+
+    // Check the URL keeps the filter and names the single group
+    await waitFor(() => expect(history.get()).toBe('/?group=g1&view-mode=grid&tag=runtime'));
+
+    // Check the group selector is hidden and the group grid is shown
+    expect(screen.queryByRole('button', { name: 'Group 1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Groups list' })).not.toBeInTheDocument();
+    expect(screen.getByText('Explore content')).toBeInTheDocument();
+  });
+
+  it('keeps the group selector of the Card view of a single group without every category', async () => {
+    window.baseDS = {
+      ...window.baseDS,
+      groups: [{ categories: ['Category 1'], name: 'Group 1', normalized_name: 'g1' }],
+    };
+    itemsDataGetter.prepareGroups();
+    mockFullDataReady();
+
+    // Render the Card view of every item, which includes the items outside the group
+    renderExplore('/?group=all&view-mode=card');
+
+    // Check the group and All are both offered, with All active
+    expect(await screen.findByRole('button', { name: 'All' })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: 'Group 1' })).toBeInTheDocument();
+  });
+
+  it('shows every group and All in the Card view of several groups', async () => {
+    mockFullDataReady();
+
+    // Render the Card view of the first group
+    renderExplore('/?group=g1&view-mode=card');
+
+    // Check every group and All are offered, with the first group active
+    expect(await screen.findByRole('button', { name: 'Group 1' })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: 'Group 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
+  });
+
+  it('shows the All option in the Card view of a landscape without groups', async () => {
+    const user = userEvent.setup();
+    window.baseDS = { ...window.baseDS, groups: undefined };
+    vi.spyOn(itemsDataGetter, 'getGroups').mockReturnValue(undefined);
+    mockFullDataReady();
+
+    // Render the Card view of a landscape without groups
+    const { history } = renderExplore('/?view-mode=card');
+
+    // Check All is active and the URL gets no group param
+    expect(await screen.findByRole('button', { name: 'All' })).toHaveClass('active');
+    await waitFor(() => expect(history.get()).toBe('/?view-mode=card#category-1--sub-1'));
+
+    // Switch to Grid and check All is no longer offered
+    await user.click(screen.getByRole('button', { name: 'Change view mode to Grid' }));
+    await waitFor(() => expect(searchParam(history.get(), 'view-mode')).toBe('grid'));
+    expect(screen.queryByRole('button', { name: 'All' })).not.toBeInTheDocument();
+  });
 });
 
 describe('Card view items', () => {
@@ -445,8 +593,8 @@ interface RenderExploreOptions {
 }
 
 /**
- * Renders Explore at `/` and a guide stub at `/guide` inside the stores Explore uses,
- * returning the memory history and an accessor to the router navigate function.
+ * Renders Explore at `/` and `/embed-setup`, as the app does, and a guide stub at `/guide` inside
+ * the stores Explore uses, returning the memory history and an accessor to the router navigate function.
  */
 const renderExplore = (url: string, options: RenderExploreOptions = {}) => {
   const history = createMemoryHistory();
@@ -477,7 +625,7 @@ const renderExplore = (url: string, options: RenderExploreOptions = {}) => {
 
   const result = render(() => (
     <MemoryRouter history={history} root={Root}>
-      <Route path="/" component={() => <Explore initialData={window.baseDS} />} />
+      <Route path={['/', '/embed-setup']} component={() => <Explore initialData={window.baseDS} />} />
       <Route path="/guide" component={() => <div>Guide page</div>} />
     </MemoryRouter>
   ));

@@ -262,11 +262,13 @@ grid_items_size: small
 # in the grid mode.
 #
 # Groups names must be unique, also when ignoring case and punctuation (for
-# example, `A B` and `A-B` cannot be used together). Aliases must be unique,
-# cannot contain slashes and cannot be any of the following reserved words:
-# acquisitions, api, assets, data, docs, embed, embed-setup, finances, fonts,
-# funding, games, guide, images, kiosk, logos, logos-preview, projects-summary,
-# screenshot, sources, stats, summary.
+# example, `A B` and `A-B` cannot be used together). The name `all` (in any
+# case, optionally followed by spaces or symbols) is reserved, as the web
+# application uses it for the option that shows every group. Aliases must be
+# unique, cannot contain slashes and cannot be any of the following reserved
+# words: acquisitions, api, assets, data, docs, embed, embed-setup, finances,
+# fonts, funding, games, guide, images, kiosk, logos, logos-preview,
+# projects-summary, screenshot, sources, stats, summary.
 #
 # groups:
 #   - name: <GROUP_NAME>

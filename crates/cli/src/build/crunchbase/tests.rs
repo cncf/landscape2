@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 use tempfile::TempDir;
 
 use super::*;
+use crate::build::tests::capture_logs;
 
 /// Url of the organization used in most tests.
 const ORG_URL: &str = "https://www.crunchbase.com/organization/acme";
@@ -31,6 +32,33 @@ async fn test_collect_crunchbase_data_no_client_keeps_stale_entry() {
     assert_eq!(
         crunchbase_data,
         BTreeMap::from([(ORG_URL.to_string(), stale_org)])
+    );
+}
+
+#[tokio::test]
+async fn test_collect_crunchbase_data_no_client_logs_only_summary() {
+    // Setup cache with an expired entry
+    let tmp_dir = TempDir::new().unwrap();
+    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
+    write_cache_entries(
+        tmp_dir.path(),
+        &json!({ ORG_URL: organization(now() - TimeDelta::days(30)) }),
+    );
+
+    // Run the collection without a client, for that organization and another
+    // one without cached data
+    let landscape_data = landscape_data(&[ORG_URL, OTHER_ORG_URL]);
+    let (_, logs) = capture_logs(collect_crunchbase_data_with(&cache, &landscape_data, None, now())).await;
+
+    // Check the organizations are not reported one by one
+    assert!(!logs.contains("using stale cached data"), "{logs}");
+    assert!(
+        !logs.contains("no crunchbase data available for organization"),
+        "{logs}"
+    );
+    assert!(
+        logs.contains("stale cached crunchbase data used for some organizations stale_count=1"),
+        "{logs}"
     );
 }
 
@@ -83,6 +111,48 @@ async fn test_collect_crunchbase_data_preserves_other_landscapes_entries_on_writ
         serde_json::to_value(&other_org).unwrap()
     );
     assert_eq!(cache_file["entries"][ORG_URL]["name"], "Acme (fetched)");
+}
+
+#[tokio::test]
+async fn test_collect_crunchbase_data_refresh_failure_logs_error_cause() {
+    // Setup cache with an expired entry
+    let tmp_dir = TempDir::new().unwrap();
+    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
+    write_cache_entries(
+        tmp_dir.path(),
+        &json!({ ORG_URL: organization(now() - TimeDelta::days(8)) }),
+    );
+
+    // Setup client expectations
+    let mut cb = MockCB::new();
+    cb.expect_get_organization()
+        .times(2)
+        .returning(|_| Err(format_err!("connection refused").context("request failed")));
+
+    // Run the collection for that organization and another one without
+    // cached data
+    let landscape_data = landscape_data(&[ORG_URL, OTHER_ORG_URL]);
+    let (_, logs) = capture_logs(collect_crunchbase_data_with(
+        &cache,
+        &landscape_data,
+        Some(Arc::new(cb)),
+        now(),
+    ))
+    .await;
+
+    // Check both organizations are reported along with the cause of the error
+    assert!(
+        logs.contains(&format!(
+            "using stale cached data url={ORG_URL} err=request failed: connection refused"
+        )),
+        "{logs}"
+    );
+    assert!(
+        logs.contains(&format!(
+            "no crunchbase data available for organization url={OTHER_ORG_URL} err=request failed: connection refused"
+        )),
+        "{logs}"
+    );
 }
 
 #[tokio::test]

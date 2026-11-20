@@ -63,6 +63,18 @@ describe('CrunchbaseTable', () => {
     expect(getCells(0)).toEqual(['Acquiree', '$2.5M', '2020-05-01']);
   });
 
+  it('keeps the cell text styles out of the headers', () => {
+    renderFundingRounds([{ amount: 1000000, announced_on: '2021-02-01', kind: 'series_a' }]);
+
+    // The headers take the uppercase and color of the table head, like the other headers
+    for (const header of screen.getAllByRole('columnheader')) {
+      for (const cellClass of ['text-capitalize', 'text-muted', 'text-truncate']) {
+        expect(header).not.toHaveClass(cellClass);
+      }
+    }
+    expect(screen.getByRole('cell', { name: 'series a' })).toHaveClass('text-capitalize', 'text-muted');
+  });
+
   it('falls back to a dash for a missing price', () => {
     renderAcquisitions([{ acquiree_name: 'Acquiree', announced_on: '2020-05-01' }]);
 

@@ -59,11 +59,13 @@ export const ACQUISITION_COLUMNS: CrunchbaseTableColumn<Acquisition>[] = [
   { header: () => 'Name', class: 'text-truncate text-muted', cell: (row) => row.acquiree_name },
   {
     header: () => 'Price (USD)',
+    headerClass: MinCol,
     class: `text-center text-nowrap ${MinCol}`,
     cell: (row) => formatPrice(row.price),
   },
   {
     header: announcedOnHeader,
+    headerClass: `text-nowrap ${MinCol}`,
     class: `text-center text-nowrap text-muted ${MinCol}`,
     cell: (row) => row.announced_on,
   },
@@ -78,11 +80,13 @@ export const FUNDING_ROUND_COLUMNS: CrunchbaseTableColumn<FundingRound>[] = [
   },
   {
     header: () => 'Price (USD)',
+    headerClass: MinCol,
     class: `text-center text-nowrap ${MinCol}`,
     cell: (row) => formatPrice(row.amount),
   },
   {
     header: announcedOnHeader,
+    headerClass: `text-nowrap ${MinCol}`,
     class: `text-center text-nowrap text-muted ${MinCol}`,
     cell: (row) => row.announced_on,
   },

@@ -3,6 +3,7 @@ import { createItem } from 'common/test-utils';
 import { createSignal } from 'solid-js';
 import { describe, expect, it } from 'vitest';
 
+import { ALL_OPTION } from '../../../../data';
 import { renderWithExploreStores } from '../../../../test-utils/render';
 import type { Item } from '../../../../types';
 import type { CategoryData } from '../../../../utils/itemsDataGetter';
@@ -69,20 +70,59 @@ describe('ItemsList', () => {
     expect(screen.queryByRole('img', { name: 'first-a logo' })).not.toBeInTheDocument();
   });
 
-  it('keeps the rendered items when a new list has the same ids', async () => {
+  it('keeps the rendered items when a new list holds the same item objects', async () => {
     // Render a list with two items
-    const [items, setItems] = createSignal<Item[]>([item('first'), item('second')]);
+    const first = item('first');
+    const second = item('second');
+    const [items, setItems] = createSignal<Item[]>([first, second]);
     renderWithExploreStores(
       () => <ItemsList items={items()} percentage={100} borderColor="red" activeDropdown={false} />,
       { gridWidth: GRID_WIDTH }
     );
     const logo = await screen.findByRole('img', { name: 'first logo' });
 
-    // Pass copies of the same items
-    setItems([item('first'), item('second')]);
+    // Pass a new list with the same item objects
+    setItems([first, second]);
 
     // Check the rendered nodes are kept
     expect(screen.getByRole('img', { name: 'first logo' })).toBe(logo);
+  });
+
+  it('keeps the rendered item not featured in the group when a new list holds the same item objects', async () => {
+    // Render a list with an item whose featured status is excluded in the active group, mixed
+    // with a featured and a plain item
+    const excluded = item('excluded', { featured: { ...FEATURED, excluded_groups: [ALL_OPTION] } });
+    const featured = item('featured', { featured: FEATURED });
+    const plain = item('plain');
+    const [items, setItems] = createSignal<Item[]>([excluded, featured, plain]);
+    renderWithExploreStores(
+      () => <ItemsList items={items()} percentage={100} borderColor="red" activeDropdown={false} />,
+      { gridWidth: GRID_WIDTH }
+    );
+    const logo = await screen.findByRole('img', { name: 'excluded logo' });
+
+    // Pass a new list with the same item objects
+    setItems([excluded, featured, plain]);
+
+    // Check the rendered node of the item is kept
+    expect(screen.getByRole('img', { name: 'excluded logo' })).toBe(logo);
+  });
+
+  it('renders the new item objects when a list with the same ids arrives', async () => {
+    // Render a list with two items, as built from the base data
+    const [items, setItems] = createSignal<Item[]>([item('first'), item('second')]);
+    renderWithExploreStores(
+      () => <ItemsList items={items()} percentage={100} borderColor="red" activeDropdown={false} />,
+      { gridWidth: GRID_WIDTH }
+    );
+    expect(await screen.findByRole('img', { name: 'first logo' })).toBeInTheDocument();
+
+    // Pass new objects of the same items, as built from the full data
+    setItems([{ ...item('first'), name: 'first full' }, item('second')]);
+
+    // Check the new objects are rendered
+    expect(await screen.findByRole('img', { name: 'first full logo' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'first logo' })).not.toBeInTheDocument();
   });
 });
 

@@ -118,9 +118,10 @@ pub(crate) fn cache_control_for(path: &str) -> &'static str {
 /// The website is always served at the root, as the screenshot route is not
 /// prefixed with the base path in the web application. When a base path is
 /// provided, the website is also served under it, and both the root and the
-/// base path redirect to the base path with a trailing slash. Paths that do
-/// not match any file are web application routes when their last segment has
-/// no extension (the index is returned), and missing files otherwise.
+/// base path redirect to the base path with a trailing slash (keeping the
+/// query). Paths that do not match any file are web application routes when
+/// their last segment has no extension (the index is returned), and missing
+/// files otherwise.
 pub(crate) fn router(landscape_dir: &Path, base_path: Option<&str>) -> Router {
     // Setup the website service, falling back to the index for the routes
     let index_path = Arc::new(landscape_dir.join("index.html"));
@@ -132,12 +133,22 @@ pub(crate) fn router(landscape_dir: &Path, base_path: Option<&str>) -> Router {
         let base_path_url = format!("{base_path}/");
         let redirect = get({
             let base_path_url = base_path_url.clone();
-            move || async move { Redirect::temporary(&base_path_url) }
+            move |uri: Uri| async move {
+                // Keep the query, as links to the landscape may include one
+                // (for example, `?item=<id>` from the embeds)
+                match uri.query() {
+                    Some(query) => Redirect::temporary(&format!("{base_path_url}?{query}")),
+                    None => Redirect::temporary(&base_path_url),
+                }
+            }
         });
+        // Website service nested under the base path, which prefixes its
+        // directory redirects with it
+        let website_under_base_path = website.clone().redirect_path_prefix(base_path);
         router = router
             .route("/", redirect.clone())
             .route(base_path, redirect)
-            .nest_service(&base_path_url, website.clone());
+            .nest_service(&base_path_url, website_under_base_path);
     }
 
     // Serve the website at the root, setting the cache control header
@@ -179,7 +190,7 @@ fn read_base_path(landscape_dir: &Path) -> Result<Option<String>> {
 
 /// Middleware that sets the cache control header in the response, based on
 /// the site relative path requested (the base path provided is stripped). The
-/// long cache is only used on successful responses.
+/// long cache is only used on successful and not modified responses.
 async fn set_cache_control_header(
     State(base_path): State<Option<Arc<str>>>,
     req: Request,
@@ -191,8 +202,10 @@ async fn set_cache_control_header(
     // Execute next handler
     let mut resp = next.run(req).await;
 
-    // Set header using value prepared above, never caching unsuccessful responses
-    let cache_control = if resp.status().is_success() {
+    // Set header using value prepared above, never caching unsuccessful
+    // responses. Not modified responses get the same header as the successful
+    // ones, as caches update the stored response headers from them
+    let cache_control = if resp.status().is_success() || resp.status() == StatusCode::NOT_MODIFIED {
         cache_control
     } else {
         NO_CACHE_CONTROL

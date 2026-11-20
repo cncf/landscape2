@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 use tempfile::TempDir;
 
 use super::*;
+use crate::build::tests::capture_logs;
 
 /// Url of a repository that belongs to another landscape.
 const OTHER_REPO_URL: &str = "https://github.com/other/item";
@@ -120,6 +121,33 @@ async fn test_collect_github_data_no_client_keeps_stale_entry() {
 }
 
 #[tokio::test]
+async fn test_collect_github_data_no_client_logs_only_summary() {
+    // Setup cache with an expired entry
+    let tmp_dir = TempDir::new().unwrap();
+    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
+    write_cache_entries(
+        tmp_dir.path(),
+        &json!({ REPO_URL: repository_data(now() - TimeDelta::days(30)) }),
+    );
+
+    // Run the collection without a client, for that repository and another
+    // one without cached data
+    let landscape_data = landscape_data(&[REPO_URL, OTHER_REPO_URL]);
+    let (_, logs) = capture_logs(collect_github_data_with(&cache, &landscape_data, None, now())).await;
+
+    // Check the repositories are not reported one by one
+    assert!(!logs.contains("using stale cached data"), "{logs}");
+    assert!(
+        !logs.contains("no github data available for repository"),
+        "{logs}"
+    );
+    assert!(
+        logs.contains("stale cached github data used for some repositories stale_count=1"),
+        "{logs}"
+    );
+}
+
+#[tokio::test]
 async fn test_collect_github_data_no_fetch_does_not_overwrite_unreadable_cache() {
     // Setup an unreadable cache file
     let tmp_dir = TempDir::new().unwrap();
@@ -193,6 +221,48 @@ async fn test_collect_github_data_refresh_failure_keeps_stale_entry() {
 
     // Check the stale entry is returned
     assert_eq!(github_data, BTreeMap::from([(REPO_URL.to_string(), stale_repo)]));
+}
+
+#[tokio::test]
+async fn test_collect_github_data_refresh_failure_logs_error_cause() {
+    // Setup cache with an expired entry
+    let tmp_dir = TempDir::new().unwrap();
+    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
+    write_cache_entries(
+        tmp_dir.path(),
+        &json!({ REPO_URL: repository_data(now() - TimeDelta::days(8)) }),
+    );
+
+    // Setup client expectations
+    let mut gh = MockGH::new();
+    gh.expect_get_repository()
+        .times(2)
+        .returning(|_, _| Err(format_err!("connection refused").context("request failed")));
+
+    // Run the collection for that repository and another one without cached
+    // data
+    let landscape_data = landscape_data(&[REPO_URL, OTHER_REPO_URL]);
+    let (_, logs) = capture_logs(collect_github_data_with(
+        &cache,
+        &landscape_data,
+        Some(pool(gh)),
+        now(),
+    ))
+    .await;
+
+    // Check both repositories are reported along with the cause of the error
+    assert!(
+        logs.contains(&format!(
+            "using stale cached data url={REPO_URL} err=request failed: connection refused"
+        )),
+        "{logs}"
+    );
+    assert!(
+        logs.contains(&format!(
+            "no github data available for repository url={OTHER_REPO_URL} err=request failed: connection refused"
+        )),
+        "{logs}"
+    );
 }
 
 #[tokio::test]
@@ -353,7 +423,7 @@ async fn test_collect_repository_data_maps_all_fields() {
 }
 
 #[tokio::test]
-async fn test_collect_repository_data_noassertion_license_is_none() {
+async fn test_collect_repository_data_unidentified_license_is_other() {
     // Setup client expectations returning a license GitHub could not identify
     let mut gh = MockGH::new();
     gh.expect_get_repository()
@@ -376,8 +446,8 @@ async fn test_collect_repository_data_noassertion_license_is_none() {
     // Run the collection
     let repository_data = collect_repository_data(&gh, REPO_URL, None, None, now()).await.unwrap();
 
-    // Check no license is collected
-    assert_eq!(repository_data.license, None);
+    // Check the license is collected with the name GitHub gives it
+    assert_eq!(repository_data.license, Some("Other".to_string()));
 }
 
 #[tokio::test]

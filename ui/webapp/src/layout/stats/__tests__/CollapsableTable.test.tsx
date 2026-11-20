@@ -44,6 +44,40 @@ describe('CollapsableTable', () => {
     expect(rows).not.toBeVisible();
   });
 
+  it('toggles the category from any cell of its row', async () => {
+    const user = userEvent.setup();
+    render(() => <CollapsableTable data={DATA} />);
+    const runtime = screen.getByRole('button', { name: 'Runtime' });
+    const [caretCell, , countCell] = within(runtime.closest('tr')!).getAllByRole('cell');
+
+    // Expand it from the caret
+    await user.click(caretCell);
+    expect(runtime).toHaveAttribute('aria-expanded', 'true');
+    expect(controlledRows(runtime)).toBeVisible();
+
+    // Collapse it from the count
+    await user.click(countCell);
+    expect(runtime).toHaveAttribute('aria-expanded', 'false');
+    expect(controlledRows(runtime)).not.toBeVisible();
+  });
+
+  it('toggles the category once with the keyboard', async () => {
+    const user = userEvent.setup();
+    render(() => <CollapsableTable data={DATA} />);
+    const runtime = screen.getByRole('button', { name: 'Runtime' });
+
+    // Expand it with Enter
+    runtime.focus();
+    await user.keyboard('{Enter}');
+    expect(runtime).toHaveAttribute('aria-expanded', 'true');
+    expect(controlledRows(runtime)).toBeVisible();
+
+    // Collapse it with Space
+    await user.keyboard(' ');
+    expect(runtime).toHaveAttribute('aria-expanded', 'false');
+    expect(controlledRows(runtime)).not.toBeVisible();
+  });
+
   it('renders a plain table without tree grid roles', () => {
     render(() => <CollapsableTable data={DATA} />);
 

@@ -1,4 +1,5 @@
-import { screen, within } from '@solidjs/testing-library';
+import { fireEvent, screen, within } from '@solidjs/testing-library';
+import userEvent from '@testing-library/user-event';
 import { createTextElement } from 'common/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -6,6 +7,7 @@ import { createBaseData } from '../../../test-utils/fixtures';
 import { renderWithRouter } from '../../../test-utils/render';
 import itemsDataGetter from '../../../utils/itemsDataGetter';
 import overlayData from '../../../utils/overlayData';
+import scrollToTop from '../../../utils/scrollToTop';
 import Header from '../Header';
 
 vi.mock('../../../utils/scrollToTop', () => ({ default: vi.fn() }));
@@ -102,6 +104,29 @@ describe('Header', () => {
     expect(screen.queryByRole('link', { name: 'Stats' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Games' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'GitHub repository' })).not.toBeInTheDocument();
+  });
+
+  it('only scrolls to the top when the link of the current page is clicked', async () => {
+    // Setup: the guide opened at a section from another page
+    const user = userEvent.setup();
+    const { history } = renderWithRouter(() => <Header statsVisible />, { url: '/stats' });
+    history.set({ value: '/guide#category--subcategory' });
+
+    // Run
+    await user.click(screen.getByRole('link', { name: 'Guide' }));
+
+    // Check: the guide keeps its section and no history entry is added
+    expect(scrollToTop).toHaveBeenCalledWith(false);
+    expect(history.get()).toBe('/guide#category--subcategory');
+    history.back();
+    expect(history.get()).toBe('/stats');
+  });
+
+  it('lets the browser open the link of the current page in a new tab', () => {
+    renderWithRouter(() => <Header statsVisible />, { url: '/guide#category--subcategory' });
+
+    // fireEvent returns false when the default action was prevented
+    expect(fireEvent.click(screen.getByRole('link', { name: 'Guide' }), { ctrlKey: true })).toBe(true);
   });
 
   it.each([

@@ -1422,6 +1422,44 @@ fn test_landscape_data_from_legacy_drops_empty_summary_list_entries() {
 }
 
 #[test]
+fn test_landscape_data_from_legacy_separates_summary_intro_urls_alike() {
+    // Setup summary intro urls values and the value expected
+    let cases = [
+        ("https://example.com/intro", "https://example.com/intro"),
+        (
+            "https://example.com/intro-1,https://example.com/intro-2",
+            "https://example.com/intro-1, https://example.com/intro-2",
+        ),
+        (
+            " https://example.com/intro-1 ,  https://example.com/intro-2, ",
+            "https://example.com/intro-1, https://example.com/intro-2",
+        ),
+    ];
+
+    for (value, expected_intro_url) in cases {
+        // Setup legacy data with an item with summary intro urls
+        let legacy_data = legacy_data_with_item(legacy::Item {
+            extra: Some(legacy::ItemExtra {
+                summary_intro_url: Some(value.to_string()),
+                ..Default::default()
+            }),
+            ..legacy_item()
+        });
+
+        // Run the conversion
+        let landscape_data = LandscapeData::from(legacy_data);
+
+        // Check the urls are separated by a comma and a space
+        let summary = landscape_data.items[0].summary.as_ref().unwrap();
+        assert_eq!(
+            summary.intro_url.as_deref(),
+            Some(expected_intro_url),
+            "intro url: {value:?}"
+        );
+    }
+}
+
+#[test]
 fn test_landscape_data_from_legacy_sets_website_to_homepage() {
     // Setup legacy data with an item whose homepage is its repository url
     let legacy_data = legacy_data_with_item(legacy::Item {

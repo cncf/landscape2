@@ -45,7 +45,12 @@ const CollapsableTable = (props: Props) => {
             return (
               <>
                 <tbody>
-                  <tr class={styles.grayCell}>
+                  {/* Category row: a click on it expands or collapses the category. The button inside is the
+                  control for keyboard and screen readers */}
+                  <tr
+                    class={`${styles.grayCell} ${styles.clickable}`}
+                    onClick={() => setExpanded(isExpanded() ? undefined : cat)}
+                  >
                     <td class="border-end-0">
                       <Show when={isExpanded()} fallback={<SVGIcon kind={SVGIconKind.CaretDown} />}>
                         <SVGIcon kind={SVGIconKind.CaretUp} />
@@ -55,7 +60,6 @@ const CollapsableTable = (props: Props) => {
                       <button
                         type="button"
                         class={`btn btn-link border-0 rounded-0 w-100 text-start text-reset ${styles.expandBtn}`}
-                        onClick={() => setExpanded(isExpanded() ? undefined : cat)}
                         aria-expanded={isExpanded()}
                         aria-controls={rowsId}
                       >

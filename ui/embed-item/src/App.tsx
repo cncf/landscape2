@@ -3,7 +3,12 @@ import './styles/bootstrap.scss';
 import './styles/App.css';
 
 import type { Item } from 'common';
-import { HIDE_ITEM_DETAILS_MESSAGE_TYPE, parseShowItemDetailsMessage, type ShowItemDetailsInput } from 'common/embed';
+import {
+  HIDE_ITEM_DETAILS_MESSAGE_TYPE,
+  parseShowItemDetailsMessage,
+  SHOW_ITEM_DETAILS_MESSAGE_TYPE,
+  type ShowItemDetailsInput,
+} from 'common/embed';
 import { applyColors } from 'common/utils';
 import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
 
@@ -23,7 +28,11 @@ const App = () => {
       if (event.source !== window.parent) return;
 
       const message = parseShowItemDetailsMessage(event.data);
-      if (message === null) return;
+      if (message === null) {
+        // An invalid item request closes the item details view
+        if (isShowItemDetailsRequest(event.data)) onClose();
+        return;
+      }
 
       setCurrentItem(message);
     };
@@ -101,5 +110,9 @@ const App = () => {
     </Show>
   );
 };
+
+// Checks the data of a message is an item request, valid or not
+const isShowItemDetailsRequest = (data: unknown): boolean =>
+  typeof data === 'object' && data !== null && (data as { type?: unknown }).type === SHOW_ITEM_DETAILS_MESSAGE_TYPE;
 
 export default App;

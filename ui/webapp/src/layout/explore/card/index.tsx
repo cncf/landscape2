@@ -9,6 +9,7 @@ import { getAnchorId } from '../../../utils/anchorIds';
 import getName from '../../../utils/getName';
 import goToElement from '../../../utils/goToElement';
 import { CardData } from '../../../utils/itemsDataGetter';
+import { parseHashId } from '../../../utils/urlParams';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
@@ -35,7 +36,7 @@ const CardCategory = (props: Props) => {
   const menu = () => props.menu;
 
   const isAvailableSelectedSection = (): boolean => {
-    const selection = location.hash.replace('#', '');
+    const selection = parseHashId(location.hash);
     if (props.classify === ClassifyOption.Maturity) {
       const status = selection.split('--')[1];
       return menu()?.Maturity?.includes(status) ?? false;
@@ -59,7 +60,7 @@ const CardCategory = (props: Props) => {
     const firstItemInMenu = firstItem();
     if (firstItemInMenu) {
       if (location.hash !== '' && isAvailableSelectedSection()) {
-        const cleanHash = location.hash.replace('#', '');
+        const cleanHash = parseHashId(location.hash);
         if (cleanHash !== firstItemInMenu) {
           // Does nothing when the menu option is already visible
           container()

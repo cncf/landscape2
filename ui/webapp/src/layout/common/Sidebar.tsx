@@ -19,9 +19,10 @@ export const Sidebar = (props: Props) => {
   const open = () => props.open || false;
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
   const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [contentRef, setContentRef] = createSignal<HTMLDivElement>();
   useOutsideClick([ref], [], openStatus, () => openStatusChange(false));
   useBodyScroll(openStatus, 'sidebar');
-  useModalFocus(ref, openStatus, () => openStatusChange(false));
+  useModalFocus(ref, openStatus, () => openStatusChange(false), contentRef);
 
   const openStatusChange = (open: boolean): void => {
     setOpenStatus(open);
@@ -86,7 +87,14 @@ export const Sidebar = (props: Props) => {
           </div>
 
           <div class={`flex-grow-1 d-flex ${styles.contentWrapper}`}>
-            <div class="overflow-auto mh-100 w-100 py-3">{props.children}</div>
+            <div
+              ref={setContentRef}
+              role="group"
+              tabIndex={-1}
+              class={`overflow-auto mh-100 w-100 py-3 ${styles.content}`}
+            >
+              {props.children}
+            </div>
           </div>
 
           <div class="mt-auto p-4 border-top">

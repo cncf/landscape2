@@ -10,12 +10,15 @@ const FOCUSABLE_SELECTOR = [
 ].join(',');
 
 /**
- * Keep keyboard focus inside an open modal and restore it when the modal closes.
+ * Moves the focus to a modal when it opens, keeps keyboard focus inside it and restores it when
+ * the modal closes. The initial focus goes to `initialFocusRef` (for example the area of the
+ * modal that scrolls, so the keyboard scrolls it) or, when not provided, to the modal itself.
  */
 export const useModalFocus = (
   modalRef: Accessor<HTMLElement | undefined>,
   open: Accessor<boolean>,
-  onClose: () => void
+  onClose: () => void,
+  initialFocusRef?: Accessor<HTMLElement | undefined>
 ) => {
   createEffect(() => {
     if (!open()) return;
@@ -27,7 +30,7 @@ export const useModalFocus = (
     const focusableElements = () =>
       Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isVisible);
     const animationFrame = requestAnimationFrame(() => {
-      (focusableElements()[0] || modal).focus();
+      (initialFocusRef?.() ?? modal).focus();
     });
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -48,14 +51,17 @@ export const useModalFocus = (
         return;
       }
 
-      const firstElement = availableElements[0];
-      const lastElement = availableElements[availableElements.length - 1];
-      if (event.shiftKey && (document.activeElement === firstElement || !modal.contains(document.activeElement))) {
+      // Wrap around when the focus is outside the modal or no control follows the focused
+      // element in the direction of the move (otherwise the browser moves the focus)
+      const activeElement = document.activeElement;
+      const direction = event.shiftKey ? Node.DOCUMENT_POSITION_PRECEDING : Node.DOCUMENT_POSITION_FOLLOWING;
+      const hasControlAhead =
+        !!activeElement &&
+        modal.contains(activeElement) &&
+        availableElements.some((element) => (activeElement.compareDocumentPosition(element) & direction) !== 0);
+      if (!hasControlAhead) {
         event.preventDefault();
-        lastElement.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement.focus();
+        availableElements[event.shiftKey ? availableElements.length - 1 : 0].focus();
       }
     };
 

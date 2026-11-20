@@ -174,7 +174,7 @@ Every item list and `projects/{id}.json` use this object. Optional fields are om
 | `contributors` | integer | yes | Number of contributors, from GitHub |
 | `languages` | object of integers | yes | Source code bytes per language, from GitHub |
 | `latest_release` | string | yes | Timestamp of the latest release, from GitHub, as an RFC 3339 date and time (for example `2024-03-02T10:00:00Z`), unlike the date-only item fields |
-| `license` | string | yes | The data file `license` override (an SPDX license identifier) when set, otherwise the name of the license detected by GitHub (for example `Apache License 2.0`), omitted when GitHub cannot identify it |
+| `license` | string | yes | The data file `license` override (an SPDX license identifier) when set, otherwise the name of the license detected by GitHub (for example `Apache License 2.0`, or `Other` when GitHub cannot identify it) |
 | `primary` | boolean | yes | Whether this is the primary repository |
 | `stars` | integer | yes | Number of stars, from GitHub |
 

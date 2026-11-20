@@ -3,12 +3,13 @@ import { css } from 'solid-styled-components';
 
 import { cx } from '../../utils/cx';
 
-/** Column of a Crunchbase table; `class` applies to both its header and its cells. */
+/** Column of a Crunchbase table. `class` applies to its cells and `headerClass` to its header. */
 export interface CrunchbaseTableColumn<T> {
   cell: (row: T) => JSXElement;
   // Rendered per table, so a column set can be shared by several tables
   header: () => JSXElement;
   class?: string;
+  headerClass?: string;
 }
 
 interface Props<T extends object> {
@@ -72,7 +73,7 @@ export const CrunchbaseTable = <T extends object>(props: Props<T>) => {
             <tr>
               <For each={props.columns}>
                 {(column) => (
-                  <th class={cx('text-center', column.class)} scope="col">
+                  <th class={cx('text-center', column.headerClass)} scope="col">
                     {column.header()}
                   </th>
                 )}

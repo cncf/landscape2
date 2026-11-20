@@ -9,6 +9,7 @@ import { getAnchorId } from '../../utils/anchorIds';
 import goToElement from '../../utils/goToElement';
 import { getGuideUrl } from '../../utils/guideData';
 import scrollToTop from '../../utils/scrollToTop';
+import { parseHashId } from '../../utils/urlParams';
 import ButtonToTopScroll from '../common/ButtonToTopScroll';
 import { Sidebar } from '../common/Sidebar';
 import Footer from '../navigation/Footer';
@@ -117,7 +118,7 @@ const GuideIndex = () => {
     on(toc, () => {
       const firstId = firstItem();
       if (toc().length > 0 && firstId) {
-        const cleanHash = location.hash.replace('#', '');
+        const cleanHash = parseHashId(location.hash);
         if (cleanHash !== '' && cleanHash !== firstId) {
           const origin = from();
           if (!isUndefined(origin)) {
@@ -178,7 +179,7 @@ const GuideIndex = () => {
   };
 
   const scrollInToC = () => {
-    const cleanHash = location.hash.replace('#', '');
+    const cleanHash = parseHashId(location.hash);
     // Does nothing when the ToC option is already visible
     desktopToC()
       ?.querySelector(`#${CSS.escape(getToCOptionId('desktop', cleanHash))}`)

@@ -142,6 +142,27 @@ describe('Guide', () => {
     await vi.waitFor(() => expect(scrollIntoViewMock.mock.contexts).toContain(tocOption));
   });
 
+  it.each([
+    ['without a from state', undefined],
+    ['opened from the Explore view', { from: 'explore' }],
+  ])('keeps a non-ASCII hash deep link %s and scrolls to its section and ToC option', async (_, state) => {
+    const guide = structuredClone(guideFixture);
+    guide.categories![0].subcategories![0].normalized_name = 'sub-é';
+    window.guide = guide;
+
+    // Render the guide from a subcategory deep link, encoded as the browser gives it
+    const { history } = renderGuide(`${GUIDE_PATH}#category-1--sub-%C3%A9`, { state });
+    await flushPromises();
+
+    // Check the hash is kept and the section is scrolled into view
+    expect(new URL(history.get(), 'http://localhost').hash).toBe('#category-1--sub-%C3%A9');
+    await vi.waitFor(() => expect(goToElementMock).toHaveBeenCalledWith('section_category-1--sub-é'));
+
+    // Check the matching desktop ToC option is scrolled into view
+    const tocOption = document.getElementById(getToCOptionId('desktop', 'category-1--sub-é'));
+    await vi.waitFor(() => expect(scrollIntoViewMock.mock.contexts).toContain(tocOption));
+  });
+
   it('starts a hash link opened from the header at the first section', async () => {
     window.guide = guideFixture;
 

@@ -290,7 +290,8 @@ categories:
               # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
               summary_integrations: "Project 1, Project 2"
 
-              # Video URL of the item's pitch (optional).
+              # Video URL of the item's pitch (optional). Several URLs can be provided, separated
+              # by commas
               # More info: https://github.com/cncf/landscape/blob/master/docs/item_summary.md
               summary_intro_url: https://summary.intro.url
 

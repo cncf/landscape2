@@ -475,7 +475,11 @@ impl From<legacy::LandscapeData> for LandscapeData {
                             business_use_case: extra.summary_business_use_case,
                             integration: extra.summary_integration,
                             integrations: extra.summary_integrations,
-                            intro_url: extra.summary_intro_url,
+                            intro_url: extra
+                                .summary_intro_url
+                                .as_deref()
+                                .and_then(split_list)
+                                .map(|urls| urls.join(", ")),
                             personas: extra.summary_personas.as_deref().and_then(split_list),
                             release_rate: extra.summary_release_rate,
                             tags: extra.summary_tags.as_deref().and_then(split_list),
@@ -1020,7 +1024,7 @@ pub struct ItemSummary {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integrations: Option<String>,
 
-    /// Video url of the item's pitch.
+    /// Video urls of the item's pitch, separated by a comma and a space.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intro_url: Option<String>,
 
@@ -1194,7 +1198,7 @@ pub struct RepositoryGithubData {
     pub latest_release: Option<Release>,
 
     /// Repository license, as named by GitHub (for example "Apache License
-    /// 2.0"), when GitHub can identify it.
+    /// 2.0", or "Other" when GitHub cannot identify it).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<String>,
 

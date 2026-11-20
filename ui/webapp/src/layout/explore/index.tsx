@@ -23,6 +23,7 @@ import {
 import {
   ActiveFilters,
   BaseData,
+  Category,
   ClassifyOption,
   FilterCategory,
   Group,
@@ -42,7 +43,7 @@ import {
 import getFoundationNameLabel from '../../utils/getFoundationNameLabel';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import scrollToTop from '../../utils/scrollToTop';
-import { buildPath, parseEnum } from '../../utils/urlParams';
+import { buildPath, parseEnum, parseHashId } from '../../utils/urlParams';
 import ActiveFiltersList from '../common/ActiveFiltersList';
 import Footer from '../navigation/Footer';
 import { useFullDataReady, useFullDataStatus, useRetryFullData } from '../stores/fullData';
@@ -105,6 +106,19 @@ const Explore = (props: Props) => {
   });
   // Group written to the URL: the group shown, none when the landscape has no groups
   const group = () => (isUndefined(resolvedGroup()) ? undefined : selectedGroup());
+  // A single group with every category of the items shows the same items as the all option
+  const singleGroupShowsAll = createMemo(() => {
+    const groups = activeGroups();
+    if (groups?.length !== 1) return false;
+    const groupCategories = props.initialData.groups?.find((g: Group) => g.normalized_name === groups[0])?.categories;
+    return itemsDataGetter
+      .getCategoriesAndSubcategoriesWithItems()
+      .every((category: Category) => groupCategories?.includes(category.name) ?? false);
+  });
+  // The group controls offer a choice: the all option of the Card view, unless it shows the
+  // same items as the single group, or several groups
+  const visibleGroupControls = () =>
+    (viewMode() === ViewMode.Card && !singleGroupShowsAll()) || (activeGroups()?.length ?? 0) > 1;
   // Group clicked, shown as active until the navigation selects a group
   const [clickedGroup, setClickedGroup] = createSignal<string>();
   const activeButtonGroup = () => clickedGroup() ?? selectedGroup();
@@ -291,12 +305,13 @@ const Explore = (props: Props) => {
   };
 
   // The Card view opens at the first section of the menu shown when the URL names no section of
-  // it: on load, and after the classify, filters, group or view mode change the menu or drop the hash
+  // it: on load, and after the classify, filters, group or view mode change the menu or drop the hash.
+  // The current path is kept (Explore is also rendered behind the embed setup)
   createEffect(
     on([cardSectionIds, () => location.hash], ([sectionIds, hash]) => {
       const [firstSectionId] = sectionIds;
-      if (isUndefined(firstSectionId) || sectionIds.includes(hash.replace('#', ''))) return;
-      navigate(buildPath(EXPLORE_PATH, location.search, `#${firstSectionId}`), {
+      if (isUndefined(firstSectionId) || sectionIds.includes(parseHashId(hash))) return;
+      navigate(buildPath(location.pathname, location.search, `#${firstSectionId}`), {
         replace: true,
         scroll: true, // default
       });
@@ -444,7 +459,7 @@ const Explore = (props: Props) => {
             </Show>
 
             <div class="d-none d-lg-flex align-items-center">
-              <Show when={viewMode() === ViewMode.Card || (activeGroups()?.length ?? 0) > 1}>
+              <Show when={visibleGroupControls()}>
                 <div class={styles.btnGroupLegend}>
                   <small class="text-muted me-2">GROUP:</small>
                 </div>
@@ -455,7 +470,7 @@ const Explore = (props: Props) => {
                   <div
                     class={`btn-group btn-group-sm ${styles.btnGroup}`}
                     classList={{
-                      'me-4': viewMode() === ViewMode.Card || (activeGroups()?.length ?? 0) > 1,
+                      'me-4': visibleGroupControls(),
                     }}
                   >
                     <For each={props.initialData.groups}>
@@ -509,7 +524,7 @@ const Explore = (props: Props) => {
                   </div>
                 </div>
                 {/* Only visible when btn grouped for groups overflows wrapper */}
-                <Show when={viewMode() === ViewMode.Card || (activeGroups()?.length ?? 0) > 1}>
+                <Show when={visibleGroupControls()}>
                   <div classList={{ 'd-none': !visibleSelectForGroups(), 'd-flex': visibleSelectForGroups() }}>
                     <select
                       id="desktop-group"

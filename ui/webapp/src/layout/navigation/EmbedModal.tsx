@@ -70,8 +70,8 @@ import clampInt from '../../utils/clampInt';
 import getDevOrigin from '../../utils/getDevOrigin';
 import isExploreSection from '../../utils/isExploreSection';
 import itemsDataGetter from '../../utils/itemsDataGetter';
-import prepareLink from '../../utils/prepareLink';
 import rgba2hex from '../../utils/rgba2hex';
+import { buildPath } from '../../utils/urlParams';
 import CheckBox from '../common/Checkbox';
 import styles from './EmbedModal.module.css';
 
@@ -176,6 +176,8 @@ const EmbedModal = () => {
     setSubcategoriesDropdownVisible(false)
   );
   const multipleCategoriesSelected = createMemo(() => selectedCategories().length > 1);
+  // Whether the selected category has several subcategories, which adds the "All" option
+  const hasSeveralSubcategories = createMemo(() => subcategoriesList().length > 1);
   const selectedCategoriesLabel = createMemo(() => {
     if (selectedCategories().length === 0) {
       return 'Select categories';
@@ -452,7 +454,10 @@ const EmbedModal = () => {
     const nextValues = previousValues.filter((item) => item !== value);
 
     if (nextValues.length === 0) {
-      selectAllSubcategories();
+      // The only subcategory stays selected when "All" is not offered
+      if (hasSeveralSubcategories()) {
+        selectAllSubcategories();
+      }
       return;
     }
 
@@ -546,8 +551,12 @@ const EmbedModal = () => {
             e.preventDefault();
             e.stopPropagation();
             setVisibleModal(true);
-            navigate(prepareLink(EMBED_SETUP_PATH), {
+            // Explore is rendered behind the modal and reads its view from the URL, so the
+            // modal URL keeps the Explore params (overlay ones included) and section, and
+            // doesn't scroll, to leave that view as it is
+            navigate(buildPath(EMBED_SETUP_PATH, location.search, location.hash), {
               replace: true,
+              scroll: false,
             });
           }}
           aria-label='Open "Embeddable view setup" modal'
@@ -643,6 +652,7 @@ const EmbedModal = () => {
                                           value={cat.normalized_name}
                                           label={cat.name}
                                           checked={selectedCategories().includes(cat.normalized_name)}
+                                          disabled={categoriesList().length === 1}
                                           onChange={(value, checked) => {
                                             toggleCategory(value, checked);
                                           }}
@@ -692,17 +702,19 @@ const EmbedModal = () => {
                               >
                                 <legend class="visually-hidden">Subcategories</legend>
                                 <div class="px-3 py-2">
-                                  <CheckBox
-                                    name="subcategory"
-                                    value="all"
-                                    label="All"
-                                    checked={selectedSubcategories().includes('all')}
-                                    onChange={(value, checked) => {
-                                      toggleSubcategory(value, checked);
-                                    }}
-                                    labelClass={`mw-100 text-muted ${styles.optionLabel}`}
-                                    class={styles.dropdownOption}
-                                  />
+                                  <Show when={hasSeveralSubcategories()}>
+                                    <CheckBox
+                                      name="subcategory"
+                                      value="all"
+                                      label="All"
+                                      checked={selectedSubcategories().includes('all')}
+                                      onChange={(value, checked) => {
+                                        toggleSubcategory(value, checked);
+                                      }}
+                                      labelClass={`mw-100 text-muted ${styles.optionLabel}`}
+                                      class={styles.dropdownOption}
+                                    />
+                                  </Show>
                                   <For each={subcategoriesList()}>
                                     {(subcat: Subcategory) => {
                                       return (
@@ -711,6 +723,7 @@ const EmbedModal = () => {
                                           value={subcat.normalized_name}
                                           label={subcat.name}
                                           checked={selectedSubcategories().includes(subcat.normalized_name)}
+                                          disabled={!hasSeveralSubcategories()}
                                           onChange={(value, checked) => {
                                             toggleSubcategory(value, checked);
                                           }}
@@ -746,7 +759,9 @@ const EmbedModal = () => {
                                 setSelectedMaturity(e.currentTarget.value);
                               }}
                             >
-                              <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
+                              <Show when={maturityOptions.length > 1}>
+                                <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
+                              </Show>
                               <For each={maturityOptions}>
                                 {(m: ClassificationOption) => {
                                   return (
@@ -773,7 +788,9 @@ const EmbedModal = () => {
                                 setSelectedTag(e.currentTarget.value);
                               }}
                             >
-                              <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
+                              <Show when={TAGOptions.length > 1}>
+                                <option value={ALL_OPTIONS_EMBED_KEY}>All</option>
+                              </Show>
                               <For each={TAGOptions}>
                                 {(t: ClassificationOption) => {
                                   return <option value={getOptionKey('tag', t)}>{formatTAGName(t.name)}</option>;

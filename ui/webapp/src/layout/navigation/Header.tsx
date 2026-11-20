@@ -16,6 +16,9 @@ import { getDefaultExploreQuery, isNavLinkActive, NAV_LINKS } from './navLinks';
 /** History state of the entries pushed from the header links. */
 const NAV_STATE: StateContent = { from: 'header' };
 
+/** Checks whether a click follows the link in the same tab, as the router only handles those. */
+const isPlainClick = (e: MouseEvent): boolean => e.button === 0 && !e.metaKey && !e.altKey && !e.ctrlKey && !e.shiftKey;
+
 interface Props {
   statsVisible: boolean;
 }
@@ -63,7 +66,14 @@ const Header = (props: Props) => {
                   inactiveClass=""
                   href={prepareLink(link.path, link.query?.())}
                   state={NAV_STATE}
-                  onClick={() => scrollToTop(false)}
+                  onClick={(e) => {
+                    // The link of the current page only scrolls to the top. The Explore link always
+                    // opens the default Explore view
+                    if (link.path !== EXPLORE_PATH && isNavLinkActive(link, location.pathname) && isPlainClick(e)) {
+                      e.preventDefault();
+                    }
+                    scrollToTop(false);
+                  }}
                   // The router only sets `aria-current` on an exact path match and falls back to this one otherwise
                   aria-current={isNavLinkActive(link, location.pathname) ? 'page' : undefined}
                 >

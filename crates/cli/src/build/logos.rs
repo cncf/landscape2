@@ -14,11 +14,18 @@ use regex::bytes::{NoExpand, Regex};
 use reqwest::StatusCode;
 use sha2::{Digest, Sha256};
 use url::Url;
-use usvg::{NodeExt, Rect, TreeParsing};
+use usvg::{
+    Align, Node, NodeExt, NodeKind, Rect, TreeParsing, Visibility,
+    tiny_skia_path::{self, PathStroker},
+};
 
-/// Regular expression used to locate the SVG logos' root element start tag.
-static SVG_ROOT: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?s)<svg\b[^>]*>").expect("exprs in SVG_ROOT to be valid"));
+/// Regular expression used to locate the SVG logos' root element start tag
+/// and its name (it may be namespace-prefixed, like `<svg:svg>`, and quoted
+/// attribute values may contain `>`).
+static SVG_ROOT: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"<((?:[\w.-]+:)?svg)(?:[\s/](?:[^>"']|"[^"]*"|'[^']*')*)?>"#)
+        .expect("exprs in SVG_ROOT to be valid")
+});
 
 /// Regular expression used to remove the SVG logos' titles.
 static SVG_TITLE: LazyLock<Regex> =
@@ -142,13 +149,115 @@ async fn get_logo(
     bail!("logos path or url not provided");
 }
 
-/// Get SVG bounding box (smallest rectangle in which the object fits).
+/// Get SVG bounding box (smallest rectangle in which the object fits),
+/// strokes included.
+///
+/// No bounding box is returned for logos with visible text (its size depends
+/// on the fonts available where the logo is displayed) or rendered filters
+/// (e.g. shadows drawn outside the content), for logos stretched to fill their
+/// viewport, as a new viewbox would distort them, for logos with clipped or
+/// masked strokes, as the part of them that is visible is not known, or for
+/// logos whose content (strokes excluded) starts at negative coordinates.
 fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(svg_data, &opt)?;
-    let bounding_box = tree.root.calculate_bbox();
+    let has_filters = tree
+        .root
+        .descendants()
+        .any(|node| matches!(*node.borrow(), NodeKind::Group(ref group) if !group.filters.is_empty()));
+    if has_visible_text(&tree.root) || has_filters || tree.view_box.aspect.align == Align::None {
+        return Ok(None);
+    }
+    let Some(mut bounding_box) = tree.root.calculate_bbox() else {
+        return Ok(None);
+    };
+    if bounding_box.left() < 0.0 || bounding_box.top() < 0.0 {
+        return Ok(None);
+    }
 
-    Ok(bounding_box)
+    // Extend the bounding box with the area covered by the drawn paths'
+    // strokes (approximated with a precision relative to the logo size)
+    let view_box = tree.view_box.rect;
+    let precision = 1000.0 / view_box.width().max(view_box.height());
+    for node in tree.root.descendants() {
+        let NodeKind::Path(ref path) = *node.borrow() else {
+            continue;
+        };
+        let Some(stroke) = &path.stroke else {
+            continue;
+        };
+        if path.visibility != Visibility::Visible
+            || stroke.opacity.get() == 0.0
+            || has_ancestor_group(&node, |group| group.opacity.get() == 0.0)
+        {
+            continue;
+        }
+        if has_ancestor_group(&node, |group| group.clip_path.is_some() || group.mask.is_some()) {
+            return Ok(None);
+        }
+        let ts = node.abs_transform();
+        let res_scale = PathStroker::compute_resolution_scale(&ts) * precision;
+        let Some(stroke_bbox) = path
+            .data
+            .stroke(&to_tiny_skia_stroke(stroke), res_scale)
+            .and_then(|stroke_path| stroke_path.compute_tight_bounds())
+            .and_then(|stroke_bbox| stroke_bbox.transform(ts))
+        else {
+            continue;
+        };
+        bounding_box = Rect::from_ltrb(
+            bounding_box.left().min(stroke_bbox.left()),
+            bounding_box.top().min(stroke_bbox.top()),
+            bounding_box.right().max(stroke_bbox.right()),
+            bounding_box.bottom().max(stroke_bbox.bottom()),
+        )
+        .context("invalid bounding box")?;
+    }
+
+    Ok(Some(bounding_box))
+}
+
+/// Check if any of the groups containing the node provided satisfies the
+/// predicate.
+fn has_ancestor_group(node: &Node, predicate: impl Fn(&usvg::Group) -> bool) -> bool {
+    node.ancestors()
+        .any(|ancestor| matches!(*ancestor.borrow(), NodeKind::Group(ref group) if predicate(group)))
+}
+
+/// Check if the node provided, its descendants or their subroots (e.g. masks
+/// or patterns) contain any text with visible content.
+fn has_visible_text(root: &Node) -> bool {
+    root.descendants().any(|node| {
+        if let NodeKind::Text(ref text) = *node.borrow()
+            && text.chunks.iter().any(|chunk| !chunk.text.trim().is_empty())
+        {
+            return true;
+        }
+        let mut has_text = false;
+        node.subroots(|subroot| has_text = has_text || has_visible_text(&subroot));
+        has_text
+    })
+}
+
+/// Convert the usvg stroke provided to a tiny-skia one, ignoring the dashes,
+/// as dashing only removes parts of the stroke.
+fn to_tiny_skia_stroke(stroke: &usvg::Stroke) -> tiny_skia_path::Stroke {
+    tiny_skia_path::Stroke {
+        width: stroke.width.get(),
+        miter_limit: stroke.miterlimit.get(),
+        line_cap: match stroke.linecap {
+            usvg::LineCap::Butt => tiny_skia_path::LineCap::Butt,
+            usvg::LineCap::Round => tiny_skia_path::LineCap::Round,
+            usvg::LineCap::Square => tiny_skia_path::LineCap::Square,
+        },
+        line_join: match stroke.linejoin {
+            usvg::LineJoin::Miter => tiny_skia_path::LineJoin::Miter,
+            usvg::LineJoin::MiterClip => tiny_skia_path::LineJoin::MiterClip,
+            usvg::LineJoin::Round => tiny_skia_path::LineJoin::Round,
+            usvg::LineJoin::Bevel => tiny_skia_path::LineJoin::Bevel,
+        },
+        dash: None,
+    }
 }
 
 /// Apply the SVG modifications to the logo data provided (when applicable)
@@ -160,12 +269,8 @@ fn process_logo(mut data: Vec<u8>, extension: String, adjust_viewbox: bool) -> L
         data = SVG_TITLE.replace_all(&data, NoExpand(b"")).into_owned();
 
         // Update the root viewbox to the smallest rectangle in which the
-        // content fits, as long as it does not start at negative coordinates
-        if adjust_viewbox
-            && let Ok(Some(bounding_box)) = get_svg_bounding_box(&data)
-            && bounding_box.left() >= 0.0
-            && bounding_box.top() >= 0.0
-        {
+        // content fits
+        if adjust_viewbox && let Ok(Some(bounding_box)) = get_svg_bounding_box(&data) {
             let viewbox = format!(
                 "{} {} {} {}",
                 bounding_box.left(),
@@ -192,17 +297,20 @@ fn process_logo(mut data: Vec<u8>, extension: String, adjust_viewbox: bool) -> L
 /// untouched.
 fn set_root_viewbox(svg_data: &[u8], viewbox: &str) -> Vec<u8> {
     // Locate the root element start tag
-    let Some(root) = SVG_ROOT.find(svg_data) else {
+    let Some(captures) = SVG_ROOT.captures(svg_data) else {
         return svg_data.to_vec();
     };
+    let root = captures.get(0).expect("whole match to be present");
     let root_tag = root.as_bytes();
 
-    // Replace the viewbox in the root tag, or insert it right after `<svg`
+    // Replace the viewbox in the root tag, or insert it right after the
+    // element name (e.g. `<svg` or `<svg:svg`)
     let viewbox_attr = format!(r#"viewBox="{viewbox}""#);
     let new_root_tag = if SVG_VIEWBOX.is_match(root_tag) {
         SVG_VIEWBOX.replace(root_tag, NoExpand(viewbox_attr.as_bytes())).into_owned()
     } else {
-        let (open, rest) = root_tag.split_at("<svg".len());
+        let name_end = captures.get(1).expect("root name to be captured").end() - root.start();
+        let (open, rest) = root_tag.split_at(name_end);
         [open, b" ", viewbox_attr.as_bytes(), rest].concat()
     };
 

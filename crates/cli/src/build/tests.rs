@@ -1,4 +1,4 @@
-use std::fs;
+use std::{cell::RefCell, fs, io, sync::Once};
 
 use landscape2_core::{
     data::{
@@ -687,6 +687,53 @@ fn build_args(data_source: DataSource, settings_source: SettingsSource, output_d
         logos_source: LogosSource::default(),
         output_dir,
         settings_source,
+    }
+}
+
+/// Runs the future provided, returning its output along with the logs written
+/// while it ran (used by the tests of other modules too).
+pub(super) async fn capture_logs<F: Future>(future: F) -> (F::Output, String) {
+    // Setup the subscriber, once for all the tests: one set only for the
+    // thread of a test misses the events other tests have already found
+    // disabled from their threads, as that is cached for all the threads
+    static SUBSCRIBER: Once = Once::new();
+    SUBSCRIBER.call_once(|| {
+        let subscriber = tracing_subscriber::fmt().with_ansi(false).with_writer(|| CapturedLogs).finish();
+        tracing::subscriber::set_global_default(subscriber).unwrap();
+        tracing::callsite::rebuild_interest_cache();
+    });
+
+    // Run the future keeping the logs written from this thread, which is the
+    // one the future of a test runs in
+    CAPTURED_LOGS.set(Some(Vec::new()));
+    let output = future.await;
+    let logs = CAPTURED_LOGS.take().unwrap_or_default();
+
+    (output, String::from_utf8(logs).unwrap())
+}
+
+thread_local! {
+    /// Logs written from the thread while it captures them (see
+    /// [`capture_logs`]).
+    static CAPTURED_LOGS: RefCell<Option<Vec<u8>>> = const { RefCell::new(None) };
+}
+
+/// Logs writer that keeps the logs written from the threads capturing them,
+/// discarding the rest.
+struct CapturedLogs;
+
+impl io::Write for CapturedLogs {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        CAPTURED_LOGS.with_borrow_mut(|logs| {
+            if let Some(logs) = logs {
+                logs.extend_from_slice(buf);
+            }
+        });
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
     }
 }
 

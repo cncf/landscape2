@@ -68,7 +68,7 @@ pub(crate) async fn collect_github_data(cache: &Cache, landscape_data: &Landscap
     debug!("collecting repositories information from github (this may take a while)");
 
     // Setup GitHub API clients pool if any tokens have been provided
-    let tokens = env::var(GITHUB_TOKENS).map(|raw| parse_tokens(&raw)).unwrap_or_default();
+    let tokens = env::var(GITHUB_TOKENS).map_or_default(|raw| parse_tokens(&raw));
     let gh_pool: Option<Pool<DynGH>> = if tokens.is_empty() {
         warn!("github tokens not provided: only cached information will be used");
         None
@@ -156,6 +156,7 @@ async fn collect_github_data_with(
         .await;
 
     // Use the fetched data, falling back to the stale cached data on failure
+    // (failures are only logged when tokens were provided)
     let mut fetched_count = 0;
     let mut stale_count = 0;
     for (url, result) in results {
@@ -166,11 +167,13 @@ async fn collect_github_data_with(
             }
             Err(err) => {
                 if let Some(stale_repository_data) = cached.get(url) {
-                    warn!(%url, %err, "using stale cached data");
+                    if gh_pool.is_some() {
+                        warn!(%url, err = %format_args!("{err:#}"), "using stale cached data");
+                    }
                     github_data.insert(url.to_string(), stale_repository_data.clone());
                     stale_count += 1;
-                } else {
-                    warn!(%url, %err, "no github data available for repository");
+                } else if gh_pool.is_some() {
+                    warn!(%url, err = %format_args!("{err:#}"), "no github data available for repository");
                 }
             }
         }
@@ -233,7 +236,7 @@ async fn collect_repository_data(
         (now, participation_stats)
     } else {
         warn!(%repo_url, "participation stats not ready yet: entry will be refreshed next build");
-        let participation_stats = previous.map(|p| p.participation_stats.clone()).unwrap_or_default();
+        let participation_stats = previous.map_or_default(|p| p.participation_stats.clone());
         (now - GITHUB_CACHE_TTL, participation_stats)
     };
 
@@ -253,7 +256,9 @@ async fn collect_repository_data(
         first_commit,
         languages,
         latest_release,
-        license: gh_repo.license.filter(|l| l.spdx_id != "NOASSERTION" && l.key != "other").map(|l| l.name),
+        // License name reported by GitHub ("Other" for the licenses it cannot
+        // identify)
+        license: gh_repo.license.map(|license| license.name),
         topics: gh_repo.topics,
     })
 }

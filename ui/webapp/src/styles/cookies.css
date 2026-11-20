@@ -47,11 +47,19 @@ body.screenshot .osano-cm-window {
   fill: var(--color2);
 }
 
+/* Close button of the cookie dialog, with its cross centered */
 .osano-cm-close {
+  align-items: center;
   background-color: transparent !important;
   color: var(--bs-black);
   border: none;
   transform: none !important;
+}
+
+/* Focus ring of the close button, shown only during keyboard navigation
+   (`keyboard-nav` is set by utils/trackKeyboardNavigation.ts) */
+html:not(.keyboard-nav) .osano-cm-close:focus-visible {
+  outline: none;
 }
 
 .osano-cm-close svg {

@@ -56,14 +56,15 @@ export const ItemsList = (props: ItemsListProps) => {
     )
   );
 
-  // Items in grid order, rebuilt whenever a new list arrives. The rendered items are
-  // kept when the order and featured status don't change, so their nodes are reused
+  // Items with the featured status of the active group, only computed again when the items or the
+  // group change (not on a new row width or zoom level)
+  const effectiveItems = createMemo(() => withEffectiveFeatured(props.items));
+
+  // Items in grid order, rebuilt whenever a new list arrives. The rendered list is kept
+  // when it holds the same items in the same order, so a recomputation renders nothing
   const items = createMemo<LandscapeItem[]>((prev) => {
     const orderedItems: LandscapeItem[] = [];
-    for (const item of new ItemIterator(
-      withEffectiveFeatured(props.items),
-      itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow()
-    )) {
+    for (const item of new ItemIterator(effectiveItems(), itemsPerRow() <= 0 ? MIN_COLUMN_ITEMS : itemsPerRow())) {
       if (item) {
         orderedItems.push(item);
       }
@@ -230,9 +231,10 @@ const Grid = (props: Props) => {
 
 export default Grid;
 
-/** Checks whether two lists of grid items have the same ids, in the same order, with the same featured status. */
+/**
+ * Checks whether two lists of grid items hold the same item objects in the same order. Item
+ * objects are compared by identity, so the full items replace the base ones when the full data
+ * loads, and an item whose featured status changes in the group (a different object) is rendered again.
+ */
 const haveSameLayout = (prev: LandscapeItem[], next: LandscapeItem[]): boolean =>
-  prev.length === next.length &&
-  prev.every(
-    (item, index) => item.id === next[index].id && isUndefined(item.featured) === isUndefined(next[index].featured)
-  );
+  prev.length === next.length && prev.every((item, index) => item === next[index]);

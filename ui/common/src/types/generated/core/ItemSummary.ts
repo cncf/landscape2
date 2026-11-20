@@ -17,7 +17,7 @@ integration?: string,
  */
 integrations?: string, 
 /**
- * Video url of the item's pitch.
+ * Video urls of the item's pitch, separated by a comma and a space.
  */
 intro_url?: string, 
 /**

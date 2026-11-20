@@ -40,3 +40,16 @@ export const parseEnum = <T extends string>(raw: RawParam, allowed: readonly T[]
 export const parseItemId = (raw: RawParam): string | undefined => {
   return typeof raw === 'string' && raw !== '' ? raw : undefined;
 };
+
+/**
+ * Returns the id named by a location hash. The router gives the hash percent-encoded, so it is
+ * decoded (`#d%C3%A9v` gives `dév`); the raw text is returned when an escape is malformed.
+ */
+export const parseHashId = (hash: string): string => {
+  const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+};

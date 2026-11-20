@@ -7,6 +7,20 @@ import { useGroupActive } from './groupActive';
 // Group whose featured information the items rendered below use, instead of the active group
 const FeaturedGroupContext = createContext<() => string | undefined>();
 
+// Copy without featured information of each item not featured in a group. The same copy is
+// reused for every group and call, so lists compared by item identity keep their rendered items
+const unfeaturedCopies = new WeakMap<LandscapeItem, LandscapeItem>();
+
+/** Returns the copy of the item without featured information, created once per item. */
+const getUnfeaturedCopy = (item: LandscapeItem): LandscapeItem => {
+  let copy = unfeaturedCopies.get(item);
+  if (isUndefined(copy)) {
+    copy = { ...item, featured: undefined };
+    unfeaturedCopies.set(item, copy);
+  }
+  return copy;
+};
+
 /**
  * Gives the items below the featured information of the group provided, so the
  * groups kept mounted while hidden don't change when the active group changes.
@@ -34,12 +48,10 @@ export const useFeaturedItems = () => {
     return item.featured;
   };
 
-  // Transform items array with effective featured status (for ItemsList).
+  // Transform items array with effective featured status (for ItemsList). The items not
+  // featured in the group are replaced by the same copy on every call
   const withEffectiveFeatured = (items: LandscapeItem[]) =>
-    items.map((item) => {
-      const effectiveFeatured = getEffectiveFeatured(item);
-      return effectiveFeatured === item.featured ? item : { ...item, featured: effectiveFeatured };
-    });
+    items.map((item) => (getEffectiveFeatured(item) === item.featured ? item : getUnfeaturedCopy(item)));
 
   // Count featured items for the group (for Grid).
   const countFeaturedItems = (items: LandscapeItem[]) =>

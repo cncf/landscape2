@@ -1,4 +1,4 @@
-import { render, screen } from '@solidjs/testing-library';
+import { render, screen, waitFor } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { createSignal } from 'solid-js';
 import { describe, expect, it, vi } from 'vitest';
@@ -100,5 +100,29 @@ describe('Modal', () => {
     // Check
     expect(onClose).toHaveBeenCalledOnce();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('moves the focus to the scrolling body of the dialog, not to its close button, when opened', async () => {
+    // Setup: make jsdom report the controls as rendered, so the hook treats them as focusable
+    vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue([{} as DOMRect] as unknown as DOMRectList);
+    const user = userEvent.setup();
+    render(() => (
+      <Modal title="Details" open onClose={vi.fn()}>
+        Modal body
+        <button type="button">Try again</button>
+      </Modal>
+    ));
+
+    // Check
+    const dialog = screen.getByRole('dialog', { name: 'Details modal' });
+    const closeButton = screen.getByRole('button', { name: 'Close' });
+    await waitFor(() => expect(dialog.querySelector('.modal-body')).toHaveFocus());
+    expect(closeButton).not.toHaveFocus();
+
+    // Run
+    await user.tab();
+
+    // Check
+    expect(closeButton).toHaveFocus();
   });
 });

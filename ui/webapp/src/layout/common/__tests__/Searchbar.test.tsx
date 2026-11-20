@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import searchEngine from '../../../utils/search';
 import Searchbar from '../Searchbar';
+import styles from '../Searchbar.module.css';
 
 const { mockUpdateActiveItemId } = vi.hoisted(() => ({ mockUpdateActiveItemId: vi.fn() }));
 
@@ -131,6 +132,45 @@ describe('Searchbar', () => {
     expect(searchTermMock).toHaveBeenCalledTimes(1);
   });
 
+  it('searches right away on Enter when the listed results belong to an older query', async () => {
+    const user = setupUser();
+    render(() => <Searchbar device="desktop" />);
+    await showResults(user);
+
+    // Refine the query and press Enter before the debounce is over
+    searchTermMock.mockResolvedValue([searchResult('item-4', 'Item 4')]);
+    await user.type(searchInput(), ' 4{Enter}');
+    await vi.advanceTimersByTimeAsync(0);
+
+    // Check no result of the older query is opened and the results of the new one are listed
+    expect(mockUpdateActiveItemId).not.toHaveBeenCalled();
+    expect(searchTermMock).toHaveBeenLastCalledWith('item 4');
+    expect(searchInput()).toHaveValue('item 4');
+    expect(optionNames()).toEqual(['Open Item 4 info']);
+    expect(screen.queryByRole('option', { selected: true })).not.toBeInTheDocument();
+
+    // Check Enter opens the first result of the new query
+    await user.keyboard('{Enter}');
+    expect(mockUpdateActiveItemId).toHaveBeenCalledWith('item-4');
+  });
+
+  it('does not open a result highlighted for an older query on Enter', async () => {
+    const user = setupUser();
+    render(() => <Searchbar device="desktop" />);
+    await showResults(user);
+
+    // Highlight a result, refine the query and press Enter before the debounce is over
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    searchTermMock.mockResolvedValue([]);
+    await user.type(searchInput(), 'zz{Enter}');
+    await vi.advanceTimersByTimeAsync(0);
+
+    // Check no result is opened and the new query has no results
+    expect(mockUpdateActiveItemId).not.toHaveBeenCalled();
+    expect(searchTermMock).toHaveBeenLastCalledWith('itemzz');
+    expect(screen.getByRole('status')).toHaveTextContent(`We couldn't find any items that match that criteria.`);
+  });
+
   it('clears the results on Escape', async () => {
     const user = setupUser();
     render(() => <Searchbar device="desktop" />);
@@ -236,6 +276,52 @@ describe('Searchbar', () => {
       .filter(([type]) => type === 'keydown')
       .map(([, listener]) => listener);
     expect(removedListeners).toEqual(keydownListeners);
+  });
+
+  it('shows the focus ring around the search bar only when the focus comes from the keyboard', async () => {
+    const user = setupUser();
+    render(() => (
+      <>
+        <button type="button">Other control</button>
+        <Searchbar device="mobile" />
+      </>
+    ));
+    const searchBar = searchInput().parentElement!;
+
+    // Click the input and check the ring is not shown
+    await user.click(searchInput());
+    expect(searchInput()).toHaveFocus();
+    expect(searchBar).not.toHaveClass(styles.keyboardFocus);
+
+    // Move the focus away and back with the keyboard and check the ring follows the focus
+    await user.tab({ shift: true });
+    expect(searchBar).not.toHaveClass(styles.keyboardFocus);
+    await user.tab();
+    expect(searchInput()).toHaveFocus();
+    expect(searchBar).toHaveClass(styles.keyboardFocus);
+
+    // Clear the text with the mouse and check the input gets the focus back without the ring
+    await user.type(searchInput(), 'item');
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(searchInput()).toHaveFocus();
+    expect(searchBar).not.toHaveClass(styles.keyboardFocus);
+
+    // Clear the text with the keyboard and check the ring is shown
+    await user.type(searchInput(), 'item');
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(searchInput()).toHaveFocus();
+    expect(searchBar).toHaveClass(styles.keyboardFocus);
+  });
+
+  it('shows the focus ring around the search bar when / focuses the input', async () => {
+    const user = setupUser();
+    render(() => <Searchbar device="desktop" />);
+
+    await user.keyboard('/');
+
+    expect(searchInput()).toHaveFocus();
+    expect(searchInput().parentElement).toHaveClass(styles.keyboardFocus);
   });
 
   it('keeps the combobox attributes in sync with the highlighted result', async () => {

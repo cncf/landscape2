@@ -30,10 +30,10 @@ export type GridItemsSize = Exhaustive<
   Exclude<GeneratedGridItemsSize, (typeof GridItemsSize)[keyof typeof GridItemsSize]>
 >;
 
-/** View modes, the runtime values of the generated `ViewMode` union. */
+/** View modes, the runtime values of the generated `ViewMode` union, in the order of the Explore view mode buttons. */
 export const ViewMode = {
-  Card: 'card',
   Grid: 'grid',
+  Card: 'card',
 } as const satisfies Record<string, GeneratedViewMode>;
 
 /** View mode, as generated from the Rust datasets. */

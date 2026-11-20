@@ -1,4 +1,5 @@
 import { screen } from '@solidjs/testing-library';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createBaseData } from '../../../../test-utils/fixtures';
@@ -68,5 +69,38 @@ describe('Menu', () => {
     expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
     landscape.dispatchEvent(new Event('scroll'));
     expect(frames).toHaveLength(1);
+  });
+
+  it('marks the section of a percent-encoded non-ASCII hash as selected', async () => {
+    const user = userEvent.setup();
+    // The second "о" of "adоpter" is Cyrillic (U+043E), as in the OSPO landscape
+    window.baseDS = createBaseData({
+      categories: [
+        {
+          name: 'OSPO Adopter',
+          normalized_name: 'ospo-adopter',
+          subcategories: [
+            { name: 'First', normalized_name: 'first' },
+            { name: 'OSPO Adоpter', normalized_name: 'ospo-adоpter' },
+          ],
+        },
+      ],
+    });
+
+    // Render the menu at the section hash, percent-encoded as the browser gives it
+    const { history } = renderWithRouter(
+      () => <Menu menu={{ 'OSPO Adopter': ['First', 'OSPO Adоpter'] }} isVisible sticky />,
+      { url: '/#ospo-adopter--ospo-ad%D0%BEpter' }
+    );
+
+    // Check its option is the selected one
+    expect(screen.getByRole('button', { name: 'OSPO Adоpter' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'First' })).toBeEnabled();
+
+    // Select the first subcategory and check the hash and the selection follow
+    await user.click(screen.getByRole('button', { name: 'First' }));
+    expect(new URL(history.get(), 'http://localhost').hash).toBe('#ospo-adopter--first');
+    expect(screen.getByRole('button', { name: 'First' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'OSPO Adоpter' })).toBeEnabled();
   });
 });

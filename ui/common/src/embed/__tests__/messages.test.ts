@@ -64,6 +64,30 @@ describe('parseShowItemDetailsMessage', () => {
     }
   );
 
+  it('accepts the key of a name with the Turkish capital İ, lowercased to i and a combining dot', () => {
+    const key = 'i\u0307stanbul-tech';
+
+    expect(parseShowItemDetailsMessage(buildShowItemDetailsMessage({ ...INPUT, key }))?.key).toBe(key);
+  });
+
+  it('accepts every character normalize_name keeps, lowercased', () => {
+    // normalize_name keeps letters, numbers and `+`, lowercased one by one
+    // (the per character JS lowercase gives the same result as the Rust one)
+    const kept = /^[\p{L}\p{N}+]$/u;
+    const rejected: string[] = [];
+    for (let codePoint = 0; codePoint <= 0x10ffff; codePoint++) {
+      if (codePoint >= 0xd800 && codePoint <= 0xdfff) continue;
+      const char = String.fromCodePoint(codePoint);
+      if (!kept.test(char)) continue;
+      const key = `a${char.toLowerCase()}a`;
+      if (parseShowItemDetailsMessage(buildShowItemDetailsMessage({ ...INPUT, key })) === null) {
+        rejected.push(codePoint.toString(16));
+      }
+    }
+
+    expect(rejected).toEqual([]);
+  });
+
   it('drops unknown fields such as a base path', () => {
     const message = { ...buildShowItemDetailsMessage(INPUT), basePath: '//evil.example' };
 

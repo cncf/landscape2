@@ -14,7 +14,7 @@ use serde::{Deserialize, de::IgnoredAny};
 
 use crate::util::{RESERVED_CLASSIFICATION_VALUE, TAG_NAME, normalize_name, validate_url};
 
-use super::{ItemAudit, ItemLink, item_id, parse_second_path};
+use super::{ItemAudit, ItemLink, item_id, parse_second_path, split_list};
 
 /// CLOMonitor project name regular expression.
 static CLOMONITOR_NAME: LazyLock<Regex> = LazyLock::new(|| {
@@ -352,7 +352,7 @@ pub(super) struct ItemExtra {
     pub summary_integration: Option<String>,
     /// Alternative field for `summary_integration`.
     pub summary_integrations: Option<String>,
-    /// Video url of the item's pitch.
+    /// Comma separated list of video urls of the item's pitch.
     pub summary_intro_url: Option<String>,
     /// Comma separated list of target users this item is intended for.
     pub summary_personas: Option<String>,
@@ -526,11 +526,18 @@ fn validate_urls(item: &Item) -> Result<()> {
             ("reddit", &extra.reddit_url),
             ("slack", &extra.slack_url),
             ("stack_overflow", &extra.stack_overflow_url),
-            ("summary_intro", &extra.summary_intro_url),
             ("youtube", &extra.youtube_url),
         ];
         for (name, url) in urls {
             validate_url(name, url.as_deref())?;
+        }
+
+        // Check summary intro urls (one or more, separated by commas)
+        if let Some(intro_urls) = &extra.summary_intro_url {
+            let intro_urls = split_list(intro_urls).unwrap_or_else(|| vec![intro_urls.clone()]);
+            for url in &intro_urls {
+                validate_url("summary_intro", Some(url))?;
+            }
         }
 
         // Check audits urls

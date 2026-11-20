@@ -41,6 +41,8 @@ describe('useModalFocus', () => {
     const onChildClose = vi.fn();
     const onParentClose = vi.fn();
 
+    parentModal.tabIndex = -1;
+    childModal.tabIndex = -1;
     markVisible(childCloseButton);
     markVisible(childModalTrigger);
     childModal.appendChild(childCloseButton);
@@ -74,7 +76,7 @@ describe('useModalFocus', () => {
 
     await Promise.resolve();
     runAnimationFrames(animationFrameCallbacks);
-    expect(document.activeElement).toBe(childCloseButton);
+    expect(document.activeElement).toBe(childModal);
 
     childCloseButton.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -87,7 +89,7 @@ describe('useModalFocus', () => {
   });
 
   it('should wrap focus without including hidden controls', async () => {
-    const modal = document.createElement('div');
+    const modal = createModal();
     const firstButton = document.createElement('button');
     const hiddenButton = document.createElement('button');
     const lastButton = document.createElement('button');
@@ -96,7 +98,6 @@ describe('useModalFocus', () => {
     markVisible(firstButton);
     markVisible(lastButton);
     modal.append(firstButton, lastButton, hiddenButton);
-    document.body.appendChild(modal);
 
     disposeTestRoot = createRoot((disposeRoot) => {
       const [open] = createSignal(true);
@@ -106,7 +107,7 @@ describe('useModalFocus', () => {
 
     await Promise.resolve();
     runAnimationFrames(animationFrameCallbacks);
-    expect(document.activeElement).toBe(firstButton);
+    expect(document.activeElement).toBe(modal);
 
     lastButton.focus();
     lastButton.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Tab' }));
@@ -115,6 +116,26 @@ describe('useModalFocus', () => {
     firstButton.focus();
     firstButton.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Tab', shiftKey: true }));
     expect(document.activeElement).toBe(lastButton);
+  });
+
+  it('focuses the modal itself, not its first control, when opened', async () => {
+    // Open the modal with a focusable button
+    const modal = createModal();
+    const button = document.createElement('button');
+    markVisible(button);
+    modal.appendChild(button);
+
+    disposeTestRoot = createRoot((disposeRoot) => {
+      const [open] = createSignal(true);
+      useModalFocus(() => modal, open, vi.fn());
+      return disposeRoot;
+    });
+    await Promise.resolve();
+    runAnimationFrames(animationFrameCallbacks);
+
+    // Check the modal got the focus instead of the button
+    expect(document.activeElement).toBe(modal);
+    expect(document.activeElement).not.toBe(button);
   });
 
   it('calls onClose on Escape', async () => {
@@ -192,6 +213,128 @@ describe('useModalFocus', () => {
     expect(document.activeElement).toBe(lastButton);
   });
 
+  it('wraps Shift+Tab from the modal itself to its last element', async () => {
+    // Open the modal with two buttons and check the modal got the focus
+    const modal = createModal();
+    const firstButton = document.createElement('button');
+    const lastButton = document.createElement('button');
+    markVisible(firstButton);
+    markVisible(lastButton);
+    modal.append(firstButton, lastButton);
+
+    disposeTestRoot = createRoot((disposeRoot) => {
+      const [open] = createSignal(true);
+      useModalFocus(() => modal, open, vi.fn());
+      return disposeRoot;
+    });
+    await Promise.resolve();
+    runAnimationFrames(animationFrameCallbacks);
+    expect(document.activeElement).toBe(modal);
+
+    // Press Shift+Tab on the modal
+    const shiftTabEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab', shiftKey: true });
+    modal.dispatchEvent(shiftTabEvent);
+
+    // Check the focus wrapped to the last element and the default was prevented
+    expect(document.activeElement).toBe(lastButton);
+    expect(shiftTabEvent.defaultPrevented).toBe(true);
+  });
+
+  it('focuses the initial focus element, when provided, instead of the modal', async () => {
+    // Open a modal whose scrolling area is the initial focus element
+    const modal = createModal();
+    const scrollArea = createScrollArea(modal);
+    const button = document.createElement('button');
+    markVisible(button);
+    scrollArea.appendChild(button);
+
+    disposeTestRoot = createRoot((disposeRoot) => {
+      const [open] = createSignal(true);
+      useModalFocus(
+        () => modal,
+        open,
+        vi.fn(),
+        () => scrollArea
+      );
+      return disposeRoot;
+    });
+    await Promise.resolve();
+    runAnimationFrames(animationFrameCallbacks);
+
+    // Check the scrolling area got the focus
+    expect(document.activeElement).toBe(scrollArea);
+  });
+
+  it('wraps Shift+Tab from an element with no control before it to the last element', async () => {
+    // Open a modal whose controls are all inside its focused scrolling area
+    const modal = createModal();
+    const scrollArea = createScrollArea(modal);
+    const firstButton = document.createElement('button');
+    const lastButton = document.createElement('button');
+    markVisible(firstButton);
+    markVisible(lastButton);
+    scrollArea.append(firstButton, lastButton);
+
+    disposeTestRoot = createRoot((disposeRoot) => {
+      const [open] = createSignal(true);
+      useModalFocus(
+        () => modal,
+        open,
+        vi.fn(),
+        () => scrollArea
+      );
+      return disposeRoot;
+    });
+    await Promise.resolve();
+    runAnimationFrames(animationFrameCallbacks);
+
+    // Press Shift+Tab, then Tab, on the scrolling area
+    const shiftTabEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab', shiftKey: true });
+    scrollArea.dispatchEvent(shiftTabEvent);
+    const focusedAfterShiftTab = document.activeElement;
+    scrollArea.focus();
+    const tabEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab' });
+    scrollArea.dispatchEvent(tabEvent);
+
+    // Check Shift+Tab wrapped to the last element and Tab was left to the browser
+    expect(focusedAfterShiftTab).toBe(lastButton);
+    expect(shiftTabEvent.defaultPrevented).toBe(true);
+    expect(tabEvent.defaultPrevented).toBe(false);
+  });
+
+  it('wraps Tab from an element with no control after it to the first element', async () => {
+    // Open a modal whose only control is placed before its focused scrolling area
+    const modal = createModal();
+    const button = document.createElement('button');
+    markVisible(button);
+    modal.appendChild(button);
+    const scrollArea = createScrollArea(modal);
+
+    disposeTestRoot = createRoot((disposeRoot) => {
+      const [open] = createSignal(true);
+      useModalFocus(
+        () => modal,
+        open,
+        vi.fn(),
+        () => scrollArea
+      );
+      return disposeRoot;
+    });
+    await Promise.resolve();
+    runAnimationFrames(animationFrameCallbacks);
+
+    // Press Shift+Tab, then Tab, on the scrolling area
+    const shiftTabEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab', shiftKey: true });
+    scrollArea.dispatchEvent(shiftTabEvent);
+    const tabEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Tab' });
+    scrollArea.dispatchEvent(tabEvent);
+
+    // Check Shift+Tab was left to the browser and Tab wrapped to the first element
+    expect(shiftTabEvent.defaultPrevented).toBe(false);
+    expect(tabEvent.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(button);
+  });
+
   it('cancels the pending initial focus when disposed', async () => {
     // Open the modal and check the initial focus is still pending
     const modal = createModal();
@@ -236,7 +379,7 @@ describe('useModalFocus', () => {
     });
     await Promise.resolve();
     runAnimationFrames(animationFrameCallbacks);
-    expect(document.activeElement).toBe(button);
+    expect(document.activeElement).toBe(modal);
 
     // Remove the trigger, then close the modal
     trigger.remove();
@@ -254,6 +397,14 @@ const createModal = (): HTMLDivElement => {
   modal.tabIndex = -1;
   document.body.appendChild(modal);
   return modal;
+};
+
+/** Appends to the modal a focusable area that is not a control, like the `Modal` component's body. */
+const createScrollArea = (modal: HTMLElement): HTMLDivElement => {
+  const scrollArea = document.createElement('div');
+  scrollArea.tabIndex = -1;
+  modal.appendChild(scrollArea);
+  return scrollArea;
 };
 
 /** Makes jsdom report the element as rendered, so the hook treats it as focusable. */

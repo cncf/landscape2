@@ -22,6 +22,18 @@ describe('Sidebar', () => {
     await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
   });
 
+  it('moves the focus to its scrolling content when opened', async () => {
+    const user = userEvent.setup();
+    renderSidebar();
+
+    // Open the sidebar
+    await user.click(screen.getByRole('button', { name: 'Open filters' }));
+
+    // Check the area that holds the content, not a button, has the focus
+    const content = screen.getByRole('button', { name: 'Sidebar option' }).parentElement;
+    await waitFor(() => expect(content).toHaveFocus());
+  });
+
   it('drops the inner complementary landmark', () => {
     renderSidebar({ open: true });
 

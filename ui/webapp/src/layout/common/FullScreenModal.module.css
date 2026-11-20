@@ -3,6 +3,11 @@
   z-index: 1050;
 }
 
+/* The dialog itself, focused when it opens, shows no focus ring */
+.modal:focus {
+  outline: none;
+}
+
 .closeWrapper {
   right: 1rem;
 }

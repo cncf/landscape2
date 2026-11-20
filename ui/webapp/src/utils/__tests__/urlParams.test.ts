@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildPath, parseEnum, parseItemId, withParams } from '../urlParams';
+import { buildPath, parseEnum, parseHashId, parseItemId, withParams } from '../urlParams';
 
 const MODES = ['card', 'grid'] as const;
 
@@ -59,6 +59,32 @@ describe('parseItemId', () => {
     expect(parseItemId(['a', 'b'])).toBeUndefined();
     expect(parseItemId('')).toBeUndefined();
     expect(parseItemId(undefined)).toBeUndefined();
+  });
+});
+
+describe('parseHashId', () => {
+  it('returns the id of an ASCII hash', () => {
+    expect(parseHashId('#category-1--sub-1')).toBe('category-1--sub-1');
+  });
+
+  it('gives an empty id for an empty hash or a lone #', () => {
+    expect(parseHashId('')).toBe('');
+    expect(parseHashId('#')).toBe('');
+  });
+
+  it('decodes the non-ASCII letters the browser percent-encodes', () => {
+    // Accented Latin and Cyrillic (the second "о" of "adоpter" is U+043E, as in the OSPO landscape)
+    expect(parseHashId('#d%C3%A9veloppement--outils')).toBe('développement--outils');
+    expect(parseHashId('#ospo-adopter--ospo-ad%D0%BEpter')).toBe('ospo-adopter--ospo-adоpter');
+  });
+
+  it('returns an already decoded hash and a plus sign as they are', () => {
+    expect(parseHashId('#développement--outils')).toBe('développement--outils');
+    expect(parseHashId('#category-1--c++')).toBe('category-1--c++');
+  });
+
+  it('returns the raw id of a hash with a malformed escape', () => {
+    expect(parseHashId('#%E0%A4%A')).toBe('%E0%A4%A');
   });
 });
 

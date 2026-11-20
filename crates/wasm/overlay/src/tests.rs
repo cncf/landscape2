@@ -315,6 +315,21 @@ fn test_apply_deployed_items_warns_about_unmatched_item() {
 }
 
 #[test]
+fn test_is_html_page_detects_html_pages_only() {
+    // Check HTML pages are detected, ignoring case and leading whitespace
+    assert!(is_html_page("<!DOCTYPE html>\n<html lang=\"en\"></html>"));
+    assert!(is_html_page("\u{feff}  \n<!doctype HTML><html></html>"));
+    assert!(is_html_page("<HTML><body></body></HTML>"));
+
+    // Check YAML sources and other content are not
+    assert!(!is_html_page(include_str!("testdata/guide.yml")));
+    assert!(!is_html_page(include_str!("testdata/games.yml")));
+    assert!(!is_html_page("html: <html></html>\n"));
+    assert!(!is_html_page("<ht"));
+    assert!(!is_html_page(""));
+}
+
+#[test]
 fn test_localize_settings_images_rewrites_local_paths() {
     // Setup settings with a local header logo, a url footer logo and no favicon
     let mut settings = LandscapeSettings {
@@ -696,6 +711,58 @@ async fn test_prepare_overlay_data_treats_missing_default_guide_and_games_as_abs
     assert_eq!(data.games, None);
     assert!(data.datasets.base.guide_summary.is_empty());
     assert_eq!(data.datasets.base.games_available, None);
+}
+
+#[tokio::test]
+async fn test_prepare_overlay_data_treats_default_guide_and_games_served_as_index_as_absent() {
+    // Setup the deployed landscape without guide and games, hosted with a
+    // single-page application fallback (missing paths serve the index)
+    let mut server = Server::new_async().await;
+    let index = "\u{feff}\n<!doctype html>\n<html lang=\"en\">\n<body></body>\n</html>\n";
+    let mocks = vec![
+        mock_file(&mut server, "/sources/data.yml", "data.yml").create_async().await,
+        mock_file(&mut server, "/sources/settings.yml", "settings.yml").create_async().await,
+        server.mock("GET", "/sources/guide.yml").with_body(index).create_async().await,
+        server.mock("GET", "/sources/games.yml").with_body(index).create_async().await,
+        mock_file(&mut server, "/data/full.json", "full.json").create_async().await,
+    ];
+
+    // Run the overlay data preparation
+    let data = prepare_overlay_data(input(&server), now()).await.unwrap();
+
+    // Check the guide and games are absent
+    assert_mocks(&mocks).await;
+    assert_eq!(data.guide, None);
+    assert_eq!(data.games, None);
+}
+
+#[tokio::test]
+async fn test_prepare_overlay_data_rejects_explicit_guide_served_as_index() {
+    // Setup the deployed landscape, and an overlay guide url answered with an
+    // HTML page
+    let mut server = Server::new_async().await;
+    let mut mocks = mock_sources_at_most_once(&mut server).await;
+    mocks.push(
+        mock_file(&mut server, "/data/full.json", "full.json")
+            .expect_at_most(1)
+            .create_async()
+            .await,
+    );
+    mocks.push(server.mock("GET", "/overlay/guide.yml").with_body("<html></html>").create_async().await);
+    let input = OverlayInput {
+        guide_url: Some(format!("{}/overlay/guide.yml", server.url())),
+        ..input(&server)
+    };
+
+    // Run the overlay data preparation
+    let err = prepare_overlay_data(input, now()).await.unwrap_err();
+
+    // Check the page is not treated as a missing guide
+    assert_mocks(&mocks).await;
+    assert!(
+        format!("{err:#}")
+            .starts_with("error fetching guide: the landscape guide file provided is not valid")
+    );
 }
 
 // Helpers.

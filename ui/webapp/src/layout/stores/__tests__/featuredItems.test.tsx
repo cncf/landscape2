@@ -36,6 +36,17 @@ describe('useFeaturedItems', () => {
     expect(featuredItems.withEffectiveFeatured([item])).toEqual([{ ...item, featured: undefined }]);
   });
 
+  it('returns the same copy of an item not featured in the group on every call', () => {
+    // Render the store with an excluded group active
+    const featuredItems = renderFeaturedItems(['group-1', 'group-2'], '/?group=group-2');
+    const item = createItem({ featured: FEATURED });
+
+    // Verify the copy is created once, so lists compared by identity keep it
+    const [copy] = featuredItems.withEffectiveFeatured([item]);
+    expect(copy).not.toBe(item);
+    expect(featuredItems.withEffectiveFeatured([item])[0]).toBe(copy);
+  });
+
   it('gives a clone placed in an additional category the same result as the original', () => {
     // Setup an item featured by its primary subcategory and its clone in an additional category
     const item = createItem({

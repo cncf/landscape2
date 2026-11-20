@@ -59,7 +59,7 @@ describe('ItemDropdown', () => {
       </Modal>
     ));
     // The modal moves focus inside on the next frame; wait for it before opening the menu
-    await waitFor(() => expect(screen.getByRole('dialog')).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement));
     const button = screen.getByRole('button', { name: 'Item options' });
     await user.click(button);
 

@@ -1,13 +1,14 @@
 import { useLocation, useNavigate } from '@solidjs/router';
 import { SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, For, onCleanup, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, For, onCleanup, Show } from 'solid-js';
 
 import { COLORS } from '../../../data';
 import { CardMenu } from '../../../types';
 import { getAnchorId } from '../../../utils/anchorIds';
 import getSectionLabel from '../../../utils/getSectionLabel';
 import goToElement from '../../../utils/goToElement';
+import { parseHashId } from '../../../utils/urlParams';
 import styles from './Menu.module.css';
 
 // Space kept between the bottom of the sticky menu and the footer or the viewport
@@ -31,6 +32,8 @@ const Menu = (props: Props) => {
   const [root, setRoot] = createSignal<HTMLDivElement>();
   const [ref, setRef] = createSignal<HTMLDivElement>();
   const [offsetActive, setOffsetActive] = createSignal<boolean>(false);
+  // Section id the URL hash names
+  const selectedId = createMemo(() => parseHashId(location.hash));
 
   // Effect to manage menu height based on footer visibility and scroll position.
   // Prevents the sticky menu from sliding under the header when footer is visible
@@ -147,9 +150,9 @@ const Menu = (props: Props) => {
                               title={subtitle}
                               class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
                               classList={{
-                                [`fw-bold ${styles.selected}`]: `#${hash()}` === location.hash,
+                                [`fw-bold ${styles.selected}`]: hash() === selectedId(),
                               }}
-                              disabled={`#${hash()}` === location.hash}
+                              disabled={hash() === selectedId()}
                               onClick={() => {
                                 goToElement(`card_${hash()}`);
                                 if (!isUndefined(props.onClickOption)) {
@@ -159,7 +162,7 @@ const Menu = (props: Props) => {
                               }}
                               aria-label={getSectionLabel(subtitle, isTAG)}
                             >
-                              <Show when={`#${hash()}` === location.hash}>
+                              <Show when={hash() === selectedId()}>
                                 <div class={`position-absolute ${styles.arrow}`}>
                                   <SVGIcon kind={SVGIconKind.ArrowRight} />
                                 </div>

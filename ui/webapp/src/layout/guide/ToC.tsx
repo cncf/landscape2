@@ -3,6 +3,7 @@ import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
 import { ToCTitle } from '../../types';
+import { parseHashId } from '../../utils/urlParams';
 import styles from './ToC.module.css';
 
 /** Copy of the ToC the ids belong to: the guide renders a mobile and a desktop one. */
@@ -34,7 +35,7 @@ const ToCOption = (props: OptionProps) => {
         }`}
         classList={{
           ['fw-semibold text-muted']: props.level === 0,
-          [styles.active]: location.hash === `#${props.option.id}`,
+          [styles.active]: parseHashId(location.hash) === props.option.id,
         }}
         onClick={() => {
           props.updateActiveTitle(props.option.id);

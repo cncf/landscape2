@@ -171,10 +171,14 @@ pub async fn get_overlay_data(input: JsValue) -> Result<String, String> {
 /// Return the raw content read from a guide or games source, treating a not
 /// found error (404) as an absent source when the source url is the default
 /// one. The CLI build deploys these files whenever they exist, so a 404 is the
-/// only expected miss; any other error is returned.
+/// only expected miss; any other error is returned. Hosts set up to serve the
+/// index for non existent paths (as the README suggests for client side
+/// routing) answer a missing file with an HTML page instead, which is treated
+/// as a 404.
 fn absent_if_not_found(read_result: Result<Option<String>>, is_default_url: bool) -> Result<Option<String>> {
     match read_result {
         Err(err) if is_default_url && is_not_found(&err) => Ok(None),
+        Ok(Some(raw)) if is_default_url && is_html_page(&raw) => Ok(None),
         read_result => read_result,
     }
 }
@@ -238,6 +242,15 @@ fn collect_warnings<T>(parsed: Parsed<T>, kind: SourceKind, warnings: &mut Vec<S
 /// Format the error provided, including its whole cause chain on one line.
 fn format_error(err: &anyhow::Error) -> String {
     format!("{err:#}")
+}
+
+/// Check if the content provided is an HTML page, which a YAML source file
+/// never is (it would not parse as a guide or games file).
+fn is_html_page(raw: &str) -> bool {
+    let start = raw.trim_start_matches('\u{feff}').trim_start();
+    ["<!doctype html", "<html"]
+        .iter()
+        .any(|prefix| start.get(..prefix.len()).is_some_and(|x| x.eq_ignore_ascii_case(prefix)))
 }
 
 /// Check if the error provided, or any of its causes, is a request that

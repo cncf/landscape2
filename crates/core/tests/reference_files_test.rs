@@ -259,6 +259,21 @@ fn test_schema_and_parser_agree_on_cases() {
         ),
         (
             Kind::Data,
+            data_item_yaml("extra: {summary_intro_url: 'https://a.example/1, https://a.example/2'}"),
+            true,
+        ),
+        (
+            Kind::Data,
+            data_item_yaml("extra: {summary_intro_url: 'https://a.example/1, Second intro'}"),
+            false,
+        ),
+        (
+            Kind::Data,
+            data_item_yaml("extra: {summary_intro_url: 'Intro: https://a.example/1'}"),
+            false,
+        ),
+        (
+            Kind::Data,
             data_item_yaml("twitter: https://www.twitter.com/x"),
             true,
         ),
@@ -288,6 +303,19 @@ fn test_schema_and_parser_agree_on_cases() {
             settings_yaml("tags: {all: [{category: Category}]}"),
             false,
         ),
+        (Kind::Settings, group_name_settings_yaml("All"), false),
+        (Kind::Settings, group_name_settings_yaml("'all!'"), false),
+        (Kind::Settings, group_name_settings_yaml("'All…'"), false),
+        (Kind::Settings, group_name_settings_yaml("'All®'"), false),
+        (Kind::Settings, group_name_settings_yaml("'All—'"), false),
+        (Kind::Settings, group_name_settings_yaml("\"All\u{a0}\""), false),
+        (Kind::Settings, group_name_settings_yaml("\"All\u{301}\""), false),
+        (Kind::Settings, group_name_settings_yaml("All groups"), true),
+        (Kind::Settings, group_name_settings_yaml("'All+'"), true),
+        (Kind::Settings, group_name_settings_yaml("Allé"), true),
+        (Kind::Settings, group_name_settings_yaml("All1"), true),
+        (Kind::Settings, settings_yaml("colors: ~"), true),
+        (Kind::Settings, settings_yaml("colors: {}"), false),
         (Kind::Settings, settings_yaml("featured_items: []"), true),
         (Kind::Settings, settings_yaml("screenshot_width: 1000"), false),
         (Kind::Settings, settings_yaml("upcoming_event: {}"), false),
@@ -396,6 +424,11 @@ fn group_alias_settings_yaml(alias: &str) -> String {
     settings_yaml(&format!(
         "groups: [{{name: Group, alias: {alias}, categories: [Category]}}]"
     ))
+}
+
+/// Build a settings file with a group using the name provided.
+fn group_name_settings_yaml(name: &str) -> String {
+    settings_yaml(&format!("groups: [{{name: {name}, categories: [Category]}}]"))
 }
 
 /// Check if the reference file provided documents the key as a YAML key (a

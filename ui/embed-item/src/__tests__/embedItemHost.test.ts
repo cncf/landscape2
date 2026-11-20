@@ -3,6 +3,9 @@ import '../../public/embed-item.js';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Path of the script, used to load it again (a non-literal path, as the script has no type declarations)
+const HOST_SCRIPT_PATH = '../../public/embed-item.js';
+
 const LANDSCAPE_ORIGIN = 'https://landscape.example';
 
 const SHOW_ITEM_DETAILS = {
@@ -108,6 +111,24 @@ describe('embed-item host script', () => {
     // Verify the item details are still shown
     expect(embedItemIframe.style.display).toBe('block');
     expect(document.body.style.overflowY).toBe('hidden');
+  });
+
+  // Keep last: it loads the script a second time
+  it('behaves as when loaded once when the snippet is added more than once', async () => {
+    // Setup the script loaded again and a host page that scrolls
+    vi.resetModules();
+    await import(/* @vite-ignore */ HOST_SCRIPT_PATH);
+    document.body.style.overflowY = 'scroll';
+    const forward = vi.spyOn(embedItemIframe.contentWindow!, 'postMessage');
+
+    // Show and close the item details
+    postMessage(SHOW_ITEM_DETAILS, LANDSCAPE_ORIGIN, embedIframe.contentWindow);
+    postMessage({ type: 'hideItemDetails' }, LANDSCAPE_ORIGIN, embedItemIframe.contentWindow);
+
+    // Verify the host overflow-y is restored and the request was forwarded once
+    expect(embedItemIframe.style.display).toBe('none');
+    expect(document.body.style.overflowY).toBe('scroll');
+    expect(forward).toHaveBeenCalledExactlyOnceWith(SHOW_ITEM_DETAILS, LANDSCAPE_ORIGIN);
   });
 });
 

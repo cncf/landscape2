@@ -84,6 +84,18 @@ fn test_landscape_settings_new_from_yaml_adds_not_valid_context() {
 }
 
 #[test]
+fn test_landscape_settings_new_from_yaml_defaults_empty_colors() {
+    for colors in ["colors:\n#  color1: \"rgba(0, 107, 204, 1)\"\n", "colors: ~\n"] {
+        // Setup settings with an empty colors section
+        let raw = format!("foundation: Foundation\nurl: https://example.url\n{colors}");
+
+        // Run the parsing and check the default palette is used
+        let settings = LandscapeSettings::new_from_yaml(&raw).unwrap().value;
+        assert_eq!(settings.colors, Colors::default(), "colors: {colors}");
+    }
+}
+
+#[test]
 fn test_landscape_settings_new_from_yaml_normalizes_url_and_base_path() {
     for (url, base_path, expected_url, expected_base_path) in [
         ("https://example.url", "/", "https://example.url", None),
@@ -1395,6 +1407,40 @@ fn test_landscape_settings_validate_rejects_invalid_url() {
         format!("{err:#}"),
         "invalid landscape url: relative URL without a base"
     );
+}
+
+#[test]
+fn test_landscape_settings_validate_rejects_reserved_group_name() {
+    // Setup the names: the reserved one in some forms, and one that only starts like it
+    let cases = [
+        ("all", false),
+        ("All", false),
+        ("ALL!", false),
+        ("All groups", true),
+    ];
+
+    for (name, expect_valid) in cases {
+        // Setup settings with a group using the name
+        let settings = LandscapeSettings {
+            groups: Some(vec![Group {
+                categories: vec!["Category 1".to_string()],
+                name: name.to_string(),
+                ..Default::default()
+            }]),
+            ..valid_settings()
+        };
+
+        // Run the validation and check the result
+        let result = settings.validate();
+        if expect_valid {
+            assert!(result.is_ok(), "group [{name}] should be valid");
+        } else {
+            assert_eq!(
+                format!("{:#}", result.unwrap_err()),
+                format!("group [{name}] name is reserved (normalizes to all)")
+            );
+        }
+    }
 }
 
 #[test]

@@ -49,7 +49,7 @@ languages?: { [key in string]: number },
 latest_release?: Release, 
 /**
  * Repository license, as named by GitHub (for example "Apache License
- * 2.0"), when GitHub can identify it.
+ * 2.0", or "Other" when GitHub cannot identify it).
  */
 license?: string, 
 /**
