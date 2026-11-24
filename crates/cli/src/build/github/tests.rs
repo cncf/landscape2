@@ -121,7 +121,7 @@ async fn test_collect_github_data_no_client_keeps_stale_entry() {
 }
 
 #[tokio::test]
-async fn test_collect_github_data_no_client_logs_only_summary() {
+async fn test_collect_github_data_no_client_logs_only_summaries() {
     // Setup cache with an expired entry
     let tmp_dir = TempDir::new().unwrap();
     let cache = Cache::new(Some(tmp_dir.path())).unwrap();
@@ -135,10 +135,14 @@ async fn test_collect_github_data_no_client_logs_only_summary() {
     let landscape_data = landscape_data(&[REPO_URL, OTHER_REPO_URL]);
     let (_, logs) = capture_logs(collect_github_data_with(&cache, &landscape_data, None, now())).await;
 
-    // Check the repositories are not reported one by one
+    // Check the repositories are not reported one by one, but counted
     assert!(!logs.contains("using stale cached data"), "{logs}");
     assert!(
         !logs.contains("no github data available for repository"),
+        "{logs}"
+    );
+    assert!(
+        logs.contains("no github data available for some repositories missing_count=1"),
         "{logs}"
     );
     assert!(

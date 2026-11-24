@@ -156,8 +156,9 @@ async fn collect_github_data_with(
         .await;
 
     // Use the fetched data, falling back to the stale cached data on failure
-    // (failures are only logged when tokens were provided)
+    // (failures are only logged one by one when tokens were provided)
     let mut fetched_count = 0;
+    let mut missing_count = 0;
     let mut stale_count = 0;
     for (url, result) in results {
         match result {
@@ -172,11 +173,19 @@ async fn collect_github_data_with(
                     }
                     github_data.insert(url.to_string(), stale_repository_data.clone());
                     stale_count += 1;
-                } else if gh_pool.is_some() {
-                    warn!(%url, err = %format_args!("{err:#}"), "no github data available for repository");
+                } else {
+                    if gh_pool.is_some() {
+                        warn!(%url, err = %format_args!("{err:#}"), "no github data available for repository");
+                    }
+                    missing_count += 1;
                 }
             }
         }
+    }
+
+    // Summarize the repositories without fresh data
+    if missing_count > 0 {
+        warn!(missing_count, "no github data available for some repositories");
     }
     if stale_count > 0 {
         warn!(stale_count, "stale cached github data used for some repositories");

@@ -36,7 +36,7 @@ async fn test_collect_crunchbase_data_no_client_keeps_stale_entry() {
 }
 
 #[tokio::test]
-async fn test_collect_crunchbase_data_no_client_logs_only_summary() {
+async fn test_collect_crunchbase_data_no_client_logs_only_summaries() {
     // Setup cache with an expired entry
     let tmp_dir = TempDir::new().unwrap();
     let cache = Cache::new(Some(tmp_dir.path())).unwrap();
@@ -50,10 +50,14 @@ async fn test_collect_crunchbase_data_no_client_logs_only_summary() {
     let landscape_data = landscape_data(&[ORG_URL, OTHER_ORG_URL]);
     let (_, logs) = capture_logs(collect_crunchbase_data_with(&cache, &landscape_data, None, now())).await;
 
-    // Check the organizations are not reported one by one
+    // Check the organizations are not reported one by one, but counted
     assert!(!logs.contains("using stale cached data"), "{logs}");
     assert!(
         !logs.contains("no crunchbase data available for organization"),
+        "{logs}"
+    );
+    assert!(
+        logs.contains("no crunchbase data available for some organizations missing_count=1"),
         "{logs}"
     );
     assert!(

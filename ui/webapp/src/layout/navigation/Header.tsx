@@ -1,4 +1,4 @@
-import { A, useLocation } from '@solidjs/router';
+import { A, useLocation, useNavigate } from '@solidjs/router';
 import { ExternalLink, Image, SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
@@ -7,6 +7,7 @@ import { EXPLORE_PATH, GAMES_PATH, SCREENSHOTS_PATH } from '../../data';
 import { StateContent } from '../../types';
 import prepareLink from '../../utils/prepareLink';
 import scrollToTop from '../../utils/scrollToTop';
+import { buildPath } from '../../utils/urlParams';
 import DownloadDropdown from '../common/DownloadDropdown';
 import Searchbar from '../common/Searchbar';
 import EmbedModal from './EmbedModal';
@@ -22,6 +23,7 @@ interface Props {
 
 const Header = (props: Props) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const logo = () => (window.baseDS.header ? window.baseDS.header!.logo : undefined);
   const textLinks = () => NAV_LINKS.filter((link) => link.path !== GAMES_PATH && link.isVisible(props.statsVisible));
   const gamesLink = () => NAV_LINKS.find((link) => link.path === GAMES_PATH && link.isVisible(props.statsVisible));
@@ -64,10 +66,14 @@ const Header = (props: Props) => {
                   href={prepareLink(link.path, link.query?.())}
                   state={NAV_STATE}
                   onClick={(e) => {
-                    // The link of the current page only scrolls to the top. The Explore link always
+                    // The link of the current page only scrolls to the top, dropping the section the
+                    // URL names (if any) so the URL matches the page shown. The Explore link always
                     // opens the default Explore view
                     if (link.path !== EXPLORE_PATH && isNavLinkActive(link, location.pathname) && isPlainClick(e)) {
                       e.preventDefault();
+                      if (location.hash !== '') {
+                        navigate(buildPath(location.pathname, location.search, ''), { replace: true, scroll: false });
+                      }
                     }
                     scrollToTop(false);
                   }}

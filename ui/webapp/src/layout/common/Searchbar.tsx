@@ -7,6 +7,7 @@ import { batch, createEffect, createSignal, createUniqueId, For, on, onCleanup, 
 import { FOUNDATION } from '../../data';
 import searchEngine from '../../utils/search';
 import { useUpdateActiveItemId } from '../stores/activeItem';
+import { useFullDataStatus } from '../stores/fullData';
 import HoverableItem from './HoverableItem';
 import styles from './Searchbar.module.css';
 
@@ -17,9 +18,12 @@ interface Props {
 
 const SEARCH_DELAY = 3 * 100; // 300ms
 const MIN_CHARACTERS_SEARCH = 2;
+// Message shown instead of the results when the landscape data, which search needs, failed to load
+const SEARCH_UNAVAILABLE_MESSAGE = "Search isn't available: the landscape data couldn't be loaded.";
 
 const Searchbar = (props: Props) => {
   const updateActiveItemId = useUpdateActiveItemId();
+  const fullDataStatus = useFullDataStatus();
   const listId = `search-list-${createUniqueId()}`;
   const [inputEl, setInputEl] = createSignal<HTMLInputElement>();
   const [wrapperRef, setWrapperRef] = createSignal<HTMLDivElement>();
@@ -125,7 +129,10 @@ const Searchbar = (props: Props) => {
       }
       listedQuery = text;
       batch(() => {
-        setError(err instanceof Error ? err.message : String(err));
+        // The search index is built from the landscape data, so it isn't coming when that failed to load
+        setError(
+          fullDataStatus() === 'error' ? SEARCH_UNAVAILABLE_MESSAGE : err instanceof Error ? err.message : String(err)
+        );
         setItemsList([]);
         setVisibleDropdown(true);
       });
@@ -192,6 +199,21 @@ const Searchbar = (props: Props) => {
         }
       }
     })
+  );
+
+  // Search again when the landscape data finishes loading, or fails to, while a failed search is
+  // listed, so the results or the reason search isn't available replace the previous message
+  createEffect(
+    on(
+      fullDataStatus,
+      () => {
+        if (visibleDropdown() && !isNull(error()) && value().length >= MIN_CHARACTERS_SEARCH) {
+          cleanTimeout();
+          onSearch(value());
+        }
+      },
+      { defer: true }
+    )
   );
 
   const docPointerDown = () => {

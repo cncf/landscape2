@@ -106,18 +106,34 @@ describe('Header', () => {
     expect(screen.queryByRole('link', { name: 'GitHub repository' })).not.toBeInTheDocument();
   });
 
-  it('only scrolls to the top when the link of the current page is clicked', async () => {
+  it('scrolls to the top and drops the section when the link of the current page is clicked', async () => {
     // Setup: the guide opened at a section from another page
     const user = userEvent.setup();
     const { history } = renderWithRouter(() => <Header statsVisible />, { url: '/stats' });
-    history.set({ value: '/guide#category--subcategory' });
+    history.set({ value: '/guide?overlay-data=x#category--subcategory' });
 
     // Run
     await user.click(screen.getByRole('link', { name: 'Guide' }));
 
-    // Check: the guide keeps its section and no history entry is added
+    // Check: the URL drops the section, keeping the params, and no history entry is added
     expect(scrollToTop).toHaveBeenCalledWith(false);
-    expect(history.get()).toBe('/guide#category--subcategory');
+    expect(history.get()).toBe('/guide?overlay-data=x');
+    history.back();
+    expect(history.get()).toBe('/stats');
+  });
+
+  it('only scrolls to the top when the link of the current page without a section is clicked', async () => {
+    // Setup: the guide opened from another page
+    const user = userEvent.setup();
+    const { history } = renderWithRouter(() => <Header statsVisible />, { url: '/stats' });
+    history.set({ value: '/guide' });
+
+    // Run
+    await user.click(screen.getByRole('link', { name: 'Guide' }));
+
+    // Check: the URL is kept and no history entry is added
+    expect(scrollToTop).toHaveBeenCalledWith(false);
+    expect(history.get()).toBe('/guide');
     history.back();
     expect(history.get()).toBe('/stats');
   });

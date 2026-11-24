@@ -472,8 +472,11 @@ const EmbedModal = () => {
       replace: true,
     });
     setVisibleModal(false);
+    resetSettings();
+  };
 
-    // Reset settings
+  // Restores the default settings, for the next time the modal is opened
+  const resetSettings = () => {
     batch(() => {
       const selection = getDefaultSelection();
       setSubcategoriesList(selection.subcategoriesList);
@@ -520,6 +523,24 @@ const EmbedModal = () => {
         setPrevHash(location.hash);
       }
     })
+  );
+
+  // Keep the modal in sync with the URL when the browser history changes it (for example
+  // with Back or Forward). The URL is already set, so the modal opens or closes without
+  // navigating, and the entry the history went to is kept as it is
+  createEffect(
+    on(
+      isEmbedSetupActive,
+      (isActive) => {
+        if (isActive && !visibleModal()) {
+          setVisibleModal(true);
+        } else if (!isActive && visibleModal()) {
+          setVisibleModal(false);
+          resetSettings();
+        }
+      },
+      { defer: true }
+    )
   );
 
   createEffect(

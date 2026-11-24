@@ -1,4 +1,4 @@
-import { screen } from '@solidjs/testing-library';
+import { screen, waitFor } from '@solidjs/testing-library';
 import userEvent from '@testing-library/user-event';
 import { DEFAULT_ITEMS_STYLE_VIEW, DEFAULT_TITLE_SIZE, Style, TITLE_SIZE_RANGE } from 'common';
 import { createItem } from 'common/test-utils';
@@ -111,6 +111,27 @@ describe('EmbedModal', () => {
     await user.click(screen.getByRole('button', { name: 'Close modal' }));
     expect(history.get()).toBe(exploreUrl);
     expect(views).toEqual(['g2 card']);
+  });
+
+  it('follows Back and Forward, keeping the history entries as they are', async () => {
+    // Setup: two Explore entries, with the modal opened from the last one and a setting changed
+    const user = userEvent.setup();
+    const { history } = renderWithRouter(() => <EmbedModal />, { url: '/?group=g1' });
+    history.set({ value: '/?group=g2' });
+    await user.click(screen.getByRole('button', { name: OPEN_BUTTON_NAME }));
+    await user.selectOptions(screen.getByLabelText('Classify'), 'maturity');
+    expect(history.get()).toBe(`${EMBED_SETUP_URL}?group=g2`);
+
+    // Go back and check the modal closes, keeping the entry the history went to
+    history.back();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(history.get()).toBe('/?group=g1');
+
+    // Go forward and check the modal opens again with the default settings
+    history.forward();
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText('Classify')).toHaveValue('category');
+    expect(history.get()).toBe(`${EMBED_SETUP_URL}?group=g2`);
   });
 
   it('restores the defaults without throwing in a landscape with no categories', async () => {

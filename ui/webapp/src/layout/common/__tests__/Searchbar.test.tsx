@@ -3,14 +3,23 @@ import userEvent from '@testing-library/user-event';
 import type { SearchResult } from 'minisearch';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ItemsDataLoadStatus } from '../../../utils/itemsDataGetter';
 import searchEngine from '../../../utils/search';
 import Searchbar from '../Searchbar';
 import styles from '../Searchbar.module.css';
 
 const { mockUpdateActiveItemId } = vi.hoisted(() => ({ mockUpdateActiveItemId: vi.fn() }));
+// Setter of the full data loading status the store mock returns
+const fullDataStatusMock = vi.hoisted(() => ({ set: (() => {}) as (status: ItemsDataLoadStatus) => void }));
 
 vi.mock('../../../utils/search', () => ({ default: { searchTerm: vi.fn() } }));
 vi.mock('../../stores/activeItem', () => ({ useUpdateActiveItemId: () => mockUpdateActiveItemId }));
+vi.mock('../../stores/fullData', async () => {
+  const { createSignal } = await import('solid-js');
+  const [status, setStatus] = createSignal<ItemsDataLoadStatus>('ready');
+  fullDataStatusMock.set = setStatus;
+  return { useFullDataStatus: () => status };
+});
 
 /** Debounce of the search input. */
 const SEARCH_DELAY = 300;
@@ -29,6 +38,7 @@ describe('Searchbar', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    fullDataStatusMock.set('ready');
     searchTermMock.mockResolvedValue(RESULTS);
     scrollIntoView = vi.fn();
     Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
@@ -220,6 +230,48 @@ describe('Searchbar', () => {
     // Check the error message is shown in place of the results
     expect(screen.getByRole('status')).toHaveTextContent('Preparing search index...');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('tells search is not available once the landscape data fails to load', async () => {
+    const user = setupUser();
+    fullDataStatusMock.set('loading');
+    searchTermMock.mockRejectedValue(new Error('Preparing search index...'));
+    render(() => <Searchbar device="desktop" />);
+
+    // Search while the landscape data is loading
+    await user.type(searchInput(), 'item');
+    await vi.advanceTimersByTimeAsync(SEARCH_DELAY);
+    expect(screen.getByRole('status')).toHaveTextContent('Preparing search index...');
+
+    // Fail the landscape data loading
+    fullDataStatusMock.set('error');
+    await vi.advanceTimersByTimeAsync(0);
+
+    // Check the reason replaces the preparing message
+    expect(screen.getByRole('status')).toHaveTextContent(
+      "Search isn't available: the landscape data couldn't be loaded."
+    );
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+  });
+
+  it('lists the results once the landscape data is ready, without typing again', async () => {
+    const user = setupUser();
+    fullDataStatusMock.set('loading');
+    searchTermMock.mockRejectedValueOnce(new Error('Preparing search index...'));
+    render(() => <Searchbar device="desktop" />);
+
+    // Search while the landscape data is loading
+    await user.type(searchInput(), 'item');
+    await vi.advanceTimersByTimeAsync(SEARCH_DELAY);
+    expect(screen.getByRole('status')).toHaveTextContent('Preparing search index...');
+
+    // Finish loading the landscape data
+    fullDataStatusMock.set('ready');
+    await vi.advanceTimersByTimeAsync(0);
+
+    // Check the results of the typed text are listed
+    expect(searchTermMock).toHaveBeenLastCalledWith('item');
+    expect(optionNames()).toEqual(['Open Item 1 info', 'Open Item 2 info', 'Open Item 3 info']);
   });
 
   it('focuses the input on desktop when / is pressed with the focus on the body', async () => {
