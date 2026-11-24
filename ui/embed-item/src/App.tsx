@@ -111,8 +111,8 @@ const App = () => {
   );
 };
 
-// Checks the data of a message is an item request, valid or not
+export default App;
+
+/** Checks whether the data of a message is an item request, valid or not. */
 const isShowItemDetailsRequest = (data: unknown): boolean =>
   typeof data === 'object' && data !== null && (data as { type?: unknown }).type === SHOW_ITEM_DETAILS_MESSAGE_TYPE;
-
-export default App;

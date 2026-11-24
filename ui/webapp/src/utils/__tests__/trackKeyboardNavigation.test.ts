@@ -2,8 +2,6 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import trackKeyboardNavigation, { KEYBOARD_NAVIGATION_CLASS } from '../trackKeyboardNavigation';
 
-const hasClass = () => document.documentElement.classList.contains(KEYBOARD_NAVIGATION_CLASS);
-
 describe('trackKeyboardNavigation', () => {
   let stop: (() => void) | undefined;
 
@@ -54,3 +52,10 @@ describe('trackKeyboardNavigation', () => {
     expect(hasClass()).toBe(false);
   });
 });
+
+// Helpers.
+
+/** Checks whether the root element has the keyboard navigation class. */
+function hasClass(): boolean {
+  return document.documentElement.classList.contains(KEYBOARD_NAVIGATION_CLASS);
+}

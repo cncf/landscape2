@@ -159,8 +159,12 @@ async fn get_logo(
 /// masked strokes, as the part of them that is visible is not known, or for
 /// logos whose content (strokes excluded) starts at negative coordinates.
 fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
+    // Parse the logo
     let opt = usvg::Options::default();
     let tree = usvg::Tree::from_data(svg_data, &opt)?;
+
+    // Leave out the logos whose drawn area can't be known or that a new
+    // viewbox would distort (visible text, filters or a stretched logo)
     let has_filters = tree
         .root
         .descendants()
@@ -168,6 +172,9 @@ fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
     if has_visible_text(&tree.root) || has_filters || tree.view_box.aspect.align == Align::None {
         return Ok(None);
     }
+
+    // Get the content bounding box, leaving out the logos whose content
+    // starts at negative coordinates
     let Some(mut bounding_box) = tree.root.calculate_bbox() else {
         return Ok(None);
     };
@@ -186,15 +193,22 @@ fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
         let Some(stroke) = &path.stroke else {
             continue;
         };
+
+        // Skip the strokes that are not drawn (hidden or fully transparent)
         if path.visibility != Visibility::Visible
             || stroke.opacity.get() == 0.0
             || has_ancestor_group(&node, |group| group.opacity.get() == 0.0)
         {
             continue;
         }
+
+        // Leave out the logos with clipped or masked strokes, as the part of
+        // them that is visible is not known
         if has_ancestor_group(&node, |group| group.clip_path.is_some() || group.mask.is_some()) {
             return Ok(None);
         }
+
+        // Compute the area covered by the stroke in the logo coordinates
         let ts = node.abs_transform();
         let res_scale = PathStroker::compute_resolution_scale(&ts) * precision;
         let Some(stroke_bbox) = path
@@ -205,6 +219,8 @@ fn get_svg_bounding_box(svg_data: &[u8]) -> Result<Option<Rect>> {
         else {
             continue;
         };
+
+        // Merge it into the bounding box
         bounding_box = Rect::from_ltrb(
             bounding_box.left().min(stroke_bbox.left()),
             bounding_box.top().min(stroke_bbox.top()),

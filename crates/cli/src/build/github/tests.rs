@@ -236,7 +236,12 @@ async fn test_collect_github_data_refresh_failure_logs_error_cause() {
     // Setup client expectations
     let mut gh = MockGH::new();
     gh.expect_get_repository()
-        .times(2)
+        .times(1)
+        .withf(|owner, repo| owner == "example" && repo == "item-1")
+        .returning(|_, _| Err(format_err!("connection refused").context("request failed")));
+    gh.expect_get_repository()
+        .times(1)
+        .withf(|owner, repo| owner == "other" && repo == "item")
         .returning(|_, _| Err(format_err!("connection refused").context("request failed")));
 
     // Run the collection for that repository and another one without cached
@@ -423,34 +428,6 @@ async fn test_collect_repository_data_maps_all_fields() {
 }
 
 #[tokio::test]
-async fn test_collect_repository_data_unidentified_license_is_other() {
-    // Setup client expectations returning a license GitHub could not identify
-    let mut gh = MockGH::new();
-    gh.expect_get_repository()
-        .times(1)
-        .withf(|owner, repo| owner == "example" && repo == "item-1")
-        .returning(|_, _| {
-            Ok(serde_json::from_value(json!({
-                "default_branch": "main",
-                "html_url": REPO_URL,
-                "license": {
-                    "key": "other",
-                    "name": "Other",
-                    "spdx_id": "NOASSERTION",
-                },
-            }))
-            .unwrap())
-        });
-    expect_repository_fetch_with(&mut gh, "main", Ok(Some(5)), Ok(Some(vec![1, 2])));
-
-    // Run the collection
-    let repository_data = collect_repository_data(&gh, REPO_URL, None, None, now()).await.unwrap();
-
-    // Check the license is collected with the name GitHub gives it
-    assert_eq!(repository_data.license, Some("Other".to_string()));
-}
-
-#[tokio::test]
 async fn test_collect_repository_data_participation_not_ready_stores_expired_entry() {
     // Setup client expectations for two collections
     let mut gh = MockGH::new();
@@ -519,6 +496,34 @@ async fn test_collect_repository_data_repository_error_skips_later_calls() {
 
     // Check the repository error is returned
     assert_eq!(format!("{err:#}"), "repository not found");
+}
+
+#[tokio::test]
+async fn test_collect_repository_data_unidentified_license_is_other() {
+    // Setup client expectations returning a license GitHub could not identify
+    let mut gh = MockGH::new();
+    gh.expect_get_repository()
+        .times(1)
+        .withf(|owner, repo| owner == "example" && repo == "item-1")
+        .returning(|_, _| {
+            Ok(serde_json::from_value(json!({
+                "default_branch": "main",
+                "html_url": REPO_URL,
+                "license": {
+                    "key": "other",
+                    "name": "Other",
+                    "spdx_id": "NOASSERTION",
+                },
+            }))
+            .unwrap())
+        });
+    expect_repository_fetch_with(&mut gh, "main", Ok(Some(5)), Ok(Some(vec![1, 2])));
+
+    // Run the collection
+    let repository_data = collect_repository_data(&gh, REPO_URL, None, None, now()).await.unwrap();
+
+    // Check the license is collected with the name GitHub gives it
+    assert_eq!(repository_data.license, Some("Other".to_string()));
 }
 
 #[tokio::test]

@@ -16,9 +16,6 @@ import { getDefaultExploreQuery, isNavLinkActive, NAV_LINKS } from './navLinks';
 /** History state of the entries pushed from the header links. */
 const NAV_STATE: StateContent = { from: 'header' };
 
-/** Checks whether a click follows the link in the same tab, as the router only handles those. */
-const isPlainClick = (e: MouseEvent): boolean => e.button === 0 && !e.metaKey && !e.altKey && !e.ctrlKey && !e.shiftKey;
-
 interface Props {
   statsVisible: boolean;
 }
@@ -130,3 +127,6 @@ const Header = (props: Props) => {
 };
 
 export default Header;
+
+/** Checks whether a click follows the link in the same tab, as the router only handles those. */
+const isPlainClick = (e: MouseEvent): boolean => e.button === 0 && !e.metaKey && !e.altKey && !e.ctrlKey && !e.shiftKey;

@@ -11,16 +11,6 @@ const FeaturedGroupContext = createContext<() => string | undefined>();
 // reused for every group and call, so lists compared by item identity keep their rendered items
 const unfeaturedCopies = new WeakMap<LandscapeItem, LandscapeItem>();
 
-/** Returns the copy of the item without featured information, created once per item. */
-const getUnfeaturedCopy = (item: LandscapeItem): LandscapeItem => {
-  let copy = unfeaturedCopies.get(item);
-  if (isUndefined(copy)) {
-    copy = { ...item, featured: undefined };
-    unfeaturedCopies.set(item, copy);
-  }
-  return copy;
-};
-
 /**
  * Gives the items below the featured information of the group provided, so the
  * groups kept mounted while hidden don't change when the active group changes.
@@ -62,4 +52,14 @@ export const useFeaturedItems = () => {
     getEffectiveFeatured,
     withEffectiveFeatured,
   };
+};
+
+/** Returns the copy of the item without featured information, created once per item. */
+const getUnfeaturedCopy = (item: LandscapeItem): LandscapeItem => {
+  let copy = unfeaturedCopies.get(item);
+  if (isUndefined(copy)) {
+    copy = { ...item, featured: undefined };
+    unfeaturedCopies.set(item, copy);
+  }
+  return copy;
 };

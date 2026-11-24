@@ -597,7 +597,7 @@ export class ItemsDataGetter {
     return classifiedGroup;
   }
 
-  // Grid view data of an unfiltered group, reusing the result while the grouped data doesn't change
+  /** Returns the Grid view data of an unfiltered group, reusing it while the grouped data doesn't change. */
   private getGridGroup(items: LandscapeItem[] | undefined, group: string): CategoriesData {
     let gridGroup = this.gridGroups.get(group);
     if (isUndefined(gridGroup)) {

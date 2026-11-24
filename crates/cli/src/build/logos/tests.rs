@@ -28,6 +28,43 @@ async fn test_prepare_logo_adjusts_root_viewbox_only() {
 }
 
 #[tokio::test]
+async fn test_prepare_logo_clipped_content_without_drawn_stroke_adjusts_viewbox() {
+    // Setup a logo with clipped content whose only stroke is transparent
+    let content = r#"<clipPath id="c"><rect width="100" height="100"/></clipPath><g clip-path="url(#c)"><rect x="10" y="10" width="20" height="30" fill="black" stroke="red" stroke-width="8" stroke-opacity="0"/></g>"#;
+    let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{content}</svg>"#);
+
+    // Run the logo preparation
+    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
+
+    // Check the viewbox is adjusted
+    assert_eq!(
+        String::from_utf8(logo.data).unwrap(),
+        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 20 30">{content}</svg>"#)
+    );
+}
+
+#[tokio::test]
+async fn test_prepare_logo_clipped_or_masked_stroke_keeps_viewbox() {
+    let stroked_rect =
+        r#"<rect x="10" y="10" width="20" height="30" fill="black" stroke="red" stroke-width="8"/>"#;
+    let shape = r#"<rect x="10" y="10" width="20" height="30"/>"#;
+    let cases = [
+        format!(r#"<clipPath id="c">{shape}</clipPath><g clip-path="url(#c)">{stroked_rect}</g>"#),
+        format!(r#"<mask id="m" fill="white">{shape}</mask><g mask="url(#m)">{stroked_rect}</g>"#),
+    ];
+    for content in cases {
+        // Setup a logo with a stroke only partially visible
+        let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{content}</svg>"#);
+
+        // Run the logo preparation
+        let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
+
+        // Check the logo is left untouched
+        assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
+    }
+}
+
+#[tokio::test]
 async fn test_prepare_logo_excluded_file_keeps_viewbox() {
     // Setup a logo excluded from the viewbox adjustment
     let svg =
@@ -45,41 +82,37 @@ async fn test_prepare_logo_excluded_file_keeps_viewbox() {
 }
 
 #[tokio::test]
-async fn test_prepare_logo_includes_strokes_in_viewbox() {
-    // Setup a logo with a stroked rectangle and a viewbox starting at negative
-    // coordinates
-    let stroked_rect =
-        r#"<rect x="10" y="10" width="20" height="30" fill="none" stroke="black" stroke-width="4"/>"#;
-    let svg =
-        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 120 120">{stroked_rect}</svg>"#);
+async fn test_prepare_logo_filter_in_mask_adjusts_viewbox() {
+    // Setup a logo with a filter only applied inside a mask
+    let defs = r#"<filter id="f"><feGaussianBlur stdDeviation="2"/></filter><mask id="m"><g filter="url(#f)"><rect width="100" height="100" fill="white"/></g></mask>"#;
+    let svg = format!(
+        r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{defs}<g mask="url(#m)">{RECT_SVG_BODY}</g></svg>"#
+    );
 
     // Run the logo preparation
     let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
 
-    // Check the viewbox includes the whole stroke
+    // Check the viewbox is adjusted
     assert_eq!(
         String::from_utf8(logo.data).unwrap(),
-        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 8 24 34">{stroked_rect}</svg>"#)
+        format!(
+            r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 20 30">{defs}<g mask="url(#m)">{RECT_SVG_BODY}</g></svg>"#
+        )
     );
 }
 
 #[tokio::test]
-async fn test_prepare_logo_includes_strokes_at_origin_in_viewbox() {
-    // Setup a logo with a stroked rectangle starting at the origin, whose
-    // stroke extends to negative coordinates
-    let stroked_rect =
-        r#"<rect x="0" y="0" width="20" height="30" fill="black" stroke="black" stroke-width="2"/>"#;
-    let svg =
-        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{stroked_rect}</svg>"#);
+async fn test_prepare_logo_filtered_logo_keeps_viewbox() {
+    // Setup a logo with a shadow drawn outside its content by a filter
+    let svg = format!(
+        r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="f"><feGaussianBlur stdDeviation="2"/></filter><g filter="url(#f)">{RECT_SVG_BODY}</g></svg>"#
+    );
 
     // Run the logo preparation
     let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
 
-    // Check the viewbox includes the whole stroke
-    assert_eq!(
-        String::from_utf8(logo.data).unwrap(),
-        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 22 32">{stroked_rect}</svg>"#)
-    );
+    // Check the logo is left untouched
+    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
 }
 
 #[tokio::test]
@@ -124,87 +157,41 @@ async fn test_prepare_logo_ignores_transparent_group_strokes_in_viewbox() {
 }
 
 #[tokio::test]
-async fn test_prepare_logo_clipped_or_masked_stroke_keeps_viewbox() {
+async fn test_prepare_logo_includes_strokes_at_origin_in_viewbox() {
+    // Setup a logo with a stroked rectangle starting at the origin, whose
+    // stroke extends to negative coordinates
     let stroked_rect =
-        r#"<rect x="10" y="10" width="20" height="30" fill="black" stroke="red" stroke-width="8"/>"#;
-    let shape = r#"<rect x="10" y="10" width="20" height="30"/>"#;
-    let cases = [
-        format!(r#"<clipPath id="c">{shape}</clipPath><g clip-path="url(#c)">{stroked_rect}</g>"#),
-        format!(r#"<mask id="m" fill="white">{shape}</mask><g mask="url(#m)">{stroked_rect}</g>"#),
-    ];
-    for content in cases {
-        // Setup a logo with a stroke only partially visible
-        let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{content}</svg>"#);
-
-        // Run the logo preparation
-        let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
-
-        // Check the logo is left untouched
-        assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
-    }
-}
-
-#[tokio::test]
-async fn test_prepare_logo_clipped_content_without_drawn_stroke_adjusts_viewbox() {
-    // Setup a logo with clipped content whose only stroke is transparent
-    let content = r#"<clipPath id="c"><rect width="100" height="100"/></clipPath><g clip-path="url(#c)"><rect x="10" y="10" width="20" height="30" fill="black" stroke="red" stroke-width="8" stroke-opacity="0"/></g>"#;
-    let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{content}</svg>"#);
+        r#"<rect x="0" y="0" width="20" height="30" fill="black" stroke="black" stroke-width="2"/>"#;
+    let svg =
+        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{stroked_rect}</svg>"#);
 
     // Run the logo preparation
     let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
 
-    // Check the viewbox is adjusted
+    // Check the viewbox includes the whole stroke
     assert_eq!(
         String::from_utf8(logo.data).unwrap(),
-        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 20 30">{content}</svg>"#)
+        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 22 32">{stroked_rect}</svg>"#)
     );
 }
 
 #[tokio::test]
-async fn test_prepare_logo_negative_content_keeps_viewbox() {
-    // Setup a logo whose content starts at negative coordinates
-    let rect = r#"<rect x="-10" y="10" width="20" height="30" fill="black"/>"#;
-    let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 0 100 100">{rect}</svg>"#);
+async fn test_prepare_logo_includes_strokes_in_viewbox() {
+    // Setup a logo with a stroked rectangle and a viewbox starting at negative
+    // coordinates
+    let stroked_rect =
+        r#"<rect x="10" y="10" width="20" height="30" fill="none" stroke="black" stroke-width="4"/>"#;
+    let svg =
+        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 120 120">{stroked_rect}</svg>"#);
 
     // Run the logo preparation
     let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
 
-    // Check the logo is left untouched
-    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
-}
-
-#[tokio::test]
-async fn test_prepare_logo_filter_in_mask_adjusts_viewbox() {
-    // Setup a logo with a filter only applied inside a mask
-    let defs = r#"<filter id="f"><feGaussianBlur stdDeviation="2"/></filter><mask id="m"><g filter="url(#f)"><rect width="100" height="100" fill="white"/></g></mask>"#;
-    let svg = format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">{defs}<g mask="url(#m)">{RECT_SVG_BODY}</g></svg>"#
-    );
-
-    // Run the logo preparation
-    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
-
-    // Check the viewbox is adjusted
+    // Check the viewbox includes the whole stroke
     assert_eq!(
         String::from_utf8(logo.data).unwrap(),
-        format!(
-            r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 20 30">{defs}<g mask="url(#m)">{RECT_SVG_BODY}</g></svg>"#
-        )
+        format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="8 8 24 34">{stroked_rect}</svg>"#)
     );
-}
-
-#[tokio::test]
-async fn test_prepare_logo_filtered_logo_keeps_viewbox() {
-    // Setup a logo with a shadow drawn outside its content by a filter
-    let svg = format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="f"><feGaussianBlur stdDeviation="2"/></filter><g filter="url(#f)">{RECT_SVG_BODY}</g></svg>"#
-    );
-
-    // Run the logo preparation
-    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
-
-    // Check the logo is left untouched
-    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
 }
 
 #[tokio::test]
@@ -268,6 +255,19 @@ async fn test_prepare_logo_missing_file_returns_error() {
             logos_dir.path().join("missing.svg").display()
         )
     );
+}
+
+#[tokio::test]
+async fn test_prepare_logo_negative_content_keeps_viewbox() {
+    // Setup a logo whose content starts at negative coordinates
+    let rect = r#"<rect x="-10" y="10" width="20" height="30" fill="black"/>"#;
+    let svg = format!(r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 0 100 100">{rect}</svg>"#);
+
+    // Run the logo preparation
+    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
+
+    // Check the logo is left untouched
+    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
 }
 
 #[tokio::test]
@@ -426,20 +426,6 @@ async fn test_prepare_logo_stretched_logo_keeps_viewbox() {
 }
 
 #[tokio::test]
-async fn test_prepare_logo_with_text_keeps_viewbox() {
-    // Setup a logo with some text, whose size depends on the font used
-    let svg = format!(
-        r#"<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">{RECT_SVG_BODY}<text x="60" y="40" font-size="30">ACME</text></svg>"#
-    );
-
-    // Run the logo preparation
-    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
-
-    // Check the logo is left untouched
-    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
-}
-
-#[tokio::test]
 async fn test_prepare_logo_with_blank_text_adjusts_viewbox() {
     // Setup a logo with some text elements without visible content
     let blank_text =
@@ -465,6 +451,20 @@ async fn test_prepare_logo_with_text_in_mask_keeps_viewbox() {
     // Setup a logo with some text inside a mask
     let svg = format!(
         r#"<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60"><mask id="m"><text x="10" y="40" font-size="30" fill="white">ACME</text></mask><g mask="url(#m)">{RECT_SVG_BODY}</g></svg>"#
+    );
+
+    // Run the logo preparation
+    let logo = prepare_svg(&svg, "logo.svg", &LogosViewbox::default()).await;
+
+    // Check the logo is left untouched
+    assert_eq!(String::from_utf8(logo.data).unwrap(), svg);
+}
+
+#[tokio::test]
+async fn test_prepare_logo_with_text_keeps_viewbox() {
+    // Setup a logo with some text, whose size depends on the font used
+    let svg = format!(
+        r#"<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60">{RECT_SVG_BODY}<text x="60" y="40" font-size="30">ACME</text></svg>"#
     );
 
     // Run the logo preparation

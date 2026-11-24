@@ -12,10 +12,10 @@ import Content from '../Content';
 
 vi.mock('../card', () => ({ default: () => createTextElement('Card view') }));
 
-/** Width of the grid container in the tests. */
+// Width of the grid container in the tests
 const GRID_WIDTH = 1200;
 
-/** Featured information of the test item, which is not featured in g2. */
+// Featured information of the test item, which is not featured in g2
 const FEATURED = { excluded_groups: ['g2'], label: 'Graduated', order: 1 };
 
 describe('Content', () => {

@@ -8,7 +8,7 @@ import type { Item } from '../../../../types';
 import type { CategoriesData } from '../../../../utils/itemsDataGetter';
 import GridCategory from '..';
 
-/** Width of the grid container in the tests. */
+// Width of the grid container in the tests
 const GRID_WIDTH = 1200;
 
 describe('GridCategory', () => {

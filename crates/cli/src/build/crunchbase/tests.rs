@@ -114,6 +114,32 @@ async fn test_collect_crunchbase_data_preserves_other_landscapes_entries_on_writ
 }
 
 #[tokio::test]
+async fn test_collect_crunchbase_data_refresh_failure_keeps_stale_entry() {
+    // Setup cache with an expired entry
+    let tmp_dir = TempDir::new().unwrap();
+    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
+    let stale_org = organization(now() - TimeDelta::days(8));
+    write_cache_entries(tmp_dir.path(), &json!({ ORG_URL: stale_org }));
+
+    // Setup client expectations
+    let mut cb = MockCB::new();
+    cb.expect_get_organization()
+        .times(1)
+        .withf(|permalink| permalink == "acme")
+        .returning(|_| Err(format_err!("unexpected status code: 500")));
+
+    // Run the collection
+    let crunchbase_data =
+        collect_crunchbase_data_with(&cache, &landscape_data(&[ORG_URL]), Some(Arc::new(cb)), now()).await;
+
+    // Check the stale entry is returned
+    assert_eq!(
+        crunchbase_data,
+        BTreeMap::from([(ORG_URL.to_string(), stale_org)])
+    );
+}
+
+#[tokio::test]
 async fn test_collect_crunchbase_data_refresh_failure_logs_error_cause() {
     // Setup cache with an expired entry
     let tmp_dir = TempDir::new().unwrap();
@@ -126,7 +152,12 @@ async fn test_collect_crunchbase_data_refresh_failure_logs_error_cause() {
     // Setup client expectations
     let mut cb = MockCB::new();
     cb.expect_get_organization()
-        .times(2)
+        .times(1)
+        .withf(|permalink| permalink == "acme")
+        .returning(|_| Err(format_err!("connection refused").context("request failed")));
+    cb.expect_get_organization()
+        .times(1)
+        .withf(|permalink| permalink == "other")
         .returning(|_| Err(format_err!("connection refused").context("request failed")));
 
     // Run the collection for that organization and another one without
@@ -152,32 +183,6 @@ async fn test_collect_crunchbase_data_refresh_failure_logs_error_cause() {
             "no crunchbase data available for organization url={OTHER_ORG_URL} err=request failed: connection refused"
         )),
         "{logs}"
-    );
-}
-
-#[tokio::test]
-async fn test_collect_crunchbase_data_refresh_failure_keeps_stale_entry() {
-    // Setup cache with an expired entry
-    let tmp_dir = TempDir::new().unwrap();
-    let cache = Cache::new(Some(tmp_dir.path())).unwrap();
-    let stale_org = organization(now() - TimeDelta::days(8));
-    write_cache_entries(tmp_dir.path(), &json!({ ORG_URL: stale_org }));
-
-    // Setup client expectations
-    let mut cb = MockCB::new();
-    cb.expect_get_organization()
-        .times(1)
-        .withf(|permalink| permalink == "acme")
-        .returning(|_| Err(format_err!("unexpected status code: 500")));
-
-    // Run the collection
-    let crunchbase_data =
-        collect_crunchbase_data_with(&cache, &landscape_data(&[ORG_URL]), Some(Arc::new(cb)), now()).await;
-
-    // Check the stale entry is returned
-    assert_eq!(
-        crunchbase_data,
-        BTreeMap::from([(ORG_URL.to_string(), stale_org)])
     );
 }
 
