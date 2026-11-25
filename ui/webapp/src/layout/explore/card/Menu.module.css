@@ -6,6 +6,7 @@
   width: 270px;
   max-width: 270px;
   min-width: 270px;
+  align-self: flex-start;
   top: 5.5rem;
   bottom: 1rem;
   max-height: var(--menu-max-height, calc(var(--app-height) - 6.5rem));
@@ -29,9 +30,12 @@
   );
 }
 
+/* Constrained by flex-shrink inside `.sticky`'s max-height */
 .content {
   overflow-y: auto;
-  max-height: 100%;
+}
+
+.containOverscroll {
   overscroll-behavior: contain;
 }
 

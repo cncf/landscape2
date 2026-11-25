@@ -1,6 +1,6 @@
 import { useLocation } from '@solidjs/router';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createMemo, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption } from '../../../types';
 import { getAnchorId } from '../../../utils/anchorIds';
@@ -39,17 +39,16 @@ const CardCategory = (props: Props) => {
   });
   // Whether the left-hand menu has at least one entry to render
   const hasVisibleMenu = createMemo(() => sectionAnchorIds().some((anchorId) => !isUndefined(anchorId)));
+  let hasScrolledInitialSection = false;
   let scrollTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  const updateActiveSection = () => {
+  const updateActiveSection = (containerEl: HTMLDivElement) => {
     const cleanHash = parseHashId(location.hash);
     const anchorIds = sectionAnchorIds();
     // Only skip scrolling when the hash names the section that is actually first on the page
     if (cleanHash !== '' && anchorIds.includes(cleanHash) && cleanHash !== anchorIds[0]) {
       // Does nothing when the menu option is already visible
-      container()
-        ?.querySelector(`#btn_${CSS.escape(cleanHash)}`)
-        ?.scrollIntoView({ block: 'nearest' });
+      containerEl.querySelector(`#btn_${CSS.escape(cleanHash)}`)?.scrollIntoView({ block: 'nearest' });
       scrollTimeout = setTimeout(() => {
         goToElement(`card_${cleanHash}`);
       }, 100);
@@ -66,11 +65,14 @@ const CardCategory = (props: Props) => {
     })
   );
 
-  onMount(() => {
-    if (isVisible()) {
-      updateActiveSection();
-    }
-  });
+  // Reveal the active hash entry once the container (and menu) has mounted
+  createEffect(
+    on(container, (containerEl) => {
+      if (!containerEl || !isVisible() || hasScrolledInitialSection) return;
+      hasScrolledInitialSection = true;
+      updateActiveSection(containerEl);
+    })
+  );
 
   onCleanup(() => {
     if (!isUndefined(scrollTimeout)) {

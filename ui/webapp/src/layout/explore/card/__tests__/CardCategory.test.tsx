@@ -14,9 +14,12 @@ vi.mock('../Content', () => ({ default: () => createTextElement('Card content') 
 const NON_ASCII_SUBCATEGORY = 'OSPO Adоpter';
 
 const goToElementMock = vi.mocked(goToElement);
+// jsdom has no scrollIntoView, which CardCategory uses to show the active menu option
+const scrollIntoViewMock = vi.fn();
 
 describe('CardCategory', () => {
   beforeEach(() => {
+    Element.prototype.scrollIntoView = scrollIntoViewMock;
     window.baseDS = createBaseData({
       categories: [
         {
@@ -42,14 +45,16 @@ describe('CardCategory', () => {
 
   afterEach(() => {
     goToElementMock.mockReset();
+    scrollIntoViewMock.mockReset();
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
   });
 
   it.each([
     ['an ASCII', '#ospo-adopter--second', 'ospo-adopter--second'],
     ['a percent-encoded non-ASCII', '#ospo-adopter--ospo-ad%D0%BEpter', 'ospo-adopter--ospo-adоpter'],
-  ])('scrolls to the section of %s hash', async (_, hash, sectionId) => {
+  ])('scrolls to the section and reveals the menu option of %s hash', async (_, hash, sectionId) => {
     // Render the Card view at the section hash, encoded as the browser gives it
-    renderWithExploreStores(
+    const { container } = renderWithExploreStores(
       () => (
         <CardCategory
           initialIsVisible
@@ -63,7 +68,10 @@ describe('CardCategory', () => {
       { url: `/${hash}` }
     );
 
-    // Check the section is scrolled into view
+    // Check the mounted menu button is revealed and the section is scrolled into view
+    const button = container.querySelector(`#btn_${CSS.escape(sectionId)}`);
+    expect(scrollIntoViewMock).toHaveBeenCalledWith({ block: 'nearest' });
+    expect(scrollIntoViewMock.mock.contexts).toContain(button);
     await vi.waitFor(() => expect(goToElementMock).toHaveBeenCalledWith(`card_${sectionId}`));
   });
 
