@@ -114,6 +114,18 @@ const Menu = (props: Props) => {
     });
   };
 
+  // Menu sections whose entries resolve to an anchor id
+  const visibleSections = createMemo(() =>
+    Object.entries(props.menu)
+      .map(([title, subtitles]) => ({
+        title,
+        entries: subtitles
+          .map((subtitle) => ({ subtitle, hash: getAnchorId({ title, subtitle, grouped: true }) }))
+          .filter((entry): entry is { subtitle: string; hash: string } => !isUndefined(entry.hash)),
+      }))
+      .filter((section) => section.entries.length > 0)
+  );
+
   return (
     <div
       ref={setRoot}
@@ -122,9 +134,9 @@ const Menu = (props: Props) => {
     >
       <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
         <div ref={setRef}>
-          <For each={Object.keys(props.menu)}>
-            {(title, index) => {
-              const isTAG = title === 'Tag';
+          <For each={visibleSections()}>
+            {(section, index) => {
+              const isTAG = section.title === 'Tag';
               return (
                 <div>
                   <div
@@ -132,45 +144,41 @@ const Menu = (props: Props) => {
                     classList={{ 'border-top-0': index() === 0, 'text-uppercase': isTAG }}
                     style={{ 'background-color': bgColor }}
                   >
-                    {title}
+                    {section.title}
                   </div>
 
                   <div
                     class={`d-flex flex-column text-start border border-3 py-3 border-white ${styles.subcategories}`}
                     classList={{
-                      'border-bottom-0': index() !== Object.keys(props.menu).length - 1,
+                      'border-bottom-0': index() !== visibleSections().length - 1,
                     }}
                   >
-                    <For each={props.menu[title]}>
-                      {(subtitle: string) => (
-                        <Show when={getAnchorId({ title: title, subtitle: subtitle, grouped: true })}>
-                          {(hash) => (
-                            <button
-                              id={`btn_${hash()}`}
-                              title={subtitle}
-                              class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
-                              classList={{
-                                [`fw-bold ${styles.selected}`]: hash() === selectedId(),
-                              }}
-                              disabled={hash() === selectedId()}
-                              onClick={() => {
-                                goToElement(`card_${hash()}`);
-                                if (!isUndefined(props.onClickOption)) {
-                                  props.onClickOption();
-                                }
-                                updateRoute(hash());
-                              }}
-                              aria-label={getSectionLabel(subtitle, isTAG)}
-                            >
-                              <Show when={hash() === selectedId()}>
-                                <div class={`position-absolute ${styles.arrow}`}>
-                                  <SVGIcon kind={SVGIconKind.ArrowRight} />
-                                </div>
-                              </Show>
-                              {getSectionLabel(subtitle, isTAG)}
-                            </button>
-                          )}
-                        </Show>
+                    <For each={section.entries}>
+                      {({ subtitle, hash }) => (
+                        <button
+                          id={`btn_${hash}`}
+                          title={subtitle}
+                          class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
+                          classList={{
+                            [`fw-bold ${styles.selected}`]: hash === selectedId(),
+                          }}
+                          disabled={hash === selectedId()}
+                          onClick={() => {
+                            goToElement(`card_${hash}`);
+                            if (!isUndefined(props.onClickOption)) {
+                              props.onClickOption();
+                            }
+                            updateRoute(hash);
+                          }}
+                          aria-label={getSectionLabel(subtitle, isTAG)}
+                        >
+                          <Show when={hash === selectedId()}>
+                            <div class={`position-absolute ${styles.arrow}`}>
+                              <SVGIcon kind={SVGIconKind.ArrowRight} />
+                            </div>
+                          </Show>
+                          {getSectionLabel(subtitle, isTAG)}
+                        </button>
                       )}
                     </For>
                   </div>

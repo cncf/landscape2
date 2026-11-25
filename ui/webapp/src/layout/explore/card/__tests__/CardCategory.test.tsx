@@ -58,4 +58,24 @@ describe('CardCategory', () => {
     // Check the section is scrolled into view
     await vi.waitFor(() => expect(goToElementMock).toHaveBeenCalledWith(`card_${sectionId}`));
   });
+
+  it('scrolls to a defined section hash when an undefined subcategory sorts first', async () => {
+    // Render the Card view with an undefined subcategory ahead of the defined ones
+    renderWithExploreStores(
+      () => (
+        <CardCategory
+          initialIsVisible
+          classify={ClassifyOption.Category}
+          sorted={SortOption.Name}
+          direction={SortDirection.Asc}
+          data={{}}
+          menu={{ 'OSPO Adopter': ['A Undefined', 'First', 'Second'] }}
+        />
+      ),
+      { url: '/#ospo-adopter--second' }
+    );
+
+    // Check the defined section is still scrolled into view
+    await vi.waitFor(() => expect(goToElementMock).toHaveBeenCalledWith('card_ospo-adopter--second'));
+  });
 });

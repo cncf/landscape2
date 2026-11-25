@@ -30,11 +30,11 @@ pub(super) struct LandscapeData {
 }
 
 impl LandscapeData {
-    /// Validate landscape data.
+    /// Validate landscape data, returning any non-fatal warnings found.
     ///
     /// Category, subcategory and item names are checked through their
     /// normalized form, as that is what ids, embed keys and API paths use.
-    pub fn validate(&self) -> Result<()> {
+    pub fn validate(&self) -> Result<Vec<String>> {
         // Index the categories and subcategories second paths can point to
         let mut categories_index: CategoriesIndex<'_> = HashMap::new();
         for category in &self.landscape {
@@ -47,6 +47,7 @@ impl LandscapeData {
         // Check every category, tracking the values that must be unique
         let mut state = ValidationState::default();
         let mut categories_seen = HashMap::new();
+        let mut warnings = vec![];
         for (category_index, category) in self.landscape.iter().enumerate() {
             // Check category name
             if category.name.trim().is_empty() {
@@ -81,6 +82,10 @@ impl LandscapeData {
                 }
 
                 // Check items
+                let location = format!(
+                    "(category: [{}] | subcategory: [{}])",
+                    category.name, subcategory.name
+                );
                 for (item_index, item) in subcategory.items.iter().enumerate() {
                     let item_ctx = || {
                         let item_name = if item.name.trim().is_empty() {
@@ -88,13 +93,18 @@ impl LandscapeData {
                         } else {
                             item.name.clone()
                         };
-                        format!(
-                            "item [{item_name}] is not valid (category: [{}] | subcategory: [{}])",
-                            category.name, subcategory.name
-                        )
+                        format!("item [{item_name}] is not valid {location}")
                     };
-                    item.validate(&category_norm, &subcategory_norm, &categories_index, &mut state)
+                    let item_warnings = item
+                        .validate(&category_norm, &subcategory_norm, &categories_index, &mut state)
                         .with_context(item_ctx)?;
+
+                    // Collect item warnings with their location
+                    warnings.extend(
+                        item_warnings
+                            .into_iter()
+                            .map(|warning| format!("item [{}] {location}: {warning}", item.name)),
+                    );
                 }
 
                 // Check the subcategory name is unique within its category. It
@@ -115,7 +125,7 @@ impl LandscapeData {
                 .with_context(category_ctx)?;
         }
 
-        Ok(())
+        Ok(warnings)
     }
 }
 
@@ -192,14 +202,15 @@ pub(super) struct Item {
 
 impl Item {
     /// Validate the item, tracking the values that must be unique across the
-    /// whole file in the validation state provided.
+    /// whole file in the validation state provided and returning any non-fatal
+    /// warnings found.
     fn validate(
         &self,
         category_norm: &str,
         subcategory_norm: &str,
         categories_index: &CategoriesIndex<'_>,
         state: &mut ValidationState,
-    ) -> Result<()> {
+    ) -> Result<Vec<String>> {
         // Check name and id
         if self.name.trim().is_empty() {
             bail!("item name is required");
@@ -268,14 +279,19 @@ impl Item {
         }
 
         // Check second path entries
+        let mut warnings = vec![];
         if let Some(second_path) = &self.second_path {
             for entry in second_path {
-                validate_second_path(entry, categories_index)?;
+                if let Some(warning) = validate_second_path(entry, categories_index)? {
+                    warnings.push(warning);
+                }
             }
         }
 
         // Check urls
-        validate_urls(self)
+        validate_urls(self)?;
+
+        Ok(warnings)
     }
 }
 
@@ -466,9 +482,10 @@ fn validate_logo(logo: &str) -> Result<()> {
     Ok(())
 }
 
-/// Validate the second path entry provided, checking it points to an existing
-/// category and subcategory.
-fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> Result<()> {
+/// Validate the second path entry provided, checking its format and that it
+/// points to an existing category. Returns a warning when the subcategory is
+/// not defined in that category.
+fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> Result<Option<String>> {
     let Some((category, subcategory)) = parse_second_path(entry) else {
         bail!("invalid second path entry [{entry}] (expected: category / subcategory)");
     };
@@ -476,11 +493,11 @@ fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> 
         bail!("second path entry [{entry}] references unknown category [{category}]");
     };
     if !subcategories.contains(subcategory) {
-        bail!(
+        return Ok(Some(format!(
             "second path entry [{entry}] references unknown subcategory [{subcategory}] in category [{category}]"
-        );
+        )));
     }
-    Ok(())
+    Ok(None)
 }
 
 /// Validate the urls of the item provided.

@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Local UI development proxy (`VITE_PROXY_TARGET`) (#952)
 - Projects summary alias (#892)
 - Kiosk item view (`kiosk.html?item=<id>`) (#932)
-- Overlay warnings, logged in the browser console, for items not found in the deployed landscape (they have no logo nor CLOMonitor summary) and for unknown keys in the overlay files
+- Overlay warnings, logged in the browser console, for items not found in the deployed landscape (they have no logo nor CLOMonitor summary) and for warnings reported while parsing the overlay files (such as unknown keys or unknown `second_path` subcategories)
 - Overlay matching of items moved to another category or subcategory to the deployed item with the same name, when that name is unique, to keep their logo and CLOMonitor summary
 
 ### Changed
@@ -86,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Item website not falling back to the Crunchbase homepage when the homepage is the item's repository
 - Data validation accepting categories, subcategories or items whose ids collide (for example `Foo Bar` and `Foo-Bar`) or whose names have no letters or digits
 - Data validation accepting maturity or TAG values that normalize to `all` or like another value
-- Malformed item `second_path` entries silently ignored, and entries pointing to unknown categories or subcategories kept
+- Malformed item `second_path` entries silently ignored, and entries pointing to unknown categories kept (entries pointing to unknown subcategories are still kept for now, with a per-item warning)
 - Item logo paths escaping the logos directory and unsafe `clomonitor_name` values accepted
 - Empty entries kept in item `summary_personas` and `summary_tags` lists
 - Settings `logos_viewbox` failing to parse when only `adjust` or only `exclude` was set

@@ -103,4 +103,27 @@ describe('Menu', () => {
     expect(screen.getByRole('button', { name: 'First' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'OSPO Adоpter' })).toBeEnabled();
   });
+
+  it('omits categories that only have undefined subcategories', () => {
+    // Render a menu containing a category with only an undefined subcategory
+    renderWithRouter(
+      () => (
+        <Menu
+          menu={{
+            'Category 1': ['Sub 1', 'Unknown Sub'],
+            'Only Unknown': ['Unknown Sub'],
+          }}
+          isVisible
+          sticky
+        />
+      ),
+      { url: '/' }
+    );
+
+    // Check only the category and subcategory with defined anchors are rendered
+    expect(screen.getByText('Category 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sub 1' })).toBeInTheDocument();
+    expect(screen.queryByText('Only Unknown')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Unknown Sub' })).not.toBeInTheDocument();
+  });
 });

@@ -141,8 +141,9 @@ fn test_landscape_data_validate_accepts_valid_second_path() {
         ],
     };
 
-    // Run the validation
-    landscape.validate().unwrap();
+    // Run the validation and check no warnings are returned
+    let warnings = landscape.validate().unwrap();
+    assert_eq!(warnings, Vec::<String>::new());
 }
 
 #[test]
@@ -430,6 +431,24 @@ fn test_landscape_data_validate_rejects_empty_subcategory_name() {
 }
 
 #[test]
+fn test_landscape_data_validate_rejects_error_after_second_path_warning() {
+    // Setup an item with an unknown second path subcategory followed by an
+    // invalid homepage url
+    let landscape = landscape_with_items(vec![Item {
+        homepage_url: "not-a-url".to_string(),
+        second_path: Some(vec!["Category / Unknown".to_string()]),
+        ..valid_item()
+    }]);
+
+    // Run the validation and check the fatal error still fails validation
+    let err = landscape.validate().unwrap_err();
+    assert_eq!(
+        format!("{err:#}"),
+        "item [Item] is not valid (category: [Category] | subcategory: [Subcategory]): invalid homepage url: relative URL without a base"
+    );
+}
+
+#[test]
 fn test_landscape_data_validate_rejects_invalid_clomonitor_name() {
     for clomonitor_name in ["a/b", "..", "x?y", "a..b"] {
         // Setup an item with an invalid CLOMonitor name
@@ -486,10 +505,6 @@ fn test_landscape_data_validate_rejects_invalid_second_path() {
         (
             "Unknown / Subcategory",
             "second path entry [Unknown / Subcategory] references unknown category [Unknown]",
-        ),
-        (
-            "Category / Unknown",
-            "second path entry [Category / Unknown] references unknown subcategory [Unknown] in category [Category]",
         ),
     ];
 
@@ -733,6 +748,56 @@ fn test_landscape_data_validate_rejects_wrong_social_domain() {
             )
         );
     }
+}
+
+#[test]
+fn test_landscape_data_validate_warns_on_unknown_second_path_subcategory() {
+    // Setup items referencing both defined and undefined subcategories in
+    // existing categories
+    let landscape = LandscapeData {
+        landscape: vec![
+            category(
+                "Category 1",
+                vec![subcategory(
+                    "Subcategory 1",
+                    vec![Item {
+                        name: "Item 1".to_string(),
+                        second_path: Some(vec![
+                            "Category 2 / Subcategory 2".to_string(),
+                            " Category 2 / Unknown 1 ".to_string(),
+                            "Category 1 / Unknown 2".to_string(),
+                        ]),
+                        ..valid_item()
+                    }],
+                )],
+            ),
+            category(
+                "Category 2",
+                vec![subcategory(
+                    "Subcategory 2",
+                    vec![Item {
+                        name: "Item 2".to_string(),
+                        second_path: Some(vec!["Category 1 / Unknown 2".to_string()]),
+                        ..valid_item()
+                    }],
+                )],
+            ),
+        ],
+    };
+
+    // Run the validation and check one warning per unknown subcategory entry
+    let warnings = landscape.validate().unwrap();
+    assert_eq!(
+        warnings,
+        vec![
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [ Category 2 / Unknown 1 ] references unknown subcategory [Unknown 1] in category [Category 2]",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Category 1 / Unknown 2] references unknown subcategory [Unknown 2] in category [Category 1]",
+            "item [Item 2] (category: [Category 2] | subcategory: [Subcategory 2]): \
+             second path entry [Category 1 / Unknown 2] references unknown subcategory [Unknown 2] in category [Category 1]",
+        ]
+    );
 }
 
 // Helpers.

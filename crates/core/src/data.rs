@@ -151,7 +151,7 @@ impl LandscapeData {
     }
 
     /// Create a new landscape data instance from the raw legacy data provided,
-    /// reporting the unknown keys found as warnings.
+    /// reporting unknown keys and non-fatal validation issues as warnings.
     ///
     /// # Errors
     /// Returns an error if the data is not valid YAML or does not pass the
@@ -294,11 +294,11 @@ impl LandscapeData {
         // Parse the raw legacy data, collecting the unknown keys warnings
         let Parsed {
             value: legacy_data,
-            warnings,
+            mut warnings,
         } = parse_yaml::<legacy::LandscapeData>(raw)?;
 
         // Validate the legacy data and convert it to the new format
-        legacy_data.validate()?;
+        warnings.extend(legacy_data.validate()?);
         let landscape_data = LandscapeData::from(legacy_data);
 
         Ok(Parsed {

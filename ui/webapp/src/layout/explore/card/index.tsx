@@ -79,11 +79,12 @@ const CardCategory = (props: Props) => {
     on(data, () => {
       const menuData = menu();
       if (!isUndefined(menuData) && !isEmpty(menuData)) {
-        const firstTitle = Object.keys(menuData)[0];
-        const firstSubtitle = menuData[firstTitle][0];
-        if (!isUndefined(firstSubtitle)) {
-          setFirstItem(getAnchorId({ title: firstTitle, subtitle: firstSubtitle, grouped: true }));
-        }
+        const firstAnchorId = Object.entries(menuData)
+          .flatMap(([title, subtitles]) => subtitles.map((subtitle) => getAnchorId({ title, subtitle, grouped: true })))
+          .find((anchorId) => !isUndefined(anchorId));
+        setFirstItem(firstAnchorId);
+      } else {
+        setFirstItem(undefined);
       }
     })
   );

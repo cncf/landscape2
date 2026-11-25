@@ -346,6 +346,38 @@ fn test_landscape_data_new_from_yaml_rejects_invalid_yaml() {
 }
 
 #[test]
+fn test_landscape_data_new_from_yaml_reports_yaml_and_validation_warnings() {
+    // Setup data with both an unknown key and an unknown second path subcategory
+    let raw = r"
+landscape:
+  - category:
+    name: Category 1
+    subcategories:
+      - subcategory:
+        name: Subcategory 1
+        items:
+          - item:
+            homepage_url: https://example.com
+            logo: logo.svg
+            name: Item 1
+            organization: Organization
+            second_path:
+              - Category 1 / Unknown
+";
+
+    // Run the parsing and check both warning sources are returned in order
+    let parsed = LandscapeData::new_from_yaml(raw).unwrap();
+    assert_eq!(
+        parsed.warnings,
+        vec![
+            "unknown key `landscape[].subcategories[].items[].organization` (found once, at landscape.0.subcategories.0.items.0.organization)",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Category 1 / Unknown] references unknown subcategory [Unknown] in category [Category 1]",
+        ]
+    );
+}
+
+#[test]
 fn test_landscape_data_new_from_yaml_warns_on_unknown_key() {
     // Setup data with an unknown key in every item
     let raw = r"
@@ -375,6 +407,49 @@ landscape:
         vec![
             "unknown key `landscape[].subcategories[].items[].organization` (found 2 times, first at landscape.0.subcategories.0.items.0.organization)"
         ]
+    );
+}
+
+#[test]
+fn test_landscape_data_new_from_yaml_warns_on_unknown_second_path_subcategory() {
+    // Setup data with a second path referencing an undefined subcategory
+    let raw = r"
+landscape:
+  - category:
+    name: Category 1
+    subcategories:
+      - subcategory:
+        name: Subcategory 1
+        items:
+          - item:
+            homepage_url: https://example.com
+            logo: logo.svg
+            name: Item 1
+            second_path:
+              - Category 2 / Unknown
+  - category:
+    name: Category 2
+    subcategories:
+      - subcategory:
+        name: Subcategory 2
+        items: []
+";
+
+    // Run the parsing and check the warning is reported while keeping the entry
+    let parsed = LandscapeData::new_from_yaml(raw).unwrap();
+    assert_eq!(
+        parsed.warnings,
+        vec![
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Category 2 / Unknown] references unknown subcategory [Unknown] in category [Category 2]"
+        ]
+    );
+    assert_eq!(
+        parsed.value.items[0].additional_categories,
+        Some(vec![AdditionalCategory {
+            category: "Category 2".to_string(),
+            subcategory: "Unknown".to_string(),
+        }])
     );
 }
 
