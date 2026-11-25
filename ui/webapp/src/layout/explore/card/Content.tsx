@@ -120,13 +120,17 @@ const Content = (props: Props) => {
               const sectionContent = content();
               return Array.isArray(sectionContent) ? sectionContent : [];
             };
+            const classificationId = () => getAnchorId({ title: props.classify, subtitle: title, grouped: true });
 
             return (
               <div>
                 <Show
                   when={subsections()}
                   fallback={
-                    <div id={`card_${props.classify}--${title}`} class={`mb-3 ${styles.section}`}>
+                    <div
+                      id={isUndefined(classificationId()) ? undefined : `card_${classificationId()}`}
+                      class={`mb-3 ${styles.section}`}
+                    >
                       <div class={`d-flex flex-row fw-semibold mb-4 ${styles.title}`}>
                         <div class={`d-flex flex-row flex-grow-1 align-items-center p-2 ${styles.subcategoryTitle}`}>
                           <div class="flex-grow-1 text-truncate text-capitalize">

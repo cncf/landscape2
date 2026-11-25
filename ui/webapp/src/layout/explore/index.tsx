@@ -427,9 +427,7 @@ const Explore = (props: Props) => {
                 title="Index"
                 class={`position-relative btn btn-sm btn-secondary text-white btn-sm rounded-0 py-0 me-1 me-lg-4 btnIconMobile ${styles.mobileToCBtn}`}
                 onClick={() => setOpenMenuStatus(true)}
-                disabled={
-                  numVisibleItems() === 0 || (viewMode() === ViewMode.Card && classify() === ClassifyOption.None)
-                }
+                disabled={numVisibleItems() === 0 || (viewMode() === ViewMode.Card && cardSectionIds().length === 0)}
                 aria-label="Open Table of contents"
               >
                 <SVGIcon kind={SVGIconKind.ToC} />

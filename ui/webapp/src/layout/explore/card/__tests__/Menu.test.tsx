@@ -104,13 +104,13 @@ describe('Menu', () => {
     expect(screen.getByRole('button', { name: 'OSPO Adоpter' })).toBeEnabled();
   });
 
-  it('omits categories that only have undefined subcategories', () => {
-    // Render a menu containing a category with only an undefined subcategory
+  it('renders fallback subcategories of declared categories and omits unanchored entries', () => {
+    // Render a menu with a declared category's undeclared subcategory, an empty-normalizing one, and an unknown category
     renderWithRouter(
       () => (
         <Menu
           menu={{
-            'Category 1': ['Sub 1', 'Unknown Sub'],
+            'Category 1': ['Sub 1', 'Undeclared Sub', '---'],
             'Only Unknown': ['Unknown Sub'],
           }}
           isVisible
@@ -120,9 +120,14 @@ describe('Menu', () => {
       { url: '/' }
     );
 
-    // Check only the category and subcategory with defined anchors are rendered
+    // Check declared and fallback entries are rendered while unanchored entries are omitted
     expect(screen.getByText('Category 1')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sub 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Undeclared Sub' })).toHaveAttribute(
+      'id',
+      'btn_category-1--undeclared-sub'
+    );
+    expect(screen.queryByRole('button', { name: '---' })).not.toBeInTheDocument();
     expect(screen.queryByText('Only Unknown')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Unknown Sub' })).not.toBeInTheDocument();
   });

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createBaseData } from '../../test-utils/fixtures';
 import type { Guide } from '../../types';
-import { getAnchorId, UNDEFINED_MATURITY_ANCHOR_ID, UNDEFINED_TAG_ANCHOR_ID } from '../anchorIds';
+import { getAnchorId, normalizeName, UNDEFINED_MATURITY_ANCHOR_ID, UNDEFINED_TAG_ANCHOR_ID } from '../anchorIds';
 
 // Base data with the normalized names shipped by Rust
 const baseData = createBaseData({
@@ -11,6 +11,11 @@ const baseData = createBaseData({
       name: 'App Definition & Development',
       normalized_name: 'app-definition-development',
       subcategories: [{ name: 'Database & Storage', normalized_name: 'database-storage' }],
+    },
+    {
+      name: 'Industry',
+      normalized_name: 'industry',
+      subcategories: [],
     },
   ],
   maturity_options: [{ name: 'Early Stage', normalized_name: 'early-stage' }],
@@ -23,9 +28,7 @@ const guide: Guide = {
     {
       category: 'App Definition & Development',
       normalized_name: 'app-definition-development',
-      subcategories: [
-        { content: '', normalized_name: 'guide-only-subcategory', subcategory: 'Guide Only: Subcategory' },
-      ],
+      subcategories: [{ content: '', normalized_name: 'custom-guide-slug', subcategory: 'Guide Only: Subcategory' }],
     },
     {
       category: 'Introduction & Overview',
@@ -50,6 +53,16 @@ describe('getAnchorId', () => {
     );
   });
 
+  it('falls back to normalizing undeclared subcategories of declared categories', () => {
+    expect(getAnchorId({ title: 'App Definition & Development', subtitle: 'AI SIG', grouped: true })).toBe(
+      'app-definition-development--ai-sig'
+    );
+    expect(getAnchorId({ title: 'App Definition & Development', subtitle: 'AI SIG' })).toBe('ai-sig');
+    expect(getAnchorId({ title: 'Industry', subtitle: 'Financial Services & Banking', grouped: true })).toBe(
+      'industry--financial-services-banking'
+    );
+  });
+
   it('resolves maturity and TAG options to the shipped normalized names', () => {
     expect(getAnchorId({ title: 'Maturity', subtitle: 'Early Stage', grouped: true })).toBe('maturity--early-stage');
     expect(getAnchorId({ title: 'maturity', subtitle: 'Early Stage', grouped: true })).toBe('maturity--early-stage');
@@ -71,15 +84,72 @@ describe('getAnchorId', () => {
     );
     expect(
       getAnchorId({ title: 'App Definition & Development', subtitle: 'Guide Only: Subcategory', grouped: true }, guide)
-    ).toBe('app-definition-development--guide-only-subcategory');
+    ).toBe('app-definition-development--custom-guide-slug');
   });
 
-  it('returns undefined for unknown entries', () => {
+  it('returns undefined when a fallback subcategory collides with a declared subcategory', () => {
+    expect(
+      getAnchorId({ title: 'App Definition & Development', subtitle: 'database storage', grouped: true })
+    ).toBeUndefined();
+    expect(
+      getAnchorId({ title: 'App Definition & Development', subtitle: 'Database  &  Storage', grouped: true })
+    ).toBeUndefined();
+  });
+
+  it('returns undefined for unknown entries and empty fallback names', () => {
     expect(getAnchorId({ title: 'Unknown Category' })).toBeUndefined();
-    expect(getAnchorId({ title: 'App Definition & Development', subtitle: 'Unknown', grouped: true })).toBeUndefined();
+    expect(getAnchorId({ title: 'Unknown Category', subtitle: 'AI SIG', grouped: true })).toBeUndefined();
+    expect(getAnchorId({ title: 'App Definition & Development', subtitle: '', grouped: true })).toBeUndefined();
+    expect(getAnchorId({ title: 'App Definition & Development', subtitle: '---', grouped: true })).toBeUndefined();
     expect(getAnchorId({ title: 'Maturity', subtitle: 'Unknown', grouped: true })).toBeUndefined();
     expect(getAnchorId({ title: 'Tag', subtitle: 'Unknown' })).toBeUndefined();
     expect(getAnchorId({ title: 'Maturity' })).toBeUndefined();
     expect(getAnchorId({ title: 'Introduction & Overview' })).toBeUndefined();
+  });
+});
+
+describe('normalizeName', () => {
+  it.each([
+    // Latin names
+    ['Test Project', 'test-project'],
+    ['Test  Project  ', 'test-project'],
+    ['Test___Project', 'test-project'],
+    ['Test-Project-', 'test-project'],
+    ['Test--Project', 'test-project'],
+    ['Test/Project', 'test-project'],
+    ['Test@Project', 'test-project'],
+    [' Foo', '-foo'],
+    ['-Lead', '-lead'],
+    ['(Beta) Tools', '-beta-tools'],
+    ['C++', 'c++'],
+    ['AI SIG', 'ai-sig'],
+    // Non-latin and mixed names
+    ['中文项目', '中文项目'],
+    ['云原生计算基金会', '云原生计算基金会'],
+    ['日本語プロジェクト', '日本語プロジェクト'],
+    ['한국어 프로젝트', '한국어-프로젝트'],
+    ['Проект', 'проект'],
+    ['مشروع', 'مشروع'],
+    ['中文 Project', '中文-project'],
+    ['Test_中文_Project', 'test-中文-project'],
+    ['Test---中文', 'test-中文'],
+    ['Test/中文', 'test-中文'],
+    ['Test@中文#Project', 'test-中文-project'],
+    // Combining marks (Devanagari vowel signs and virama, NFD accent)
+    ['हिन्दी', 'ह-न-द'],
+    ['Cafe\u0301', 'cafe'],
+    // Astral-plane letters and emojis
+    ['𝐀𝐁𝐂 𐐀𐐨', '𝐀𝐁𝐂-𐐨𐐨'],
+    ['a 🙂 b 🙂 ', 'a-b'],
+    ['Rocket 🚀 Launch', 'rocket-launch'],
+    // Case mappings (uppercase final sigma, multi-char lowercase)
+    ['ΟΔΥΣΣΕΥΣ', 'οδυσσευσ'],
+    ['İstanbul', 'i\u0307stanbul'],
+    // Empty and separator-only names
+    ['', ''],
+    ['---', ''],
+    ['   ', ''],
+  ])('normalizes %j to %j', (input, expected) => {
+    expect(normalizeName(input)).toBe(expected);
   });
 });
