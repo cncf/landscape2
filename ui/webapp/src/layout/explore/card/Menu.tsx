@@ -127,68 +127,70 @@ const Menu = (props: Props) => {
   );
 
   return (
-    <div
-      ref={setRoot}
-      class={`d-flex flex-column ${styles.toc}`}
-      classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}
-    >
-      <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
-        <div ref={setRef}>
-          <For each={visibleSections()}>
-            {(section, index) => {
-              const isTAG = section.title === 'Tag';
-              return (
-                <div>
-                  <div
-                    class="text-white border border-3 border-bottom-0 border-white fw-semibold p-2 text-truncate"
-                    classList={{ 'border-top-0': index() === 0, 'text-uppercase': isTAG }}
-                    style={{ 'background-color': bgColor }}
-                  >
-                    {section.title}
-                  </div>
+    <Show when={visibleSections().length > 0}>
+      <div
+        ref={setRoot}
+        class={`d-flex flex-column ${styles.toc}`}
+        classList={{ [`sticky-top me-4 ${styles.sticky}`]: props.sticky }}
+      >
+        <div id="menu" classList={{ [`offcanvas-body ${styles.content}`]: offsetActive() && props.sticky }}>
+          <div ref={setRef}>
+            <For each={visibleSections()}>
+              {(section, index) => {
+                const isTAG = section.title === 'Tag';
+                return (
+                  <div>
+                    <div
+                      class="text-white border border-3 border-bottom-0 border-white fw-semibold p-2 text-truncate"
+                      classList={{ 'border-top-0': index() === 0, 'text-uppercase': isTAG }}
+                      style={{ 'background-color': bgColor }}
+                    >
+                      {section.title}
+                    </div>
 
-                  <div
-                    class={`d-flex flex-column text-start border border-3 py-3 border-white ${styles.subcategories}`}
-                    classList={{
-                      'border-bottom-0': index() !== visibleSections().length - 1,
-                    }}
-                  >
-                    <For each={section.entries}>
-                      {({ subtitle, hash }) => (
-                        <button
-                          id={`btn_${hash}`}
-                          title={subtitle}
-                          class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
-                          classList={{
-                            [`fw-bold ${styles.selected}`]: hash === selectedId(),
-                          }}
-                          disabled={hash === selectedId()}
-                          onClick={() => {
-                            goToElement(`card_${hash}`);
-                            if (!isUndefined(props.onClickOption)) {
-                              props.onClickOption();
-                            }
-                            updateRoute(hash);
-                          }}
-                          aria-label={getSectionLabel(subtitle, isTAG)}
-                        >
-                          <Show when={hash === selectedId()}>
-                            <div class={`position-absolute ${styles.arrow}`}>
-                              <SVGIcon kind={SVGIconKind.ArrowRight} />
-                            </div>
-                          </Show>
-                          {getSectionLabel(subtitle, isTAG)}
-                        </button>
-                      )}
-                    </For>
+                    <div
+                      class={`d-flex flex-column text-start border border-3 py-3 border-white ${styles.subcategories}`}
+                      classList={{
+                        'border-bottom-0': index() !== visibleSections().length - 1,
+                      }}
+                    >
+                      <For each={section.entries}>
+                        {({ subtitle, hash }) => (
+                          <button
+                            id={`btn_${hash}`}
+                            title={subtitle}
+                            class={`position-relative btn btn-sm btn-link rounded-0 p-0 ps-3 pe-2 py-1 text-start text-truncate text-capitalize ${styles.subcategoryBtn}`}
+                            classList={{
+                              [`fw-bold ${styles.selected}`]: hash === selectedId(),
+                            }}
+                            disabled={hash === selectedId()}
+                            onClick={() => {
+                              goToElement(`card_${hash}`);
+                              if (!isUndefined(props.onClickOption)) {
+                                props.onClickOption();
+                              }
+                              updateRoute(hash);
+                            }}
+                            aria-label={getSectionLabel(subtitle, isTAG)}
+                          >
+                            <Show when={hash === selectedId()}>
+                              <div class={`position-absolute ${styles.arrow}`}>
+                                <SVGIcon kind={SVGIconKind.ArrowRight} />
+                              </div>
+                            </Show>
+                            {getSectionLabel(subtitle, isTAG)}
+                          </button>
+                        )}
+                      </For>
+                    </div>
                   </div>
-                </div>
-              );
-            }}
-          </For>
+                );
+              }}
+            </For>
+          </div>
         </div>
       </div>
-    </div>
+    </Show>
   );
 };
 

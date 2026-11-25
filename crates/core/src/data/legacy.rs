@@ -279,14 +279,12 @@ impl Item {
         }
 
         // Check second path entries
-        let mut warnings = vec![];
-        if let Some(second_path) = &self.second_path {
-            for entry in second_path {
-                if let Some(warning) = validate_second_path(entry, categories_index)? {
-                    warnings.push(warning);
-                }
-            }
-        }
+        let warnings: Vec<String> = self
+            .second_path
+            .iter()
+            .flatten()
+            .filter_map(|entry| validate_second_path(entry, categories_index))
+            .collect();
 
         // Check urls
         validate_urls(self)?;
@@ -482,22 +480,25 @@ fn validate_logo(logo: &str) -> Result<()> {
     Ok(())
 }
 
-/// Validate the second path entry provided, checking its format and that it
-/// points to an existing category. Returns a warning when the subcategory is
-/// not defined in that category.
-fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> Result<Option<String>> {
+/// Validate the second path entry provided, returning a warning when it is
+/// malformed or points to an unknown category or subcategory.
+fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> Option<String> {
     let Some((category, subcategory)) = parse_second_path(entry) else {
-        bail!("invalid second path entry [{entry}] (expected: category / subcategory)");
+        return Some(format!(
+            "invalid second path entry [{entry}] (expected: category / subcategory), ignoring it"
+        ));
     };
     let Some(subcategories) = categories_index.get(category) else {
-        bail!("second path entry [{entry}] references unknown category [{category}]");
+        return Some(format!(
+            "second path entry [{entry}] references unknown category [{category}]"
+        ));
     };
     if !subcategories.contains(subcategory) {
-        return Ok(Some(format!(
+        return Some(format!(
             "second path entry [{entry}] references unknown subcategory [{subcategory}] in category [{category}]"
-        )));
+        ));
     }
-    Ok(None)
+    None
 }
 
 /// Validate the urls of the item provided.

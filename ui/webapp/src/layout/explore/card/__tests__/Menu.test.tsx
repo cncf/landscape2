@@ -126,4 +126,14 @@ describe('Menu', () => {
     expect(screen.queryByText('Only Unknown')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Unknown Sub' })).not.toBeInTheDocument();
   });
+
+  it('renders nothing when no menu entry resolves to an anchor', () => {
+    // Render a menu whose only category has no defined anchor
+    const { container } = renderWithRouter(() => <Menu menu={{ 'Only Unknown': ['Unknown Sub'] }} isVisible sticky />, {
+      url: '/',
+    });
+
+    // Check the sidebar container is not rendered
+    expect(container).toBeEmptyDOMElement();
+  });
 });

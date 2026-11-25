@@ -487,47 +487,6 @@ fn test_landscape_data_validate_rejects_invalid_homepage_url() {
 }
 
 #[test]
-fn test_landscape_data_validate_rejects_invalid_second_path() {
-    // Setup invalid second path entries and the errors expected
-    let cases = [
-        (
-            "Category",
-            "invalid second path entry [Category] (expected: category / subcategory)",
-        ),
-        (
-            "Category / Subcategory / Other",
-            "invalid second path entry [Category / Subcategory / Other] (expected: category / subcategory)",
-        ),
-        (
-            "  / Subcategory",
-            "invalid second path entry [  / Subcategory] (expected: category / subcategory)",
-        ),
-        (
-            "Unknown / Subcategory",
-            "second path entry [Unknown / Subcategory] references unknown category [Unknown]",
-        ),
-    ];
-
-    for (entry, expected_err) in cases {
-        // Setup an item with the second path entry
-        let landscape = landscape_with_items(vec![Item {
-            second_path: Some(vec![entry.to_string()]),
-            ..valid_item()
-        }]);
-
-        // Run the validation and check the error
-        let err = landscape.validate().unwrap_err();
-        assert_eq!(
-            format!("{err:#}"),
-            format!(
-                "item [Item] is not valid (category: [Category] | subcategory: [Subcategory]): {expected_err}"
-            ),
-            "entry: {entry}"
-        );
-    }
-}
-
-#[test]
 fn test_landscape_data_validate_rejects_invalid_summary_intro_url() {
     // Setup an item with a summary intro url that cannot be parsed
     let landscape = landscape_with_items(vec![Item {
@@ -751,9 +710,9 @@ fn test_landscape_data_validate_rejects_wrong_social_domain() {
 }
 
 #[test]
-fn test_landscape_data_validate_warns_on_unknown_second_path_subcategory() {
-    // Setup items referencing both defined and undefined subcategories in
-    // existing categories
+fn test_landscape_data_validate_warns_on_invalid_second_path() {
+    // Setup items with malformed, unknown category, unknown subcategory and
+    // valid second path entries
     let landscape = LandscapeData {
         landscape: vec![
             category(
@@ -764,8 +723,12 @@ fn test_landscape_data_validate_warns_on_unknown_second_path_subcategory() {
                         name: "Item 1".to_string(),
                         second_path: Some(vec![
                             "Category 2 / Subcategory 2".to_string(),
+                            "Category".to_string(),
+                            "Category / Subcategory / Other".to_string(),
+                            "  / Subcategory".to_string(),
+                            "Category /  ".to_string(),
+                            "Unknown / Subcategory".to_string(),
                             " Category 2 / Unknown 1 ".to_string(),
-                            "Category 1 / Unknown 2".to_string(),
                         ]),
                         ..valid_item()
                     }],
@@ -785,15 +748,23 @@ fn test_landscape_data_validate_warns_on_unknown_second_path_subcategory() {
         ],
     };
 
-    // Run the validation and check one warning per unknown subcategory entry
+    // Run the validation and check one warning per invalid or unresolved entry
     let warnings = landscape.validate().unwrap();
     assert_eq!(
         warnings,
         vec![
             "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
-             second path entry [ Category 2 / Unknown 1 ] references unknown subcategory [Unknown 1] in category [Category 2]",
+             invalid second path entry [Category] (expected: category / subcategory), ignoring it",
             "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
-             second path entry [Category 1 / Unknown 2] references unknown subcategory [Unknown 2] in category [Category 1]",
+             invalid second path entry [Category / Subcategory / Other] (expected: category / subcategory), ignoring it",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             invalid second path entry [  / Subcategory] (expected: category / subcategory), ignoring it",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             invalid second path entry [Category /  ] (expected: category / subcategory), ignoring it",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Unknown / Subcategory] references unknown category [Unknown]",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [ Category 2 / Unknown 1 ] references unknown subcategory [Unknown 1] in category [Category 2]",
             "item [Item 2] (category: [Category 2] | subcategory: [Subcategory 2]): \
              second path entry [Category 1 / Unknown 2] references unknown subcategory [Unknown 2] in category [Category 1]",
         ]

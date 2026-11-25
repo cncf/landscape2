@@ -46,9 +46,9 @@ const Screenshots = (props: Props) => {
               const activeGroups = itemsDataGetter.getGroups();
               const normalizedName = group.normalized_name;
               if (isUndefined(normalizedName) || (activeGroups && !activeGroups.includes(normalizedName))) return null;
-              const colors = generateColorsArray(group.categories.length);
               const groupData = groupsData()![normalizedName];
               const categories = getCategoriesWithItems(groupData);
+              const colors = generateColorsArray(categories.length);
 
               return (
                 <div class={styles.group}>

@@ -391,7 +391,7 @@ impl From<legacy::LandscapeData> for LandscapeData {
 
                     // Additional categories
                     if let Some(second_path) = legacy_item.second_path {
-                        // The entries were checked by the validation
+                        // Malformed entries were warned about during validation and are ignored here
                         let additional_categories: Vec<AdditionalCategory> = second_path
                             .iter()
                             .filter_map(|entry| parse_second_path(entry))

@@ -378,6 +378,77 @@ landscape:
 }
 
 #[test]
+fn test_landscape_data_new_from_yaml_warns_on_invalid_second_path() {
+    // Setup data with malformed, unknown category, unknown subcategory and
+    // valid second path entries
+    let raw = r"
+landscape:
+  - category:
+    name: Category 1
+    subcategories:
+      - subcategory:
+        name: Subcategory 1
+        items:
+          - item:
+            homepage_url: https://example.com
+            logo: logo.svg
+            name: Item 1
+            second_path:
+              - Malformed
+              - Unknown Category / Subcategory
+              - Category 2 / Unknown Subcategory
+              - Category 2 / Subcategory 2
+          - item:
+            homepage_url: https://example.com
+            logo: logo.svg
+            name: Item 2
+            second_path:
+              - Malformed Only
+  - category:
+    name: Category 2
+    subcategories:
+      - subcategory:
+        name: Subcategory 2
+        items: []
+";
+
+    // Run the parsing and check warnings, ignored malformed entries and kept
+    // unresolved entries
+    let parsed = LandscapeData::new_from_yaml(raw).unwrap();
+    assert_eq!(
+        parsed.warnings,
+        vec![
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             invalid second path entry [Malformed] (expected: category / subcategory), ignoring it",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Unknown Category / Subcategory] references unknown category [Unknown Category]",
+            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             second path entry [Category 2 / Unknown Subcategory] references unknown subcategory [Unknown Subcategory] in category [Category 2]",
+            "item [Item 2] (category: [Category 1] | subcategory: [Subcategory 1]): \
+             invalid second path entry [Malformed Only] (expected: category / subcategory), ignoring it",
+        ]
+    );
+    assert_eq!(
+        parsed.value.items[0].additional_categories,
+        Some(vec![
+            AdditionalCategory {
+                category: "Unknown Category".to_string(),
+                subcategory: "Subcategory".to_string(),
+            },
+            AdditionalCategory {
+                category: "Category 2".to_string(),
+                subcategory: "Unknown Subcategory".to_string(),
+            },
+            AdditionalCategory {
+                category: "Category 2".to_string(),
+                subcategory: "Subcategory 2".to_string(),
+            },
+        ])
+    );
+    assert_eq!(parsed.value.items[1].additional_categories, None);
+}
+
+#[test]
 fn test_landscape_data_new_from_yaml_warns_on_unknown_key() {
     // Setup data with an unknown key in every item
     let raw = r"
@@ -407,49 +478,6 @@ landscape:
         vec![
             "unknown key `landscape[].subcategories[].items[].organization` (found 2 times, first at landscape.0.subcategories.0.items.0.organization)"
         ]
-    );
-}
-
-#[test]
-fn test_landscape_data_new_from_yaml_warns_on_unknown_second_path_subcategory() {
-    // Setup data with a second path referencing an undefined subcategory
-    let raw = r"
-landscape:
-  - category:
-    name: Category 1
-    subcategories:
-      - subcategory:
-        name: Subcategory 1
-        items:
-          - item:
-            homepage_url: https://example.com
-            logo: logo.svg
-            name: Item 1
-            second_path:
-              - Category 2 / Unknown
-  - category:
-    name: Category 2
-    subcategories:
-      - subcategory:
-        name: Subcategory 2
-        items: []
-";
-
-    // Run the parsing and check the warning is reported while keeping the entry
-    let parsed = LandscapeData::new_from_yaml(raw).unwrap();
-    assert_eq!(
-        parsed.warnings,
-        vec![
-            "item [Item 1] (category: [Category 1] | subcategory: [Subcategory 1]): \
-             second path entry [Category 2 / Unknown] references unknown subcategory [Unknown] in category [Category 2]"
-        ]
-    );
-    assert_eq!(
-        parsed.value.items[0].additional_categories,
-        Some(vec![AdditionalCategory {
-            category: "Category 2".to_string(),
-            subcategory: "Unknown".to_string(),
-        }])
     );
 }
 
