@@ -1,11 +1,15 @@
 import isUndefined from 'lodash/isUndefined';
 import sortBy from 'lodash/sortBy';
-import moment from 'moment';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { createSignal, onMount, Show } from 'solid-js';
 
 import rgba2hex from '../../utils/rgba2hex';
+import { CHART_FONT_FAMILY } from './chartData';
+import ChartDataTable from './ChartDataTable';
 import HeatMapChart from './HeatMapChart';
+
+// Minimum zoom range of the chart, one week in milliseconds.
+const ONE_WEEK_MS = 7 * 24 * 3600 * 1000;
 
 interface Props {
   data: { [key: string]: number };
@@ -34,7 +38,7 @@ const ChartsGroup = (props: Props) => {
   const getAreaChartConfig = (): ApexCharts.ApexOptions => {
     return {
       chart: {
-        fontFamily: "'Lato', Roboto, 'Helvetica Neue', Arial, sans-serif !default",
+        fontFamily: CHART_FONT_FAMILY,
         height: 250,
         type: 'area',
         redrawOnWindowResize: true,
@@ -67,7 +71,7 @@ const ChartsGroup = (props: Props) => {
           },
         },
         events: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- apexcharts types the beforeZoom arguments as any
           beforeZoom: (chartContext: any, opt: any) => {
             const minDate = chartContext.ctx.data.twoDSeriesX[0];
             const maxDate = chartContext.ctx.data.twoDSeriesX[chartContext.ctx.data.twoDSeriesX.length - 1];
@@ -75,12 +79,12 @@ const ChartsGroup = (props: Props) => {
             let newMaxDate = parseInt(opt.xaxis.max);
             // Min range 1 week
             if (newMinDate > chartContext.minX) {
-              const maxRange = moment(newMinDate).add(1, 'w').valueOf();
-              if (moment(newMaxDate).isBefore(maxRange) && moment(maxRange).isBefore(maxDate)) {
+              const maxRange = newMinDate + ONE_WEEK_MS;
+              if (newMaxDate < maxRange && maxRange < maxDate) {
                 newMaxDate = maxRange;
               } else {
-                const minRange = moment(newMaxDate).subtract(1, 'w').valueOf();
-                if (moment(newMinDate).isAfter(minRange)) {
+                const minRange = newMaxDate - ONE_WEEK_MS;
+                if (newMinDate > minRange) {
                   newMinDate = minRange;
                 }
               }
@@ -104,8 +108,7 @@ const ChartsGroup = (props: Props) => {
       },
       fill: {
         opacity: 0.5,
-        colors:
-          window.baseDS.colors && window.baseDS.colors.color1 ? [rgba2hex(window.baseDS.colors.color1)] : ['#0086FF'], // Using css var breaks gradient
+        colors: [rgba2hex(window.baseDS.colors.color1)], // Using css var breaks gradient
       },
       xaxis: {
         type: 'datetime',
@@ -149,11 +152,16 @@ const ChartsGroup = (props: Props) => {
                   height={250}
                 />
               </div>
+              <ChartDataTable
+                caption={`${props.name} over time (running total)`}
+                columns={['Month', props.name]}
+                rows={areaSeries().map((point) => [point.x, point.y])}
+              />
             </div>
           </div>
 
           <div class="col-12 col-sm-6 col-xl-4">
-            <HeatMapChart data={props.data} />
+            <HeatMapChart data={props.data} caption={`${props.name} per month`} />
           </div>
         </div>
       </div>

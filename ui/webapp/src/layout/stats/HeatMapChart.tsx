@@ -1,15 +1,19 @@
+import { parseYearMonth } from 'common';
 import groupBy from 'lodash/groupBy';
 import isNumber from 'lodash/isNumber';
-import moment from 'moment';
 import { SolidApexCharts } from 'solid-apexcharts';
 import { Show } from 'solid-js';
 
 import rgba2hex from '../../utils/rgba2hex';
+import { CHART_FONT_FAMILY } from './chartData';
+import ChartDataTable from './ChartDataTable';
 
 interface Props {
+  data: { [key: string]: number };
+  /** Caption of the data table, the chart name by default. */
+  caption?: string;
   name?: string;
   tooltipTitle?: string;
-  data: { [key: string]: number };
 }
 
 interface HeatMapData {
@@ -28,10 +32,11 @@ const HeatMapChart = (props: Props) => {
     const distribution: DistributionData[] = [];
 
     Object.keys(props.data).forEach((d: string) => {
-      const date = moment(d, 'YYYY-MM');
+      const { year, month } = parseYearMonth(d);
       distribution.push({
-        year: date.get('year'),
-        month: date.get('month'),
+        year,
+        // Zero-based month, the index of the month in the series data
+        month: month - 1,
         total: props.data[d],
       });
     });
@@ -39,8 +44,6 @@ const HeatMapChart = (props: Props) => {
     const series: HeatMapData[] = [];
     const groupedByYear = groupBy(distribution, 'year');
 
-    // We use 10 by default and add 10 to the rest of values
-    // due to a bug displaying proper bg color in heatmap
     Object.keys(groupedByYear).forEach((year: string) => {
       const currentData = new Array(12).fill(0);
       groupedByYear[year].forEach((i: DistributionData) => {
@@ -55,6 +58,7 @@ const HeatMapChart = (props: Props) => {
   const getHeatMapChartConfig = (): ApexCharts.ApexOptions => {
     return {
       chart: {
+        fontFamily: CHART_FONT_FAMILY,
         height: 250,
         type: 'heatmap',
         redrawOnWindowResize: true,
@@ -76,8 +80,7 @@ const HeatMapChart = (props: Props) => {
         enabled: false,
       },
       legend: { show: false },
-      colors:
-        window.baseDS.colors && window.baseDS.colors.color1 ? [rgba2hex(window.baseDS.colors.color1)] : ['#0086FF'], // Using css var breaks heat range
+      colors: [rgba2hex(window.baseDS.colors.color1)], // Using css var breaks heat range
       xaxis: {
         labels: {
           style: {
@@ -138,6 +141,13 @@ const HeatMapChart = (props: Props) => {
             height={250}
           />
         </div>
+        <ChartDataTable
+          caption={props.caption ?? props.name ?? 'Distribution per month'}
+          columns={['Month', props.tooltipTitle ?? 'Value']}
+          rows={Object.keys(props.data)
+            .sort()
+            .map((month) => [month, props.data[month]])}
+        />
       </div>
     </Show>
   );

@@ -1,0 +1,11 @@
+categories:
+  - category: Category 1
+    content: Category 1 **content**
+    subcategories:
+      - subcategory: Subcategory 1-1
+        content: Subcategory 1-1 content
+        keywords:
+          - keyword 1
+          - keyword 2
+  - category: Category 2
+    content: Category 2 content

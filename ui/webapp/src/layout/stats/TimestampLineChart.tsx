@@ -1,38 +1,31 @@
 import { prettifyNumber } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import moment from 'moment';
 import { SolidApexCharts } from 'solid-apexcharts';
-import { createSignal, onMount, Show } from 'solid-js';
+import { createMemo, Show } from 'solid-js';
+
+import { buildWeeklyTimestamps, CHART_FONT_FAMILY } from './chartData';
+import ChartDataTable from './ChartDataTable';
 
 interface Props {
   name: string;
-  tooltipTitle?: string;
+  /** Date the data was collected at, the date of the last weekly value. */
+  referenceDate: string;
   data?: number[];
+  tooltipTitle?: string;
 }
 
 const TimestampLineChart = (props: Props) => {
-  const [series, setSeries] = createSignal<number[][]>([]);
-
-  onMount(() => {
-    if (!isUndefined(props.data)) {
-      const values: number[][] = [];
-      const data = props.data || [];
-
-      data.forEach((v: number, index: number) => {
-        const timestamp = moment()
-          .subtract(data.length - index - 1, 'weeks')
-          .format('x');
-        values.push([parseInt(timestamp), v]);
-      });
-
-      setSeries(values);
-    }
+  // One point per weekly value, the last one on the reference date
+  const series = createMemo(() => {
+    const data = props.data ?? [];
+    const timestamps = buildWeeklyTimestamps(data.length, props.referenceDate);
+    return data.map((value: number, index: number) => [timestamps[index], value]);
   });
 
   const getChartConfig = (): ApexCharts.ApexOptions => {
     return {
       chart: {
-        fontFamily: "'Lato', Roboto, 'Helvetica Neue', Arial, sans-serif !default",
+        fontFamily: CHART_FONT_FAMILY,
         height: 250,
         type: 'line',
         redrawOnWindowResize: true,
@@ -81,7 +74,7 @@ const TimestampLineChart = (props: Props) => {
         min: 0,
         labels: {
           formatter: (value: number): string => {
-            return prettifyNumber(value) as string;
+            return prettifyNumber(value);
           },
         },
       },
@@ -94,7 +87,7 @@ const TimestampLineChart = (props: Props) => {
             },
           },
           formatter: (val: number): string => {
-            return prettifyNumber(val) as string;
+            return prettifyNumber(val);
           },
         },
       },
@@ -117,7 +110,7 @@ const TimestampLineChart = (props: Props) => {
             yaxis: {
               labels: {
                 formatter: (val: number): string => {
-                  return prettifyNumber(val) as string;
+                  return prettifyNumber(val);
                 },
               },
             },
@@ -138,6 +131,11 @@ const TimestampLineChart = (props: Props) => {
             height={250}
           />
         </div>
+        <ChartDataTable
+          caption={props.name}
+          columns={['Week', props.tooltipTitle ?? 'Value']}
+          rows={series().map(([timestamp, value]) => [new Date(timestamp).toISOString().slice(0, 10), value])}
+        />
       </div>
     </Show>
   );

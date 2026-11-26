@@ -1,0 +1,49 @@
+[
+  {
+    "classify": "category",
+    "category": "App Definition & Development",
+    "key": "app-definition-development",
+    "file": "embed_category_app-definition-development.json"
+  },
+  {
+    "classify": "category",
+    "category": "App Definition & Development",
+    "subcategory": "Database & Storage",
+    "key": "app-definition-development--database-storage",
+    "file": "embed_category_app-definition-development--database-storage.json"
+  },
+  {
+    "classify": "maturity",
+    "key": "all",
+    "file": "embed_maturity_all.json"
+  },
+  {
+    "classify": "maturity",
+    "value": "Graduated",
+    "key": "graduated",
+    "file": "embed_maturity_graduated.json"
+  },
+  {
+    "classify": "maturity",
+    "value": "early stage",
+    "key": "early-stage",
+    "file": "embed_maturity_early-stage.json"
+  },
+  {
+    "classify": "tag",
+    "key": "all",
+    "file": "embed_tag_all.json"
+  },
+  {
+    "classify": "tag",
+    "value": "a--b",
+    "key": "a-b",
+    "file": "embed_tag_a-b.json"
+  },
+  {
+    "classify": "tag",
+    "value": "tag_x",
+    "key": "tag-x",
+    "file": "embed_tag_tag-x.json"
+  }
+]

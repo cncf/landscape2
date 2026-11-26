@@ -20,7 +20,7 @@ anyhow = "1.0.104"
 askama = { version = "0.16.1", features = ["serde_json"] }
 async-trait = "0.1.92"
 aws-config = "1.13.0"
-aws-sdk-s3 = "1.157.0"
+aws-sdk-s3 = { version = "1.157.0", default-features = false, features = ["default-https-client", "http-1x", "rt-tokio", "sigv4a"] }
 axum = "0.8.9"
 base64 = "0.23.1"
 cached = { version = "4.1.0", default-features = false, features = ["async", "proc_macro"] }
@@ -30,50 +30,53 @@ csv = "1.4.0"
 deadpool = "0.13.1"
 dirs = "7.0.0"
 futures = "0.3.34"
-gloo-console = "0.4.1"
 gloo-net = { version = "0.7.0", default-features = false, features = ["http", "json"] }
 headless_chrome = "1.0.22"
 hex = "0.4.3"
 imagesize = "0.15.0"
 itertools = "0.15.0"
+jsonschema = { version = "0.61.2", default-features = false }
 leaky-bucket = "1.1.2"
 markdown = "1.0.0"
 md-5 = "0.11.0"
 mime_guess = "2.0.5"
 mockall = "0.15.0"
 mockito = "1.7.2"
-num_cpus = "1.17.0"
 octorust = "0.10.0"
 parse_link_header = "0.4.1"
 pretty_assertions = "1.4.1"
 qrcode = "0.14.1"
-rand = "0.8.5" # do-not-upgrade
+rand = "0.10.3"
 regex = "1.13.1"
-reqwest = { version = "0.12.28", features = ["json",  "multipart", "native-tls-vendored"] } # do-not-upgrade
-reqwest-middleware = "0.4.2" # do-not-upgrade
+reqwest = { version = "0.12.28", features = ["json", "native-tls-vendored"] } # do-not-upgrade: octorust 0.10 uses 0.12
+reqwest-middleware = "0.4.2" # do-not-upgrade: octorust 0.10 Client::custom takes a 0.4 client
+reqwest-retry = "0.7.0" # do-not-upgrade: 0.9 needs reqwest-middleware 0.5; 0.7 is the version octorust 0.10 uses
 rust-embed = "8.13.0"
 serde = { version = "1.0.229", features = ["derive"] }
+serde_ignored = "0.1.14"
 serde_json = "1.0.154"
 serde-wasm-bindgen = "0.6.5"
 serde_yaml = "0.9.34"
 sha2 = "0.11.1"
+tempfile = "3.27.0"
 tokio = { version = "1.54.1", features = [
+    "fs",
     "macros",
-    "process",
+    "net",
     "rt-multi-thread",
     "signal",
     "time",
 ] }
+tower = "0.5.3"
+tower-http = { version = "0.7.1", features = ["fs"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
-tower = "0.5.3"
-tower-http = { version = "0.7.1", features = ["fs", "set-header"] }
+ts-rs = { version = "12.0.1", features = ["chrono-impl", "no-serde-warnings"] }
 url = "2.5.8"
-usvg = "0.37.0" # do-not-upgrade
+usvg = "0.37.0" # do-not-upgrade: 0.38 removes NodeExt and Node::calculate_bbox used by logos.rs
 walkdir = "2.5.0"
 wasm-bindgen = "0.2.130"
 wasm-bindgen-futures = "0.4.80"
-web-sys = { version = "0.3.107", features = ["console"] }
 which = "8.0.6"
 
 [profile.release]

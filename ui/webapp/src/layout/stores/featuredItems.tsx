@@ -1,63 +1,65 @@
 import isUndefined from 'lodash/isUndefined';
-import { createMemo } from 'solid-js';
+import { createContext, ParentComponent, useContext } from 'solid-js';
 
-import { BaseItem, Item } from '../../types';
-import { isItemFeaturedForGroup } from '../../utils/isItemFeaturedForGroup';
+import { LandscapeItem } from '../../types';
 import { useGroupActive } from './groupActive';
 
+// Group whose featured information the items rendered below use, instead of the active group
+const FeaturedGroupContext = createContext<() => string | undefined>();
+
+// Copy without featured information of each item not featured in a group. The same copy is
+// reused for every group and call, so lists compared by item identity keep their rendered items
+const unfeaturedCopies = new WeakMap<LandscapeItem, LandscapeItem>();
+
+/**
+ * Gives the items below the featured information of the group provided, so the
+ * groups kept mounted while hidden don't change when the active group changes.
+ */
+export const FeaturedGroupProvider: ParentComponent<{ group?: string }> = (props) => {
+  const group = () => props.group;
+  return <FeaturedGroupContext.Provider value={group}>{props.children}</FeaturedGroupContext.Provider>;
+};
+
+/**
+ * Exposes the featured information of the items for the group provided, else the
+ * active group. Rust resolves the featured rules at build time, so an item is
+ * featured unless the group is one of its `featured.excluded_groups`.
+ */
 export const useFeaturedItems = () => {
-  const selectedGroup = useGroupActive();
+  const activeGroup = useGroupActive();
+  const providedGroup = useContext(FeaturedGroupContext);
+  const group = () => providedGroup?.() ?? activeGroup();
 
-  // Get featured items rules configuration.
-  const rules = () => window.baseDS?.featured_items;
-
-  // Get the display name for the active group (config uses display names, not normalized).
-  // Memoized to avoid repeated lookups when processing multiple items.
-  const activeGroupName = createMemo(() => {
-    const normalized = selectedGroup();
-    if (!normalized) return undefined;
-    return window.baseDS?.groups?.find((g) => g.normalized_name === normalized)?.name;
-  });
-
-  // Check if any featured item exclusion rules affect the current active group.
-  // Memoized to avoid repeated checks when processing multiple items.
-  const activeGroupHasFeaturedExclusions = createMemo(() => {
-    const groupName = activeGroupName();
-    if (!groupName || !rules()) return false;
-    return rules()!.some((rule) => rule.exclude?.groups?.includes(groupName));
-  });
-
-  // Get effective featured status for an item considering group exclusions.
-  const getEffectiveFeatured = (item: BaseItem | Item) => {
-    if (!activeGroupHasFeaturedExclusions()) return item.featured;
-    return isItemFeaturedForGroup(item, activeGroupName(), rules());
-  };
-
-  // Transform items array with effective featured status (for ItemsList).
-  const withEffectiveFeatured = (items: (BaseItem | Item)[]) => {
-    if (!activeGroupHasFeaturedExclusions()) return items;
-    return items.map((item) => {
-      const effectiveFeatured = getEffectiveFeatured(item);
-      if (effectiveFeatured !== item.featured) {
-        return { ...item, featured: effectiveFeatured };
-      }
-      return item;
-    });
-  };
-
-  // Count featured items considering exclusions (for Grid).
-  const countFeaturedItems = (items: (BaseItem | Item)[]) => {
-    if (!activeGroupHasFeaturedExclusions()) {
-      return items.filter((item) => !isUndefined(item.featured)).length;
+  // Get the featured information of the item for the group.
+  const getEffectiveFeatured = (item: LandscapeItem) => {
+    if (item.featured?.excluded_groups?.includes(group())) {
+      return undefined;
     }
-    return items.filter((item) => !isUndefined(getEffectiveFeatured(item))).length;
+    return item.featured;
   };
+
+  // Transform items array with effective featured status (for ItemsList). The items not
+  // featured in the group are replaced by the same copy on every call
+  const withEffectiveFeatured = (items: LandscapeItem[]) =>
+    items.map((item) => (getEffectiveFeatured(item) === item.featured ? item : getUnfeaturedCopy(item)));
+
+  // Count featured items for the group (for Grid).
+  const countFeaturedItems = (items: LandscapeItem[]) =>
+    items.filter((item) => !isUndefined(getEffectiveFeatured(item))).length;
 
   return {
-    activeGroupHasFeaturedExclusions,
     countFeaturedItems,
     getEffectiveFeatured,
-    rules,
     withEffectiveFeatured,
   };
+};
+
+/** Returns the copy of the item without featured information, created once per item. */
+const getUnfeaturedCopy = (item: LandscapeItem): LandscapeItem => {
+  let copy = unfeaturedCopies.get(item);
+  if (isUndefined(copy)) {
+    copy = { ...item, featured: undefined };
+    unfeaturedCopies.set(item, copy);
+  }
+  return copy;
 };

@@ -10,13 +10,17 @@ lcov.info
 npm-debug.log*
 target
 target-wasm
+ui/common/coverage
 ui/common/dist
 ui/common/node_modules
+ui/embed/coverage
 ui/embed/dist
 ui/embed/node_modules
 ui/embed/static/*
+ui/embed-item/coverage
 ui/embed-item/dist
 ui/embed-item/node_modules
+ui/webapp/coverage
 ui/webapp/dist
 ui/webapp/.env.local
 ui/webapp/node_modules

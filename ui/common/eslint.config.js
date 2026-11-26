@@ -1,38 +1,18 @@
 // eslint.config.js
 
-import js from '@eslint/js';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import solidPlugin from 'eslint-plugin-solid';
-import tseslint from 'typescript-eslint';
+import base from './eslint.base.js';
 
 export default [
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  solidPlugin.configs['flat/recommended'],
+  ...base,
   {
-    linterOptions: {
-      reportUnusedDisableDirectives: 'error',
-    },
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      'eslint-plugin-solid': solidPlugin.configs['flat/typescript'],
-      'simple-import-sort': simpleImportSort,
-    },
-    rules: {
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      'solid/no-innerhtml': [
-        1,
-        {
-          allowStatic: true,
-        },
-      ],
-    },
+    // The kiosk suite is JavaScript, so ESLint checks its globals (TypeScript checks them elsewhere)
+    files: ['src/**/*.js'],
     languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
+      globals: {
+        document: 'readonly',
+        DOMParser: 'readonly',
+        Response: 'readonly',
+        window: 'readonly',
       },
     },
   },

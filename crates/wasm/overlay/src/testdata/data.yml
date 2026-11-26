@@ -1,0 +1,19 @@
+landscape:
+  - category:
+    name: Category
+    subcategories:
+      - subcategory:
+        name: Subcategory
+        items:
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/item-1
+            homepage_url: https://github.com/example/item-1
+            logo: item-1.svg
+            name: Item 1
+            repo_url: https://github.com/example/item-1
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/item-2
+            homepage_url: https://item-2.example
+            logo: item-2.svg
+            name: Item 2
+            repo_url: https://github.com/example/item-2

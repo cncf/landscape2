@@ -1,9 +1,8 @@
-import { useBodyScroll, useModalFocus, useOutsideClick } from 'common';
+import { BANNER_ID, useBodyScroll, useModalFocus, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { Accessor, createEffect, createSignal, JSXElement, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 
-import { BANNER_ID } from '../../data';
 import styles from './FullScreenModal.module.css';
 
 interface Props {
@@ -51,7 +50,7 @@ const FullScreenModal = (props: Props) => {
           <div class={`position-absolute ${styles.closeWrapper}`}>
             <button
               type="button"
-              class={`btn-close btn-close-white opacity-100 fs-5 ${styles.close}`}
+              class="btn-close btn-close-white opacity-100 fs-5"
               onClick={(e) => {
                 e.preventDefault();
                 closeModal();

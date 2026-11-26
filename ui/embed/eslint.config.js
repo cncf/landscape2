@@ -1,39 +1,23 @@
 // eslint.config.js
 
-import js from '@eslint/js';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import solidPlugin from 'eslint-plugin-solid';
-import tseslint from 'typescript-eslint';
+import base, { RESTRICTED_IMPORT_PATHS } from '../common/eslint.base.js';
 
 export default [
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  solidPlugin.configs['flat/recommended'],
+  ...base,
   {
-    linterOptions: {
-      reportUnusedDisableDirectives: 'error',
-    },
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
-      'eslint-plugin-solid': solidPlugin.configs['flat/typescript'],
-      'simple-import-sort': simpleImportSort,
-    },
     rules: {
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      'solid/no-innerhtml': [
-        1,
+      'no-restricted-imports': [
+        'error',
         {
-          allowStatic: true,
+          paths: [
+            {
+              name: 'common',
+              message: 'Import from common/embed, common/icons or common/utils (types from common/types).',
+            },
+            ...RESTRICTED_IMPORT_PATHS,
+          ],
         },
       ],
-    },
-    languageOptions: {
-      parser: tseslint.parser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
     },
   },
 ];

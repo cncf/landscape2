@@ -18,14 +18,6 @@
   padding: 0 0.75rem;
 }
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-}
-
 .items {
   --card-size-width: 65px;
   --card-size-height: 59px;

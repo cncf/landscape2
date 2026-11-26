@@ -1,230 +1,524 @@
 //! This module defines some types used to parse the landscape data file in
 //! legacy format and convert it to the new one.
 
-use std::{collections::HashMap, sync::LazyLock};
+use std::{
+    collections::{BTreeMap, HashMap, HashSet, hash_map::Entry},
+    path::{Component, Path},
+    sync::LazyLock,
+};
 
 use anyhow::{Context, Result, bail, format_err};
 use chrono::NaiveDate;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, de::IgnoredAny};
 
-use crate::util::validate_url;
+use crate::util::{RESERVED_CLASSIFICATION_VALUE, TAG_NAME, normalize_name, validate_url};
 
-use super::{ItemAudit, ItemLink};
+use super::{ItemAudit, ItemLink, item_id, parse_second_path, split_list};
 
-/// TAG name regular expression.
-static TAG_NAME: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^[a-z\-]+$").expect("exprs in TAG_NAME to be valid"));
+/// CLOMonitor project name regular expression.
+static CLOMONITOR_NAME: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^[A-Za-z0-9][A-Za-z0-9._-]*$").expect("exprs in CLOMONITOR_NAME to be valid")
+});
 
 /// Landscape data (legacy format).
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct LandscapeData {
+    /// Categories in the landscape (it can also be named `categories`).
     #[serde(alias = "categories")]
     pub landscape: Vec<Category>,
 }
 
 impl LandscapeData {
-    /// Validate landscape data.
-    pub fn validate(&self) -> Result<()> {
+    /// Validate landscape data, returning any non-fatal warnings found.
+    ///
+    /// Category, subcategory and item names are checked through their
+    /// normalized form, as that is what ids, embed keys and API paths use.
+    pub fn validate(&self) -> Result<Vec<String>> {
+        // Index the categories and subcategories second paths can point to
+        let mut categories_index: CategoriesIndex<'_> = HashMap::new();
+        for category in &self.landscape {
+            categories_index
+                .entry(category.name.as_str())
+                .or_default()
+                .extend(category.subcategories.iter().map(|sc| sc.name.as_str()));
+        }
+
+        // Check every category, tracking the values that must be unique
+        let mut state = ValidationState::default();
+        let mut categories_seen = HashMap::new();
+        let mut warnings = vec![];
         for (category_index, category) in self.landscape.iter().enumerate() {
             // Check category name
             if category.name.trim().is_empty() {
                 bail!("category [{category_index}] name is required");
             }
+            let category_ctx = || format!("category [{}] is not valid", category.name);
+            let category_norm = normalize_name(&category.name);
+            if category_norm.is_empty() {
+                return Err(format_err!("name must contain at least one letter or digit"))
+                    .with_context(category_ctx);
+            }
 
+            let mut subcategories_seen = HashMap::new();
             for (subcategory_index, subcategory) in category.subcategories.iter().enumerate() {
-                // Used to check for duplicate items within this subcategory
-                let mut items_seen = Vec::new();
-
                 // Check subcategory name
                 if subcategory.name.trim().is_empty() {
                     bail!(
-                        "subcategory [{subcategory_index}] name is required (category: [{}]) ",
+                        "subcategory [{subcategory_index}] name is required (category: [{}])",
                         category.name
                     );
                 }
-
-                for (item_index, item) in subcategory.items.iter().enumerate() {
-                    // Prepare context for errors
-                    let item_id = if item.name.trim().is_empty() {
-                        format!("{item_index}")
-                    } else {
-                        item.name.clone()
-                    };
-                    let ctx = format!(
-                        "item [{}] is not valid (category: [{}] | subcategory: [{}])",
-                        item_id, category.name, subcategory.name
-                    );
-
-                    // Check name
-                    if item.name.trim().is_empty() {
-                        return Err(format_err!("item name is required")).context(ctx);
-                    }
-                    if items_seen.contains(&item.name) {
-                        return Err(format_err!("duplicate item name")).context(ctx);
-                    }
-                    items_seen.push(item.name.clone());
-
-                    // Check homepage
-                    if item.homepage_url.trim().is_empty() {
-                        return Err(format_err!("homepage url is required")).context(ctx);
-                    }
-
-                    // Check logo
-                    if item.logo.trim().is_empty() {
-                        return Err(format_err!("logo is required")).context(ctx);
-                    }
-
-                    // Check some values in extra
-                    if let Some(extra) = &item.extra {
-                        // Check other links
-                        if let Some(other_links) = &extra.other_links {
-                            for link in other_links {
-                                if link.name.trim().is_empty() {
-                                    return Err(format_err!("link name is required")).context(ctx);
-                                }
-                                if link.url.trim().is_empty() {
-                                    return Err(format_err!("link url is required")).context(ctx);
-                                }
-                            }
-                        }
-
-                        // Check TAGs names
-                        if let Some(tags) = &extra.tag {
-                            for tag in tags {
-                                if !TAG_NAME.is_match(tag) {
-                                    return Err(format_err!(
-                                        "invalid tag (must use only lowercase letters and hyphens)"
-                                    ))
-                                    .context(ctx);
-                                }
-                            }
-                        }
-                    }
-
-                    // Check urls
-                    validate_urls(item).context(ctx)?;
+                let subcategory_ctx = || {
+                    format!(
+                        "subcategory [{}] is not valid (category: [{}])",
+                        subcategory.name, category.name
+                    )
+                };
+                let subcategory_norm = normalize_name(&subcategory.name);
+                if subcategory_norm.is_empty() {
+                    return Err(format_err!("name must contain at least one letter or digit"))
+                        .with_context(subcategory_ctx);
                 }
+
+                // Check items
+                let location = format!(
+                    "(category: [{}] | subcategory: [{}])",
+                    category.name, subcategory.name
+                );
+                for (item_index, item) in subcategory.items.iter().enumerate() {
+                    let item_ctx = || {
+                        let item_name = if item.name.trim().is_empty() {
+                            item_index.to_string()
+                        } else {
+                            item.name.clone()
+                        };
+                        format!("item [{item_name}] is not valid {location}")
+                    };
+                    let item_warnings = item
+                        .validate(&category_norm, &subcategory_norm, &categories_index, &mut state)
+                        .with_context(item_ctx)?;
+
+                    // Collect item warnings with their location
+                    warnings.extend(
+                        item_warnings
+                            .into_iter()
+                            .map(|warning| format!("item [{}] {location}: {warning}", item.name)),
+                    );
+                }
+
+                // Check the subcategory name is unique within its category. It
+                // is checked after the items so that the more specific item id
+                // collisions are reported first
+                track_unique_name(
+                    &mut subcategories_seen,
+                    subcategory_norm,
+                    &subcategory.name,
+                    "subcategory",
+                )
+                .with_context(subcategory_ctx)?;
             }
+
+            // Check the category name is unique across the file, once its
+            // subcategories and items have been checked
+            track_unique_name(&mut categories_seen, category_norm, &category.name, "category")
+                .with_context(category_ctx)?;
         }
 
-        Ok(())
+        Ok(warnings)
     }
 }
 
 /// Landscape category.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct Category {
+    /// Name of the category.
     pub name: String,
+    /// Subcategories in the category.
     pub subcategories: Vec<SubCategory>,
+
+    /// Null `category` key marking the start of a category entry.
+    #[expect(clippy::struct_field_names)]
+    #[serde(default, rename = "category")]
+    pub category_marker: Option<IgnoredAny>,
 }
 
 /// Landscape subcategory.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct SubCategory {
-    pub name: String,
+    /// Items in the subcategory.
     pub items: Vec<Item>,
+    /// Name of the subcategory.
+    pub name: String,
+
+    /// Null `subcategory` key marking the start of a subcategory entry.
+    #[serde(default, rename = "subcategory")]
+    pub subcategory_marker: Option<IgnoredAny>,
 }
 
 /// Landscape item (project, product, member, etc).
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct Item {
-    pub name: String,
+    /// Homepage url.
     pub homepage_url: String,
+    /// File name of the logo, relative to the landscape logos path.
     pub logo: String,
+    /// Name of the item.
+    pub name: String,
+
+    /// Additional repositories.
     pub additional_repos: Option<Vec<Repository>>,
+    /// Branch to use when collecting information for the primary repository.
     pub branch: Option<String>,
+    /// Crunchbase url of the organization this item belongs to.
     pub crunchbase: Option<String>,
+    /// Description of the item.
     pub description: Option<String>,
+    /// Whether the item corresponds to an end user.
     pub enduser: Option<bool>,
+    /// Extra information about the item.
     pub extra: Option<ItemExtra>,
+    /// Null `item` key marking the start of an item entry.
+    #[expect(clippy::struct_field_names)]
+    #[serde(default, rename = "item")]
+    pub item_marker: Option<IgnoredAny>,
+    /// Date at which the member joined the foundation.
     pub joined: Option<NaiveDate>,
+    /// Primary repository license, overriding the one in GitHub.
     pub license: Option<String>,
+    /// Maturity of the project.
     pub project: Option<String>,
+    /// Url of the primary repository.
     pub repo_url: Option<String>,
+    /// Alternative `category / subcategory` entries where the item is listed.
     pub second_path: Option<Vec<String>>,
+    /// Twitter url.
     pub twitter: Option<String>,
-    pub url_for_bestpractices: Option<String>,
+    /// Whether the organization the item belongs to is unnamed.
     pub unnamed_organization: Option<bool>,
+    /// OpenSSF best practices url.
+    pub url_for_bestpractices: Option<String>,
+}
+
+impl Item {
+    /// Validate the item, tracking the values that must be unique across the
+    /// whole file in the validation state provided and returning any non-fatal
+    /// warnings found.
+    fn validate(
+        &self,
+        category_norm: &str,
+        subcategory_norm: &str,
+        categories_index: &CategoriesIndex<'_>,
+        state: &mut ValidationState,
+    ) -> Result<Vec<String>> {
+        // Check name and id
+        if self.name.trim().is_empty() {
+            bail!("item name is required");
+        }
+        if normalize_name(&self.name).is_empty() {
+            bail!("item name must contain at least one letter or digit");
+        }
+        match state.item_ids.entry(item_id(category_norm, subcategory_norm, &self.name)) {
+            Entry::Occupied(entry) => {
+                bail!(
+                    "duplicate item id {} (also used by item [{}])",
+                    entry.key(),
+                    entry.get()
+                )
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(self.name.clone());
+            }
+        }
+
+        // Check homepage
+        if self.homepage_url.trim().is_empty() {
+            bail!("homepage url is required");
+        }
+
+        // Check logo
+        validate_logo(&self.logo)?;
+
+        // Check maturity
+        if let Some(maturity) = &self.project {
+            track_classification_value(&mut state.maturities, maturity, "maturity")?;
+        }
+
+        // Check some values in extra
+        if let Some(extra) = &self.extra {
+            // Check other links
+            if let Some(other_links) = &extra.other_links {
+                for link in other_links {
+                    if link.name.trim().is_empty() {
+                        bail!("link name is required");
+                    }
+                    if link.url.trim().is_empty() {
+                        bail!("link url is required");
+                    }
+                }
+            }
+
+            // Check TAGs names
+            if let Some(tags) = &extra.tag {
+                for tag in tags {
+                    if !TAG_NAME.is_match(tag) {
+                        bail!("invalid tag (must use only lowercase letters, digits and hyphens)");
+                    }
+                    track_classification_value(&mut state.tags, tag, "tag")?;
+                }
+            }
+
+            // Check CLOMonitor name, as it ends up in file names and urls
+            if let Some(clomonitor_name) = &extra.clomonitor_name
+                && (!CLOMONITOR_NAME.is_match(clomonitor_name) || clomonitor_name.contains(".."))
+            {
+                bail!(
+                    "invalid clomonitor_name (must start with a letter or digit and use only letters, digits, dots, underscores and hyphens, without ..)"
+                );
+            }
+        }
+
+        // Check second path entries
+        let warnings: Vec<String> = self
+            .second_path
+            .iter()
+            .flatten()
+            .filter_map(|entry| validate_second_path(entry, categories_index))
+            .collect();
+
+        // Check urls
+        validate_urls(self)?;
+
+        Ok(warnings)
+    }
 }
 
 /// Extra information for a landscape item.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct ItemExtra {
+    /// Date at which the project was accepted in the foundation.
     pub accepted: Option<NaiveDate>,
-    pub annotations: Option<HashMap<String, String>>,
-    pub archived: Option<NaiveDate>,
-    pub audits: Option<Vec<ItemAudit>>,
+    /// User-defined annotations.
+    pub annotations: Option<BTreeMap<String, String>>,
+    /// Date of the last annual review presented by this project.
     pub annual_review_date: Option<NaiveDate>,
+    /// Url of the last annual review presented by this project.
     pub annual_review_url: Option<String>,
+    /// Date at which the project was archived.
+    pub archived: Option<NaiveDate>,
+    /// Artwork url.
     pub artwork_url: Option<String>,
+    /// Security audits the project has undergone.
+    pub audits: Option<Vec<ItemAudit>>,
+    /// Blog url.
     pub blog_url: Option<String>,
+    /// Bluesky url.
     pub bluesky_url: Option<String>,
+    /// Channel to discuss topics related to this item.
     pub chat_channel: Option<String>,
+    /// Name of the project in CLOMonitor matching this item.
     pub clomonitor_name: Option<String>,
+    /// Dev stats url.
     pub dev_stats_url: Option<String>,
+    /// Discord url.
     pub discord_url: Option<String>,
+    /// Docker url.
     pub docker_url: Option<String>,
+    /// Documentation url.
     pub documentation_url: Option<String>,
+    /// Facebook url.
     pub facebook_url: Option<String>,
+    /// Url to external financial details.
     pub funding_url: Option<String>,
+    /// GitHub discussions url.
     pub github_discussions_url: Option<String>,
+    /// Gitter url.
     pub gitter_url: Option<String>,
+    /// Date at which the project moved to graduated.
     pub graduated: Option<NaiveDate>,
+    /// Date at which the project moved to incubating.
     pub incubating: Option<NaiveDate>,
+    /// Slug used by LFX to reference the project.
     pub lfx_slug: Option<String>,
+    /// LinkedIn url.
     pub linkedin_url: Option<String>,
+    /// Mailing list url.
     pub mailing_list_url: Option<String>,
+    /// Links to feature in the item's details view.
     pub other_links: Option<Vec<ItemLink>>,
+    /// Package manager url where the item is available.
     pub package_manager_url: Option<String>,
+    /// Name of the parent project.
     pub parent_project: Option<String>,
+    /// Pinterest url.
     pub pinterest_url: Option<String>,
+    /// Reddit url.
     pub reddit_url: Option<String>,
+    /// Slack url.
     pub slack_url: Option<String>,
+    /// Whether the item is a specification.
     pub specification: Option<bool>,
+    /// Stack Overflow url.
     pub stack_overflow_url: Option<String>,
+    /// Description of the business use case.
     pub summary_business_use_case: Option<String>,
+    /// Comma separated list of other projects this item integrates with.
     pub summary_integration: Option<String>,
+    /// Alternative field for `summary_integration`.
     pub summary_integrations: Option<String>,
+    /// Comma separated list of video urls of the item's pitch.
     pub summary_intro_url: Option<String>,
+    /// Comma separated list of target users this item is intended for.
     pub summary_personas: Option<String>,
+    /// How often a new version of the item is released.
     pub summary_release_rate: Option<String>,
+    /// Comma separated keywords that describe the item.
     pub summary_tags: Option<String>,
+    /// Description of the technical problem this item solves.
     pub summary_use_case: Option<String>,
+    /// Technical Advisory Groups (TAG) the item is associated to.
     pub tag: Option<Vec<String>>,
+    /// Training certifications offered.
     pub training_certifications: Option<String>,
+    /// Training type offered.
     pub training_type: Option<String>,
+    /// YouTube url.
     pub youtube_url: Option<String>,
 }
 
 /// Landscape item repository.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 pub(super) struct Repository {
+    /// Url of the repository.
     pub repo_url: String,
+
+    /// Branch to use when collecting information for the repository.
     pub branch: Option<String>,
+    /// Repository license, overriding the one in GitHub.
     pub license: Option<String>,
+}
+
+/// Category names mapped to the names of their subcategories.
+type CategoriesIndex<'a> = HashMap<&'a str, HashSet<&'a str>>;
+
+/// Values tracked while validating the landscape data that must be unique
+/// across the whole file.
+#[derive(Debug, Default)]
+struct ValidationState {
+    /// Item ids mapped to the name of the item using them.
+    item_ids: HashMap<String, String>,
+    /// Normalized maturity values mapped to their raw value.
+    maturities: HashMap<String, String>,
+    /// Normalized TAG values mapped to their raw value.
+    tags: HashMap<String, String>,
+}
+
+/// Track the maturity or TAG value provided, failing when it normalizes to an
+/// empty or reserved value, or like a different raw value.
+fn track_classification_value(seen: &mut HashMap<String, String>, value: &str, kind: &str) -> Result<()> {
+    // Check the normalized value is usable as an option key
+    let normalized_value = normalize_name(value);
+    if normalized_value.is_empty() {
+        bail!("{kind} [{value}] must contain at least one letter or digit");
+    }
+    if normalized_value == RESERVED_CLASSIFICATION_VALUE {
+        bail!("{kind} [{value}] is reserved (normalizes to {RESERVED_CLASSIFICATION_VALUE})");
+    }
+
+    // Check no other raw value normalizes alike
+    match seen.entry(normalized_value) {
+        Entry::Occupied(entry) if entry.get() != value => {
+            bail!(
+                "{kind} [{value}] collides with {kind} [{}] (both normalize to {})",
+                entry.get(),
+                entry.key()
+            )
+        }
+        Entry::Occupied(_) => {}
+        Entry::Vacant(entry) => {
+            entry.insert(value.to_string());
+        }
+    }
+
+    Ok(())
+}
+
+/// Track the normalized category or subcategory name provided, failing when
+/// another entry already uses it.
+fn track_unique_name<'a>(
+    seen: &mut HashMap<String, &'a str>,
+    normalized_name: String,
+    name: &'a str,
+    kind: &str,
+) -> Result<()> {
+    match seen.entry(normalized_name) {
+        Entry::Occupied(entry) => bail!(
+            "duplicate name (normalizes to {}, also used by {kind} [{}])",
+            entry.key(),
+            entry.get()
+        ),
+        Entry::Vacant(entry) => {
+            entry.insert(name);
+            Ok(())
+        }
+    }
+}
+
+/// Validate the logo provided is a relative path that stays inside the logos
+/// directory.
+fn validate_logo(logo: &str) -> Result<()> {
+    if logo.trim().is_empty() {
+        bail!("logo is required");
+    }
+    let stays_inside_logos_dir = !logo.contains('\\')
+        && Path::new(logo).components().all(|component| matches!(component, Component::Normal(_)));
+    if !stays_inside_logos_dir {
+        bail!(
+            "logo must be a relative path inside the logos directory (no absolute paths, .. components or backslashes)"
+        );
+    }
+    Ok(())
+}
+
+/// Validate the second path entry provided, returning a warning when it is
+/// malformed or points to an unknown category or subcategory.
+fn validate_second_path(entry: &str, categories_index: &CategoriesIndex<'_>) -> Option<String> {
+    let Some((category, subcategory)) = parse_second_path(entry) else {
+        return Some(format!(
+            "invalid second path entry [{entry}] (expected: category / subcategory), ignoring it"
+        ));
+    };
+    let Some(subcategories) = categories_index.get(category) else {
+        return Some(format!(
+            "second path entry [{entry}] references unknown category [{category}]"
+        ));
+    };
+    if !subcategories.contains(subcategory) {
+        return Some(format!(
+            "second path entry [{entry}] references unknown subcategory [{subcategory}] in category [{category}]"
+        ));
+    }
+    None
 }
 
 /// Validate the urls of the item provided.
 fn validate_urls(item: &Item) -> Result<()> {
     // Check urls in item
-    let homepage_url = Some(item.homepage_url.clone());
     let urls = [
-        ("best_practices", &item.url_for_bestpractices),
-        ("crunchbase", &item.crunchbase),
-        ("homepage", &homepage_url),
-        ("repository", &item.repo_url),
-        ("twitter", &item.twitter),
+        ("best_practices", item.url_for_bestpractices.as_deref()),
+        ("crunchbase", item.crunchbase.as_deref()),
+        ("homepage", Some(item.homepage_url.as_str())),
+        ("repository", item.repo_url.as_deref()),
+        ("twitter", item.twitter.as_deref()),
     ];
     for (name, url) in urls {
-        validate_url(name, url.as_ref())?;
+        validate_url(name, url)?;
     }
 
     // Check additional repositories
     if let Some(additional_repos) = &item.additional_repos {
         for r in additional_repos {
-            let repo_url = Some(r.repo_url.clone());
-            validate_url("additional_repository", repo_url.as_ref())?;
+            validate_url("additional_repository", Some(r.repo_url.as_str()))?;
         }
     }
 
@@ -253,22 +547,28 @@ fn validate_urls(item: &Item) -> Result<()> {
             ("youtube", &extra.youtube_url),
         ];
         for (name, url) in urls {
-            validate_url(name, url.as_ref())?;
+            validate_url(name, url.as_deref())?;
+        }
+
+        // Check summary intro urls (one or more, separated by commas)
+        if let Some(intro_urls) = &extra.summary_intro_url {
+            let intro_urls = split_list(intro_urls).unwrap_or_else(|| vec![intro_urls.clone()]);
+            for url in &intro_urls {
+                validate_url("summary_intro", Some(url))?;
+            }
         }
 
         // Check audits urls
         if let Some(audits) = &extra.audits {
             for a in audits {
-                let audit_url = Some(a.url.clone());
-                validate_url("audit", audit_url.as_ref())?;
+                validate_url("audit", Some(a.url.as_str()))?;
             }
         }
 
         // Other links
         if let Some(other_links) = &extra.other_links {
             for link in other_links {
-                let link_url = Some(link.url.clone());
-                validate_url("other_link", link_url.as_ref())?;
+                validate_url("other_link", Some(link.url.as_str()))?;
             }
         }
     }
@@ -277,251 +577,4 @@ fn validate_urls(item: &Item) -> Result<()> {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn landscape_data_validate_succeeds() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "https://example.com".to_string(),
-                    logo: "logo".to_string(),
-                    additional_repos: Some(vec![Repository {
-                        repo_url: "https://repo.url".to_string(),
-                        ..Default::default()
-                    }]),
-                    extra: Some(ItemExtra {
-                        audits: Some(vec![ItemAudit {
-                            url: "https://audit.url".to_string(),
-                            ..Default::default()
-                        }]),
-                        blog_url: Some("https://blog.url".to_string()),
-                        other_links: Some(vec![
-                            ItemLink {
-                                name: "email".to_string(),
-                                url: "mailto:team@example.com".to_string(),
-                            },
-                            ItemLink {
-                                name: "link".to_string(),
-                                url: "https://link.url".to_string(),
-                            },
-                        ]),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "category [0] name is required")]
-    fn landscape_data_validate_empty_category_name() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "   ".to_string(),
-            subcategories: vec![],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "subcategory [0] name is required")]
-    fn landscape_data_validate_empty_subcategory_name() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "   ".to_string(),
-                items: vec![],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "item name is required")]
-    fn landscape_data_validate_empty_item_name() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "   ".to_string(),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "duplicate item name")]
-    fn landscape_data_validate_duplicate_item_name() {
-        let mut landscape = LandscapeData::default();
-        let item = Item {
-            name: "Item".to_string(),
-            homepage_url: "https://example.com".to_string(),
-            logo: "logo".to_string(),
-            ..Default::default()
-        };
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![item.clone(), item],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "homepage url is required")]
-    fn landscape_data_validate_empty_homepage_url() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "   ".to_string(),
-                    logo: "logo".to_string(),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "logo is required")]
-    fn landscape_data_validate_empty_logo() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "https://example.com".to_string(),
-                    logo: "   ".to_string(),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "link name is required")]
-    fn landscape_data_validate_empty_link_name() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "https://example.com".to_string(),
-                    logo: "logo".to_string(),
-                    extra: Some(ItemExtra {
-                        other_links: Some(vec![ItemLink {
-                            name: "   ".to_string(),
-                            url: "https://link.url".to_string(),
-                        }]),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "link url is required")]
-    fn landscape_data_validate_empty_link_url() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "https://example.com".to_string(),
-                    logo: "logo".to_string(),
-                    extra: Some(ItemExtra {
-                        other_links: Some(vec![ItemLink {
-                            name: "name".to_string(),
-                            url: "   ".to_string(),
-                        }]),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "invalid tag")]
-    fn landscape_data_validate_invalid_tag() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "https://example.com".to_string(),
-                    logo: "logo".to_string(),
-                    extra: Some(ItemExtra {
-                        tag: Some(vec!["Invalid Tag".to_string()]),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "invalid homepage url")]
-    fn landscape_data_validate_invalid_url() {
-        let mut landscape = LandscapeData::default();
-        landscape.landscape.push(Category {
-            name: "Category".to_string(),
-            subcategories: vec![SubCategory {
-                name: "Subcategory".to_string(),
-                items: vec![Item {
-                    name: "Item".to_string(),
-                    homepage_url: "homepage_url".to_string(),
-                    logo: "logo".to_string(),
-                    ..Default::default()
-                }],
-            }],
-        });
-
-        landscape.validate().unwrap();
-    }
-}
+mod tests;

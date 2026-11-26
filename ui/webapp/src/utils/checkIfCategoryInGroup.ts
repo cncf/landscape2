@@ -1,17 +1,15 @@
 import { ALL_OPTION } from '../data';
 import { Group } from '../types';
 
+/**
+ * Checks whether a category belongs to a group. Every category belongs to the all
+ * option and to any group of a landscape without groups; none belongs to an unknown group.
+ */
 const checkIfCategoryInGroup = (category: string, group: string): boolean => {
-  if (window.baseDS.groups && group !== ALL_OPTION) {
-    const selectedGroup = window.baseDS.groups!.find((g: Group) => g.normalized_name === group);
-    if (selectedGroup) {
-      return selectedGroup.categories.includes(category);
-    } else {
-      return false;
-    }
-  } else {
-    return true;
-  }
+  const groups = window.baseDS.groups;
+  if (!groups || group === ALL_OPTION) return true;
+
+  return groups.find((g: Group) => g.normalized_name === group)?.categories.includes(category) ?? false;
 };
 
 export default checkIfCategoryInGroup;

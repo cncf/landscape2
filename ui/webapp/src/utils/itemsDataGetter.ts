@@ -1,40 +1,38 @@
-import { capitalizeFirstLetter } from 'common';
-import { flatten, uniqBy } from 'lodash';
-import compact from 'lodash/compact';
+import { capitalizeFirstLetter, type ClassificationOption, type FullDataset, joinFullDataset } from 'common';
 import groupBy from 'lodash/groupBy';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
 import isUndefined from 'lodash/isUndefined';
+import mapValues from 'lodash/mapValues';
 import reduce from 'lodash/reduce';
 import some from 'lodash/some';
 import uniq from 'lodash/uniq';
-import uniqWith from 'lodash/uniqWith';
+import uniqBy from 'lodash/uniqBy';
 
 import { ALL_OPTION, DEFAULT_CLASSIFY } from '../data';
 import {
   ActiveFilters,
   ActiveSection,
   AdditionalCategory,
+  BaseData,
   BaseItem,
   CardMenu,
   Category,
   ClassifyOption,
-  CrunchbaseData,
   FilterOption,
-  GithubData,
   Group,
   Item,
-  LandscapeData,
-  Repository,
+  LandscapeItem,
   SortOption,
   Subcategory,
 } from '../types';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
 import filterData from './filterData';
+import getRepositoryLicenses from './getRepositoryLicenses';
 import search from './search';
 import sortCategoriesByGroupOrder from './sortCategoriesByGroupOrder';
 import sortMenuOptions from './sortMenuOptions';
+import sortSubcategories from './sortSubcategories';
 
 export interface ItemsDataStatus {
   updateStatus(status: ItemsDataLoadStatus): void;
@@ -67,7 +65,7 @@ export interface CategoryData {
 }
 
 export interface SubcategoryData {
-  items: (BaseItem | Item)[];
+  items: LandscapeItem[];
   itemsCount: number;
   itemsFeaturedCount: number;
 }
@@ -81,31 +79,74 @@ export interface ClassifyAndSortOptions {
   sort: SortOption[];
 }
 
+/** Items of each subcategory, keyed by category and subcategory names. */
+export type CategorizedItems = { [category: string]: { [subcategory: string]: LandscapeItem[] } };
+
+/** Items of each classification option (maturity level or TAG), keyed by the option. */
+export type ItemsByOption = { [option: string]: LandscapeItem[] };
+
+/** Card view data of each classify option. */
+export interface CardDataByClassify {
+  [ClassifyOption.None]: LandscapeItem[];
+  [ClassifyOption.Category]: CategorizedItems;
+  [ClassifyOption.Maturity]: ItemsByOption;
+  [ClassifyOption.TAG]: ItemsByOption;
+}
+
+/** Card view data of a group, whose shape depends on the classify option. */
+export type CardData = CardDataByClassify[ClassifyOption];
+
+/** Full dataset with the Crunchbase and GitHub data joined into its items. */
+type JoinedFullDataset = Omit<FullDataset, 'items'> & { items: Item[] };
+
+/** Items of each group, keyed by the group normalized name (plus the all option). */
+type GroupedItems = { [key: string]: LandscapeItem[] };
+
+/** Classified items of a group and the menu built from them. */
+interface ClassifiedGroup {
+  card: CardData;
+  menu: CardMenu | undefined;
+}
+
+/** Loads the full dataset and serves the grouped, classified and filtered items the views read. */
 export class ItemsDataGetter {
-  private updateStatus?: ItemsDataStatus;
   private status: ItemsDataLoadStatus = 'loading';
+  private subscribers: Set<ItemsDataStatus> = new Set();
   private pendingRequest?: Promise<void>;
   private groups: string[] | undefined;
-  private landscapeData?: LandscapeData;
+  private landscapeData?: JoinedFullDataset;
+  private itemsById: Map<string, Item> = new Map();
+  private itemsByName: Map<string, Item> = new Map();
   private classifyAndSortOptions: { [key: string]: ClassifyAndSortOptions } | undefined;
-  private allDataGrouped: { [key: string]: (Item | BaseItem)[] } | undefined;
+  private allDataGrouped: GroupedItems | undefined;
+  // Grouping of the base data used until the full data is ready, with the base dataset it was built from
+  private baseDataGrouped: { grouped: GroupedItems; source: BaseData } | undefined;
+  // Classification of the unfiltered groups, keyed by group and classify option
+  private classifiedGroups: Map<string, ClassifiedGroup> = new Map();
+  // Grid view data of the unfiltered groups, keyed by group
+  private gridGroups: Map<string, CategoriesData> = new Map();
+  // Base items of each subcategory, with the base dataset they were indexed from
+  private baseItemsBySubcategory: { index: Map<string, BaseItem[]>; source: BaseData } | undefined;
 
-  // Subscribe to the updateStatus
-  public subscribe(updateStatus: ItemsDataStatus) {
-    this.updateStatus = updateStatus;
-  }
-
-  private get ready(): boolean {
-    return this.status === 'ready';
+  /**
+   * Subscribes to the full data loading status changes.
+   * @param subscriber - Receives each new status
+   * @returns A function that removes the subscription
+   */
+  public subscribe(subscriber: ItemsDataStatus): () => void {
+    this.subscribers.add(subscriber);
+    return () => {
+      this.subscribers.delete(subscriber);
+    };
   }
 
   private setStatus(status: ItemsDataLoadStatus) {
     this.status = status;
-    this.updateStatus?.updateStatus(status);
+    this.subscribers.forEach((subscriber) => subscriber.updateStatus(status));
   }
 
-  // Initialize the data
-  public init(landscapeData?: LandscapeData) {
+  /** Loads the full dataset, or uses the one given (overlay), unless it is ready or loading. */
+  public init(landscapeData?: FullDataset) {
     if (this.status === 'ready' || this.pendingRequest) return;
 
     this.setStatus('loading');
@@ -129,13 +170,14 @@ export class ItemsDataGetter {
         throw new Error(`Unable to load full data: ${response.status}`);
       }
 
-      const data = (await response.json()) as LandscapeData;
+      const data = (await response.json()) as FullDataset;
       this.initialDataPreparation(data);
     } catch {
       this.setStatus('error');
     }
   }
 
+  /** Prepares the groups that have categories in the base dataset, resetting the cached groupings. */
   public prepareGroups() {
     const groups: string[] = [];
 
@@ -147,30 +189,48 @@ export class ItemsDataGetter {
         });
       }
       window.baseDS.groups.forEach((g: Group) => {
-        if (intersection(categories, g.categories).length > 0) {
+        if (!isUndefined(g.normalized_name) && intersection(categories, g.categories).length > 0) {
           groups.push(g.normalized_name);
         }
       });
       this.groups = groups;
     }
+    // The cached groupings depend on the groups
+    this.baseDataGrouped = undefined;
+    this.classifiedGroups.clear();
+    this.gridGroups.clear();
   }
 
+  /** Returns the normalized names of the groups with categories, `undefined` when the landscape has no groups. */
   public getGroups(): string[] | undefined {
     return this.groups;
   }
 
-  private initialDataPreparation(data: LandscapeData) {
-    const extendedItems = this.extendItemsData(data.items, data.crunchbase_data, data.github_data);
+  private initialDataPreparation(data: FullDataset) {
+    const extendedItems = joinFullDataset(data);
     // Search engine initialization
     search.init(extendedItems);
     this.landscapeData = {
       ...data,
       items: extendedItems,
     };
-    this.setStatus('ready');
+    // Items indexes, keeping the first item when several share a name
+    this.itemsById = new Map();
+    this.itemsByName = new Map();
+    extendedItems.forEach((item: Item) => {
+      if (!this.itemsById.has(item.id)) {
+        this.itemsById.set(item.id, item);
+      }
+      if (!this.itemsByName.has(item.name)) {
+        this.itemsByName.set(item.name, item);
+      }
+    });
+    // Subscribers read the grouped data and the options as soon as they are notified
     this.saveData();
+    this.setStatus('ready');
   }
 
+  /** Checks whether the full dataset is ready. */
   public isReady(): boolean {
     return this.status === 'ready';
   }
@@ -180,7 +240,7 @@ export class ItemsDataGetter {
     return this.status;
   }
 
-  // Get all items
+  /** Returns every item of the full dataset (none until it is ready). */
   public getAll(): Item[] {
     if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items;
@@ -188,18 +248,18 @@ export class ItemsDataGetter {
     return [];
   }
 
-  // Get crunchbase data
-  public getCrunchbaseData(): CrunchbaseData | undefined {
+  /** Returns the Crunchbase data of the full dataset (`undefined` until it is ready). */
+  public getCrunchbaseData(): FullDataset['crunchbase_data'] {
     if (this.isReady() && this.landscapeData && this.landscapeData.crunchbase_data) {
       return this.landscapeData.crunchbase_data;
     }
     return undefined;
   }
 
-  // Get categories and subcategories list with items
+  /** Returns the categories with only their subcategories that have items, in base dataset order. */
   public getCategoriesAndSubcategoriesWithItems(): Category[] {
     const categoriesToKeep: { [key: string]: string[] } = {};
-    window.baseDS.items.forEach((i: Item) => {
+    (window.baseDS.items ?? []).forEach((i: BaseItem) => {
       if (categoriesToKeep[i.category]) {
         if (!categoriesToKeep[i.category].includes(i.subcategory)) {
           categoriesToKeep[i.category].push(i.subcategory);
@@ -222,7 +282,7 @@ export class ItemsDataGetter {
     });
 
     const categoriesWithItems: Category[] = [];
-    window.baseDS.categories.forEach((c: Category) => {
+    (window.baseDS.categories ?? []).forEach((c: Category) => {
       // Check if the category is in the list of valid categories
       // and if it has subcategories
       if (categoriesToKeep[c.name] && c.subcategories.length > 0) {
@@ -242,46 +302,12 @@ export class ItemsDataGetter {
     return categoriesWithItems;
   }
 
-  // Extend items with crunchbase and github data
-  private extendItemsData(items?: Item[], crunchbaseData?: CrunchbaseData, githubData?: GithubData): Item[] {
-    const itemsList: Item[] = [];
-
-    if (!isUndefined(items)) {
-      items.forEach((item: Item) => {
-        const extendedItem = { ...item };
-        // Extend Item with crunchbase_data
-        if (
-          !isUndefined(item.crunchbase_url) &&
-          !isUndefined(crunchbaseData) &&
-          !isUndefined(crunchbaseData[item.crunchbase_url!])
-        ) {
-          extendedItem.crunchbase_data = crunchbaseData[item.crunchbase_url!];
-        }
-
-        // Extend repositories Item with github_data
-        if (!isUndefined(item.repositories) && !isUndefined(githubData)) {
-          const tmpRepositories: Repository[] = [];
-          item.repositories.forEach((repo: Repository) => {
-            const tmpRepo = { ...repo };
-            if (!isUndefined(githubData[repo.url])) {
-              tmpRepo.github_data = githubData[repo.url];
-            }
-            tmpRepositories.push(tmpRepo);
-          });
-          extendedItem.repositories = tmpRepositories;
-        }
-        itemsList.push(extendedItem);
-      });
-    }
-    return itemsList;
-  }
-
   // Group items
-  private groupData(items: (BaseItem | Item)[]): { [key: string]: (Item | BaseItem)[] } {
+  private groupData(items: LandscapeItem[]): GroupedItems {
     const gData = groupBy(items, 'category');
-    const additionalItems: { [key: string]: (Item | BaseItem)[] } = {};
-    const itemsWithAdditionalCategories = items.filter((i: BaseItem | Item) => !isUndefined(i.additional_categories));
-    itemsWithAdditionalCategories.forEach((item: BaseItem | Item) => {
+    const additionalItems: { [key: string]: LandscapeItem[] } = {};
+    const itemsWithAdditionalCategories = items.filter((i: LandscapeItem) => !isUndefined(i.additional_categories));
+    itemsWithAdditionalCategories.forEach((item: LandscapeItem) => {
       if (item.additional_categories) {
         item.additional_categories.forEach((x: AdditionalCategory) => {
           if (additionalItems[x.category]) {
@@ -294,12 +320,12 @@ export class ItemsDataGetter {
     });
 
     const groups: Group[] = window.baseDS.groups || [];
-    const groupedItems: { [key: string]: (BaseItem | Item)[] } = {};
+    const groupedItems: GroupedItems = {};
 
     for (const group of groups) {
       // Check if the group is in the list of valid groups
-      if (this.groups && this.groups.includes(group.normalized_name)) {
-        const itemsTmp: (BaseItem | Item)[] = [];
+      if (!isUndefined(group.normalized_name) && this.groups && this.groups.includes(group.normalized_name)) {
+        const itemsTmp: LandscapeItem[] = [];
         group.categories.forEach((c: string) => {
           const groupData = gData[c];
           const additionalData = additionalItems[c];
@@ -311,7 +337,7 @@ export class ItemsDataGetter {
           }
         });
         // Clean duplicates due to additional categories
-        groupedItems[group.normalized_name] = uniqWith(itemsTmp, isEqual);
+        groupedItems[group.normalized_name] = uniqBy(itemsTmp, 'id');
       }
     }
     groupedItems[ALL_OPTION] = [...items];
@@ -319,39 +345,36 @@ export class ItemsDataGetter {
     return groupedItems;
   }
 
-  private getClassifyAndSortOptionsPerGroup = (items: (BaseItem | Item)[]): ClassifyAndSortOptions => {
+  private getClassifyAndSortOptionsPerGroup = (items: LandscapeItem[]): ClassifyAndSortOptions => {
     const classify: ClassifyOption[] = [ClassifyOption.None, ClassifyOption.Category];
     const sort: SortOption[] = [SortOption.Name];
 
-    if (some(items, (i: Item) => !isUndefined(i.maturity))) {
+    if (some(items, (i) => !isUndefined(i.maturity))) {
       classify.push(ClassifyOption.Maturity);
     }
-    if (some(items, (i: Item) => !isUndefined(i.tag) && i.tag.length > 0)) {
+    if (some(items, (i) => !isUndefined(i.tag) && i.tag.length > 0)) {
       classify.push(ClassifyOption.TAG);
     }
 
-    if (some(items, (i: Item) => !isUndefined(i.repositories))) {
+    if (some(items, (i) => !isUndefined(i.repositories))) {
       sort.push(SortOption.Stars);
       sort.push(SortOption.FirstCommit);
       sort.push(SortOption.LatestCommit);
       sort.push(SortOption.Contributors);
     }
 
-    if (some(items, (i: Item) => !isUndefined(i.accepted_at) || !isUndefined(i.joined_at))) {
+    if (some(items, (i) => !isUndefined(i.accepted_at) || !isUndefined(i.joined_at))) {
       sort.push(SortOption.DateAdded);
     }
 
-    if (some(items, (i: Item) => !isUndefined(i.crunchbase_data))) {
+    if (some(items, (i) => !isUndefined(i.crunchbase_data))) {
       sort.push(SortOption.Funding);
     }
 
-    return {
-      classify,
-      sort,
-    };
+    return { classify, sort };
   };
 
-  private prepareClassifyAndSortOptions(groupedItems: { [key: string]: (Item | BaseItem)[] }): void {
+  private prepareClassifyAndSortOptions(groupedItems: { [key: string]: LandscapeItem[] }): void {
     const options: { [key: string]: ClassifyAndSortOptions } = {};
 
     Object.keys(groupedItems).forEach((group: string) => {
@@ -361,69 +384,60 @@ export class ItemsDataGetter {
     this.classifyAndSortOptions = options;
   }
 
+  /** Returns the classify and sort options available in each group. */
   public getClassifyAndSortOptions(): { [key: string]: ClassifyAndSortOptions } {
     return this.classifyAndSortOptions || {};
   }
 
   private classifyItemsByCatAndSub(
-    items: (BaseItem | Item)[],
+    items: LandscapeItem[],
     group: string,
     activeCategoryFilters?: string[]
-  ): { [key: string]: { [key: string]: (BaseItem | Item)[] } } {
-    const groupedItems: { [key: string]: { [key: string]: (BaseItem | Item)[] } } = {};
+  ): CategorizedItems {
+    const categorizedItems: CategorizedItems = {};
+    items.forEach((item: LandscapeItem) => this.addToCategory(categorizedItems, item, group, activeCategoryFilters));
+    return categorizedItems;
+  }
 
-    if (items && items.length > 0) {
-      const addItem = (category: string, subcategory: string, item: BaseItem | Item) => {
-        const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
-        if (groupedItems[category]) {
-          if (groupedItems[category][subcategory]) {
-            groupedItems[category][subcategory].push(preparedItem);
-          } else {
-            groupedItems[category][subcategory] = [preparedItem];
-          }
-        } else {
-          groupedItems[category] = { [subcategory]: [preparedItem] };
-        }
-      };
+  // Add an item to each of its primary and additional subcategories that belong to the
+  // group and match the active category filters
+  private addToCategory(
+    categorizedItems: CategorizedItems,
+    item: LandscapeItem,
+    group: string,
+    activeCategoryFilters?: string[]
+  ): void {
+    const sections = [
+      { category: item.category, subcategory: item.subcategory },
+      ...(item.additional_categories ?? []),
+    ];
+    sections.forEach(({ category, subcategory }) => {
+      const filteredOut =
+        !isUndefined(activeCategoryFilters) &&
+        activeCategoryFilters.length > 0 &&
+        !activeCategoryFilters.includes(category);
+      if (!checkIfCategoryInGroup(category, group) || filteredOut) return;
 
-      const validateCategory = (category: string): boolean => {
-        if (!checkIfCategoryInGroup(category, group)) return false;
-        if (activeCategoryFilters && activeCategoryFilters.length > 0) {
-          return activeCategoryFilters.includes(category);
-        }
-        return true;
-      };
-
-      for (const item of items) {
-        if (validateCategory(item.category)) {
-          addItem(item.category, item.subcategory, item);
-        }
-        if (item.additional_categories) {
-          item.additional_categories.forEach((ad: AdditionalCategory) => {
-            if (validateCategory(ad.category)) {
-              addItem(ad.category, ad.subcategory, item);
-            }
-          });
-        }
-      }
-    }
-
-    return groupedItems;
+      const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
+      ((categorizedItems[category] ??= {})[subcategory] ??= []).push(preparedItem);
+    });
   }
 
   // Align item metadata with the category view consuming this entry
   private prepareItemForCategory(
-    item: BaseItem | Item,
+    item: LandscapeItem,
     category: string,
     subcategory: string,
     activeCategoryFilters?: string[]
-  ): BaseItem | Item {
-    const shouldFilterAdditionalCategories = !isUndefined(activeCategoryFilters) && activeCategoryFilters.length > 0;
+  ): LandscapeItem {
+    const categoryFilters =
+      !isUndefined(activeCategoryFilters) && activeCategoryFilters.length > 0 ? activeCategoryFilters : undefined;
+    const shouldFilterAdditionalCategories = !isUndefined(categoryFilters);
 
     const filteredAdditionalCategories =
-      shouldFilterAdditionalCategories && item.additional_categories
+      categoryFilters && item.additional_categories
         ? item.additional_categories.filter((additionalCategory: AdditionalCategory) =>
-            activeCategoryFilters!.includes(additionalCategory.category)
+            categoryFilters.includes(additionalCategory.category)
           )
         : item.additional_categories;
 
@@ -434,7 +448,7 @@ export class ItemsDataGetter {
       return item;
     }
 
-    const preparedItem: BaseItem | Item = {
+    const preparedItem: LandscapeItem = {
       ...item,
       category,
       subcategory,
@@ -444,7 +458,7 @@ export class ItemsDataGetter {
       if (!isUndefined(filteredAdditionalCategories) && filteredAdditionalCategories.length > 0) {
         preparedItem.additional_categories = filteredAdditionalCategories;
       } else {
-        delete (preparedItem as BaseItem).additional_categories;
+        delete preparedItem.additional_categories;
       }
     }
 
@@ -452,10 +466,10 @@ export class ItemsDataGetter {
   }
 
   // Group items by tags (considering items can have multiple tags)
-  private groupByTags(items: Item[]): Record<string, Item[]> {
+  private groupByTags(items: LandscapeItem[]): ItemsByOption {
     return reduce(
       items,
-      (acc, item) => {
+      (acc: ItemsByOption, item) => {
         const tags = item.tag && item.tag.length > 0 ? item.tag : ['undefined']; // Assign to 'undefined' tag if no tags are present
 
         tags.forEach((tag) => {
@@ -464,96 +478,49 @@ export class ItemsDataGetter {
 
         return acc;
       },
-      {} as Record<string, Item[]>
+      {}
     );
   }
 
-  // Classify items
-  public classifyItems(
-    items: (BaseItem | Item)[],
-    classify: ClassifyOption,
+  /**
+   * Classifies the items of a group for the Card view.
+   * @param items - Items to classify
+   * @param classify - Classify option, which sets the shape of the result
+   * @param group - Group the items belong to
+   * @param activeCategoryFilters - Active category filters, which also filter the additional categories
+   * @returns The items as a list, by category and subcategory, or by maturity level or TAG
+   */
+  public classifyItems<T extends ClassifyOption>(
+    items: LandscapeItem[],
+    classify: T,
     group: string,
     activeCategoryFilters?: string[]
-  ): unknown | undefined {
-    switch (classify) {
-      case ClassifyOption.None:
-        return items;
-      case ClassifyOption.Category:
-        return this.classifyItemsByCatAndSub(items, group, activeCategoryFilters);
-      case ClassifyOption.Maturity:
-        return groupBy(items, 'maturity');
-      case ClassifyOption.TAG:
-        return this.groupByTags(items as Item[]);
-    }
+  ): CardDataByClassify[T] {
+    const classifiers: { [K in ClassifyOption]: () => CardDataByClassify[K] } = {
+      [ClassifyOption.None]: () => items,
+      [ClassifyOption.Category]: () => this.classifyItemsByCatAndSub(items, group, activeCategoryFilters),
+      [ClassifyOption.Maturity]: () => groupBy(items, 'maturity'),
+      [ClassifyOption.TAG]: () => this.groupByTags(items),
+    };
+    return classifiers[classify]();
   }
 
   // Prepare grid data
-  private prepareGridData(
-    grouped: { [key: string]: (Item | BaseItem)[] },
-    withAllOption: boolean,
-    activeCategoryFilters?: string[]
-  ) {
+  private prepareGridData(grouped: GroupedItems, withAllOption: boolean, activeCategoryFilters?: string[]): GroupData {
     const data: GroupData = {};
-    if (!isUndefined(grouped)) {
-      const groupedItems = { ...grouped };
-      if (!withAllOption) {
-        delete groupedItems[ALL_OPTION];
-      }
+    Object.keys(grouped).forEach((group: string) => {
+      if (!withAllOption && group === ALL_OPTION) return;
 
-      const addItem = (group: string, category: string, subcategory: string, item: Item | BaseItem) => {
-        const preparedItem = this.prepareItemForCategory(item, category, subcategory, activeCategoryFilters);
-        if (data[group][category]) {
-          if (data[group][category][subcategory]) {
-            data[group][category][subcategory].items.push(preparedItem);
-            data[group][category][subcategory].itemsCount++;
-            if (preparedItem.featured) {
-              data[group][category][subcategory].itemsFeaturedCount++;
-            }
-          } else {
-            data[group][category][subcategory] = {
-              items: [preparedItem],
-              itemsCount: 1,
-              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
-            };
-          }
-        } else {
-          data[group][category] = {
-            [subcategory]: {
-              items: [preparedItem],
-              itemsCount: 1,
-              itemsFeaturedCount: preparedItem.featured ? 1 : 0,
-            },
-          };
-        }
-      };
-
-      const validateCategory = (category: string, group: string): boolean => {
-        if (!checkIfCategoryInGroup(category, group)) return false;
-        if (activeCategoryFilters && activeCategoryFilters.length > 0) {
-          return activeCategoryFilters.includes(category);
-        }
-        return true;
-      };
-
-      Object.keys(groupedItems).forEach((group: string) => {
-        data[group] = {};
-        const items = groupedItems![group];
-        if (!isUndefined(items)) {
-          items.forEach((item: BaseItem | Item) => {
-            if (validateCategory(item.category, group)) {
-              addItem(group, item.category, item.subcategory, item);
-            }
-            if (item.additional_categories) {
-              for (const ac of item.additional_categories) {
-                if (validateCategory(ac.category, group)) {
-                  addItem(group, ac.category, ac.subcategory, item);
-                }
-              }
-            }
-          });
-        }
-      });
-    }
+      data[group] = mapValues(
+        this.classifyItemsByCatAndSub(grouped[group] ?? [], group, activeCategoryFilters),
+        (subcategories) =>
+          mapValues(subcategories, (items) => ({
+            items,
+            itemsCount: items.length,
+            itemsFeaturedCount: items.filter((item: LandscapeItem) => item.featured).length,
+          }))
+      );
+    });
 
     return this.sortSubcategoriesInGridData(data);
   }
@@ -564,12 +531,12 @@ export class ItemsDataGetter {
     Object.keys(data).forEach((group: string) => {
       sortedData[group] = {};
       sortCategoriesByGroupOrder(Object.keys(data[group]), group).forEach((category: string) => {
-        const isOverriden =
+        const isOverridden =
           !isUndefined(window.baseDS.categories_overridden) && window.baseDS.categories_overridden.includes(category);
-        if (!isOverriden) {
+        if (!isOverridden) {
           sortedData[group][category] = data[group][category];
         } else {
-          const currentCategory = window.baseDS.categories.find((c: Category) => c.name === category);
+          const currentCategory = (window.baseDS.categories ?? []).find((c: Category) => c.name === category);
           if (currentCategory && currentCategory.subcategories) {
             const subcategories = currentCategory.subcategories.map((s: Subcategory) => s.name);
             const sortedSubcategories: { [key: string]: SubcategoryData } = {};
@@ -589,62 +556,77 @@ export class ItemsDataGetter {
     return sortedData;
   };
 
+  /** Returns the Grid view data of every group, with the all option when asked. */
   public getGridData(withAllOption: boolean): GroupData {
     return this.prepareGridData(this.getGroupedData(), withAllOption);
   }
 
-  public getGroupedData(): { [key: string]: (Item | BaseItem)[] } {
+  /** Returns the items of each group: the full items once ready, the base items until then. */
+  public getGroupedData(): GroupedItems {
     if (this.allDataGrouped) {
       return this.allDataGrouped;
-    } else {
-      const grouped = this.groupData(this.ready ? this.getAll() : window.baseDS.items);
-      if (this.ready) {
-        this.allDataGrouped = grouped;
-      }
-      return grouped;
     }
+
+    // Until the full data is ready, the base data grouping is built once per base dataset
+    if (isUndefined(this.baseDataGrouped) || this.baseDataGrouped.source !== window.baseDS) {
+      this.baseDataGrouped = { grouped: this.groupData(window.baseDS.items ?? []), source: window.baseDS };
+      this.classifiedGroups.clear();
+      this.gridGroups.clear();
+    }
+    return this.baseDataGrouped.grouped;
   }
 
   private saveData() {
-    const groupedItemsList = this.getGroupedData();
-    this.prepareClassifyAndSortOptions(groupedItemsList);
+    // The full data grouping replaces the base data one
+    this.allDataGrouped = this.groupData(this.landscapeData?.items ?? []);
+    this.baseDataGrouped = undefined;
+    this.classifiedGroups.clear();
+    this.gridGroups.clear();
+    this.prepareClassifyAndSortOptions(this.allDataGrouped);
+  }
+
+  // Classify an unfiltered group, reusing the result while the grouped data doesn't change
+  private getClassifiedGroup(items: LandscapeItem[], classify: ClassifyOption, group: string): ClassifiedGroup {
+    const key = `${group}:${classify}`;
+    let classifiedGroup = this.classifiedGroups.get(key);
+    if (isUndefined(classifiedGroup)) {
+      const card = this.classifyItems(items, classify, group);
+      classifiedGroup = { card, menu: this.getMenuOptions(card, classify) };
+      this.classifiedGroups.set(key, classifiedGroup);
+    }
+    return classifiedGroup;
+  }
+
+  /** Returns the Grid view data of an unfiltered group, reusing it while the grouped data doesn't change. */
+  private getGridGroup(items: LandscapeItem[] | undefined, group: string): CategoriesData {
+    let gridGroup = this.gridGroups.get(group);
+    if (isUndefined(gridGroup)) {
+      gridGroup = this.prepareGridData({ [group]: items ?? [] }, true)[group];
+      this.gridGroups.set(group, gridGroup);
+    }
+    return gridGroup;
   }
 
   // Prepare menu options
-  private getMenuOptions = (data: unknown, classify: ClassifyOption) => {
-    const menu: CardMenu = {};
-    let options: string[] = [];
-    switch (classify) {
-      case ClassifyOption.None:
-        return;
-      case ClassifyOption.Category:
-        Object.keys(data as never)
-          .sort()
-          .forEach((category: string) => {
-            let tmpSubcategories = Object.keys((data as { [key: string]: never })[category]).sort();
-            const isOverriden =
-              !isUndefined(window.baseDS.categories_overridden) &&
-              window.baseDS.categories_overridden.includes(category);
-            if (isOverriden) {
-              const currentCategory = window.baseDS.categories.find((c: Category) => c.name === category);
-              if (currentCategory) {
-                const subcategories: string[] = currentCategory.subcategories.map((s: Subcategory) => s.name);
-                tmpSubcategories = intersection(subcategories, tmpSubcategories);
-              }
-            }
-            menu[category] = tmpSubcategories;
-          });
-        return menu;
-      case ClassifyOption.Maturity:
-        options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
-        return options.length > 0 ? { Maturity: options } : {};
-      case ClassifyOption.TAG:
-        options = sortMenuOptions(Object.keys(data as { [key: string]: never }));
-        return options.length > 0 ? { Tag: options } : {};
+  private getMenuOptions = (data: CardData, classify: ClassifyOption): CardMenu | undefined => {
+    if (classify === ClassifyOption.None || Array.isArray(data)) return;
+
+    if (classify === ClassifyOption.Category) {
+      const menu: CardMenu = {};
+      Object.keys(data)
+        .sort()
+        .forEach((category: string) => {
+          menu[category] = sortSubcategories(category, Object.keys(data[category]));
+        });
+      return menu;
     }
+
+    const options = sortMenuOptions(Object.keys(data));
+    if (options.length === 0) return {};
+    return classify === ClassifyOption.Maturity ? { Maturity: options } : { Tag: options };
   };
 
-  // Query items
+  /** Returns the grid data, card data, menu and number of items of each group for the active filters. */
   public queryItems(input: ActiveFilters, activeGroup: string, classify: ClassifyOption) {
     const allGroupedItems = this.getGroupedData();
     // Filter only the active group
@@ -658,15 +640,27 @@ export class ItemsDataGetter {
       activeCategoryFilters = input.category;
     }
 
-    const gridData = this.prepareGridData(groupedItems, true, activeCategoryFilters);
+    const isFiltered = !isEmpty(input);
+    // The unfiltered groups reuse their data, so their views keep it when the active group changes
+    const gridData: GroupData = {};
+    Object.keys(groupedItems).forEach((group: string) => {
+      gridData[group] =
+        group === activeGroup && isFiltered
+          ? this.prepareGridData({ [group]: groupedItems[group] }, true, activeCategoryFilters)[group]
+          : this.getGridGroup(allGroupedItems[group], group);
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const classifyCardData: any = {};
+    const classifyCardData: { [key: string]: CardData } = {};
     const menuData: { [key: string]: CardMenu | undefined } = {};
     const numItems: { [key: string]: number } = {};
 
     Object.keys(groupedItems).forEach((group: string) => {
-      if (group === activeGroup) {
+      if (group === activeGroup && !isFiltered) {
+        const classifiedGroup = this.getClassifiedGroup(allGroupedItems[group], classify, group);
+        classifyCardData[group] = classifiedGroup.card;
+        menuData[group] = classifiedGroup.menu;
+        numItems[group] = groupedItems[group] ? groupedItems[group].length : 0;
+      } else if (group === activeGroup) {
         // Update group active data
         const classifyGroup = this.classifyItems(
           groupedItems[activeGroup],
@@ -682,32 +676,29 @@ export class ItemsDataGetter {
           !isUndefined(this.classifyAndSortOptions) && this.classifyAndSortOptions[group].classify.includes(classify)
             ? classify
             : DEFAULT_CLASSIFY;
-        const classifiedGroup = this.classifyItems(allGroupedItems[group], classifiedOption, group);
-        classifyCardData[group] = classifiedGroup;
-        menuData[group] = this.getMenuOptions(classifiedGroup, classifiedOption);
+        // Groups other than the active one are not filtered, so their classification is reused
+        const classifiedGroup = this.getClassifiedGroup(allGroupedItems[group], classifiedOption, group);
+        classifyCardData[group] = classifiedGroup.card;
+        menuData[group] = classifiedGroup.menu;
       }
     });
 
-    return { grid: gridData, card: classifyCardData, menu: menuData, numItems: numItems };
+    return { grid: gridData, card: classifyCardData, menu: menuData, numItems };
   }
 
-  // Get item by id
+  /** Returns the item with the id given (`undefined` until the full data is ready). */
   public getItemById(id: string): Item | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.find((i: Item) => id === i.id);
-    }
+    return this.itemsById.get(id);
   }
 
-  // Get item by name
+  /** Returns the first item with the name given (`undefined` until the full data is ready). */
   public getItemByName(name: string): Item | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
-      return this.landscapeData.items.find((i: Item) => name === i.name);
-    }
+    return this.itemsByName.get(name);
   }
 
-  // Get items by section
+  /** Returns the items of a subcategory, including those listed in it through an additional category. */
   public getItemsBySection(activeSection: ActiveSection): Item[] | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
         (i: Item) =>
           (activeSection.subcategory === i.subcategory && activeSection.category === i.category) ||
@@ -719,16 +710,34 @@ export class ItemsDataGetter {
     }
   }
 
-  // Get items by maturity status
+  /**
+   * Returns the base items of a subcategory, including the items listed in it through
+   * an additional category, in base dataset order. The index is built once per base
+   * dataset.
+   * @param category - Category name
+   * @param subcategory - Subcategory name
+   * @returns Items of the subcategory (empty when it has none)
+   */
+  public getItemsBySubcategory(category: string, subcategory: string): BaseItem[] {
+    if (isUndefined(this.baseItemsBySubcategory) || this.baseItemsBySubcategory.source !== window.baseDS) {
+      this.baseItemsBySubcategory = {
+        index: indexItemsBySubcategory(window.baseDS.items ?? []),
+        source: window.baseDS,
+      };
+    }
+    return this.baseItemsBySubcategory.index.get(subcategoryKey(category, subcategory)) ?? [];
+  }
+
+  /** Returns the items with the maturity level given. */
   public getItemsByMaturity(level: string): Item[] | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter((i: Item) => i.maturity === level);
     }
   }
 
-  // Get items with defined maturity status
+  /** Returns the items with a maturity and an acceptance date, unique by name. */
   public getItemsWithMaturity(): Item[] | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       // Unique items by name with maturity status
       return uniqBy(
         this.landscapeData.items.filter((i: Item) => !isUndefined(i.maturity) && !isUndefined(i.accepted_at)),
@@ -737,82 +746,67 @@ export class ItemsDataGetter {
     }
   }
 
-  // Get items by end user
+  /** Returns the end user items, leaving out the subcategories given. */
   public getItemsByEndUser(excludeSubcategories?: string[]): Item[] | undefined {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       return this.landscapeData.items.filter(
         (i: Item) => i.enduser && (!excludeSubcategories || !excludeSubcategories.includes(i.subcategory))
       );
     }
   }
 
-  // Get maturity options
-  public getMaturityOptions(): string[] {
-    const maturity = window.baseDS.items.map((i: Item) => i.maturity);
-    return uniq(compact(maturity)) || [];
+  /** Returns the maturity options shipped by the base dataset, sorted by name. */
+  public getMaturityOptions(): ClassificationOption[] {
+    return window.baseDS.maturity_options ?? [];
   }
 
-  // Get tag options
-  public getTagOptions(): string[] {
-    const tags = window.baseDS.items.map((i: Item) => i.tag);
-    return uniq(compact(flatten(tags))) || [];
+  /** Returns the TAG options shipped by the base dataset, sorted by name. */
+  public getTagOptions(): ClassificationOption[] {
+    return window.baseDS.tag_options ?? [];
   }
 
-  // Get license options
+  /** Returns the repository licenses of the items of a group (none until the full data is ready). */
   public getLicenseOptionsPerGroup(group: string): string[] {
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       const allGroupedItems = this.getGroupedData();
-      const options: string[] = [];
-      if (!isUndefined(allGroupedItems[group])) {
-        allGroupedItems[group].forEach((i: Item) => {
-          if (i.repositories) {
-            i.repositories.forEach((r: Repository) => {
-              if (r.license) {
-                options.push(r.license);
-              } else if (r.github_data) {
-                options.push(r.github_data!.license);
-              }
-            });
-          }
-        });
-      }
-      return uniq(compact(options));
+      const options = (allGroupedItems[group] ?? []).flatMap((i: LandscapeItem) =>
+        getRepositoryLicenses(i.repositories)
+      );
+      return uniq(options);
     }
     return [];
   }
 
+  /** Returns the logo of the item with the name given (and category and subcategory, when given), `null` when missing. */
   public getLogoItem(itemName: string, category?: string, subcategory?: string): string | undefined | null {
-    let item: Item | undefined = window.baseDS.items.find((i: Item) => i.name === itemName && i.category === category);
+    const items = window.baseDS.items ?? [];
+    let item: BaseItem | undefined;
     if (!isUndefined(subcategory) && !isUndefined(category)) {
-      item = window.baseDS.items.find(
-        (i: Item) =>
+      item = items.find(
+        (i: BaseItem) =>
           i.name.toLowerCase() === itemName.toLowerCase() &&
           i.category.toLowerCase() === category.toLowerCase() &&
           i.subcategory.toLowerCase() === subcategory.toLowerCase()
       );
     } else if (!isUndefined(category)) {
-      item = window.baseDS.items.find(
-        (i: Item) =>
+      item = items.find(
+        (i: BaseItem) =>
           i.name.toLowerCase() === itemName.toLowerCase() && i.category.toLowerCase() === category.toLowerCase()
       );
     } else {
-      item = window.baseDS.items.find((i: Item) => i.name.toLowerCase() === itemName.toLowerCase());
+      item = items.find((i: BaseItem) => i.name.toLowerCase() === itemName.toLowerCase());
     }
-    if (item) {
-      return item.logo;
-    } else {
-      return null;
-    }
+    return item ? item.logo : null;
   }
 
-  // Prepare logos options
+  /** Prepares the option groups of the logos preview page. */
   public prepareLogosOptions(): LogosOptionsGroup[] {
     const options: LogosOptionsGroup[] = [];
-    if (this.ready && this.landscapeData && this.landscapeData.items) {
+    if (this.isReady() && this.landscapeData && this.landscapeData.items) {
       const maturityTypes: string[] = [];
       const categories: CategoryOpt = {};
 
-      for (const i of this.landscapeData!.items!) {
+      for (const i of this.landscapeData.items) {
         if (i.maturity) {
           maturityTypes.push(i.maturity);
         }
@@ -842,11 +836,7 @@ export class ItemsDataGetter {
             value: s,
             name: s,
           }));
-          return {
-            value: c,
-            name: c,
-            suboptions: suboptions,
-          };
+          return { value: c, name: c, suboptions };
         });
 
         options.push({
@@ -875,6 +865,30 @@ export class ItemsDataGetter {
   }
 }
 
-// Create an instance of the ItemsDataGetter
+/** Indexes the items by the subcategories they belong to, primary and additional ones. */
+const indexItemsBySubcategory = (items: BaseItem[]): Map<string, BaseItem[]> => {
+  const index = new Map<string, BaseItem[]>();
+  items.forEach((item: BaseItem) => {
+    const sections = [
+      { category: item.category, subcategory: item.subcategory },
+      ...(item.additional_categories ?? []),
+    ];
+    sections.forEach((section) => {
+      const key = subcategoryKey(section.category, section.subcategory);
+      const subcategoryItems = index.get(key) ?? [];
+      // An item is listed once even when several of its sections are the same subcategory
+      if (subcategoryItems[subcategoryItems.length - 1] !== item) {
+        subcategoryItems.push(item);
+      }
+      index.set(key, subcategoryItems);
+    });
+  });
+  return index;
+};
+
+/** Builds the index key of a subcategory, which can't collide whatever the names contain. */
+const subcategoryKey = (category: string, subcategory: string): string => JSON.stringify([category, subcategory]);
+
+/** Shared items data getter instance. */
 const itemsDataGetter = new ItemsDataGetter();
 export default itemsDataGetter;

@@ -1,2 +1,71 @@
 foundation: Foundation
 url: https://tests.landscape2.io
+analytics:
+  gtm:
+    container_id: GTM-TEST123
+base_path: /landscape/
+colors:
+  color1: "rgba(0, 107, 204, 1)"
+  color2: "rgba(255, 0, 170, 1)"
+  color3: "rgba(96, 149, 214, 1)"
+  color4: "rgba(0, 42, 81, 0.7)"
+  color5: "rgba(1, 107, 204, 0.7)"
+  color6: "rgba(0, 42, 81, 0.7)"
+  color7: "rgb(180, 219, 255)"
+enduser:
+  - category: Category 2
+    subcategories:
+      - Subcategory 2-1
+featured_items:
+  - field: maturity
+    options:
+      - value: graduated
+        label: Graduated
+        order: 1
+    exclude:
+      groups:
+        - Group 2
+footer:
+  links:
+    github: https://github.com/cncf
+  logo: images/footer-logo.svg
+  text: Footer **text**
+grid_items_size: medium
+groups:
+  - name: Group 1
+    alias: group-one
+    categories:
+      - Category 1
+  - name: Group 2
+    categories:
+      - Category 2
+header:
+  links:
+    github: https://github.com/cncf/landscape2
+  logo: https://tests.landscape2.io/images/header-logo.svg
+  motd: Message of the **day**
+images:
+  favicon: images/favicon.png
+  open_graph: https://tests.landscape2.io/images/open-graph.png
+logos_viewbox:
+  adjust: false
+  exclude:
+    - item-2.svg
+members_category: Category 2
+osano:
+  customer_id: customer-id
+  customer_configuration_id: customer-configuration-id
+tags:
+  app-delivery:
+    - category: Category 1
+  security:
+    - category: Category 2
+      subcategories:
+        - Subcategory 2-1
+upcoming_event:
+  name: Upcoming event
+  start: "2024-03-19"
+  end: "2024-03-22"
+  banner_url: https://tests.landscape2.io/images/event-banner.png
+  details_url: https://tests.landscape2.io/events/upcoming
+view_mode: card

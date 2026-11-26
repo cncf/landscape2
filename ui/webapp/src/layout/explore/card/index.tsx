@@ -1,14 +1,12 @@
 import { useLocation } from '@solidjs/router';
-import isEmpty from 'lodash/isEmpty';
-import isNull from 'lodash/isNull';
 import isUndefined from 'lodash/isUndefined';
-import { createEffect, createSignal, on, onMount, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, on, onCleanup, Show } from 'solid-js';
 
 import { CardMenu, ClassifyOption, SortDirection, SortOption } from '../../../types';
-import getName from '../../../utils/getName';
+import { getAnchorId } from '../../../utils/anchorIds';
 import goToElement from '../../../utils/goToElement';
-import isElementInView from '../../../utils/isElementInView';
-import buildNormalizedId from '../../../utils/normalizeId';
+import { CardData } from '../../../utils/itemsDataGetter';
+import { parseHashId } from '../../../utils/urlParams';
 import ButtonToTopScroll from '../../common/ButtonToTopScroll';
 import { useFullDataReady } from '../../stores/fullData';
 import styles from './CardCategory.module.css';
@@ -20,88 +18,42 @@ interface Props {
   classify: ClassifyOption;
   sorted: SortOption;
   direction: SortDirection;
-  data: unknown;
+  data?: CardData;
   menu?: CardMenu;
 }
 
 const CardCategory = (props: Props) => {
   const location = useLocation();
   const [firstLoad, setFirstLoad] = createSignal<boolean>(false);
-  const [firstItem, setFirstItem] = createSignal<string>();
+  const [container, setContainer] = createSignal<HTMLDivElement>();
   const fullDataReady = useFullDataReady();
   const data = () => props.data;
   const isVisible = () => props.initialIsVisible;
   const menu = () => props.menu;
+  // Anchor ids of every section in page order, with `undefined` for sections without an anchor
+  const sectionAnchorIds = createMemo(() => {
+    if (props.classify === ClassifyOption.None) return [];
+    return Object.entries(menu() ?? {}).flatMap(([title, subtitles]) =>
+      subtitles.map((subtitle) => getAnchorId({ title, subtitle, grouped: true }))
+    );
+  });
+  // Whether the left-hand menu has at least one entry to render
+  const hasVisibleMenu = createMemo(() => sectionAnchorIds().some((anchorId) => !isUndefined(anchorId)));
+  let hasScrolledInitialSection = false;
+  let scrollTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  const isAvailableSelectedSection = (): boolean => {
-    const selection = location.hash.replace('#', '');
-    if (props.classify === ClassifyOption.Maturity) {
-      const status = selection.split('--')[1];
-      if (!isUndefined(menu()) && !isUndefined(menu()!.Maturity) && menu()!.Maturity.includes(status)) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if (props.classify === ClassifyOption.TAG) {
-      const tagOpt = selection.split('--')[1];
-      if (!isUndefined(menu()) && !isUndefined(menu()!.Tag) && menu()!.Tag.includes(tagOpt)) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      const names = getName(selection);
-      if (
-        !isUndefined(menu()) &&
-        !isNull(names) &&
-        Object.keys(menu()!).includes(names.category) &&
-        !isUndefined(names.subcategory) &&
-        menu()![names.category].includes(names.subcategory)
-      ) {
-        return true;
-      } else {
-        return false;
-      }
+  const updateActiveSection = (containerEl: HTMLDivElement) => {
+    const cleanHash = parseHashId(location.hash);
+    const anchorIds = sectionAnchorIds();
+    // Only skip scrolling when the hash names the section that is actually first on the page
+    if (cleanHash !== '' && anchorIds.includes(cleanHash) && cleanHash !== anchorIds[0]) {
+      // Does nothing when the menu option is already visible
+      containerEl.querySelector(`#btn_${CSS.escape(cleanHash)}`)?.scrollIntoView({ block: 'nearest' });
+      scrollTimeout = setTimeout(() => {
+        goToElement(`card_${cleanHash}`);
+      }, 100);
     }
   };
-
-  const updateActiveSection = () => {
-    const firstItemInMenu = firstItem();
-    if (firstItemInMenu) {
-      if (location.hash !== '' && isAvailableSelectedSection()) {
-        const cleanHash = location.hash.replace('#', '');
-        if (cleanHash !== firstItemInMenu) {
-          if (!isElementInView(`btn_${cleanHash}`)) {
-            const target = window.document.getElementById(`btn_${cleanHash}`);
-            if (target) {
-              target.scrollIntoView({ block: 'nearest' });
-            }
-          }
-          setTimeout(() => {
-            goToElement(`card_${cleanHash}`);
-          }, 100);
-        }
-      }
-    }
-  };
-
-  // When data changes, we need to update the first item in the menu
-  createEffect(
-    on(data, () => {
-      if (!isUndefined(menu()) && !isEmpty(menu())) {
-        const firstTitle = Object.keys(menu()!)[0];
-        const firstSubtitle = menu()![firstTitle][0];
-        if (!isUndefined(firstSubtitle)) {
-          const firstItemInMenu = buildNormalizedId({
-            title: firstTitle.toLowerCase(),
-            subtitle: firstSubtitle,
-            grouped: true,
-          });
-          setFirstItem(firstItemInMenu);
-        }
-      }
-    })
-  );
 
   createEffect(
     on(isVisible, () => {
@@ -113,30 +65,44 @@ const CardCategory = (props: Props) => {
     })
   );
 
-  onMount(() => {
-    if (isVisible()) {
-      updateActiveSection();
+  // Reveal the active hash entry once the container (and menu) has mounted
+  createEffect(
+    on(container, (containerEl) => {
+      if (!containerEl || !isVisible() || hasScrolledInitialSection) return;
+      hasScrolledInitialSection = true;
+      updateActiveSection(containerEl);
+    })
+  );
+
+  onCleanup(() => {
+    if (!isUndefined(scrollTimeout)) {
+      clearTimeout(scrollTimeout);
     }
   });
 
   return (
     <Show when={firstLoad()}>
-      <div class="d-flex flex-row mt-2">
-        <Show when={!isUndefined(menu()) && !isEmpty(menu())}>
-          <Menu menu={menu()!} isVisible={props.initialIsVisible} sticky />
+      <div ref={setContainer} class="d-flex flex-row mt-2">
+        <Show when={hasVisibleMenu() && menu()}>
+          {(menuData) => <Menu menu={menuData()} isVisible={props.initialIsVisible} sticky />}
         </Show>
         <div
-          class={`d-flex flex-column ${styles.content}`}
-          classList={{ 'w-100': props.classify === ClassifyOption.None }}
+          class="d-flex flex-column"
+          classList={{
+            [styles.content]: hasVisibleMenu(),
+            'w-100': !hasVisibleMenu(),
+          }}
         >
-          <Show when={fullDataReady() && !isUndefined(data())}>
-            <Content
-              data={data!}
-              classify={props.classify}
-              isVisible={props.initialIsVisible}
-              sorted={props.sorted}
-              direction={props.direction}
-            />
+          <Show when={fullDataReady() && data()}>
+            {(cardData) => (
+              <Content
+                data={cardData()}
+                classify={props.classify}
+                isVisible={props.initialIsVisible}
+                sorted={props.sorted}
+                direction={props.direction}
+              />
+            )}
           </Show>
           <ButtonToTopScroll />
         </div>

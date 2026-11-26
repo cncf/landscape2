@@ -1,14 +1,19 @@
+//! Landscape2 core functionality: the landscape sources (data, settings,
+//! guide and games) parsing and validation, the data enrichment, and the
+//! datasets and stats generated from them.
+
 #![warn(clippy::all, clippy::pedantic)]
-#![allow(
-    clippy::doc_markdown,
-    clippy::blocks_in_conditions,
-    clippy::module_name_repetitions
-)]
+#![expect(clippy::doc_markdown, clippy::module_name_repetitions)]
 
 pub mod data;
 pub mod datasets;
 pub mod games;
 pub mod guide;
+pub mod paths;
 pub mod settings;
+pub mod source;
 pub mod stats;
-mod util;
+pub mod util;
+
+#[cfg(test)]
+mod contract;

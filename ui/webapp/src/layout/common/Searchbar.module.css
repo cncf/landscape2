@@ -3,8 +3,17 @@
   width: 500px;
   font-size: 0.8rem;
   box-shadow: 0 0 0 0.15rem var(--bs-gray-200);
-  margin-right: 0.15rem;
   margin: 0 0.15rem;
+}
+
+/* The focus ring goes around the whole search bar, and only when the focus comes from the keyboard */
+.input:focus-visible {
+  outline: none;
+}
+
+.keyboardFocus {
+  outline: 2px solid var(--color1);
+  outline-offset: 2px;
 }
 
 .btnIcon {

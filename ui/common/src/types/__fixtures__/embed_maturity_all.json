@@ -1,0 +1,52 @@
+{
+  "classification": {
+    "maturity": [
+      {
+        "name": "Early Stage",
+        "normalized_name": "early-stage"
+      },
+      {
+        "name": "graduated",
+        "normalized_name": "graduated"
+      }
+    ]
+  },
+  "foundation": "Foundation",
+  "items": [
+    {
+      "category": "Category 1",
+      "id": "category-1--subcategory-1-1--item-1",
+      "logo": "item-1.svg",
+      "name": "Item 1",
+      "subcategory": "Subcategory 1-1",
+      "website": "https://item-1.example",
+      "description": "This is the description of item 1",
+      "maturity": "graduated",
+      "member_subcategory": "Gold",
+      "organization_name": "Member 1 Inc",
+      "primary_repository_url": "https://github.com/example/item-1"
+    },
+    {
+      "category": "Category 2",
+      "id": "category-2--subcategory-2-1--item-3",
+      "logo": "item-3.svg",
+      "name": "Item 3",
+      "subcategory": "Subcategory 2-1",
+      "website": "https://item-3.example",
+      "additional_categories": [
+        {
+          "category": "Category 1",
+          "subcategory": "Subcategory 1-1"
+        }
+      ],
+      "description": "Item 3 organization description",
+      "maturity": "Early Stage",
+      "organization_name": "Item 3 Inc",
+      "primary_repository_url": "https://github.com/example/item-3",
+      "tag": [
+        "observability",
+        "security"
+      ]
+    }
+  ]
+}

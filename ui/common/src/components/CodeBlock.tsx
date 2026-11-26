@@ -1,19 +1,17 @@
 import { Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
+import { cx } from '../utils/cx';
 import { ButtonCopyToClipboard } from './ButtonCopyToClipboard';
 
 interface Props {
-  language: string;
   content: string;
   withCopyBtn: boolean;
-  visibleBtnText?: boolean;
-  orientation?: 'row' | 'column';
   alignment?: 'top' | 'center' | 'bottom';
-  codeClass?: string;
   btnWrapperClass?: string;
+  codeClass?: string;
   label?: string;
-  darkCode?: boolean;
+  orientation?: 'row' | 'column';
 }
 
 const Pre = css`
@@ -24,6 +22,7 @@ const Code = css`
   background-color: var(--bs-gray-200);
 `;
 
+/** Preformatted code with an optional copy-to-clipboard button. */
 export const CodeBlock = (props: Props) => {
   return (
     <div
@@ -32,7 +31,7 @@ export const CodeBlock = (props: Props) => {
       } justify-content-end pb-2`}
     >
       <pre class={`flex-grow-1 mb-0 ${Pre}`}>
-        <code class={`p-3 d-block overflow-x-auto ${Code} ${props.codeClass}`}>{props.content}</code>
+        <code class={cx('p-3 d-block overflow-x-auto', Code, props.codeClass)}>{props.content}</code>
       </pre>
 
       <Show when={props.withCopyBtn}>

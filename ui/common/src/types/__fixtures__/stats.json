@@ -1,0 +1,97 @@
+{
+  "generated_at": "2024-06-01T00:00:00Z",
+  "members": {
+    "members": 1,
+    "joined_at": {
+      "2020-01": 1
+    },
+    "joined_at_rt": {
+      "2020-01": 1
+    },
+    "subcategories": {
+      "Gold": 1
+    }
+  },
+  "organizations": {
+    "acquisitions": {
+      "2023": 1
+    },
+    "acquisitions_price": {
+      "2023": 5000000
+    },
+    "funding_rounds": {
+      "2023": 1
+    },
+    "funding_rounds_money_raised": {
+      "2023": 25000000
+    }
+  },
+  "projects": {
+    "projects": 2,
+    "accepted_at": {
+      "2021-03": 1,
+      "2023-03": 1
+    },
+    "accepted_at_rt": {
+      "2021-03": 1,
+      "2023-03": 2
+    },
+    "audits": {
+      "2024-02": 1
+    },
+    "audits_rt": {
+      "2024-02": 1
+    },
+    "category": {
+      "Category 1": {
+        "projects": 1,
+        "subcategories": {
+          "Subcategory 1-1": 1
+        }
+      },
+      "Category 2": {
+        "projects": 1,
+        "subcategories": {
+          "Subcategory 2-1": 1
+        }
+      }
+    },
+    "incubating_to_graduated": {
+      "2023-09": 1
+    },
+    "maturity": {
+      "Early Stage": 1,
+      "graduated": 1
+    },
+    "sandbox_to_incubating": {
+      "2022-05": 1
+    },
+    "tag": {
+      "observability": 1,
+      "security": 1
+    }
+  },
+  "repositories": {
+    "bytes": 131000,
+    "contributors": 159,
+    "repositories": 3,
+    "stars": 1820,
+    "languages": {
+      "Go": 1,
+      "Rust": 1
+    },
+    "languages_bytes": {
+      "Go": 90000,
+      "Rust": 40000
+    },
+    "licenses": {
+      "Apache-2.0": 1,
+      "MIT": 1
+    },
+    "participation_stats": [
+      5,
+      7,
+      13
+    ]
+  }
+}

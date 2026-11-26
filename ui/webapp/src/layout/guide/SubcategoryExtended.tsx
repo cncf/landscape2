@@ -1,9 +1,10 @@
 import isUndefined from 'lodash/isUndefined';
 import trim from 'lodash/trim';
-import { createSignal, For, onMount, Show } from 'solid-js';
+import { createMemo, For, Show } from 'solid-js';
 
 import { FOUNDATION } from '../../data';
-import { AdditionalCategory, BaseItem, Item } from '../../types';
+import { LandscapeItem } from '../../types';
+import itemsDataGetter from '../../utils/itemsDataGetter';
 import sortItemsByOrderValue from '../../utils/sortItemsByOrderValue';
 import styles from './SubcategoryExtended.module.css';
 import SubcategoryGrid from './SubcategoryGrid';
@@ -15,37 +16,19 @@ interface Props {
 }
 
 const SubcategoryExtended = (props: Props) => {
-  const foundation = FOUNDATION;
-  const [items, setItems] = createSignal<(BaseItem | Item)[]>();
-  const [itemsInTable, setItemsInTable] = createSignal<(BaseItem | Item)[]>();
-
-  onMount(() => {
-    const itemsInSubcategory = window.baseDS.items.filter(
-      (i: Item) =>
-        (props.subcategory === i.subcategory && props.category === i.category) ||
-        i.additional_categories?.some(
-          (ac: AdditionalCategory) => ac.category === props.category && ac.subcategory === props.subcategory
-        )
-    );
-
-    if (!isUndefined(itemsInSubcategory) && itemsInSubcategory.length > 0) {
-      const sortedItems = sortItemsByOrderValue(itemsInSubcategory);
-      setItems(sortedItems);
-      const filteredItems = sortedItems.filter((i: BaseItem | Item) => !isUndefined(i.maturity));
-      if (filteredItems.length > 0) {
-        setItemsInTable(filteredItems);
-      }
-    }
-  });
+  const items = createMemo<LandscapeItem[]>(() =>
+    sortItemsByOrderValue(itemsDataGetter.getItemsBySubcategory(props.category, props.subcategory))
+  );
+  const itemsInTable = createMemo(() => items().filter((i: LandscapeItem) => !isUndefined(i.maturity)));
 
   return (
     <>
-      <Show when={!isUndefined(itemsInTable()) || !isUndefined(props.keywords)}>
+      <Show when={itemsInTable().length > 0 || !isUndefined(props.keywords)}>
         <table class="table table-bordered mt-3 mb-4 my-lg-5">
           <thead>
             <tr>
               <th class={`w-50 ${styles.header}`} scope="col">
-                {foundation} Projects
+                {FOUNDATION} Projects
               </th>
               <th class={`d-none d-sm-table-cell w-50 ${styles.header}`} scope="col">
                 Keywords
@@ -55,10 +38,10 @@ const SubcategoryExtended = (props: Props) => {
           <tbody class={styles.content}>
             <tr>
               <td class="py-4">
-                <Show when={!isUndefined(itemsInTable()) && itemsInTable()!.length > 0} fallback={'-'}>
+                <Show when={itemsInTable().length > 0} fallback={'-'}>
                   <ul class="mb-0 text-muted">
                     <For each={itemsInTable()}>
-                      {(item: Item) => {
+                      {(item: LandscapeItem) => {
                         return (
                           <li>
                             {item.name} ({item.maturity})
@@ -104,7 +87,7 @@ const SubcategoryExtended = (props: Props) => {
           </div>
         </Show>
       </Show>
-      <Show when={!isUndefined(items())}>
+      <Show when={items().length > 0}>
         <SubcategoryGrid items={items()} />
       </Show>
     </>

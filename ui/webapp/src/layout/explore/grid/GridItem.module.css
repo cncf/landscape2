@@ -3,7 +3,7 @@
   height: var(--card-size-height);
 }
 
-.card:global(.whithoutRepo) {
+.card:global(.withoutRepo) {
   background-color: #f6f7f9;
 }
 
@@ -12,9 +12,10 @@
   vertical-align: top;
 }
 
+/* Featured cards take 2x2 cells */
 .card:global(.bigCard) {
-  width: var(--card-size-width) * 2 + var(--card-gap);
-  height: var(--card-size-height) * 2 + var(--card-gap);
+  width: calc(var(--card-size-width) * 2 + var(--card-gap));
+  height: calc(var(--card-size-height) * 2 + var(--card-gap));
   grid-column-end: span 2;
   grid-row-end: span 2;
 }
@@ -73,13 +74,6 @@
   font-size: 0.3rem;
   line-height: 0.3rem;
   padding: 0.15rem 0;
-}
-
-:global(.zoom-0) .cardContent,
-:global(.zoom-1) .cardContent,
-:global(.zoom-2) .cardContent,
-:global(.zoom-3) .cardContent {
-  padding: 0.25rem;
 }
 
 :global(.zoom-0) .cardContent,

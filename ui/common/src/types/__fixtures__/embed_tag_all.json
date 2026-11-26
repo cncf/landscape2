@@ -1,0 +1,39 @@
+{
+  "classification": {
+    "tag": [
+      {
+        "name": "observability",
+        "normalized_name": "observability"
+      },
+      {
+        "name": "security",
+        "normalized_name": "security"
+      }
+    ]
+  },
+  "foundation": "Foundation",
+  "items": [
+    {
+      "category": "Category 2",
+      "id": "category-2--subcategory-2-1--item-3",
+      "logo": "item-3.svg",
+      "name": "Item 3",
+      "subcategory": "Subcategory 2-1",
+      "website": "https://item-3.example",
+      "additional_categories": [
+        {
+          "category": "Category 1",
+          "subcategory": "Subcategory 1-1"
+        }
+      ],
+      "description": "Item 3 organization description",
+      "maturity": "Early Stage",
+      "organization_name": "Item 3 Inc",
+      "primary_repository_url": "https://github.com/example/item-3",
+      "tag": [
+        "observability",
+        "security"
+      ]
+    }
+  ]
+}

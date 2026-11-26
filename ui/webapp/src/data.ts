@@ -1,6 +1,6 @@
-import { DEFAULT_HIDE_ORGANIZATION_SECTION } from '../../embed/src/types';
+import { Breakpoint, DEFAULT_HIDE_ORGANIZATION_SECTION } from 'common';
+
 import {
-  Breakpoint,
   ClassifyOption,
   FilterCategoriesPerTitle,
   FilterCategory,
@@ -10,7 +10,6 @@ import {
   GridItemsSize,
   SortDirection,
   SortOption,
-  Tab,
   ViewMode,
   ZoomLevelsPerSize,
 } from './types';
@@ -31,13 +30,9 @@ export const GAMES_PATH = `${BASE_PATH}/games`;
 export const LOGOS_PREVIEW_PATH = `${BASE_PATH}/logos-preview`;
 export const SCREENSHOTS_PATH = '/screenshot';
 
-export const TAB_PARAM = 'tab';
 export const VIEW_MODE_PARAM = 'view-mode';
 export const GROUP_PARAM = 'group';
-export const MODAL_PARAM = 'modal';
 export const ITEM_PARAM = 'item';
-export const CATEGORY_PARAM = 'category';
-export const SUBCATEGORY_PARAM = 'subcategory';
 export const PAGE_PARAM = 'page';
 export const FINANCES_KIND_PARAM = 'kind';
 export const CLASSIFY_PARAM = 'classify';
@@ -51,12 +46,6 @@ export const OVERLAY_GUIDE_PARAM = 'overlay-guide';
 export const OVERLAY_LOGOS_PATH_PARAM = 'overlay-logos';
 export const OVERLAY_GAMES_PATH_PARAM = 'overlay-games';
 
-export const REGEX_SPACE = / /g;
-export const REGEX_PLUS = /\+/g;
-export const REGEX_DASH = /-/g;
-export const REGEX_UNDERSCORE = /_/g;
-export const REGEX_URL = /^https?:\/\//;
-
 export const DEFAULT_ZOOM_LEVELS = {
   [Breakpoint.XXXL]: 5,
   [Breakpoint.XXL]: 5,
@@ -67,10 +56,6 @@ export const DEFAULT_ZOOM_LEVELS = {
   [Breakpoint.XS]: 0,
 };
 
-export const SMALL_DEVICES_BREAKPOINTS: Breakpoint[] = [Breakpoint.XS, Breakpoint.SM, Breakpoint.MD];
-export const DEFAULT_STICKY_MOBILE_NAVBAR_HEIGHT = 50;
-export const DEFAULT_STICKY_NAVBAR_HEIGHT = 72;
-export const DEFAULT_TAB = Tab.Explore;
 export let DEFAULT_VIEW_MODE: ViewMode = window.baseDS ? window.baseDS.view_mode || ViewMode.Grid : ViewMode.Grid;
 export const DEFAULT_GRID_ITEMS_SIZE = GridItemsSize.Small;
 export const DEFAULT_FINANCES_KIND = FinancesKind.Funding;
@@ -80,14 +65,10 @@ export const DEFAULT_SORT_DIRECTION = SortDirection.Asc;
 export const ALL_OPTION = 'all';
 
 export let FOUNDATION = window.baseDS ? window.baseDS.foundation : '';
-export let HIDE_ORGANIZATION_SECTION_IN_PROJECTS = window.baseDS
-  ? window.baseDS.hide_organization_section_in_projects || DEFAULT_HIDE_ORGANIZATION_SECTION
-  : DEFAULT_HIDE_ORGANIZATION_SECTION;
-export let GRID_SIZE = window.baseDS
-  ? window.baseDS.grid_items_size || DEFAULT_GRID_ITEMS_SIZE
-  : DEFAULT_GRID_ITEMS_SIZE;
+export let HIDE_ORGANIZATION_SECTION_IN_PROJECTS = getHideOrganizationSectionInProjects();
+let GRID_SIZE = window.baseDS ? window.baseDS.grid_items_size || DEFAULT_GRID_ITEMS_SIZE : DEFAULT_GRID_ITEMS_SIZE;
 
-export const ZOOM_LEVELS_PER_SIZE: ZoomLevelsPerSize = {
+const ZOOM_LEVELS_PER_SIZE: ZoomLevelsPerSize = {
   [GridItemsSize.Small]: [
     [25, 23],
     [30, 27],
@@ -133,7 +114,7 @@ export let ZOOM_LEVELS = ZOOM_LEVELS_PER_SIZE[GRID_SIZE as GridItemsSize];
 
 export const COLORS: string[] = ['var(--color5)', 'var(--color6)'];
 
-export const COMMON_FILTERS: FilterSection[] = [
+const COMMON_FILTERS: FilterSection[] = [
   {
     value: FilterCategory.License,
     title: 'License',
@@ -178,24 +159,7 @@ export const COMMON_FILTERS: FilterSection[] = [
     ],
   },
 ];
-export let FILTERS: FilterSection[] = [
-  {
-    value: FilterCategory.Maturity,
-    title: 'Project',
-    options: [
-      {
-        value: getFoundationNameLabel(),
-        name: `${FOUNDATION} Projects`,
-        suboptions: [],
-      },
-      {
-        value: `non-${getFoundationNameLabel()}`,
-        name: `Non ${FOUNDATION} Projects`,
-      },
-    ],
-  },
-  ...COMMON_FILTERS,
-];
+export let FILTERS: FilterSection[] = buildFilters(FOUNDATION);
 
 export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
   [FilterTitle.Project]: [
@@ -213,7 +177,6 @@ export const FILTER_CATEGORIES_PER_TITLE: FilterCategoriesPerTitle = {
   ],
 };
 
-export const BANNER_ID = 'banner-event';
 export const ITEM_VIEW = 'item-view';
 
 export const SORT_OPTION_LABEL = {
@@ -236,26 +199,41 @@ export const overrideSettings = (values: SettingsValue) => {
   FOUNDATION = values.foundationName;
   GRID_SIZE = values.gridSize;
   DEFAULT_VIEW_MODE = values.viewMode;
-  HIDE_ORGANIZATION_SECTION_IN_PROJECTS = window.baseDS
-    ? (window.baseDS.hide_organization_section_in_projects ?? DEFAULT_HIDE_ORGANIZATION_SECTION)
-    : DEFAULT_HIDE_ORGANIZATION_SECTION;
+  HIDE_ORGANIZATION_SECTION_IN_PROJECTS = getHideOrganizationSectionInProjects();
   ZOOM_LEVELS = ZOOM_LEVELS_PER_SIZE[values.gridSize];
-  FILTERS = [
+  FILTERS = buildFilters(FOUNDATION);
+};
+
+/**
+ * Builds the explore filter sections: the foundation projects filter followed by the common ones.
+ */
+function buildFilters(foundation: string): FilterSection[] {
+  const foundationLabel = getFoundationNameLabel(foundation);
+
+  return [
     {
       value: FilterCategory.Maturity,
       title: 'Project',
       options: [
         {
-          value: getFoundationNameLabel(),
-          name: `${FOUNDATION} Projects`,
+          value: foundationLabel,
+          name: `${foundation} Projects`,
           suboptions: [],
         },
         {
-          value: `non-${getFoundationNameLabel()}`,
-          name: `Non ${FOUNDATION} Projects`,
+          value: `non-${foundationLabel}`,
+          name: `Non ${foundation} Projects`,
         },
       ],
     },
     ...COMMON_FILTERS,
   ];
-};
+}
+
+/**
+ * Returns whether the organization section is hidden in the projects item modal:
+ * the base dataset setting when present, the embed default otherwise.
+ */
+function getHideOrganizationSectionInProjects(): boolean {
+  return window.baseDS?.hide_organization_section_in_projects ?? DEFAULT_HIDE_ORGANIZATION_SECTION;
+}

@@ -27,6 +27,11 @@
   cursor: pointer;
 }
 
+.expandBtn {
+  font-size: inherit;
+  padding: 0.5rem;
+}
+
 @media only screen and (max-width: 575.98px) {
   .table {
     font-size: 0.8rem;

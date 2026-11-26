@@ -6,8 +6,12 @@
 //! that they can be fetched when needed. These datasets are not meant to be
 //! consumed by other applications, as they can change at any time.
 
+use std::collections::BTreeMap;
+
+use chrono::{DateTime, Utc};
+
 use crate::{
-    data::{CrunchbaseData, GithubData, LandscapeData},
+    data::{self, Category, CategoryName, ClassificationOption, CrunchbaseData, GithubData, LandscapeData},
     games::LandscapeGames,
     guide::LandscapeGuide,
     settings::LandscapeSettings,
@@ -19,28 +23,36 @@ use self::{base::Base, embed::Embed, full::Full};
 /// Input used to create a new Datasets instance.
 #[derive(Debug, Clone)]
 pub struct NewDatasetsInput<'a> {
+    /// Organizations data collected from Crunchbase.
     pub crunchbase_data: &'a CrunchbaseData,
-    pub games: &'a Option<LandscapeGames>,
+    /// Repositories data collected from GitHub.
     pub github_data: &'a GithubData,
-    pub guide: &'a Option<LandscapeGuide>,
+    /// Landscape data, already enriched.
     pub landscape_data: &'a LandscapeData,
-    pub qr_code: &'a String,
+    /// Reference time used to generate the datasets (e.g. stats windows).
+    pub now: DateTime<Utc>,
+    /// Landscape settings.
     pub settings: &'a LandscapeSettings,
+
+    /// Landscape games, when provided.
+    pub games: Option<&'a LandscapeGames>,
+    /// Landscape guide, when provided.
+    pub guide: Option<&'a LandscapeGuide>,
+    /// Path of the QR code image (SVG) pointing to the landscape url, when
+    /// one is available.
+    pub qr_code: Option<&'a str>,
 }
 
 /// Datasets collection.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Datasets {
-    /// #[base]
+    /// Base dataset, see [`base`].
     pub base: Base,
-
-    /// #[embed]
+    /// Embed dataset, see [`embed`].
     pub embed: Embed,
-
-    /// #[full]
+    /// Full dataset, see [`full`].
     pub full: Full,
-
-    /// #[crate::stats]
+    /// Stats dataset, see [`crate::stats`].
     pub stats: Stats,
 }
 
@@ -52,7 +64,7 @@ impl Datasets {
             base: Base::new(i.landscape_data, i.settings, i.guide, i.games, i.qr_code),
             embed: Embed::new(i.landscape_data, i.settings),
             full: Full::new(i.landscape_data, i.crunchbase_data, i.github_data),
-            stats: Stats::new(i.landscape_data, i.settings),
+            stats: Stats::new(i.landscape_data, i.settings, i.now),
         }
     }
 }
@@ -62,78 +74,118 @@ impl Datasets {
 /// This dataset contains the minimal data the web application needs to render
 /// the initial page and power the features available on it.
 pub mod base {
+    use std::collections::BTreeMap;
+
+    use serde::Serialize;
+
     use crate::{
-        data::{self, AdditionalCategory, Category, CategoryName, ItemFeatured, LandscapeData},
+        data::{
+            self, AdditionalCategory, Category, CategoryName, ClassificationOption, ItemFeatured,
+            LandscapeData,
+        },
         games::LandscapeGames,
         guide::LandscapeGuide,
         settings::{
-            Colors, FeaturedItemRule, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings,
-            UpcomingEvent, ViewMode,
+            Colors, Footer, GridItemsSize, Group, Header, Images, LandscapeSettings, UpcomingEvent, ViewMode,
         },
     };
-    use serde::{Deserialize, Serialize};
-    use std::collections::BTreeMap;
+
+    use super::{ClassificationField, apply_category_overrides, classification_options};
 
     /// Base dataset information.
-    #[allow(clippy::struct_field_names)]
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, PartialEq, Serialize)]
+    #[cfg_attr(
+        feature = "ts",
+        derive(ts_rs::TS),
+        ts(export_to = "core/", optional_fields, rename = "BaseData")
+    )]
     pub struct Base {
+        /// Colors used across the landscape UI.
+        pub colors: Colors,
+        /// Whether some finances data (funding rounds or acquisitions) is available.
         pub finances_available: bool,
+        /// Name of the foundation.
         pub foundation: String,
-        pub qr_code: String,
+        /// Url where the landscape is hosted.
         pub url: String,
 
+        /// Base path where the landscape is hosted.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub base_path: Option<String>,
 
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Categories, with the settings overrides applied.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub categories: Vec<Category>,
 
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Names of the categories overridden in the settings.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub categories_overridden: Vec<CategoryName>,
 
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub colors: Option<Colors>,
-
+        /// Text describing the landscape.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub description: Option<String>,
 
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub featured_items: Option<Vec<FeaturedItemRule>>,
-
+        /// Footer configuration.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub footer: Option<Footer>,
 
+        /// Games that can be played (e.g. `quiz`).
         #[serde(skip_serializing_if = "Option::is_none")]
         pub games_available: Option<Vec<String>>,
 
+        /// Preferred size of the landscape items in the grid mode.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub grid_items_size: Option<GridItemsSize>,
 
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Groups used to organize the categories.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub groups: Vec<Group>,
 
-        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+        /// Guide categories mapped to their subcategories.
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub guide_summary: GuideSummary,
 
+        /// Header configuration.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub header: Option<Header>,
 
+        /// Whether to hide the organization section in the projects items modal.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub hide_organization_section_in_projects: Option<bool>,
 
+        /// Urls of some images used in the landscape UI.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub images: Option<Images>,
 
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Items in the landscape.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub items: Vec<Item>,
 
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub members_category: Option<String>,
+        /// Maturity options of the items, sorted by name.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
+        pub maturity_options: Vec<ClassificationOption>,
 
+        /// Path of the QR code image (SVG) pointing to the landscape url. The
+        /// overlay has none, as the settings it uses may change the url.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub qr_code: Option<String>,
+
+        /// TAG options of the items, sorted by name.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
+        pub tag_options: Vec<ClassificationOption>,
+
+        /// Upcoming event featured on the landscape web application.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub upcoming_event: Option<UpcomingEvent>,
 
+        /// Default view mode of the landscape web application.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub view_mode: Option<ViewMode>,
     }
@@ -144,21 +196,24 @@ pub mod base {
         pub fn new(
             landscape_data: &LandscapeData,
             settings: &LandscapeSettings,
-            guide: &Option<LandscapeGuide>,
-            games: &Option<LandscapeGames>,
-            qr_code: &str,
+            guide: Option<&LandscapeGuide>,
+            games: Option<&LandscapeGames>,
+            qr_code: Option<&str>,
         ) -> Self {
+            // Apply the categories overridden in the settings
+            let (categories, categories_overridden) =
+                apply_category_overrides(&landscape_data.categories, settings);
+
+            // Prepare the base dataset from the settings
             let mut base = Base {
+                colors: settings.colors.clone(),
                 finances_available: false,
                 foundation: settings.foundation.clone(),
-                qr_code: qr_code.to_string(),
                 url: settings.url.clone(),
                 base_path: settings.base_path.clone(),
-                categories: landscape_data.categories.clone(),
-                categories_overridden: vec![],
-                colors: settings.colors.clone(),
+                categories,
+                categories_overridden,
                 description: settings.description.clone(),
-                featured_items: settings.featured_items.clone(),
                 footer: settings.footer.clone(),
                 games_available: None,
                 grid_items_size: settings.grid_items_size.clone(),
@@ -168,29 +223,24 @@ pub mod base {
                 hide_organization_section_in_projects: settings.hide_organization_section_in_projects,
                 images: settings.images.clone(),
                 items: vec![],
-                members_category: settings.members_category.clone(),
+                maturity_options: classification_options(
+                    &landscape_data.items,
+                    ClassificationField::Maturity,
+                ),
+                qr_code: qr_code.map(ToString::to_string),
+                tag_options: classification_options(&landscape_data.items, ClassificationField::Tag),
                 upcoming_event: settings.upcoming_event.clone(),
                 view_mode: settings.view_mode.clone(),
             };
-
-            // Update categories overridden in settings
-            if let Some(categories) = &settings.categories {
-                for category in categories {
-                    if let Some(index) = base.categories.iter().position(|c| c.name == category.name) {
-                        base.categories[index] = category.into();
-                    }
-                    base.categories_overridden.push(category.name.clone());
-                }
-            }
 
             // Prepare items from landscape data
             for item in &landscape_data.items {
                 base.items.push(item.into());
             }
 
-            // Check what games will be available
+            // Check what games will be available (a quiz needs some questions)
             if let Some(games) = games
-                && games.quiz.is_some()
+                && games.quiz.as_ref().is_some_and(|quiz| !quiz.questions.is_empty())
             {
                 base.games_available = Some(vec!["quiz".to_string()]);
             }
@@ -229,26 +279,41 @@ pub mod base {
     }
 
     /// Base dataset item information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, PartialEq, Serialize)]
+    #[cfg_attr(
+        feature = "ts",
+        derive(ts_rs::TS),
+        ts(export_to = "core/", optional_fields, rename = "BaseItem")
+    )]
     pub struct Item {
+        /// Name of the category the item belongs to.
         pub category: String,
+        /// Item identifier.
         pub id: String,
-        pub name: String,
+        /// File name of the logo.
         pub logo: String,
+        /// Name of the item.
+        pub name: String,
+        /// Name of the subcategory the item belongs to.
         pub subcategory: String,
 
+        /// Additional categories and subcategories the item is listed in.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub additional_categories: Option<Vec<AdditionalCategory>>,
 
+        /// Featured information.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub featured: Option<ItemFeatured>,
 
+        /// Maturity of the project.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub maturity: Option<String>,
 
+        /// Whether the item is open source.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub oss: Option<bool>,
 
+        /// Technical Advisory Groups (TAG) the item is associated to.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub tag: Option<Vec<String>>,
     }
@@ -256,14 +321,14 @@ pub mod base {
     impl From<&data::Item> for Item {
         fn from(data_item: &data::Item) -> Self {
             Item {
-                additional_categories: data_item.additional_categories.clone(),
                 category: data_item.category.clone(),
-                featured: data_item.featured.clone(),
                 id: data_item.id.clone(),
-                name: data_item.name.clone(),
                 logo: data_item.logo.clone(),
-                maturity: data_item.maturity.clone(),
+                name: data_item.name.clone(),
                 subcategory: data_item.subcategory.clone(),
+                additional_categories: data_item.additional_categories.clone(),
+                featured: data_item.featured.clone(),
+                maturity: data_item.maturity.clone(),
                 oss: data_item.oss,
                 tag: data_item.tag.clone(),
             }
@@ -279,22 +344,25 @@ pub mod base {
 /// This dataset contains some information about all the embeddable views that
 /// can be generated from the information available in the landscape data.
 pub mod embed {
-    use crate::{
-        data::{self, AdditionalCategory, Category, LandscapeData},
-        settings::LandscapeSettings,
-        util::normalize_name,
+    use std::{
+        collections::{HashMap, HashSet},
+        iter, ptr,
     };
 
-    use serde::{Deserialize, Serialize};
-    use std::{
-        collections::{BTreeMap, HashMap},
-        vec,
+    use serde::Serialize;
+
+    use crate::{
+        data::{self, AdditionalCategory, Category, ClassificationOption, LandscapeData},
+        settings::LandscapeSettings,
     };
+
+    use super::{ClassificationField, apply_category_overrides, items_by_classification};
 
     /// Embed dataset information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, PartialEq, Serialize)]
     pub struct Embed {
-        #[serde(default, flatten, skip_serializing_if = "HashMap::is_empty")]
+        /// Embeddable views, keyed by their embed key.
+        #[serde(flatten, skip_serializing_if = "HashMap::is_empty")]
         pub views: HashMap<EmbedKey, EmbedView>,
     }
 
@@ -302,44 +370,89 @@ pub mod embed {
         /// Create a new Embed instance from the data provided.
         #[must_use]
         pub fn new(landscape_data: &LandscapeData, settings: &LandscapeSettings) -> Self {
+            // Apply the categories overridden in the settings, as the base dataset does
+            let (categories, _) = apply_category_overrides(&landscape_data.categories, settings);
+
+            // Prepare the views of every classification
             let mut views = HashMap::new();
-            views.extend(Self::prepare_category_views(landscape_data, &settings.foundation));
-            views.extend(Self::prepare_maturity_views(landscape_data, &settings.foundation));
-            views.extend(Self::prepare_tag_views(landscape_data, &settings.foundation));
+            views.extend(Self::prepare_category_views(
+                &categories,
+                &landscape_data.items,
+                &settings.foundation,
+            ));
+            for field in [ClassificationField::Maturity, ClassificationField::Tag] {
+                views.extend(Self::prepare_classification_views(
+                    &landscape_data.items,
+                    &settings.foundation,
+                    field,
+                ));
+            }
 
             Self { views }
         }
 
+        /// Index the items provided by category and subcategory, including
+        /// their additional categories. Each list keeps the items order.
+        fn index_items(items: &[data::Item]) -> HashMap<(&str, &str), Vec<&data::Item>> {
+            let mut index: HashMap<(&str, &str), Vec<&data::Item>> = HashMap::new();
+
+            for item in items {
+                // Add the item to its category and additional categories lists
+                let additional_categories = item
+                    .additional_categories
+                    .iter()
+                    .flatten()
+                    .map(|ac| (ac.category.as_str(), ac.subcategory.as_str()));
+                for key in iter::once((item.category.as_str(), item.subcategory.as_str()))
+                    .chain(additional_categories)
+                {
+                    // Skip the item when it was already added to this list
+                    let key_items = index.entry(key).or_default();
+                    if !key_items.last().is_some_and(|last| ptr::eq(*last, item)) {
+                        key_items.push(item);
+                    }
+                }
+            }
+
+            index
+        }
+
+        /// Insert the view provided in the views map. Keys cannot collide once
+        /// the data and settings have been validated, which is checked in debug
+        /// builds.
+        fn insert_view(views: &mut HashMap<EmbedKey, EmbedView>, key: EmbedKey, view: EmbedView) {
+            debug_assert!(!views.contains_key(&key), "duplicate embed key {key}");
+            views.insert(key, view);
+        }
+
         /// Prepare views for the category classification.
+        ///
+        /// The category views list the items of their subcategories, grouped
+        /// by subcategory in the categories order.
         fn prepare_category_views(
-            landscape_data: &LandscapeData,
+            categories: &[Category],
+            items: &[data::Item],
             foundation: &str,
         ) -> HashMap<EmbedKey, EmbedView> {
             let mut views = HashMap::new();
             let key_prefix = "category";
 
-            for category in &landscape_data.categories {
-                // Category view (includes items from all subcategories)
-                let key = format!("{}_{}", key_prefix, category.normalized_name);
-                let view = EmbedView {
-                    classification: Classification::Category(category.clone()),
-                    foundation: foundation.to_string(),
-                    items: landscape_data
-                        .items
-                        .iter()
-                        .filter(|i| {
-                            i.category == category.name
-                                || i.additional_categories
-                                    .as_ref()
-                                    .is_some_and(|ac| ac.iter().any(|ac| ac.category == category.name))
-                        })
-                        .map(Item::from)
-                        .collect(),
-                };
-                views.insert(key, view);
+            // Index the items once by category and subcategory
+            let items_index = Self::index_items(items);
 
-                // Subcategories views
+            for category in categories {
+                let mut category_items: Vec<&data::Item> = vec![];
+                let mut category_items_ids = HashSet::new();
+
+                // Subcategories views, collecting the category items once each
                 for subcategory in &category.subcategories {
+                    let subcategory_items = items_index
+                        .get(&(category.name.as_str(), subcategory.name.as_str()))
+                        .map_or_default(Vec::as_slice);
+                    category_items.extend(
+                        subcategory_items.iter().filter(|item| category_items_ids.insert(item.id.as_str())),
+                    );
+
                     let key = format!(
                         "{}_{}--{}",
                         key_prefix, category.normalized_name, subcategory.normalized_name,
@@ -351,183 +464,148 @@ pub mod embed {
                             subcategories: vec![subcategory.clone()],
                         }),
                         foundation: foundation.to_string(),
-                        items: landscape_data
-                            .items
-                            .iter()
-                            .filter(|i| {
-                                (i.category == category.name && i.subcategory == *subcategory.name)
-                                    || i.additional_categories.as_ref().is_some_and(|ac| {
-                                        ac.iter().any(|ac| {
-                                            ac.category == category.name
-                                                && ac.subcategory == *subcategory.name
-                                        })
-                                    })
-                            })
-                            .map(Item::from)
-                            .collect(),
+                        items: subcategory_items.iter().copied().map(Item::from).collect(),
                     };
-                    views.insert(key, view);
+                    Self::insert_view(&mut views, key, view);
                 }
+
+                // Category view (includes items from all subcategories)
+                let key = format!("{}_{}", key_prefix, category.normalized_name);
+                let view = EmbedView {
+                    classification: Classification::Category(category.clone()),
+                    foundation: foundation.to_string(),
+                    items: category_items.into_iter().map(Item::from).collect(),
+                };
+                Self::insert_view(&mut views, key, view);
             }
 
             views
         }
 
-        /// Prepare views for the maturity classification.
-        fn prepare_maturity_views(
-            landscape_data: &LandscapeData,
-            foundation: &str,
-        ) -> HashMap<EmbedKey, EmbedView> {
-            // Group items by maturity
-            let mut items_by_maturity = BTreeMap::new();
-            for item in &landscape_data.items {
-                if let Some(maturity) = &item.maturity {
-                    items_by_maturity.entry(maturity.clone()).or_insert_with(Vec::new).push(item.clone());
-                }
-            }
-
-            Self::prepare_classification_views(foundation, "maturity", &items_by_maturity)
-        }
-
-        /// Prepare views for the TAG classification.
-        fn prepare_tag_views(
-            landscape_data: &LandscapeData,
-            foundation: &str,
-        ) -> HashMap<EmbedKey, EmbedView> {
-            // Group items by TAG
-            let mut items_by_tag = BTreeMap::new();
-            for item in &landscape_data.items {
-                if let Some(tags) = &item.tag {
-                    for tag in tags {
-                        items_by_tag.entry(tag.clone()).or_insert_with(Vec::new).push(item.clone());
-                    }
-                }
-            }
-
-            Self::prepare_classification_views(foundation, "tag", &items_by_tag)
-        }
-
-        /// Prepare views for the classification provided.
+        /// Prepare views for the classification field provided: one view per
+        /// option, plus an all options view when any item is classified.
         fn prepare_classification_views(
+            items: &[data::Item],
             foundation: &str,
-            classification: &str,
-            grouped_items: &BTreeMap<String, Vec<data::Item>>,
+            field: ClassificationField,
         ) -> HashMap<EmbedKey, EmbedView> {
             let mut views = HashMap::new();
-
-            // Prepare view for all options
-            let all_options = grouped_items
-                .keys()
-                .map(|o| ClassificationOption {
-                    name: o.clone(),
-                    normalized_name: normalize_name(o),
-                })
-                .collect();
-            let mut all_options_view = EmbedView {
-                classification: match classification {
-                    "maturity" => Classification::Maturity(all_options),
-                    "tag" => Classification::Tag(all_options),
-                    _ => panic!("invalid embed classification: {classification}"),
-                },
-                foundation: foundation.to_string(),
-                items: vec![],
+            let (key_prefix, make): (&str, fn(Vec<ClassificationOption>) -> Classification) = match field {
+                ClassificationField::Maturity => ("maturity", Classification::Maturity),
+                ClassificationField::Tag => ("tag", Classification::Tag),
             };
 
-            // Prepare view for each option
-            for (option_name, items) in grouped_items {
-                let option = ClassificationOption {
-                    name: option_name.clone(),
-                    normalized_name: normalize_name(option_name),
-                };
-                let option_key = format!("{}_{}", classification, option.normalized_name);
+            // Group the items by option, as the base dataset options do
+            let grouped_items = items_by_classification(items, field);
+
+            // Prepare view for each option, collecting all options items
+            let mut all_options_items: Vec<&data::Item> = vec![];
+            for (option_name, items) in &grouped_items {
+                let option = ClassificationOption::new(option_name);
+                let option_key = format!("{}_{}", key_prefix, option.normalized_name);
                 let option_view = EmbedView {
-                    classification: match classification {
-                        "maturity" => Classification::Maturity(vec![option]),
-                        "tag" => Classification::Tag(vec![option]),
-                        _ => panic!("invalid embed classification: {classification}"),
-                    },
+                    classification: make(vec![option]),
                     foundation: foundation.to_string(),
-                    items: items.iter().map(Item::from).collect(),
+                    items: items.iter().copied().map(Item::from).collect(),
                 };
-
-                // Add option view to the views map
-                views.insert(option_key, option_view);
-
-                // Add option view items to the all options view
-                all_options_view.items.extend(items.iter().map(Item::from));
+                Self::insert_view(&mut views, option_key, option_view);
+                all_options_items.extend(items);
             }
 
             // Add the all options view to the views map if there are any items
-            if !all_options_view.items.is_empty() {
+            if !all_options_items.is_empty() {
                 // Clean up duplicated items
-                all_options_view.items.sort_by_key(|i| i.id.clone());
-                all_options_view.items.dedup_by_key(|i| i.id.clone());
+                all_options_items.sort_by(|a, b| a.id.cmp(&b.id));
+                all_options_items.dedup_by(|a, b| a.id == b.id);
 
-                let all_options_key = format!("{classification}_all");
-                views.insert(all_options_key, all_options_view);
+                let all_options = grouped_items.keys().map(|name| ClassificationOption::new(name)).collect();
+                let all_options_view = EmbedView {
+                    classification: make(all_options),
+                    foundation: foundation.to_string(),
+                    items: all_options_items.into_iter().map(Item::from).collect(),
+                };
+                let all_options_key = format!("{key_prefix}_all");
+                Self::insert_view(&mut views, all_options_key, all_options_view);
             }
 
             views
         }
     }
 
-    /// Type alias to represent a embed key.
+    /// Type alias to represent an embed key.
     pub type EmbedKey = String;
 
     /// Embed view information.
-    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, PartialEq, Serialize)]
+    #[cfg_attr(feature = "ts", derive(ts_rs::TS), ts(export_to = "core/", optional_fields))]
     pub struct EmbedView {
+        /// Classification the view is built from.
         pub classification: Classification,
+        /// Name of the foundation.
         pub foundation: String,
-
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Items in the view, always serialized (empty views list none).
         pub items: Vec<Item>,
     }
 
     /// Embed classification.
-    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, PartialEq, Serialize)]
+    #[cfg_attr(feature = "ts", derive(ts_rs::TS), ts(export_to = "core/"))]
     #[serde(rename_all = "snake_case")]
     pub enum Classification {
+        /// Category, with the subcategories included in the view.
         Category(Category),
+        /// Maturity options included in the view.
         Maturity(Vec<ClassificationOption>),
+        /// TAG options included in the view.
         Tag(Vec<ClassificationOption>),
     }
 
-    /// Embed classification option.
-    #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-    pub struct ClassificationOption {
-        pub name: String,
-        pub normalized_name: String,
-    }
-
     /// Embed dataset item information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, PartialEq, Serialize)]
+    #[cfg_attr(
+        feature = "ts",
+        derive(ts_rs::TS),
+        ts(export_to = "core/", optional_fields, rename = "EmbedItem")
+    )]
     pub struct Item {
+        /// Name of the category the item belongs to.
         pub category: String,
+        /// Item identifier.
         pub id: String,
-        pub name: String,
+        /// File name of the logo.
         pub logo: String,
+        /// Name of the item.
+        pub name: String,
+        /// Name of the subcategory the item belongs to.
         pub subcategory: String,
+        /// Website url.
         pub website: String,
 
+        /// Additional categories and subcategories the item is listed in.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub additional_categories: Option<Vec<AdditionalCategory>>,
 
+        /// Resolved description (see [`LandscapeData::enrich`]).
         #[serde(skip_serializing_if = "Option::is_none")]
         pub description: Option<String>,
 
+        /// Maturity of the project.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub maturity: Option<String>,
 
+        /// Members category subcategory of the organization the item belongs to.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub member_subcategory: Option<String>,
 
+        /// Name of the organization the item belongs to, from Crunchbase.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub organization_name: Option<String>,
 
+        /// Url of the primary repository.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub primary_repository_url: Option<String>,
 
+        /// Technical Advisory Groups (TAG) the item is associated to.
         #[serde(skip_serializing_if = "Option::is_none")]
         pub tag: Option<Vec<String>>,
     }
@@ -535,19 +613,19 @@ pub mod embed {
     impl From<&data::Item> for Item {
         fn from(data_item: &data::Item) -> Self {
             Item {
-                additional_categories: data_item.additional_categories.clone(),
                 category: data_item.category.clone(),
-                description: data_item.description().cloned(),
                 id: data_item.id.clone(),
-                name: data_item.name.clone(),
                 logo: data_item.logo.clone(),
+                name: data_item.name.clone(),
+                subcategory: data_item.subcategory.clone(),
+                website: data_item.website.clone(),
+                additional_categories: data_item.additional_categories.clone(),
+                description: data_item.description.clone(),
                 maturity: data_item.maturity.clone(),
                 member_subcategory: data_item.member_subcategory.clone(),
                 organization_name: data_item.crunchbase_data.as_ref().and_then(|org| org.name.clone()),
                 primary_repository_url: data_item.primary_repository().map(|r| r.url.clone()),
-                subcategory: data_item.subcategory.clone(),
                 tag: data_item.tag.clone(),
-                website: data_item.website.clone(),
             }
         }
     }
@@ -559,20 +637,33 @@ pub mod embed {
 /// information is used by the web application to power features that require
 /// some extra data not available in the base dataset.
 pub mod full {
-    use crate::data::{CrunchbaseData, GithubData, Item, LandscapeData};
-    use serde::{Deserialize, Serialize};
     use std::collections::BTreeMap;
 
+    use serde::Serialize;
+
+    use crate::data::{CrunchbaseData, GithubData, Item, LandscapeData};
+
     /// Full dataset information.
-    #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Default, PartialEq, Serialize)]
+    #[cfg_attr(
+        feature = "ts",
+        derive(ts_rs::TS),
+        ts(export_to = "core/", optional_fields, rename = "FullDataset")
+    )]
     pub struct Full {
-        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+        /// Organizations data collected from Crunchbase.
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub crunchbase_data: CrunchbaseData,
 
-        #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+        /// Repositories data collected from GitHub.
+        #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub github_data: GithubData,
 
-        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        /// Items in the landscape, with all their information.
+        #[serde(skip_serializing_if = "Vec::is_empty")]
+        #[cfg_attr(feature = "ts", ts(optional = nullable))]
         pub items: Vec<Item>,
     }
 
@@ -593,393 +684,65 @@ pub mod full {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use chrono::{NaiveDate, Utc};
-    use embed::Classification;
-    use tests::embed::EmbedView;
+/// Item field used to classify the items in options (maturity and TAG).
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ClassificationField {
+    /// Item maturity.
+    Maturity,
+    /// Item TAGs.
+    Tag,
+}
 
-    use crate::{
-        data::{self, *},
-        datasets::base,
-        games::Quiz,
-        guide::{self, LandscapeGuide},
-        settings::{self, *},
-    };
-
-    use super::*;
-
-    #[test]
-    fn datasets_new() {
-        let input = NewDatasetsInput {
-            crunchbase_data: &CrunchbaseData::default(),
-            games: &None,
-            github_data: &GithubData::default(),
-            guide: &None,
-            landscape_data: &LandscapeData::default(),
-            qr_code: &String::default(),
-            settings: &LandscapeSettings::default(),
-        };
-
-        let datasets = Datasets::new(&input);
-        assert_eq!(datasets, Datasets::default());
-    }
-
-    #[test]
-    #[allow(clippy::too_many_lines)]
-    fn base_new() {
-        // Landscape data
-        let item = data::Item {
-            category: "Category 1".to_string(),
-            crunchbase_data: Some(Organization {
-                generated_at: Utc::now(),
-                acquisitions: Some(vec![]),
-                funding_rounds: Some(vec![FundingRound {
-                    amount: Some(1000),
-                    ..Default::default()
-                }]),
-                ..Default::default()
-            }),
-            homepage_url: "https://homepage.url".to_string(),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            name: "Item".to_string(),
-            subcategory: "Subcategory 1".to_string(),
-            ..Default::default()
-        };
-        let landscape_data = LandscapeData {
-            categories: vec![data::Category {
-                name: "Category 1".to_string(),
-                normalized_name: "category-1".to_string(),
-                subcategories: vec![
-                    Subcategory {
-                        name: "Subcategory 1".to_string(),
-                        normalized_name: "subcategory-1".to_string(),
-                    },
-                    Subcategory {
-                        name: "Subcategory 2".to_string(),
-                        normalized_name: "subcategory-2".to_string(),
-                    },
-                ],
-            }],
-            items: vec![item.clone()],
-        };
-
-        // Settings
-        let colors = Some(Colors {
-            color1: "rgb(100, 100, 100)".to_string(),
-            ..Default::default()
-        });
-        let footer = Some(Footer {
-            text: Some("Footer text".to_string()),
-            ..Default::default()
-        });
-        let groups = vec![Group {
-            categories: vec!["Category 1".to_string()],
-            name: "Group 1".to_string(),
-            alias: Some("group-1".to_string()),
-            normalized_name: Some("group-1".to_string()),
-        }];
-        let header = Some(Header {
-            logo: Some("https://logo.url".to_string()),
-            ..Default::default()
-        });
-        let images = Some(Images {
-            favicon: Some("https://favicon.url".to_string()),
-            ..Default::default()
-        });
-        let upcoming_event = UpcomingEvent {
-            name: "Event".to_string(),
-            start: NaiveDate::from_ymd_opt(2024, 5, 2).unwrap(),
-            end: NaiveDate::from_ymd_opt(2024, 5, 3).unwrap(),
-            banner_url: "https://banner.url".to_string(),
-            details_url: "https://details.url".to_string(),
-        };
-        let settings = LandscapeSettings {
-            foundation: "Foundation".to_string(),
-            url: "https://landscape.url".to_string(),
-            base_path: Some("/base/path".to_string()),
-            categories: Some(vec![settings::Category {
-                name: "Category 1".to_string(),
-                subcategories: vec!["Subcategory 1".to_string()],
-            }]),
-            colors: colors.clone(),
-            description: Some("Short landscape description.".to_string()),
-            footer: footer.clone(),
-            grid_items_size: Some(GridItemsSize::Small),
-            groups: Some(groups.clone()),
-            header: header.clone(),
-            hide_organization_section_in_projects: Some(true),
-            images: images.clone(),
-            members_category: Some("Members".to_string()),
-            upcoming_event: Some(upcoming_event.clone()),
-            view_mode: Some(ViewMode::Grid),
-            ..Default::default()
-        };
-
-        // Guide
-        let guide = LandscapeGuide {
-            categories: Some(vec![guide::Category {
-                category: "Category 1".to_string(),
-                subcategories: Some(vec![guide::Subcategory {
-                    subcategory: "Subcategory 1".to_string(),
-                    ..Default::default()
-                }]),
-                ..Default::default()
-            }]),
-        };
-
-        // Games
-        let games = LandscapeGames {
-            quiz: Some(Quiz { questions: vec![] }),
-        };
-
-        // QR code
-        let qr_code = "QR_CODE".to_string();
-
-        let base = Base::new(&landscape_data, &settings, &Some(guide), &Some(games), &qr_code);
-        let expected_base = Base {
-            finances_available: true,
-            foundation: "Foundation".to_string(),
-            qr_code: "QR_CODE".to_string(),
-            url: "https://landscape.url".to_string(),
-            base_path: Some("/base/path".to_string()),
-            categories: vec![data::Category {
-                name: "Category 1".to_string(),
-                normalized_name: "category-1".to_string(),
-                subcategories: vec![Subcategory {
-                    name: "Subcategory 1".to_string(),
-                    normalized_name: "subcategory-1".to_string(),
-                }],
-            }],
-            categories_overridden: vec!["Category 1".to_string()],
-            colors,
-            description: Some("Short landscape description.".to_string()),
-            featured_items: None,
-            footer,
-            games_available: Some(vec!["quiz".to_string()]),
-            grid_items_size: Some(GridItemsSize::Small),
-            groups,
-            guide_summary: vec![("Category 1".to_string(), vec!["Subcategory 1".to_string()])]
-                .into_iter()
-                .collect(),
-            header,
-            hide_organization_section_in_projects: Some(true),
-            images,
-            items: vec![(&item).into()],
-            members_category: Some("Members".to_string()),
-            upcoming_event: Some(upcoming_event),
-            view_mode: Some(ViewMode::Grid),
-        };
-        pretty_assertions::assert_eq!(base, expected_base);
-    }
-
-    #[test]
-    fn base_item_from_data_item() {
-        let data_item = data::Item {
-            additional_categories: Some(vec![AdditionalCategory {
-                category: "Category 2".to_string(),
-                subcategory: "Subcategory 3".to_string(),
-            }]),
-            category: "Category 1".to_string(),
-            featured: Some(ItemFeatured {
-                label: Some("label".to_string()),
-                order: Some(1),
-            }),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            maturity: Some("graduated".to_string()),
-            name: "Item".to_string(),
-            oss: Some(true),
-            subcategory: "Subcategory 1".to_string(),
-            tag: Some(vec!["tag1".to_string()]),
-            ..Default::default()
-        };
-
-        let item = base::Item::from(&data_item);
-        let expected_item = base::Item {
-            additional_categories: Some(vec![AdditionalCategory {
-                category: "Category 2".to_string(),
-                subcategory: "Subcategory 3".to_string(),
-            }]),
-            category: "Category 1".to_string(),
-            featured: Some(ItemFeatured {
-                label: Some("label".to_string()),
-                order: Some(1),
-            }),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            maturity: Some("graduated".to_string()),
-            name: "Item".to_string(),
-            oss: Some(true),
-            subcategory: "Subcategory 1".to_string(),
-            tag: Some(vec!["tag1".to_string()]),
-        };
-        pretty_assertions::assert_eq!(item, expected_item);
-    }
-
-    #[test]
-    fn embed_new() {
-        let item = data::Item {
-            additional_categories: Some(vec![AdditionalCategory {
-                category: "Category 2".to_string(),
-                subcategory: "Subcategory 2".to_string(),
-            }]),
-            category: "Category 1".to_string(),
-            homepage_url: "https://homepage.url".to_string(),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            name: "Item".to_string(),
-            subcategory: "Subcategory 1".to_string(),
-            ..Default::default()
-        };
-        let landscape_data = LandscapeData {
-            categories: vec![
-                data::Category {
-                    name: "Category 1".to_string(),
-                    normalized_name: "category-1".to_string(),
-                    subcategories: vec![Subcategory {
-                        name: "Subcategory 1".to_string(),
-                        normalized_name: "subcategory-1".to_string(),
-                    }],
-                },
-                data::Category {
-                    name: "Category 2".to_string(),
-                    normalized_name: "category-2".to_string(),
-                    subcategories: vec![Subcategory {
-                        name: "Subcategory 2".to_string(),
-                        normalized_name: "subcategory-2".to_string(),
-                    }],
-                },
-            ],
-            items: vec![item.clone()],
-        };
-        let settings = LandscapeSettings {
-            foundation: "Foundation".to_string(),
-            ..Default::default()
-        };
-
-        let embed = Embed::new(&landscape_data, &settings);
-        let expected_embed_view_c1 = EmbedView {
-            foundation: "Foundation".to_string(),
-            classification: Classification::Category(data::Category {
-                name: "Category 1".to_string(),
-                normalized_name: "category-1".to_string(),
-                subcategories: vec![Subcategory {
-                    name: "Subcategory 1".to_string(),
-                    normalized_name: "subcategory-1".to_string(),
-                }],
-            }),
-            items: vec![(&item).into()],
-        };
-        let expected_embed_view_c2 = EmbedView {
-            foundation: "Foundation".to_string(),
-            classification: Classification::Category(data::Category {
-                name: "Category 2".to_string(),
-                normalized_name: "category-2".to_string(),
-                subcategories: vec![Subcategory {
-                    name: "Subcategory 2".to_string(),
-                    normalized_name: "subcategory-2".to_string(),
-                }],
-            }),
-            items: vec![(&item).into()],
-        };
-        let expected_embed = embed::Embed {
-            views: vec![
-                ("category_category-1".to_string(), expected_embed_view_c1.clone()),
-                (
-                    "category_category-1--subcategory-1".to_string(),
-                    expected_embed_view_c1,
-                ),
-                ("category_category-2".to_string(), expected_embed_view_c2.clone()),
-                (
-                    "category_category-2--subcategory-2".to_string(),
-                    expected_embed_view_c2,
-                ),
-            ]
-            .into_iter()
-            .collect(),
-        };
-        pretty_assertions::assert_eq!(embed, expected_embed);
-    }
-
-    #[test]
-    fn embed_item_from_data_item() {
-        let data_item = data::Item {
-            additional_categories: Some(vec![AdditionalCategory {
-                category: "Category 2".to_string(),
-                subcategory: "Subcategory 3".to_string(),
-            }]),
-            category: "Category 1".to_string(),
-            crunchbase_data: Some(Organization {
-                name: Some("Organization".to_string()),
-                ..Default::default()
-            }),
-            description: Some("Description".to_string()),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            maturity: Some("graduated".to_string()),
-            member_subcategory: Some("Member subcategory".to_string()),
-            name: "Item".to_string(),
-            repositories: Some(vec![Repository {
-                url: "https://repository.url".to_string(),
-                primary: Some(true),
-                ..Default::default()
-            }]),
-            subcategory: "Subcategory 1".to_string(),
-            tag: Some(vec!["tag1".to_string()]),
-            website: "https://homepage.url".to_string(),
-            ..Default::default()
-        };
-
-        let item = embed::Item::from(&data_item);
-        let expected_item = embed::Item {
-            additional_categories: Some(vec![AdditionalCategory {
-                category: "Category 2".to_string(),
-                subcategory: "Subcategory 3".to_string(),
-            }]),
-            category: "Category 1".to_string(),
-            description: Some("Description".to_string()),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            maturity: Some("graduated".to_string()),
-            member_subcategory: Some("Member subcategory".to_string()),
-            name: "Item".to_string(),
-            organization_name: Some("Organization".to_string()),
-            primary_repository_url: Some("https://repository.url".to_string()),
-            subcategory: "Subcategory 1".to_string(),
-            tag: Some(vec!["tag1".to_string()]),
-            website: "https://homepage.url".to_string(),
-        };
-        pretty_assertions::assert_eq!(item, expected_item);
-    }
-
-    #[test]
-    fn full_new() {
-        let item = data::Item {
-            category: "Category 1".to_string(),
-            homepage_url: "https://homepage.url".to_string(),
-            id: "id".to_string(),
-            logo: "logo.svg".to_string(),
-            name: "Item".to_string(),
-            subcategory: "Subcategory 1".to_string(),
-            ..Default::default()
-        };
-        let landscape_data = LandscapeData {
-            categories: vec![],
-            items: vec![item.clone()],
-        };
-        let mut crunchbase_data = CrunchbaseData::default();
-        crunchbase_data.insert("https:://crunchbase.url".to_string(), Organization::default());
-        let mut github_data = GithubData::default();
-        github_data.insert("https:://github.url".to_string(), RepositoryGithubData::default());
-
-        let full = Full::new(&landscape_data, &crunchbase_data, &github_data);
-        let expected_full = Full {
-            crunchbase_data,
-            github_data,
-            items: vec![item],
-        };
-        pretty_assertions::assert_eq!(full, expected_full);
+impl ClassificationField {
+    /// Return the values of this field in the item provided.
+    fn values(self, item: &data::Item) -> &[String] {
+        match self {
+            ClassificationField::Maturity => item.maturity.as_slice(),
+            ClassificationField::Tag => item.tag.as_deref().unwrap_or_default(),
+        }
     }
 }
+
+/// Apply the categories overridden in the settings to the categories provided.
+/// Returns the resulting categories and the names of the ones replaced. An
+/// override for a category that does not exist in the data is ignored.
+fn apply_category_overrides(
+    categories: &[Category],
+    settings: &LandscapeSettings,
+) -> (Vec<Category>, Vec<CategoryName>) {
+    let mut categories = categories.to_vec();
+    let mut categories_overridden = vec![];
+
+    for category_override in settings.categories.iter().flatten() {
+        if let Some(category) = categories.iter_mut().find(|c| c.name == category_override.name) {
+            *category = category_override.into();
+            categories_overridden.push(category_override.name.clone());
+        }
+    }
+
+    (categories, categories_overridden)
+}
+
+/// Return the classification options of the field provided, sorted by name
+/// and deduplicated. The embed views are keyed by the same options.
+fn classification_options(items: &[data::Item], field: ClassificationField) -> Vec<ClassificationOption> {
+    items_by_classification(items, field).into_keys().map(ClassificationOption::new).collect()
+}
+
+/// Group the items provided by the values of the classification field given,
+/// sorted by value. Each list keeps the items order.
+fn items_by_classification(
+    items: &[data::Item],
+    field: ClassificationField,
+) -> BTreeMap<&str, Vec<&data::Item>> {
+    let mut grouped_items: BTreeMap<&str, Vec<&data::Item>> = BTreeMap::new();
+    for item in items {
+        for value in field.values(item) {
+            grouped_items.entry(value.as_str()).or_default().push(item);
+        }
+    }
+    grouped_items
+}
+
+#[cfg(test)]
+mod tests;

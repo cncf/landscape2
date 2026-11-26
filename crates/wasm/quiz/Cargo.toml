@@ -15,19 +15,25 @@ crate-type = ["cdylib"]
 
 [dependencies]
 cached = { workspace = true }
-gloo-console = { workspace = true }
 gloo-net = { workspace = true }
-landscape2-core = { path = "../../core" }
+landscape2-core = { path = "../../core", features = ["wasm"] }
 rand = { workspace = true }
-serde = { workspace = true }
+serde_json = { workspace = true }
 wasm-bindgen = { workspace = true }
 wasm-bindgen-futures = { workspace = true }
 
+# Must be the getrandom version rand depends on (see the cargo-machete note below)
 [dependencies.getrandom]
-version = "0.2.16" # do-not-upgrade
-features = ["js"]
+version = "0.4.3"
+features = ["wasm_js"]
 
 [dev-dependencies]
 mockito = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
+
+[package.metadata.cargo-machete]
+# Used without a direct reference: getrandom enables its `wasm_js` backend for
+# rand on wasm32, and the `wasm_bindgen` macro expands async exports into
+# `wasm_bindgen_futures` calls
+ignored = ["getrandom", "wasm-bindgen-futures"]

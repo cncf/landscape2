@@ -1,6 +1,7 @@
 import { createEffect, createSignal, on, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
+import { cx } from '../utils/cx';
 import { formatSummaryField } from '../utils/formatSummaryField';
 
 interface Props {
@@ -63,10 +64,9 @@ export const CollapsableText = (props: Props) => {
 
   return (
     <div class="position-relative">
-      {/* eslint-disable solid/no-innerhtml */}
       <div
         ref={setTextRef}
-        class={`${Content} ${props.class}`}
+        class={cx(Content, props.class)}
         classList={{ [Truncate]: !collapsable() }}
         style={
           !collapsable()
@@ -77,9 +77,9 @@ export const CollapsableText = (props: Props) => {
               }
             : {}
         }
+        // eslint-disable-next-line solid/no-innerhtml -- formatSummaryField escapes the text
         innerHTML={formatSummaryField(props.text)}
       />
-      {/* eslint-enable solid/no-innerhtml */}
       <Show when={enabledCollapsable() && !collapsable()}>
         <div class={`position-absolute end-0 ${BtnWrapper}`}>
           <button

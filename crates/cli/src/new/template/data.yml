@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/cncf/landscape2/refs/heads/main/docs/config/schema/data.schema.json
+
 # Landscape2 data
 #
 # This file contains the data that will be used to generate the landscape.
@@ -70,12 +72,11 @@ categories:
             logo: cncf.svg
       - name: Subcategory 2-2
         items:
-          - item:
+          - name: Item 9
             crunchbase: https://www.crunchbase.com/organization/cloud-native-computing-foundation
             description: This is the description of item 9
             homepage_url: https://cncf.io
             logo: cncf.svg
-            name: Item 9
             repo_url: https://github.com/cncf/landscape2
             twitter: https://twitter.com/CloudNativeFdn
 

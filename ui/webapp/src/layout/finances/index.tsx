@@ -1,51 +1,57 @@
-import { useLocation, useNavigate } from '@solidjs/router';
-import { ExternalLink, Loading, NoData, prettifyNumber, useBreakpointDetect } from 'common';
-import isEmpty from 'lodash/isEmpty';
-import isEqual from 'lodash/isEqual';
-import isNull from 'lodash/isNull';
-import isUndefined from 'lodash/isUndefined';
-import orderBy from 'lodash/orderBy';
-import moment from 'moment';
-import { batch, createEffect, createSignal, For, Match, on, onMount, Show, Switch } from 'solid-js';
-
+import { useLocation } from '@solidjs/router';
 import {
-  ACQUISITIONS_PATH,
-  DEFAULT_FINANCES_KIND,
-  FINANCES_KIND_PARAM,
-  FOUNDATION,
-  PAGE_PARAM,
+  ExternalLink,
+  Loading,
+  NoData,
+  prettifyNumber,
   REGEX_UNDERSCORE,
   SMALL_DEVICES_BREAKPOINTS,
-  SORT_BY_PARAM,
-  SORT_DIRECTION_PARAM,
-} from '../../data';
+  useBreakpointDetect,
+} from 'common';
+import isUndefined from 'lodash/isUndefined';
+import orderBy from 'lodash/orderBy';
+import { createEffect, createMemo, For, Match, on, Show, Switch } from 'solid-js';
+
+import { ACQUISITIONS_PATH, DEFAULT_FINANCES_KIND } from '../../data';
 import { AcquisitionData, ActiveFilters, FilterCategory, FinancesData, FinancesKind, FundingData } from '../../types';
 import itemsDataGetter from '../../utils/itemsDataGetter';
 import prepareFinances from '../../utils/prepareFinances';
 import scrollToTop from '../../utils/scrollToTop';
+import { TableSort, TableSortOption } from '../../utils/tableQuery';
 import ActiveFiltersList from '../common/ActiveFiltersList';
+import tableStyles from '../common/DataTable.module.css';
 import FiltersInLine from '../common/FiltersInLine';
+import MobileFilters from '../common/MobileFilters';
+import OrderSelect from '../common/OrderSelect';
 import Pagination from '../common/Pagination';
+import RequireFullData from '../common/RequireFullData';
+import useTableQueryState from '../common/useTableQueryState';
 import Footer from '../navigation/Footer';
 import { useFinancesDataContent, useSetFinancesDataContent } from '../stores/financesData';
 import { useFullDataReady } from '../stores/fullData';
 import styles from './Finances.module.css';
-import MobileFilters from './MobileFilters';
 
-type SortOptionsGroup = {
-  [key in FinancesKind]: SortOption[];
-};
+/** Status of the Finances page: waiting for the data, without finances data, or showing it. */
+type FinancesStatus = 'loading' | 'unavailable' | 'ready';
 
-interface SortOption {
-  by: string;
-  direction: 'asc' | 'desc';
-  label?: string;
-}
-const DEFAULT_SORT_BY = 'announced_on';
-const DEFAULT_SORT_DIRECTION = 'desc';
+/** Row of a finances table. */
+type FinancesRow = FundingData | AcquisitionData;
+
 const DEFAULT_LIMIT_PER_PAGE = 50;
 
-const SORT_OPTIONS: SortOptionsGroup = {
+const DEFAULT_SORT: TableSort = { by: 'announced_on', direction: 'desc' };
+
+/** Filter categories of the finances tables. */
+const FILTER_CATEGORIES: readonly FilterCategory[] = [
+  FilterCategory.InvestmentType,
+  FilterCategory.Membership,
+  FilterCategory.Organization,
+];
+
+/** Finances kinds, as label and value pairs, in the order of their buttons. */
+const KIND_OPTIONS = Object.entries(FinancesKind);
+
+const SORT_OPTIONS: Record<FinancesKind, TableSortOption[]> = {
   [FinancesKind.Funding]: [
     { label: 'Date (desc)', by: 'announced_on', direction: 'desc' },
     { label: 'Date (asc)', by: 'announced_on', direction: 'asc' },
@@ -60,579 +66,381 @@ const SORT_OPTIONS: SortOptionsGroup = {
   ],
 };
 
-const filterFinances = (
-  data: (FundingData | AcquisitionData)[],
-  activeFilters: ActiveFilters
-): (FundingData | AcquisitionData)[] => {
-  let filteredData: (FundingData | AcquisitionData)[] = [];
-
-  filteredData = data.filter((item: FundingData | AcquisitionData) => {
-    if (activeFilters[FilterCategory.Organization]) {
-      if (
-        isUndefined((item as FundingData).organization_name) ||
-        !activeFilters[FilterCategory.Organization].includes((item as FundingData).organization_name)
-      ) {
-        return false;
-      }
-    }
-    if (activeFilters[FilterCategory.Membership]) {
-      if (
-        isUndefined((item as FundingData).membership) ||
-        !activeFilters[FilterCategory.Membership].includes((item as FundingData).membership!)
-      ) {
-        return false;
-      }
-    }
-    if (activeFilters[FilterCategory.InvestmentType]) {
-      if (
-        isUndefined((item as FundingData).kind) ||
-        !activeFilters[FilterCategory.InvestmentType].includes((item as FundingData).kind!)
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  return filteredData;
-};
-
 const Finances = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // When the location is .../acquisitions, the default kind is FinancesKind.Acquisitions
-  const DEFAULT_KIND = location.pathname === ACQUISITIONS_PATH ? FinancesKind.Acquisitions : DEFAULT_FINANCES_KIND;
+  // The /acquisitions route opens the acquisitions by default
+  const defaultKind = location.pathname === ACQUISITIONS_PATH ? FinancesKind.Acquisitions : DEFAULT_FINANCES_KIND;
   const fullDataReady = useFullDataReady();
   const financesData = useFinancesDataContent();
   const setFinancesData = useSetFinancesDataContent();
-  const [data, setData] = createSignal<FinancesData | null>();
-  const [visibleData, setVisibleData] = createSignal<FundingData[] | AcquisitionData[]>();
-  const [selectedKind, setSelectedKind] = createSignal<FinancesKind>(DEFAULT_KIND);
-  const [selectedSortOption, setSelectedSortOption] = createSignal<SortOption>({
-    by: DEFAULT_SORT_BY,
-    direction: DEFAULT_SORT_DIRECTION,
+  const tableQuery = useTableQueryState({
+    defaultKind,
+    defaultSort: DEFAULT_SORT,
+    filterCategories: FILTER_CATEGORIES,
+    kinds: Object.values(FinancesKind),
+    paginated: true,
+    sortOptions: SORT_OPTIONS,
   });
-  const [pageNumber, setPageNumber] = createSignal<number>(1);
-  const [offset, setOffset] = createSignal<number>(0);
-  const [activeFilters, setActiveFilters] = createSignal<ActiveFilters>({});
   const { point } = useBreakpointDetect();
-  const onSmallDevice = !isUndefined(point()) && SMALL_DEVICES_BREAKPOINTS.includes(point()!);
+  const onSmallDevice = () => SMALL_DEVICES_BREAKPOINTS.includes(point());
+  const kind = () => tableQuery.kind() ?? defaultKind;
 
-  const prepareQuery = () => {
-    if (location.search === '') {
-      navigate(
-        `${location.pathname}?${FINANCES_KIND_PARAM}=${DEFAULT_KIND}&${PAGE_PARAM}=1&${SORT_BY_PARAM}=${DEFAULT_SORT_BY}&${SORT_DIRECTION_PARAM}=${DEFAULT_SORT_DIRECTION}`,
-        {
-          replace: true,
-          scroll: true, // default
-        }
-      );
-    } else {
-      const currentFilters: ActiveFilters = {};
-      const params = new URLSearchParams(location.search);
-      for (const [key, value] of params) {
-        const f = key as FilterCategory;
-        if (Object.values(FilterCategory).includes(f)) {
-          if (currentFilters[f]) {
-            currentFilters[f] = [...currentFilters[f]!, value];
-          } else {
-            currentFilters[f] = [value];
-          }
-        }
-      }
-
-      batch(() => {
-        setActiveFilters(currentFilters);
-        setSelectedKind(
-          !isNull(params.get(FINANCES_KIND_PARAM)) ? (params.get(FINANCES_KIND_PARAM) as FinancesKind) : DEFAULT_KIND
-        );
-        setPageNumber(!isNull(params.get(PAGE_PARAM)) ? parseInt(params.get(PAGE_PARAM)!) : 1);
-        setOffset(
-          !isNull(params.get(PAGE_PARAM)) ? DEFAULT_LIMIT_PER_PAGE * (parseInt(params.get(PAGE_PARAM)!) - 1) : 0
-        );
-        setSelectedSortOption({
-          by: params.get(SORT_BY_PARAM) || DEFAULT_SORT_BY,
-          direction: !isNull(params.get(SORT_DIRECTION_PARAM))
-            ? (params.get(SORT_DIRECTION_PARAM) as 'asc') || 'desc'
-            : DEFAULT_SORT_DIRECTION,
-        });
-      });
-    }
-  };
-
-  const onPageNumberChange = (pNumber: number) => {
-    scrollToTop(onSmallDevice);
-    setOffset(DEFAULT_LIMIT_PER_PAGE * (pNumber - 1));
-    setPageNumber(pNumber);
-    updateQueryString(PAGE_PARAM, pNumber.toString());
-  };
-
-  const formatVisibleData = () => {
-    if (!isUndefined(data())) {
-      const tmpData = filterFinances(data()![selectedKind()], activeFilters());
-      const sortedData = orderBy(
-        tmpData,
-        [
-          // eslint-disable-next-line solid/reactivity
-          (i: AcquisitionData | FundingData) => {
-            if (selectedSortOption().by in i) {
-              const value = (i as never)[selectedSortOption().by];
-              return value;
-            }
-            return selectedSortOption().direction === 'asc' ? null : 0;
-          },
-        ],
-        [selectedSortOption().direction]
-      );
-
-      setVisibleData(sortedData as AcquisitionData[] | FundingData[]);
-    }
-  };
-
-  const updateFiltersQueryString = (filters: ActiveFilters) => {
-    const f = filters || activeFilters();
-    const params = new URLSearchParams();
-    if (!isUndefined(f) && !isEmpty(f)) {
-      Object.keys(f).forEach((filterId: string) => {
-        return f![filterId as FilterCategory]!.forEach((id: string) => {
-          params.append(filterId as string, id.toString());
-        });
-      });
-    }
-
-    const query = params.toString();
-
-    navigate(
-      `${location.pathname}?${FINANCES_KIND_PARAM}=${selectedKind()}&${PAGE_PARAM}=${pageNumber()}&${SORT_BY_PARAM}=${
-        selectedSortOption().by
-      }&${SORT_DIRECTION_PARAM}=${selectedSortOption().direction}${query !== '' ? `&${query}` : ''}`,
-      {
-        replace: true,
-        scroll: true, // default
-      }
-    );
-  };
-
-  const updateQueryString = (param: string, value: string) => {
-    const updatedSearchParams = new URLSearchParams(location.search);
-    updatedSearchParams.set(param, value);
-
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
-      replace: true,
-      scroll: true, // default
-    });
-  };
-
-  const updateSortQueryString = (sort: SortOption) => {
-    const updatedSearchParams = new URLSearchParams(location.search);
-    updatedSearchParams.set(PAGE_PARAM, '1');
-    updatedSearchParams.set(SORT_BY_PARAM, sort.by);
-    updatedSearchParams.set(SORT_DIRECTION_PARAM, sort.direction);
-
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
-      replace: true,
-      scroll: true, // default
-    });
-  };
-
-  const updateKindQueryString = (kind: FinancesKind) => {
-    const updatedSearchParams = new URLSearchParams();
-    updatedSearchParams.set(FINANCES_KIND_PARAM, kind);
-    updatedSearchParams.set(PAGE_PARAM, '1');
-    updatedSearchParams.set(SORT_BY_PARAM, DEFAULT_SORT_BY);
-    updatedSearchParams.set(SORT_DIRECTION_PARAM, DEFAULT_SORT_DIRECTION);
-
-    navigate(`${location.pathname}?${updatedSearchParams.toString()}`, {
-      replace: true,
-      scroll: true, // default
-    });
-  };
-
-  const getItemsPerPage = (items: AcquisitionData[] | FundingData[]): AcquisitionData[] | FundingData[] => {
-    return items.slice(offset(), offset() + DEFAULT_LIMIT_PER_PAGE);
-  };
-
-  const applyFilters = (newFilters: ActiveFilters) => {
-    setActiveFilters(newFilters);
-    formatVisibleData();
-    updateFiltersQueryString(newFilters);
-  };
-
-  const removeFilter = (name: FilterCategory, value: string) => {
-    let tmpActiveFilters: string[] = ({ ...activeFilters() }[name] || []).filter((f: string) => f !== value);
-    if (name === FilterCategory.Maturity) {
-      if (isEqual(tmpActiveFilters, [FOUNDATION.toLowerCase()])) {
-        tmpActiveFilters = [];
-      }
-    }
-    updateActiveFilters(name, tmpActiveFilters);
-  };
-
-  const updateActiveFilters = (value: FilterCategory, options: string[]) => {
-    const f: ActiveFilters = { ...activeFilters() };
-    if (options.length === 0) {
-      delete f[value];
-    } else {
-      f[value] = options;
-    }
-    applyFilters(f);
-  };
-
-  const resetFilters = () => {
-    applyFilters({});
-  };
-
-  const orderSelect = () => (
-    <select
-      id="order"
-      class={`form-select form-select-sm rounded-0 ${styles.select}`}
-      value={`${selectedSortOption().by}-${selectedSortOption().direction}`}
-      aria-label="Order options"
-      onChange={(e) => {
-        const options = e.target.value.split('-');
-        const selectedOption = { by: options[0], direction: options[1] as 'asc' | 'desc' };
-        batch(() => {
-          setPageNumber(1);
-          setOffset(0);
-          setSelectedSortOption(selectedOption);
-          updateSortQueryString(selectedOption);
-        });
-      }}
-    >
-      <For each={SORT_OPTIONS[selectedKind()]}>
-        {(opt: SortOption) => {
-          return <option value={`${opt.by}-${opt.direction}`}>{opt.label}</option>;
-        }}
-      </For>
-    </select>
-  );
-
-  onMount(() => {
-    prepareQuery();
-    if (!isUndefined(financesData())) {
-      setTimeout(() => {
-        setData(financesData());
-      }, 5);
-    }
+  const status = createMemo<FinancesStatus>(() => {
+    if (!window.baseDS.finances_available) return 'unavailable';
+    const data = financesData();
+    if (isUndefined(data)) return 'loading';
+    return data === null || !hasOrganizations(data) ? 'unavailable' : 'ready';
   });
 
-  async function prepareFinancesData() {
-    try {
-      const items = await itemsDataGetter.getAll();
-      const crunchbaseData = await itemsDataGetter.getCrunchbaseData();
-      if (!isUndefined(crunchbaseData)) {
-        const finances = prepareFinances(crunchbaseData, items);
-        setData(finances);
-        setFinancesData(finances);
-        formatVisibleData();
-      }
-    } catch {
-      setData(null);
-    }
-  }
+  // Only read once the status is ready
+  const data = () => financesData()!;
 
+  const visibleRows = createMemo(() =>
+    status() === 'ready' ? sortRows(filterRows(data()[kind()], tableQuery.filters()), tableQuery.sort()) : []
+  );
+  const totalPages = () => Math.max(1, Math.ceil(visibleRows().length / DEFAULT_LIMIT_PER_PAGE));
+  const page = () => Math.min(Math.max(tableQuery.page(), 1), totalPages());
+  const offset = () => (page() - 1) * DEFAULT_LIMIT_PER_PAGE;
+  const pageRows = createMemo(() => visibleRows().slice(offset(), offset() + DEFAULT_LIMIT_PER_PAGE));
+
+  const onPageNumberChange = (pageNumber: number) => {
+    scrollToTop(onSmallDevice());
+    tableQuery.setPage(pageNumber);
+  };
+
+  // The finances data is prepared once and cached in the store for later visits
   createEffect(
-    on(fullDataReady, () => {
-      if (fullDataReady()) {
-        prepareFinancesData();
+    on(fullDataReady, (ready) => {
+      if (ready && window.baseDS.finances_available && isUndefined(financesData())) {
+        const crunchbaseData = itemsDataGetter.getCrunchbaseData();
+        setFinancesData(isUndefined(crunchbaseData) ? null : prepareFinances(crunchbaseData, itemsDataGetter.getAll()));
       }
     })
   );
 
-  createEffect(() => formatVisibleData());
+  const orderSelect = () => (
+    <OrderSelect options={SORT_OPTIONS[kind()]} value={tableQuery.sort()} onChange={tableQuery.setSort} />
+  );
 
   return (
-    <Show when={!isUndefined(data())}>
-      <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
-        <div class="mt-2 mt-md-3 py-1">
-          <div class="d-flex flex-row justify-content-between justify-content-lg-start align-items-center mb-3 mb-lg-0">
-            <div class="d-block d-lg-none">
-              <MobileFilters
-                filters={data()!.filters[selectedKind()]}
-                initialActiveFilters={activeFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilters={resetFilters}
-              >
-                {orderSelect()}
-              </MobileFilters>
-            </div>
+    <>
+      <RequireFullData>
+        <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
+          <Switch>
+            <Match when={status() === 'loading'}>
+              <Loading spinnerClass="position-fixed top-50 start-50" />
+            </Match>
 
-            <div class="me-0 me-lg-4">
-              <div class="d-none d-lg-flex flex-row align-items-baseline my-2">
-                <div class={`text-uppercase text-primary fw-bold ${styles.title}`}>Category</div>
-              </div>
-
-              <div
-                class={`btn-group btn-group-sm ${styles.btnGroup}`}
-                role="group"
-                aria-label="Finances category options"
-              >
-                <For each={Object.keys(FinancesKind)}>
-                  {(kind) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const value = (FinancesKind as any)[kind];
-
-                    return (
-                      <button
-                        title={`Finances kind: ${kind}`}
-                        type="button"
-                        class="btn btn-outline-primary rounded-0 fw-semibold"
-                        classList={{
-                          'active text-white': value === selectedKind(),
-                        }}
-                        onClick={() => {
-                          if (!(value === selectedKind())) {
-                            batch(() => {
-                              setPageNumber(1);
-                              setOffset(0);
-                              setActiveFilters({});
-                              setSelectedKind(value);
-                              setSelectedSortOption({ by: DEFAULT_SORT_BY, direction: DEFAULT_SORT_DIRECTION });
-                              updateKindQueryString(value);
-                            });
-                          }
-                        }}
-                        aria-label={`Open ${kind}`}
-                      >
-                        {kind}
-                      </button>
-                    );
-                  }}
-                </For>
-              </div>
-            </div>
-
-            <div class="d-none d-lg-block ms-0 ms-lg-4">
-              <FiltersInLine
-                filters={data()!.filters[selectedKind()]}
-                initialActiveFilters={activeFilters}
-                updateActiveFilters={updateActiveFilters}
-                resetFilters={resetFilters}
-              />
-            </div>
-
-            <div class="d-none d-lg-block ms-4">
-              <div class="d-flex flex-row align-items-baseline my-2">
-                <div class={`text-uppercase text-primary fw-bold ${styles.title}`}>Order</div>
-              </div>
-
-              {orderSelect()}
-            </div>
-          </div>
-
-          <div class="d-none d-lg-block">
-            <div class="mt-4">
-              <ActiveFiltersList
-                activeFilters={activeFilters()}
-                resetFilters={resetFilters}
-                removeFilter={removeFilter}
-              />
-            </div>
-          </div>
-        </div>
-
-        <Show when={!isUndefined(visibleData())} fallback={<Loading spinnerClass="position-fixed top-50 start-50" />}>
-          <Show
-            when={visibleData()!.length > 0}
-            fallback={
+            <Match when={status() === 'unavailable'}>
               <div class="py-4">
                 <NoData>
-                  <>
-                    <div class="fs-4">We couldn't find any data that match the criteria selected.</div>
-                    <p class="h6 my-4 lh-base">
-                      You can update them and try again or{' '}
-                      <button
-                        type="button"
-                        class="btn btn-link lh-1 p-0 text-reset align-baseline"
-                        onClick={resetFilters}
-                        aria-label="Reset filters"
-                      >
-                        reset all
-                      </button>{' '}
-                      the filters.
-                    </p>
-                  </>
+                  <div class="fs-4">There is no finances data available for this landscape.</div>
                 </NoData>
               </div>
-            }
-          >
-            <div class="text-dark mb-3">
-              <small>
-                <span class="fw-semibold">{offset() + 1}</span> -{' '}
-                <span class="fw-semibold">
-                  {offset() + DEFAULT_LIMIT_PER_PAGE > visibleData()!.length
-                    ? visibleData()!.length
-                    : offset() + DEFAULT_LIMIT_PER_PAGE}
-                </span>{' '}
-                of <span class="fw-semibold">{visibleData()!.length}</span> results
-              </small>
-            </div>
-            <Switch>
-              <Match when={selectedKind() === FinancesKind.Funding}>
-                <table class={`table table-sm table-striped table-bordered mb-0 ${styles.tableLayout}`}>
-                  <thead class={`text-uppercase text-muted ${styles.thead}`}>
-                    <tr>
-                      <th class="text-center" scope="col">
-                        Organization
-                      </th>
-                      <th class="d-none d-md-table-cell text-center" scope="col">
-                        Investment Type
-                      </th>
-                      <th class="d-none d-md-table-cell text-center" scope="col">
-                        Membership
-                      </th>
-                      <th class={`text-center ${styles.col}`} scope="col">
-                        <span class="d-block d-lg-none">Amount</span>
-                        <span class="d-none d-lg-block">Amount Raised (USD)</span>
-                      </th>
-                      <th class={`text-center ${styles.col}`} scope="col">
-                        <span class="d-block d-md-none">Date</span>
-                        <span class="d-none d-md-block">Announced on</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <For each={getItemsPerPage(visibleData()!) as FundingData[]}>
-                      {(round: FundingData) => {
-                        return (
-                          <tr class={styles.tableContent}>
-                            <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
-                              <Show when={!isUndefined(round.crunchbase_url)} fallback={round.organization_name}>
-                                <ExternalLink
-                                  title={`${round.organization_name} crunchbase link`}
-                                  href={round.crunchbase_url!}
-                                  class="text-decoration-underline"
-                                >
-                                  {round.organization_name}
-                                </ExternalLink>
-                              </Show>
-                            </td>
-                            <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-truncate text-muted text-capitalize text-center">
-                              {!isUndefined(round.kind) ? round.kind?.replace(REGEX_UNDERSCORE, ' ') : '-'}
-                            </td>
-                            <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-truncate text-muted">
-                              <Show when={!isUndefined(round.membership)} fallback="-">
-                                {round.membership}
-                              </Show>
-                            </td>
-                            <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
-                              <Show when={!isUndefined(round.amount)} fallback="-">
-                                {`$${prettifyNumber(round.amount!)}`}
-                              </Show>
-                            </td>
-                            <td class="px-1 px-md-2 px-lg-3 text-center text-nowrap text-muted">
-                              <span class="d-block d-md-none">
-                                {moment(round.announced_on, 'YYYY-MM-DD').format('YYYY-MM')}
-                              </span>
-                              <span class="d-none d-md-block">{round.announced_on}</span>
-                            </td>
-                          </tr>
-                        );
-                      }}
-                    </For>
-                  </tbody>
-                </table>
-              </Match>
-              <Match when={selectedKind() === FinancesKind.Acquisitions}>
-                <table class={`table table-sm table-striped table-bordered mb-0 ${styles.tableLayout}`}>
-                  <thead class={`text-uppercase text-muted ${styles.thead}`}>
-                    <tr>
-                      <th class="text-center" scope="col">
-                        Organization
-                      </th>
-                      <th class="text-center" scope="col">
-                        Acquiree
-                      </th>
-                      <th class="d-none d-md-table-cell text-center" scope="col">
-                        Membership
-                      </th>
-                      <th class={`text-center ${styles.acqCol}`} scope="col">
-                        <span class="d-block d-md-none">Price</span>
-                        <span class="d-none d-md-block">Price (USD)</span>
-                      </th>
-                      <th class={`text-center ${styles.acqCol}`} scope="col">
-                        <span class="d-block d-md-none">Date</span>
-                        <span class="d-none d-md-block">Announced on</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <For each={getItemsPerPage(visibleData()!) as AcquisitionData[]}>
-                      {(acquisition: AcquisitionData) => {
-                        return (
-                          <tr class={styles.tableContent}>
-                            <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
-                              <Show
-                                when={!isUndefined(acquisition.crunchbase_url)}
-                                fallback={acquisition.organization_name}
-                              >
-                                <ExternalLink
-                                  title={`${acquisition.organization_name} crunchbase link`}
-                                  href={acquisition.crunchbase_url!}
-                                  class="text-decoration-underline"
-                                >
-                                  {acquisition.organization_name}
-                                </ExternalLink>
-                              </Show>
-                            </td>
-                            <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
-                              <Show
-                                when={!isUndefined(acquisition.acquiree_cb_permalink)}
-                                fallback={acquisition.acquiree_name}
-                              >
-                                <ExternalLink
-                                  title={`${acquisition.acquiree_name} crunchbase link`}
-                                  href={`https://www.crunchbase.com/organization/${acquisition.acquiree_cb_permalink}`}
-                                  class="text-decoration-underline"
-                                >
-                                  {acquisition.acquiree_name}
-                                </ExternalLink>
-                              </Show>
-                            </td>
-                            <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-truncate text-muted">
-                              <Show when={!isUndefined(acquisition.membership)} fallback="-">
-                                {acquisition.membership}
-                              </Show>
-                            </td>
-                            <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
-                              <Show when={!isUndefined(acquisition.price)} fallback="-">
-                                ${`${prettifyNumber(acquisition.price!)}`}
-                              </Show>
-                            </td>
-                            <td class="px-1 px-md-2 px-lg-3 text-center text-nowrap text-muted">
-                              <span class="d-block d-md-none">
-                                {moment(acquisition.announced_on, 'YYYY-MM-DD').format('YYYY-MM')}
-                              </span>
-                              <span class="d-none d-md-block">{acquisition.announced_on}</span>
-                            </td>
-                          </tr>
-                        );
-                      }}
-                    </For>
-                  </tbody>
-                </table>
-              </Match>
-            </Switch>
-          </Show>
-        </Show>
+            </Match>
 
-        <Show when={!isNull(visibleData()) && !isUndefined(visibleData()) && visibleData()!.length > 0}>
-          <div class="mt-3 mx-auto">
-            <Pagination
-              initialLimit={DEFAULT_LIMIT_PER_PAGE}
-              offset={offset()}
-              initialTotal={visibleData()!.length}
-              active={pageNumber()}
-              class="mt-4 mt-md-5 mb-0 mb-md-4"
-              onChange={onPageNumberChange}
-            />
-          </div>
-        </Show>
-      </main>
+            <Match when={status() === 'ready'}>
+              <div class="mt-2 mt-md-3 py-1">
+                <div class="d-flex flex-row justify-content-between justify-content-lg-start align-items-center mb-3 mb-lg-0">
+                  <div class="d-block d-lg-none">
+                    <MobileFilters
+                      filters={data().filters[kind()]}
+                      initialActiveFilters={tableQuery.filters}
+                      updateActiveFilters={tableQuery.updateFilter}
+                      resetFilters={tableQuery.resetFilters}
+                    >
+                      {orderSelect()}
+                    </MobileFilters>
+                  </div>
+
+                  <div class="me-0 me-lg-4">
+                    <div class="d-none d-lg-flex flex-row align-items-baseline my-2">
+                      <div class={`text-uppercase text-primary fw-bold ${tableStyles.title}`}>Category</div>
+                    </div>
+
+                    <div
+                      class={`btn-group btn-group-sm ${styles.btnGroup}`}
+                      role="group"
+                      aria-label="Finances category options"
+                    >
+                      <For each={KIND_OPTIONS}>
+                        {([label, value]) => (
+                          <button
+                            title={`Finances kind: ${label}`}
+                            type="button"
+                            class="btn btn-outline-primary rounded-0 fw-semibold"
+                            classList={{
+                              'active text-white': value === kind(),
+                            }}
+                            onClick={() => {
+                              if (value !== kind()) {
+                                tableQuery.setKind(value);
+                              }
+                            }}
+                            aria-label={`Open ${label}`}
+                            aria-pressed={value === kind()}
+                          >
+                            {label}
+                          </button>
+                        )}
+                      </For>
+                    </div>
+                  </div>
+
+                  <div class="d-none d-lg-block ms-0 ms-lg-4">
+                    <FiltersInLine
+                      filters={data().filters[kind()]}
+                      initialActiveFilters={tableQuery.filters}
+                      updateActiveFilters={tableQuery.updateFilter}
+                    />
+                  </div>
+
+                  <div class="d-none d-lg-block ms-4">
+                    <div class="d-flex flex-row align-items-baseline my-2">
+                      <div class={`text-uppercase text-primary fw-bold ${tableStyles.title}`}>Order</div>
+                    </div>
+
+                    {orderSelect()}
+                  </div>
+                </div>
+
+                <div class="d-none d-lg-block">
+                  <div class="mt-4">
+                    <ActiveFiltersList
+                      activeFilters={tableQuery.filters()}
+                      resetFilters={tableQuery.resetFilters}
+                      removeFilter={tableQuery.removeFilter}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Show
+                when={visibleRows().length > 0}
+                fallback={
+                  <div class="py-4">
+                    <NoData>
+                      <>
+                        <div class="fs-4">We couldn't find any data that match the criteria selected.</div>
+                        <p class="h6 my-4 lh-base">
+                          You can update them and try again or{' '}
+                          <button
+                            type="button"
+                            class="btn btn-link lh-1 p-0 text-reset align-baseline"
+                            onClick={() => tableQuery.resetFilters()}
+                            aria-label="Reset filters"
+                          >
+                            reset all
+                          </button>{' '}
+                          the filters.
+                        </p>
+                      </>
+                    </NoData>
+                  </div>
+                }
+              >
+                <div class="text-dark mb-3">
+                  <small>
+                    <span class="fw-semibold">{offset() + 1}</span> -{' '}
+                    <span class="fw-semibold">{offset() + pageRows().length}</span> of{' '}
+                    <span class="fw-semibold">{visibleRows().length}</span> results
+                  </small>
+                </div>
+                <Switch>
+                  <Match when={kind() === FinancesKind.Funding}>
+                    <table
+                      class={`table table-sm table-striped table-bordered mb-0 ${tableStyles.tableLayout} ${styles.financesTable}`}
+                    >
+                      <thead class={`text-uppercase text-muted ${tableStyles.thead}`}>
+                        <tr>
+                          <th class="text-center" scope="col">
+                            Organization
+                          </th>
+                          <th class="d-none d-md-table-cell text-center" scope="col">
+                            Investment Type
+                          </th>
+                          <th class="d-none d-md-table-cell text-center" scope="col">
+                            Membership
+                          </th>
+                          <th class={`text-center ${styles.col}`} scope="col">
+                            <span class="d-block d-lg-none">Amount</span>
+                            <span class="d-none d-lg-block">Amount Raised (USD)</span>
+                          </th>
+                          <th class={`text-center ${styles.col}`} scope="col">
+                            <span class="d-block d-md-none">Date</span>
+                            <span class="d-none d-md-block">Announced on</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <For each={pageRows() as FundingData[]}>
+                          {(round: FundingData) => {
+                            return (
+                              <tr class={tableStyles.tableContent}>
+                                <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
+                                  <Show when={!isUndefined(round.crunchbase_url)} fallback={round.organization_name}>
+                                    <ExternalLink
+                                      title={`${round.organization_name} crunchbase link`}
+                                      href={round.crunchbase_url!}
+                                      class="text-decoration-underline"
+                                    >
+                                      {round.organization_name}
+                                    </ExternalLink>
+                                  </Show>
+                                </td>
+                                <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-truncate text-muted text-capitalize text-center">
+                                  {!isUndefined(round.kind) ? round.kind?.replace(REGEX_UNDERSCORE, ' ') : '-'}
+                                </td>
+                                <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-truncate text-muted">
+                                  <Show when={!isUndefined(round.membership)} fallback="-">
+                                    {round.membership}
+                                  </Show>
+                                </td>
+                                <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
+                                  <Show when={!isUndefined(round.amount)} fallback="-">
+                                    {`$${prettifyNumber(round.amount!)}`}
+                                  </Show>
+                                </td>
+                                <td class="px-1 px-md-2 px-lg-3 text-center text-nowrap text-muted">
+                                  <span class="d-block d-md-none">{round.announced_on?.slice(0, 7)}</span>
+                                  <span class="d-none d-md-block">{round.announced_on}</span>
+                                </td>
+                              </tr>
+                            );
+                          }}
+                        </For>
+                      </tbody>
+                    </table>
+                  </Match>
+                  <Match when={kind() === FinancesKind.Acquisitions}>
+                    <table
+                      class={`table table-sm table-striped table-bordered mb-0 ${tableStyles.tableLayout} ${styles.financesTable}`}
+                    >
+                      <thead class={`text-uppercase text-muted ${tableStyles.thead}`}>
+                        <tr>
+                          <th class="text-center" scope="col">
+                            Organization
+                          </th>
+                          <th class="text-center" scope="col">
+                            Acquiree
+                          </th>
+                          <th class="d-none d-md-table-cell text-center" scope="col">
+                            Membership
+                          </th>
+                          <th class={`text-center ${styles.acqCol}`} scope="col">
+                            <span class="d-block d-md-none">Price</span>
+                            <span class="d-none d-md-block">Price (USD)</span>
+                          </th>
+                          <th class={`text-center ${styles.acqCol}`} scope="col">
+                            <span class="d-block d-md-none">Date</span>
+                            <span class="d-none d-md-block">Announced on</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <For each={pageRows() as AcquisitionData[]}>
+                          {(acquisition: AcquisitionData) => {
+                            return (
+                              <tr class={tableStyles.tableContent}>
+                                <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
+                                  <Show
+                                    when={!isUndefined(acquisition.crunchbase_url)}
+                                    fallback={acquisition.organization_name}
+                                  >
+                                    <ExternalLink
+                                      title={`${acquisition.organization_name} crunchbase link`}
+                                      href={acquisition.crunchbase_url!}
+                                      class="text-decoration-underline"
+                                    >
+                                      {acquisition.organization_name}
+                                    </ExternalLink>
+                                  </Show>
+                                </td>
+                                <td class="px-1 px-md-2 px-lg-3 text-truncate text-muted">
+                                  <Show
+                                    when={!isUndefined(acquisition.acquiree_cb_permalink)}
+                                    fallback={acquisition.acquiree_name}
+                                  >
+                                    <ExternalLink
+                                      title={`${acquisition.acquiree_name} crunchbase link`}
+                                      href={`https://www.crunchbase.com/organization/${acquisition.acquiree_cb_permalink}`}
+                                      class="text-decoration-underline"
+                                    >
+                                      {acquisition.acquiree_name}
+                                    </ExternalLink>
+                                  </Show>
+                                </td>
+                                <td class="d-none d-md-table-cell px-1 px-md-2 px-lg-3 text-center text-truncate text-muted">
+                                  <Show when={!isUndefined(acquisition.membership)} fallback="-">
+                                    {acquisition.membership}
+                                  </Show>
+                                </td>
+                                <td class="px-1 px-md-2 px-lg-3 text-center text-muted">
+                                  <Show when={!isUndefined(acquisition.price)} fallback="-">
+                                    ${`${prettifyNumber(acquisition.price!)}`}
+                                  </Show>
+                                </td>
+                                <td class="px-1 px-md-2 px-lg-3 text-center text-nowrap text-muted">
+                                  <span class="d-block d-md-none">{acquisition.announced_on?.slice(0, 7)}</span>
+                                  <span class="d-none d-md-block">{acquisition.announced_on}</span>
+                                </td>
+                              </tr>
+                            );
+                          }}
+                        </For>
+                      </tbody>
+                    </table>
+                  </Match>
+                </Switch>
+
+                <div class="mt-3 mx-auto">
+                  <Pagination
+                    initialLimit={DEFAULT_LIMIT_PER_PAGE}
+                    initialTotal={visibleRows().length}
+                    active={page()}
+                    class="mt-4 mt-md-5 mb-0 mb-md-4"
+                    onChange={onPageNumberChange}
+                  />
+                </div>
+              </Show>
+            </Match>
+          </Switch>
+        </main>
+      </RequireFullData>
       <Footer />
-    </Show>
+    </>
   );
 };
 
 export default Finances;
+
+/** Returns the rows that match every active filter. */
+const filterRows = (rows: FinancesRow[], activeFilters: ActiveFilters): FinancesRow[] =>
+  rows.filter((row: FinancesRow) => {
+    const organizations = activeFilters[FilterCategory.Organization];
+    if (organizations && (isUndefined(row.organization_name) || !organizations.includes(row.organization_name))) {
+      return false;
+    }
+    const memberships = activeFilters[FilterCategory.Membership];
+    if (memberships && (isUndefined(row.membership) || !memberships.includes(row.membership))) {
+      return false;
+    }
+    const investmentTypes = activeFilters[FilterCategory.InvestmentType];
+    const investmentType = (row as FundingData).kind;
+    if (investmentTypes && (isUndefined(investmentType) || !investmentTypes.includes(investmentType))) {
+      return false;
+    }
+    return true;
+  });
+
+/** Checks whether the finances data holds any funding round or acquisition. */
+const hasOrganizations = (data: FinancesData): boolean =>
+  data[FinancesKind.Funding].length > 0 || data[FinancesKind.Acquisitions].length > 0;
+
+/** Sorts the rows by the sort field. Rows without it sort as `null` in ascending order and as 0 in descending order. */
+const sortRows = (rows: FinancesRow[], sort: TableSort): FinancesRow[] =>
+  orderBy(
+    rows,
+    [(row: FinancesRow) => (sort.by in row ? (row as never)[sort.by] : sort.direction === 'asc' ? null : 0)],
+    [sort.direction]
+  );

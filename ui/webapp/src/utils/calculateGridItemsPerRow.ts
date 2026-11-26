@@ -1,19 +1,22 @@
-import isUndefined from 'lodash/isUndefined';
+import { GRID_ITEM_GAP, GRID_ROW_CONTAINER_BORDER, GRID_ROW_PADDING } from './gridGeometry';
 
-const PADDING = 24;
-const CARD_GAP = 5;
-const CONTAINER_BORDER = 7;
-
+/**
+ * Calculates how many items of the width given fit in a row that takes the percentage
+ * given of the container width (never less than 0).
+ */
 const calculateGridItemsPerRow = (
   percentage: number,
   containerWidth: number,
   itemWidth: number,
   noPadding?: boolean
 ): number => {
-  const padding = !isUndefined(noPadding) && noPadding ? 0 : PADDING;
-  const paddingContainer = !isUndefined(noPadding) && noPadding ? 0 : CONTAINER_BORDER;
-  return Math.floor(
-    ((containerWidth - paddingContainer + CARD_GAP) * (percentage / 100) - padding) / (itemWidth + CARD_GAP)
+  const padding = noPadding ? 0 : GRID_ROW_PADDING;
+  const paddingContainer = noPadding ? 0 : GRID_ROW_CONTAINER_BORDER;
+  return Math.max(
+    0,
+    Math.floor(
+      ((containerWidth - paddingContainer + GRID_ITEM_GAP) * (percentage / 100) - padding) / (itemWidth + GRID_ITEM_GAP)
+    )
   );
 };
 

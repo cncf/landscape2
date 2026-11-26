@@ -15,7 +15,11 @@ foundation: CNCF
 
 # Url (required)
 #
-# Url where the landscape will be hosted.
+# Url where the landscape will be hosted. Trailing slashes are removed.
+#
+# Absolute urls published by the build (like the API items `logo_url`) are
+# built from this url followed by the `base_path`, unless the url already ends
+# with it.
 #
 # url: <LANDSCAPE_URL>
 #
@@ -28,21 +32,29 @@ url: https://landscape.cncf.io
 #
 # analytics:
 #   gtm:                            # Google Tag Manager configuration
-#     container_id: <CONTAINER_ID>  # Landscape web application container ID
+#     container_id: <CONTAINER_ID>  # Landscape web application container ID (e.g. GTM-XXXXXXX)
 #
 
 # Base path (optional)
 #
 # Base path where the landscape will be hosted. By default the generated
 # landscape is prepared to be hosted at the root of the domain. However, if the
-# landscape will be hosted in a subpath, this value must be set accordingly.
+# landscape will be hosted in a subpath, this value must be set accordingly. It
+# must start with a slash, and trailing slashes are removed (a base path of `/`
+# is the same as not setting it).
+#
+# The base path is appended to the `url` when building absolute urls (like the
+# API items `logo_url`), unless the `url` already ends with it. For example,
+# both `url: https://example.org` and `url: https://example.org/landscape` with
+# `base_path: /landscape` publish logos at
+# `https://example.org/landscape/logos/<FILE>`.
 #
 # base_path: /<BASE_PATH>
 #
 
 # Categories (optional)
 #
-# Categories information is read from the `landscape.yml` data file. The way
+# Categories information is read from the `data.yml` data file. The way
 # categories are displayed in the web application is computed dynamically based
 # on the number of categories and subcategories, as well as the number of items
 # on each. Sometimes, however, we may want subcategories to be displayed in a
@@ -52,6 +64,7 @@ url: https://landscape.cncf.io
 # This option can also be used to not display one or more subcategories in some
 # sections of the landscape [*]. To achieve that, we only need to exclude the
 # subcategory from the subcategories list when overriding a category.
+# Subcategories names must be unique within each category.
 #
 # [*]
 #   - Grid mode: excluded subcategories won't be displayed
@@ -82,8 +95,11 @@ categories:
 # Colors (optional)
 #
 # Colors used across the landscape UI. The colors section is optional but, when
-# provided, *all colors must be provided*. Colors must be specified using the
-# following format: "rgba(<RED>, <GREEN>, <BLUE>, <ALPHA>)".
+# provided, *all colors must be provided*. When it is not provided, the default
+# palette shown below is used. Colors must be specified using one of
+# the following formats: "rgba(<RED>, <GREEN>, <BLUE>, <ALPHA>)" or
+# "rgb(<RED>, <GREEN>, <BLUE>)". Each channel is an integer between 0 and 255,
+# and the alpha is a decimal number between 0 and 1.
 #
 # colors:
 #   color1: <COLOR1>  # Buttons, groups, links
@@ -96,7 +112,7 @@ categories:
 #
 colors:
   color1: "rgba(0, 107, 204, 1)"
-  color2: "rgba(214, 34, 147, 1)"
+  color2: "rgba(255, 0, 170, 1)"
   color3: "rgba(96, 149, 214, 1)"
   color4: "rgba(0, 42, 81, 0.7)"
   color5: "rgba(1, 107, 204, 0.7)"
@@ -116,7 +132,9 @@ description: The CNCF Landscape showcases cloud native projects and members.
 #
 # This section allows defining what items should be marked as `end user` based
 # on the category and subcategory they belong to. If the `enduser` field has
-# been set on a given item, that value will take precedence.
+# been set on a given item, that value will take precedence. The subcategories
+# field is optional and, when omitted, all of them will be included. When
+# provided, it cannot be empty.
 #
 # enduser:
 #   - category: <CATEGORY1>  (required)
@@ -143,12 +161,18 @@ enduser:
 #
 # When a given item's field matches any of the values provided, it will be
 # considered a featured item. For each option, it is possible to also define an
-# order (which item would be displayed first) and a label for the item.
+# order (which item would be displayed first) and a label for the item. When
+# several rules match the same item, the last matching rule wins. Rules are
+# checked against the item's primary category and subcategory, so an item keeps
+# the same featured status in the additional categories it's listed in (see
+# `second_path` in the data file).
 #
 # It is also possible to exclude the featured highlight from being applied in
 # certain groups by using the `exclude` option. The `exclude` option contains a
 # `groups` field that allows providing a list of groups where the featured
-# highlight should not be applied.
+# highlight should not be applied. Each entry must be the name of one of the
+# groups defined in the `groups` section. The exclusions of the last matching
+# rule are the ones applied to the item.
 #
 # featured_items:
 #   - field: subcategory
@@ -232,10 +256,19 @@ grid_items_size: small
 # interesting to organize them in groups. Each group will be displayed on a
 # different tab in the landscape web application. Each entry must contain the
 # name of the group (it will be displayed as is) and a list with the categories
-# (as defined in the landscape.yml data file) that will be part of this group.
+# (as defined in the `data.yml` data file) that will be part of this group.
 #
 # When groups are used, categories not listed in any group won't be displayed
 # in the grid mode.
+#
+# Groups names must be unique, also when ignoring case and punctuation (for
+# example, `A B` and `A-B` cannot be used together). The name `all` (in any
+# case, optionally followed by spaces or symbols) is reserved, as the web
+# application uses it for the option that shows every group. Aliases must be
+# unique, cannot contain slashes and cannot be any of the following reserved
+# words: acquisitions, api, assets, data, docs, embed, embed-setup, finances,
+# fonts, funding, games, guide, images, kiosk, logos, logos-preview,
+# projects-summary, screenshot, sources, stats, summary.
 #
 # groups:
 #   - name: <GROUP_NAME>
@@ -281,22 +314,29 @@ header:
   links:
     github: "https://github.com/cncf/landscape"
   logo: "https://raw.githubusercontent.com/cncf/artwork/master/other/cncf-landscape/horizontal/color/cncf-landscape-horizontal-color.svg"
-  motd: |
-    "Welcome to the CNCF Landscape!"
+  motd: "**Welcome** to the CNCF Landscape!"
 
 # Hide organization section in projects (optional)
 #
 # When set to true, the organization section won't be displayed in the item
 # modal for project items.
 #
+# hide_organization_section_in_projects: <true|false>
+#
 hide_organization_section_in_projects: false
 
 # Images (optional)
 #
-# Urls of some images used in the landscape UI.
+# Urls of some images used in the landscape UI. The favicon can also be a local
+# path.
+#
+# The favicon, as well as the header and footer logos, are copied to the build
+# output as `images/<HASH>.<EXTENSION>`, where the hash is computed from their
+# location. Their location must end in a file name with an extension (for
+# example `.svg` or `.png`).
 #
 # images:
-#   favicon: <FAVICON_URL>
+#   favicon: <FAVICON_URL or FAVICON_PATH>
 #   open_graph: <OPEN_GRAPH_IMAGE_URL>
 #
 images:
@@ -360,7 +400,7 @@ screenshot_width: 3000
 
 # TAGs (optional)
 #
-# Projects items can specify which TAGs owns them in the `landscape.yml` file
+# Projects items can specify which TAGs owns them in the `data.yml` data file
 # (by using the `tag` field in the `extra` item's section). However, sometimes
 # this information is not available at the item level. This configuration
 # section provides a mechanism to automatically asign a TAG to projects items
@@ -371,10 +411,10 @@ screenshot_width: 3000
 # set in the items that match the rule defined. The TAG defined at the item
 # level always takes precedence, so when it's present it won't be replaced.
 #
-# NOTE: TAGs names should only use lowercase case letters and hyphens (no
-# spaces or other characters), and should not be prefixed with "tag". The
-# subcategories field is optional and, when omitted, all of them will be
-# included.
+# NOTE: TAGs names should only use lowercase letters, digits and hyphens (no
+# spaces or other characters), and should not be prefixed with "tag". The name
+# `all` is reserved. The subcategories field is optional and, when omitted, all
+# of them will be included. When provided, it cannot be empty.
 #
 # tags:
 #   <TAG1>:
@@ -450,9 +490,9 @@ tags:
 # upcoming_event:
 #   name: <NAME>         # Event name (required)
 #   start: <START_DATE>  # Start date: (required, format: YYYY-MM-DD)
-#   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD)
-#   banner_url: <URL>    # Event banner image url (required, recommended dimensions: 2400x300)
-#   details_url: <URL>   # Event details URL (required)
+#   end: <END_DATE>      # End date: (required, format: YYYY-MM-DD, not before the start date)
+#   banner_url: <URL>    # Event banner image url (required, http or https, recommended dimensions: 2400x300)
+#   details_url: <URL>   # Event details URL (required, http or https)
 #
 upcoming_event:
   name: "KubeCon + CloudNativeCon EU 2024"

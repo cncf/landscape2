@@ -1,10 +1,10 @@
+import { createElementSize } from '@solid-primitives/resize-observer';
 import { Image } from 'common';
 import isUndefined from 'lodash/isUndefined';
-import throttle from 'lodash/throttle';
-import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
+import { createMemo, createSignal, For, Show } from 'solid-js';
 
 import { COLORS } from '../../data';
-import { BaseItem, Item } from '../../types';
+import { LandscapeItem } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
 import ItemIterator from '../../utils/itemsIterator';
 import GridItem from '../explore/grid/GridItem';
@@ -12,46 +12,30 @@ import { useUpdateActiveItemId } from '../stores/activeItem';
 import styles from './SubcategoryGrid.module.css';
 
 interface Props {
-  items?: (BaseItem | Item)[];
+  items?: LandscapeItem[];
 }
 
 const SubcategoryGrid = (props: Props) => {
-  const [container, setContainer] = createSignal<HTMLInputElement>();
-  const [containerWidth, setContainerWidth] = createSignal<number>(0);
+  const [container, setContainer] = createSignal<HTMLDivElement>();
+  const containerSize = createElementSize(container);
+  const containerWidth = () => containerSize.width ?? 0;
   const updateActiveItemId = useUpdateActiveItemId();
-
-  const handler = () => {
-    if (!isUndefined(container())) {
-      setContainerWidth(container()!.offsetWidth);
-    }
-  };
-
-  onMount(() => {
-    window.addEventListener(
-      'resize',
-      // eslint-disable-next-line solid/reactivity
-      throttle(() => handler(), 400),
-      { passive: true }
-    );
-    handler();
-  });
-
-  onCleanup(() => {
-    window.removeEventListener('resize', handler);
-  });
+  const itemsPerRow = createMemo(() => calculateGridItemsPerRow(100, containerWidth(), 75, true));
+  // The grid items are only created again when the items or the number of items per row change
+  const orderedItems = createMemo(() => [...new ItemIterator(props.items ?? [], itemsPerRow())]);
 
   return (
     <Show when={!isUndefined(props.items)}>
       <div class={`d-grid d-sm-none justify-content-start ${styles.mobileItems}`} role="list">
         <For each={props.items}>
-          {(item: BaseItem | Item) => {
+          {(item: LandscapeItem) => {
             return (
               <div
                 role="listitem"
                 style={item.featured && item.featured.label ? { border: `2px solid ${COLORS[0]}` } : {}}
                 class={`card rounded-0 position-relative p-0 ${styles.card}`}
                 classList={{
-                  whithoutRepo: isUndefined(item.oss) || !item.oss,
+                  withoutRepo: isUndefined(item.oss) || !item.oss,
                 }}
               >
                 <button
@@ -71,20 +55,11 @@ const SubcategoryGrid = (props: Props) => {
       </div>
       <div class="d-none d-sm-block ">
         <div ref={setContainer} class={`my-4 justify-content-start ${styles.grid}`} role="list">
-          {(() => {
-            const items = [];
-            const itemsPerRow = calculateGridItemsPerRow(100, containerWidth(), 75, true);
-            for (const item of new ItemIterator(props.items!, itemsPerRow)) {
-              if (item) {
-                items.push(
-                  <>
-                    <GridItem item={item} borderColor={COLORS[0]} showMoreInfo activeDropdown />
-                  </>
-                );
-              }
-            }
-            return items;
-          })()}
+          <Show when={containerWidth() > 0}>
+            <For each={orderedItems()}>
+              {(item: LandscapeItem) => <GridItem item={item} borderColor={COLORS[0]} showMoreInfo activeDropdown />}
+            </For>
+          </Show>
         </div>
       </div>
     </Show>

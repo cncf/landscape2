@@ -1,11 +1,10 @@
-import { BaseData, Guide, Stats } from './types';
+import type { BaseData, Guide, Stats } from 'common';
 
 declare global {
   interface Window {
     baseDS: BaseData;
     statsDS: Stats;
     guide?: Guide;
-    basePath?: string;
-    Osano: { cm: { showDrawer: (t: string) => void; addEventListener: (t: string, f: unknown) => void } };
+    Osano?: { cm: { showDrawer: (t: string) => void; addEventListener: (t: string, f: unknown) => void } };
   }
 }

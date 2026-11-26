@@ -1,5 +1,4 @@
-// import BadgeModal from './BadgeModal';
-import { createSignal } from 'solid-js';
+import { createSignal, createUniqueId } from 'solid-js';
 import { css } from 'solid-styled-components';
 
 import { BANNER_ID } from '../data/data';
@@ -37,8 +36,11 @@ const Dropdown = css`
   font-size: 0.9rem;
 `;
 
+/** Item options disclosure menu with a "Get badge" action; Escape closes only the menu and returns focus to its button. */
 export const ItemDropdown = (props: Props) => {
+  const menuId = createUniqueId();
   const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [buttonRef, setButtonRef] = createSignal<HTMLButtonElement>();
   const [visibleDropdown, setVisibleDropdown] = createSignal<boolean>(false);
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
   useOutsideClick([ref], [BANNER_ID], visibleDropdown, () => setVisibleDropdown(false));
@@ -49,23 +51,38 @@ export const ItemDropdown = (props: Props) => {
 
   return (
     <>
-      <div ref={setRef} class={`position-absolute ${Wrapper}`}>
+      <div
+        ref={setRef}
+        class={`position-absolute ${Wrapper}`}
+        // Native listener: it runs before the item modal's own Escape handler, so Escape closes only the menu
+        on:keydown={(e) => {
+          if (e.key !== 'Escape' || !visibleDropdown()) return;
+          e.preventDefault();
+          e.stopPropagation();
+          setVisibleDropdown(false);
+          buttonRef()?.focus();
+        }}
+      >
         <button
+          ref={setButtonRef}
           type="button"
-          class={`btn btn-md p-0 rounded-0 lh-1 ${Btn}`}
+          class={`btn p-0 rounded-0 lh-1 ${Btn}`}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             setVisibleDropdown(!visibleDropdown());
           }}
-          aria-label="Open dropdown"
+          aria-label="Item options"
+          aria-expanded={visibleDropdown()}
+          aria-controls={menuId}
         >
           <SVGIcon kind={SVGIconKind.ThreeBars} />
         </button>
 
-        <ul role="complementary" class={`dropdown-menu rounded-0 ${Dropdown}`} classList={{ show: visibleDropdown() }}>
+        <ul id={menuId} class={`dropdown-menu rounded-0 ${Dropdown}`} classList={{ show: visibleDropdown() }}>
           <li>
             <button
+              type="button"
               class="dropdown-item"
               onClick={(e) => {
                 e.stopPropagation();
@@ -74,7 +91,6 @@ export const ItemDropdown = (props: Props) => {
                 setVisibleDropdown(false);
                 setOpenStatus(true);
               }}
-              aria-label="Get badge"
             >
               Get badge
             </button>

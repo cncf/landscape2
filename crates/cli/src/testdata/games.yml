@@ -1,0 +1,7 @@
+quiz:
+  questions:
+    - title: Which item is graduated?
+      options:
+        - item: Item 1
+          correct: true
+        - item: Item 2

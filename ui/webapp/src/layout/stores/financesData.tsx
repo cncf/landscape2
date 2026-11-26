@@ -5,10 +5,10 @@ import { FinancesData } from '../../types';
 function useFinancesDataProvider() {
   const [finances, setFinances] = createSignal<FinancesData | null>();
 
-  return { finances: finances, setFinances: setFinances };
+  return { finances, setFinances };
 }
 
-export type ContextFinancesDataType = ReturnType<typeof useFinancesDataProvider>;
+type ContextFinancesDataType = ReturnType<typeof useFinancesDataProvider>;
 
 const FinancesDataContext = createContext<ContextFinancesDataType | undefined>(undefined);
 
@@ -17,18 +17,20 @@ export const FinancesDataProvider: ParentComponent = (props) => {
   return <FinancesDataContext.Provider value={value}>{props.children}</FinancesDataContext.Provider>;
 };
 
-export function useFinancesData() {
+function useFinancesDataContext() {
   const context = useContext(FinancesDataContext);
   if (context === undefined) {
-    throw new Error(`useFinancesDataProvider must be used within a FinancesDataProvider`);
+    throw new Error(`useFinancesDataContext must be used within a FinancesDataProvider`);
   }
   return context;
 }
 
+/** Returns the finances data accessor (`null` when there is no Crunchbase data). */
 export function useFinancesDataContent() {
-  return useFinancesData().finances;
+  return useFinancesDataContext().finances;
 }
 
+/** Returns the setter of the finances data. */
 export function useSetFinancesDataContent() {
-  return useFinancesData().setFinances;
+  return useFinancesDataContext().setFinances;
 }

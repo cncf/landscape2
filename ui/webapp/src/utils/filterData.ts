@@ -1,12 +1,15 @@
 import intersection from 'lodash/intersection';
 import isUndefined from 'lodash/isUndefined';
 
-import { ActiveFilters, FilterCategory, Item, Repository } from '../types';
+import { FOUNDATION } from '../data';
+import { ActiveFilters, FilterCategory, LandscapeItem } from '../types';
 import getFoundationNameLabel from './getFoundationNameLabel';
+import getRepositoryLicenses from './getRepositoryLicenses';
 
-const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
+/** Returns the items that match every active filter (all of them when no filter is active). */
+const filterData = <T extends LandscapeItem>(items: T[], activeFilters: ActiveFilters): T[] => {
   if (Object.keys(activeFilters).length > 0) {
-    const filteredItems: Item[] = items.filter((item: Item) => {
+    const filteredItems: T[] = items.filter((item: T) => {
       // Filter Extra
       if (activeFilters[FilterCategory.Extra]) {
         if (
@@ -74,14 +77,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
             if (isUndefined(item.repositories)) {
               return false;
             } else {
-              const licenses: string[] = [];
-              item.repositories.forEach((repo: Repository) => {
-                if (repo.license) {
-                  licenses.push(repo.license);
-                } else if (repo.github_data && repo.github_data.license) {
-                  licenses.push(repo.github_data.license);
-                }
-              });
+              const licenses = getRepositoryLicenses(item.repositories);
               if (!licenses.some((l: string) => activeFilters[FilterCategory.License]?.includes(l))) {
                 return false;
               }
@@ -112,7 +108,7 @@ const filterData = (items: Item[], activeFilters: ActiveFilters): Item[] => {
       if (activeFilters[FilterCategory.Maturity]) {
         if (
           isUndefined(item.maturity) &&
-          !activeFilters[FilterCategory.Maturity].includes(`non-${getFoundationNameLabel()}`)
+          !activeFilters[FilterCategory.Maturity].includes(`non-${getFoundationNameLabel(FOUNDATION)}`)
         ) {
           return false;
         } else {

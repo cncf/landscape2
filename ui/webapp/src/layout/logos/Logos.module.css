@@ -7,7 +7,8 @@
   margin: 0.5rem 0.2rem 0 0.2rem;
 }
 
-.select:focus {
+/* Keyboard focus keeps the Bootstrap focus ring */
+.select:focus:not(:focus-visible) {
   box-shadow: 0 0 0 0.2rem var(--bs-gray-200) !important;
 }
 

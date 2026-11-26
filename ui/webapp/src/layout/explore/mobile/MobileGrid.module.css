@@ -5,7 +5,7 @@
   gap: var(--card-gap);
 }
 
-.card:global(.whithoutRepo) {
+.card:global(.withoutRepo) {
   background-color: #f6f7f9;
 }
 

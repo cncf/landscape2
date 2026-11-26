@@ -1,13 +1,15 @@
-import { isUndefined } from 'lodash';
-
 import overlayData from './overlayData';
 
+/**
+ * Returns a link to `path` that keeps the active overlay params, followed by the
+ * `extraQuery` params: `path?query`, or just `path` when there are no params.
+ */
 const prepareLink = (path: string, extraQuery?: string): string => {
-  if (overlayData.isActiveOverlay()) {
-    return `${path}?${overlayData.getUrlParams()}${!isUndefined(extraQuery) ? `&${extraQuery}` : ''}`;
-  } else {
-    return `${path}${!isUndefined(extraQuery) ? `/?${extraQuery}` : ''}`;
-  }
+  const params = new URLSearchParams(overlayData.getUrlParams());
+  new URLSearchParams(extraQuery).forEach((value, key) => params.append(key, value));
+
+  const query = params.toString();
+  return query === '' ? path : `${path}?${query}`;
 };
 
 export default prepareLink;

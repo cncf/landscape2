@@ -1,5 +1,7 @@
 import { css } from 'solid-styled-components';
 
+import { cx } from '../utils/cx';
+
 interface Props {
   level: string;
   class?: string;
@@ -12,7 +14,7 @@ const Archived = css`
 export const MaturityBadge = (props: Props) => (
   <div
     title={props.level}
-    class={`badge rounded-0 text-uppercase ${props.class}`}
+    class={cx('badge rounded-0 text-uppercase', props.class)}
     classList={{
       [Archived]: props.level === 'archived',
       'bg-secondary': props.level !== 'archived',

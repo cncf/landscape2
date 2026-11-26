@@ -1,4 +1,4 @@
-import { useBodyScroll, useOutsideClick } from 'common';
+import { useBodyScroll, useModalFocus, useOutsideClick } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, JSXElement, on, Show } from 'solid-js';
 
@@ -10,27 +10,19 @@ export interface Props {
   header: JSXElement | JSXElement[] | string;
   visibleButton: boolean;
   buttonType?: string;
-  buttonTitle?: string;
   buttonIcon?: JSXElement;
-  closeButton?: JSXElement | string;
-  closeButtonClassName?: string;
-  leftButton?: JSXElement;
-  className?: string;
-  wrapperClassName?: string;
-  direction?: 'left' | 'right';
   open?: boolean;
   onOpenStatusChange?: (open: boolean) => void;
 }
 
-const DEFAULT_DIRECTION = 'left';
-
 export const Sidebar = (props: Props) => {
   const open = () => props.open || false;
   const [openStatus, setOpenStatus] = createSignal<boolean>(false);
-  const direction = () => props.direction || DEFAULT_DIRECTION;
   const [ref, setRef] = createSignal<HTMLDivElement>();
+  const [contentRef, setContentRef] = createSignal<HTMLDivElement>();
   useOutsideClick([ref], [], openStatus, () => openStatusChange(false));
   useBodyScroll(openStatus, 'sidebar');
+  useModalFocus(ref, openStatus, () => openStatusChange(false), contentRef);
 
   const openStatusChange = (open: boolean): void => {
     setOpenStatus(open);
@@ -46,7 +38,7 @@ export const Sidebar = (props: Props) => {
   );
 
   return (
-    <aside class={props.className} aria-label={props.label}>
+    <aside aria-label={props.label}>
       <Show when={props.visibleButton}>
         <button
           type="button"
@@ -58,13 +50,10 @@ export const Sidebar = (props: Props) => {
           onClick={() => {
             openStatusChange(true);
           }}
-          aria-label={`Open ${props.buttonTitle || ''} sidebar`}
+          aria-label="Open sidebar"
           aria-expanded={openStatus()}
         >
-          <div class="d-flex align-items-center justify-content-center">
-            {props.buttonIcon && <>{props.buttonIcon}</>}
-            {props.buttonTitle && <span>{props.buttonTitle}</span>}
-          </div>
+          <div class="d-flex align-items-center justify-content-center">{props.buttonIcon}</div>
         </button>
       </Show>
 
@@ -73,10 +62,12 @@ export const Sidebar = (props: Props) => {
       </Show>
 
       <div
-        role="complementary"
-        aria-label="Sidebar"
         ref={setRef}
-        class={`sidebar position-fixed top-0 bottom-0 ${styles.sidebar} ${styles[direction()]}`}
+        role={openStatus() ? 'dialog' : undefined}
+        aria-modal={openStatus() ? 'true' : undefined}
+        aria-label={openStatus() ? props.label : undefined}
+        tabIndex={-1}
+        class={`position-fixed top-0 bottom-0 ${styles.sidebar}`}
         classList={{ [styles.active]: openStatus() }}
       >
         <div class="d-flex flex-column h-100">
@@ -95,24 +86,26 @@ export const Sidebar = (props: Props) => {
             </div>
           </div>
 
-          <div class={`flex-grow-1 d-flex ${styles.contentWrapper} ${props.wrapperClassName}`}>
-            <div class="overflow-auto mh-100 w-100 py-3">{props.children}</div>
+          <div class={`flex-grow-1 d-flex ${styles.contentWrapper}`}>
+            <div
+              ref={setContentRef}
+              role="group"
+              tabIndex={-1}
+              class={`overflow-auto mh-100 w-100 py-3 ${styles.content}`}
+            >
+              {props.children}
+            </div>
           </div>
 
           <div class="mt-auto p-4 border-top">
             <div class="d-flex align-items-center justify-content-between">
-              <Show when={!isUndefined(props.leftButton)}>
-                <>{props.leftButton}</>
-              </Show>
               <button
                 type="button"
-                class={`ms-auto btn btn-sm btn-secondary rounded-0 lightText text-uppercase ${props.closeButtonClassName}`}
+                class="ms-auto btn btn-sm btn-secondary rounded-0 text-uppercase"
                 onClick={() => openStatusChange(false)}
                 aria-label="Close"
               >
-                <Show when={isUndefined(props.closeButton)} fallback={<>{props.closeButton}</>}>
-                  <>Close</>
-                </Show>
+                Close
               </button>
             </div>
           </div>

@@ -22,10 +22,6 @@
   height: 80px;
 }
 
-.name {
-  padding-bottom: 2px;
-}
-
 .description {
   font-size: 0.9rem;
   overflow: hidden;
@@ -45,14 +41,6 @@
 
 .legend {
   font-size: 0.7rem;
-}
-
-.starIcon {
-  font-size: 0.6rem;
-}
-
-.badge {
-  background-color: var(--bs-gray-500);
 }
 
 .badgeOutlineDark {
@@ -87,9 +75,4 @@
 
 .extra > div {
   margin-top: 3px;
-}
-
-.auditBadge {
-  font-size: 80% !important;
-  line-height: 0.75rem;
 }

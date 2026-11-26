@@ -1,3 +1,4 @@
+/** Returns evenly spaced, rounded axis values between `min` and `max`, aiming at about `tickCount` ticks. */
 export const calculateAxisValues = (min: number, max: number, tickCount: number): number[] => {
   if (max <= 3) {
     return [min, max];

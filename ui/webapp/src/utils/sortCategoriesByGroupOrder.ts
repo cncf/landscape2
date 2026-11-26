@@ -1,18 +1,15 @@
 import intersection from 'lodash/intersection';
 
+import { ALL_OPTION } from '../data';
 import { Group } from '../types';
 
-const ALL_GROUP = 'all';
-
 /**
- * Sort category names using the order configured for the selected group.
+ * Sorts category names in the order configured for the selected group: the group
+ * categories first, in group order, then the remaining ones in their given order.
  */
 const sortCategoriesByGroupOrder = (categories: string[], group: string): string[] => {
-  if (group === ALL_GROUP || !window.baseDS.groups) {
-    return categories;
-  }
-
-  const selectedGroup = window.baseDS.groups.find((item: Group) => item.normalized_name === group);
+  const selectedGroup =
+    group === ALL_OPTION ? undefined : window.baseDS.groups?.find((item: Group) => item.normalized_name === group);
   if (!selectedGroup) {
     return categories;
   }

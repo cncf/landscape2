@@ -12,7 +12,6 @@ interface Props {
   activeFilters?: string[];
   colClass?: string;
   title?: string;
-  inLine?: boolean;
   sectionClass?: string;
   device?: string;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
@@ -63,12 +62,12 @@ const Section = (props: Props) => {
         }
 
         return (
-          <div classList={{ 'me-3': props.inLine }} class={styles.checks}>
+          <div class={styles.checks}>
             <CheckBox
               name={props.section!.value!}
               value={opt.value}
               labelClass={`mw-100 text-muted ${styles.label}`}
-              class={isUndefined(props.inLine) ? 'my-2' : 'mt-2'}
+              class="my-2"
               label={opt.name}
               device={props.device}
               checked={
@@ -86,7 +85,7 @@ const Section = (props: Props) => {
                       name={props.section!.value!}
                       value={subOpt.value}
                       labelClass={`mw-100 text-muted ${styles.label}`}
-                      class={isUndefined(props.inLine) ? 'my-2' : 'mt-2'}
+                      class="my-2"
                       label={subOpt.name}
                       device={props.device}
                       checked={(props.activeFilters || []).includes(subOpt.value)}
@@ -121,8 +120,8 @@ const Section = (props: Props) => {
                 </button>
               </Show>
             </div>
-            <div class={`postion-relative w-100 border p-0 p-sm-3 flex-grow-1 ${props.sectionClass}`}>
-              <div classList={{ 'd-flex flex-row': props.inLine }}>{renderChecksList()}</div>
+            <div class={`position-relative w-100 border p-0 p-sm-3 flex-grow-1 ${props.sectionClass ?? ''}`}>
+              {renderChecksList()}
             </div>
           </div>
         </div>

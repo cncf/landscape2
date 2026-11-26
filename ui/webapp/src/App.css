@@ -7,23 +7,15 @@
   --mobile-card-size-height: 50px;
   --motd-height: 0px;
 
-  --color1: rgba(0, 107, 204, 1);
-  --color2: rgba(255, 0, 170, 1);
-  --color3: rgba(96, 149, 214, 1);
-  --color4: rgba(0, 42, 81, 0.7);
-  --color5: rgba(19, 17, 24, 0.7);
-  --color6: rgba(80, 142, 191, 0.7);
-  --color7: rgba(180, 219, 255, 1);
-
   --color-success: #97c639;
   --color-error: #e83030;
 }
 
 @font-face {
   font-family: Orbitron;
-  src:
-    url(/fonts/orbitron-medium-webfont.ttf) format('truetype'),
-    url(/fonts/orbitron-medium-webfont.woff) format('woff');
+  src: url(/fonts/orbitron-medium-webfont.woff) format('woff');
+  font-weight: 500;
+  font-display: swap;
 }
 
 html,
@@ -35,12 +27,26 @@ body {
   padding: 0;
 }
 
-button:focus,
-a:focus,
-input:not([type='color']):not(.withShadow):focus,
-select:focus {
-  outline: none !important;
-  box-shadow: 0 0 0 0 transparent !important;
+/* Focus: keyboard focus shows an outline, pointer focus none */
+:focus-visible {
+  outline: 2px solid var(--color1);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Bootstrap swaps the outline of focused buttons for a box-shadow that only its
+   variants define, so plain `.btn` buttons would show no focus ring */
+.btn:focus-visible {
+  outline: 2px solid var(--color1);
+  outline-offset: 2px;
+}
+
+/* Close buttons show their focus glow only on keyboard focus */
+.btn-close:focus:not(:focus-visible) {
+  box-shadow: none;
 }
 
 /* Scroll */
@@ -114,9 +120,7 @@ a,
   }
 
   .noScroll-sidebar,
-  .noScroll-modal,
-  .noScroll-loading,
-  .noScroll-dropdown {
+  .noScroll-modal {
     height: 100%;
     overflow: hidden;
     overflow-y: hidden !important;
@@ -140,9 +144,7 @@ a,
   }
 
   .noScroll-sidebar #landscape,
-  .noScroll-modal #landscape,
-  .noScroll-loading #landscape,
-  .noScroll-dropdown #landscape {
+  .noScroll-modal #landscape {
     height: 100%;
     overflow: hidden;
     overflow-y: hidden !important;

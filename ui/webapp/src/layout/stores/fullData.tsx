@@ -1,4 +1,4 @@
-import { createContext, createEffect, createSignal, ParentComponent, useContext } from 'solid-js';
+import { createContext, createSignal, onCleanup, ParentComponent, useContext } from 'solid-js';
 
 import itemsDataGetter, { type ItemsDataLoadStatus } from '../../utils/itemsDataGetter';
 
@@ -7,18 +7,18 @@ function useFullDataProvider() {
   const fullDataReady = () => fullDataStatus() === 'ready';
   const retryFullData = () => itemsDataGetter.init();
 
-  createEffect(() => {
-    itemsDataGetter.subscribe({
-      updateStatus: (currentStatus: ItemsDataLoadStatus) => {
-        setFullDataStatus(currentStatus);
-      },
-    });
+  // Subscribed while the provider is mounted, so an unmounted provider leaves no subscriber behind
+  const unsubscribe = itemsDataGetter.subscribe({
+    updateStatus: (currentStatus: ItemsDataLoadStatus) => {
+      setFullDataStatus(currentStatus);
+    },
   });
+  onCleanup(unsubscribe);
 
   return { fullDataReady, fullDataStatus, retryFullData };
 }
 
-export type ContextFullDataType = ReturnType<typeof useFullDataProvider>;
+type ContextFullDataType = ReturnType<typeof useFullDataProvider>;
 
 const FullDataContext = createContext<ContextFullDataType | undefined>(undefined);
 
@@ -27,24 +27,25 @@ export const FullDataProvider: ParentComponent = (props) => {
   return <FullDataContext.Provider value={value}>{props.children}</FullDataContext.Provider>;
 };
 
-export function useFullData() {
+function useFullDataContext() {
   const context = useContext(FullDataContext);
   if (context === undefined) {
-    throw new Error(`useFullData must be used within a FullDataProvider`);
+    throw new Error(`useFullDataContext must be used within a FullDataProvider`);
   }
   return context;
 }
 
+/** Returns the accessor that tells whether the full dataset is ready. */
 export function useFullDataReady() {
-  return useFullData().fullDataReady;
+  return useFullDataContext().fullDataReady;
 }
 
 /** Return the current full-data loading status accessor. */
 export function useFullDataStatus() {
-  return useFullData().fullDataStatus;
+  return useFullDataContext().fullDataStatus;
 }
 
 /** Return the callback that retries loading the full dataset. */
 export function useRetryFullData() {
-  return useFullData().retryFullData;
+  return useFullDataContext().retryFullData;
 }

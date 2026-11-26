@@ -1,5 +1,6 @@
 const REGEX_RGBA = /^rgba?\(|\s+|\)$/g;
 
+/** Converts an rgb or rgba color to its hex value, dropping the alpha channel. */
 const rgba2hex = (rgba: string): string => {
   return (
     '#' +
@@ -8,7 +9,6 @@ const rgba2hex = (rgba: string): string => {
       .split(',')
       .filter((_string, index) => index !== 3)
       .map((string) => parseFloat(string))
-      .map((number, index) => (index === 3 ? Math.round(number * 255) : number))
       .map((number) => number.toString(16))
       .map((string) => (string.length === 1 ? '0' + string : string))
       .join('')

@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "category": "Category",
+      "homepage_url": "https://item.example",
+      "id": "category--subcategory--item",
+      "logo": "item.svg",
+      "name": "Item",
+      "subcategory": "Subcategory",
+      "website": "https://item.example",
+      "repositories": [
+        {
+          "url": "https://github.com/example/item",
+          "primary": true
+        }
+      ]
+    }
+  ]
+}

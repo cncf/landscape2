@@ -14,17 +14,28 @@ homepage.workspace = true
 anyhow = { workspace = true }
 chrono = { workspace = true }
 clap = { workspace = true }
+hex = { workspace = true }
 itertools = { workspace = true }
 markdown = { workspace = true }
 regex = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
+serde_ignored = { workspace = true }
 serde_yaml = { workspace = true }
+sha2 = { workspace = true }
 tracing = { workspace = true }
+ts-rs = { workspace = true, optional = true }
 url = { workspace = true }
-wasm-bindgen = { workspace = true }
+wasm-bindgen = { workspace = true, optional = true }
 
 [dev-dependencies]
+jsonschema = { workspace = true }
 mockito = { workspace = true }
 pretty_assertions = { workspace = true }
+serde_json = { workspace = true }
+tempfile = { workspace = true }
 tokio = { workspace = true }
+
+[features]
+ts = ["dep:ts-rs"]
+wasm = ["dep:wasm-bindgen"]

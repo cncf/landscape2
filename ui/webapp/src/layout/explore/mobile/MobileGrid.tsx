@@ -1,15 +1,15 @@
-import { Image, useBreakpointDetect } from 'common';
+import { Breakpoint, Image, useBreakpointDetect } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { For, Show } from 'solid-js';
 
-import { BaseItem, Breakpoint, Item } from '../../../types';
+import { LandscapeItem } from '../../../types';
 import { useUpdateActiveItemId } from '../../stores/activeItem';
 import { useFeaturedItems } from '../../stores/featuredItems';
 import { ItemsList } from '../grid/Grid';
 import styles from './MobileGrid.module.css';
 
 interface Props {
-  items: (BaseItem | Item)[];
+  items: LandscapeItem[];
   bgColor: string;
 }
 
@@ -19,7 +19,7 @@ const MobileGrid = (props: Props) => {
   const updateActiveItemId = useUpdateActiveItemId();
   const gridWidth = () => window.innerWidth - 24; // device width - margin
   const { point } = useBreakpointDetect();
-  const isMobile = () => !isUndefined(point()) && [Breakpoint.XS, Breakpoint.SM].includes(point()!);
+  const isMobile = () => [Breakpoint.XS, Breakpoint.SM].includes(point());
   const itemsPerColumn = () => Math.floor(gridWidth() / 70);
 
   return (
@@ -48,17 +48,15 @@ const MobileGrid = (props: Props) => {
           }
         >
           <For each={items()}>
-            {(item: BaseItem | Item) => {
+            {(item: LandscapeItem) => {
               const effectiveFeatured = () => getEffectiveFeatured(item);
               return (
                 <div
                   role="listitem"
-                  style={
-                    effectiveFeatured() && effectiveFeatured()!.label ? { border: `2px solid ${props.bgColor}` } : {}
-                  }
+                  style={effectiveFeatured()?.label ? { border: `2px solid ${props.bgColor}` } : {}}
                   class={`card rounded-0 position-relative p-0 ${styles.card}`}
                   classList={{
-                    whithoutRepo: isUndefined(item.oss) || !item.oss,
+                    withoutRepo: isUndefined(item.oss) || !item.oss,
                     archived: !isUndefined(item.maturity) && item.maturity === 'archived',
                   }}
                 >

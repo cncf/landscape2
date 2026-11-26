@@ -2,6 +2,8 @@ import isUndefined from 'lodash/isUndefined';
 import { JSXElement, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
+import { cx } from '../utils/cx';
+
 interface Props {
   text: string;
   icon?: JSXElement;
@@ -19,7 +21,7 @@ const Icon = css`
 `;
 
 export const Badge = (props: Props) => (
-  <div class={`badge rounded-0 text-uppercase ${Wrapper} ${props.class}`}>
+  <div class={cx('badge rounded-0 text-uppercase', Wrapper, props.class)}>
     <div class="d-flex flex-row align-items-center">
       <Show when={!isUndefined(props.icon)}>
         <div class={`me-1 position-relative ${Icon}`}>{props.icon}</div>

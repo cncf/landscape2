@@ -2,7 +2,7 @@ import isUndefined from 'lodash/isUndefined';
 import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 
 import { ALL_OPTION } from '../../data';
-import { BaseData } from '../../types';
+import { BaseData, Group } from '../../types';
 import generateColorsArray from '../../utils/generateColorsArray';
 import getCategoriesWithItems from '../../utils/getCategoriesWithItems';
 import { SubcategoryDetails } from '../../utils/gridCategoryLayout';
@@ -17,9 +17,13 @@ interface Props {
 
 const Screenshots = (props: Props) => {
   const [groupsData, setGroupsData] = createSignal<GroupData>();
-  const groups = () =>
+  const groups = (): Group[] =>
     props.initialData.groups || [
-      { name: ALL_OPTION, normalized_name: ALL_OPTION, categories: props.initialData.categories },
+      {
+        categories: (props.initialData.categories ?? []).map((category) => category.name),
+        name: ALL_OPTION,
+        normalized_name: ALL_OPTION,
+      },
     ];
 
   onMount(() => {
@@ -40,10 +44,11 @@ const Screenshots = (props: Props) => {
           <For each={groups()}>
             {(group) => {
               const activeGroups = itemsDataGetter.getGroups();
-              if (activeGroups && !activeGroups.includes(group.normalized_name)) return null;
-              const colorsList = () => generateColorsArray(group.categories.length);
-              const groupData = groupsData()![group.normalized_name];
+              const normalizedName = group.normalized_name;
+              if (isUndefined(normalizedName) || (activeGroups && !activeGroups.includes(normalizedName))) return null;
+              const groupData = groupsData()![normalizedName];
               const categories = getCategoriesWithItems(groupData);
+              const colors = generateColorsArray(categories.length);
 
               return (
                 <div class={styles.group}>
@@ -52,7 +57,7 @@ const Screenshots = (props: Props) => {
                   </Show>
                   <For each={categories}>
                     {(cat, index) => {
-                      const isOverriden =
+                      const isOverridden =
                         !isUndefined(props.initialData.categories_overridden) &&
                         props.initialData.categories_overridden.includes(cat);
                       const subcategories: SubcategoryDetails[] = [];
@@ -66,14 +71,13 @@ const Screenshots = (props: Props) => {
                         }
                       });
                       const catData = groupData[cat];
-                      const bgColor = () => colorsList()[index()];
 
                       return (
                         <Grid
                           categoryName={cat}
                           index={index()}
-                          bgColor={bgColor()}
-                          isOverriden={isOverriden}
+                          bgColor={colors[index()]}
+                          isOverridden={isOverridden}
                           subcategories={subcategories}
                           categoryData={catData}
                         />

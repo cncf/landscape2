@@ -16,8 +16,11 @@ updates:
     directory: "/"
     patterns:
       - "*"
+    # Keep in sync with `# do-not-upgrade` markers in Cargo.toml files
     ignore:
-      - dependency-name: "markdown"
+      - dependency-name: "reqwest"
+      - dependency-name: "reqwest-middleware"
+      - dependency-name: "reqwest-retry"
       - dependency-name: "usvg"
     multi-ecosystem-group: "backend"
 
@@ -31,10 +34,22 @@ updates:
     directory: "/"
     patterns:
       - "*"
+    # dist regenerates release.yml (`dist generate`), so its actions are
+    # updated by bumping cargo-dist-version in dist-workspace.toml instead
+    exclude-paths:
+      - ".github/workflows/release.yml"
     multi-ecosystem-group: "infra"
 
   - package-ecosystem: "npm"
-    directory: "/ui"
+    directories:
+      - "/ui/common"
+      - "/ui/embed"
+      - "/ui/embed-item"
+      - "/ui/webapp"
     patterns:
       - "*"
+    # apexcharts is deliberately held on 3.x (see ui/webapp/README.md)
+    ignore:
+      - dependency-name: "apexcharts"
+        update-types: ["version-update:semver-major"]
     multi-ecosystem-group: "frontend"

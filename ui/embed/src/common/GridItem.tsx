@@ -1,38 +1,38 @@
+import { Size } from 'common/embed';
+import type { EmbedItem } from 'common/types';
+import { cx } from 'common/utils';
 import { Show } from 'solid-js';
 import { css, styled } from 'solid-styled-components';
 
-import { BaseItem, Size } from '../types';
 import getUrl from '../utils/getUrl';
 import ExternalLink from './ExternalLink';
 import Image from './Image';
 
 interface Props {
-  item: BaseItem;
-  size: Size;
   borderless: boolean;
-  withName: boolean;
+  item: EmbedItem;
   itemNameSize: number;
-  withShadow?: boolean;
+  size: Size;
+  withName: boolean;
   class?: string;
   onClick?: () => void;
+  withShadow?: boolean;
 }
 
 interface ItemProps {
   borderless: boolean;
-  withShadow: boolean;
   size: Size;
+  withShadow: boolean;
 }
 
 interface ItemNameProps {
-  itemNameSize: number;
   borderless: boolean;
+  itemNameSize: number;
 }
 
-type PaddingSize = {
-  [key in Size]: string;
-};
+const BORDER = '1px solid rgba(0, 0, 0, 0.175)';
 
-const PADDINGS_SIZES: PaddingSize = {
+const PADDINGS_SIZES: Record<Size, string> = {
   [Size.XSmall]: '0.25rem',
   [Size.Small]: '0.35rem',
   [Size.Medium]: '0.5rem',
@@ -41,20 +41,16 @@ const PADDINGS_SIZES: PaddingSize = {
 };
 
 const Item = styled('div')`
-  border: ${(props: ItemProps) => (!props.borderless ? '1px solid rgba(0, 0, 0, 0.175)' : '')};
+  border: ${(props: ItemProps) => (props.borderless ? 'none' : BORDER)};
   box-shadow: ${(props: ItemProps) => (props.withShadow ? '0 .125rem .25rem rgba(0,0,0,.075)' : 'none')};
   padding: ${(props: ItemProps) => PADDINGS_SIZES[props.size]};
-  background-color: ${(props: ItemProps) => (!props.borderless ? '#fff' : 'transparent')};
+  background-color: ${(props: ItemProps) => (props.borderless ? 'transparent' : '#fff')};
 `;
 
 const ItemClass = css`
   position: relative;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
 `;
 
@@ -62,11 +58,7 @@ const LinkClass = css`
   width: 100%;
   height: 100%;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
 `;
 
@@ -79,33 +71,45 @@ const ButtonClass = css`
 
 const ImageClass = css`
   margin: auto;
-  font-size: calc(var(--card-size-height) / 1.5);
   max-width: 100%;
   max-height: 100%;
   height: auto;
 `;
 
+// The item name size is limited to 10-40px by the embed config
 const ItemName = styled('div')`
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   text-align: center;
-  font-size: ${(props: ItemNameProps) => (props.itemNameSize < 40 ? `${props.itemNameSize}px` : '40px')};
-  line-height: ${(props: ItemNameProps) => (props.itemNameSize < 40 ? `${props.itemNameSize - 2}px` : '38px')};
-  padding: ${(props: ItemNameProps) => (!props.borderless ? '0.35rem 0.25rem' : '0.35rem 0')};
+  font-size: ${(props: ItemNameProps) => `${props.itemNameSize}px`};
+  line-height: ${(props: ItemNameProps) => `${props.itemNameSize - 2}px`};
+  padding: ${(props: ItemNameProps) => (props.borderless ? '0.35rem 0' : '0.35rem 0.25rem')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-top: ${(props: ItemNameProps) => (!props.borderless ? '1px solid rgba(0, 0, 0, 0.175)' : '')};
+  border-top: ${(props: ItemNameProps) => (props.borderless ? 'none' : BORDER)};
 `;
 
 const GridItem = (props: Props) => {
+  const paddingBottom = () => (props.withName ? props.itemNameSize + 8 : 0);
+  const content = () => (
+    <>
+      <Image name={props.item.name} class={ImageClass} logo={props.item.logo} size={props.size} />
+      <Show when={props.withName}>
+        <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
+          {props.item.name}
+        </ItemName>
+      </Show>
+    </>
+  );
+
   return (
     <Item
-      class={`${ItemClass} ${props.class}`}
+      class={cx(ItemClass, props.class)}
       borderless={props.borderless}
-      withShadow={typeof props.withShadow !== 'undefined' && props.withShadow}
+      withShadow={props.withShadow ?? false}
       size={props.size}
     >
       <Show
@@ -113,30 +117,21 @@ const GridItem = (props: Props) => {
         fallback={
           <ExternalLink
             href={`${getUrl()}?item=${props.item.id}`}
-            paddingBottom={props.withName ? props.itemNameSize + 8 : 0}
+            paddingBottom={paddingBottom()}
             class={LinkClass}
+            label={`${props.item.name} details`}
           >
-            <Image name={props.item.name} class={ImageClass} logo={props.item.logo} size={props.size} />
-            <Show when={props.withName}>
-              <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
-                {props.item.name}
-              </ItemName>
-            </Show>
+            {content()}
           </ExternalLink>
         }
       >
         <button
-          onClick={() => props.onClick!()}
-          style={{ 'padding-bottom': `${props.withName ? props.itemNameSize + 8 : 0}px` }}
-          class={`${LinkClass} ${ButtonClass}`}
+          onClick={() => props.onClick?.()}
+          style={{ 'padding-bottom': `${paddingBottom()}px` }}
+          class={cx(LinkClass, ButtonClass)}
           aria-label={`${props.item.name} info`}
         >
-          <Image name={props.item.name} class={ImageClass} logo={props.item.logo} size={props.size} />
-          <Show when={props.withName}>
-            <ItemName borderless={props.borderless} itemNameSize={props.itemNameSize}>
-              {props.item.name}
-            </ItemName>
-          </Show>
+          {content()}
         </button>
       </Show>
     </Item>

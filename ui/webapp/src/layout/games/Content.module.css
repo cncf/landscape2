@@ -1,11 +1,6 @@
 .wrapper * {
   font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-}
-
-.startBtn {
-  height: 30px;
-  width: 30px;
+  font-weight: 500;
 }
 
 .header {
@@ -58,6 +53,9 @@
   border-radius: 1.5rem;
   overflow: hidden;
   width: 200px;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
   border-color: var(--color7) !important;
   box-shadow: 0px 0px 10px 3px var(--color7);
 }
@@ -99,10 +97,6 @@
 
 .option.wrong .item {
   background-color: var(--color-error);
-}
-
-.questionLabel {
-  font-size: 0.9rem;
 }
 
 .buttons {

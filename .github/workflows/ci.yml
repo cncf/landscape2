@@ -6,7 +6,66 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
+# A new push to a pull request cancels its running checks; merge queue runs
+# are never cancelled
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  coverage-rust:
+    runs-on:
+      labels: ubuntu-latest-8-cores
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+          components: llvm-tools-preview
+      # llvm-cov builds instrumented artifacts, so they get their own cache
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: target-wasm
+          key: coverage
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: yarn
+          cache-dependency-path: ui/*/yarn.lock
+      # keep wasm-pack version in sync: ci.yml, .github/build-setup.yml, crates/cli/Dockerfile
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.15.1
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      # Only host builds are instrumented: the cli build script runs wasm-pack,
+      # and the wasm32 target has no profiler runtime
+      - name: Run tests with coverage
+        run: cargo llvm-cov --workspace --all-features --locked --coverage-host-only --lcov --output-path lcov.info
+      - name: Add coverage summary
+        run: |
+          {
+            echo '### Rust coverage'
+            echo '```text'
+            cargo llvm-cov report --summary-only
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-rust
+          path: lcov.info
+
   lint-and-test-cli-tool:
     runs-on:
       labels: ubuntu-latest-8-cores
@@ -18,86 +77,125 @@ jobs:
         with:
           toolchain: 1.99.1
           components: clippy, rustfmt
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: target-wasm
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: yarn
+          cache-dependency-path: ui/*/yarn.lock
+      # keep wasm-pack version in sync: ci.yml, .github/build-setup.yml, crates/cli/Dockerfile
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.15.1
       - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- --deny warnings
+        run: cargo clippy --locked --all-targets --all-features -- --deny warnings
       - name: Run rustfmt
         run: cargo fmt --all -- --check
       - name: Run tests
-        run: cargo test
+        run: cargo test --workspace --all-features --locked
+      # The tests build the UI packages (through the cli build script)
+      - name: Check UI bundles
+        run: node scripts/check-ui-bundles.mjs
 
-  lint-and-test-webapp:
+  lint-and-test-ui:
     runs-on:
       labels: ubuntu-latest-8-cores
     env:
       NODE_OPTIONS: --max_old_space_size=4096
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [common, embed, embed-item, webapp]
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Install dependencies
-        working-directory: ./ui/webapp
-        run: yarn install --network-concurrency 1
-      - name: Run prettier
-        working-directory: ./ui/webapp
-        run: yarn format:diff
-      - name: Run eslint
-        working-directory: ./ui/webapp
-        run: yarn lint
-      - name: Run tests
-        working-directory: ./ui/webapp
-        run: yarn test
-
-  lint-common:
-    runs-on:
-      labels: ubuntu-latest-8-cores
-    env:
-      NODE_OPTIONS: --max_old_space_size=4096
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Install dependencies
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: yarn
+          cache-dependency-path: |
+            ui/common/yarn.lock
+            ui/${{ matrix.package }}/yarn.lock
+      # Every package needs the common dependencies: consumers compile the
+      # common source (linked with link:../common), which imports them, and
+      # the shared ESLint config loads its plugins from ui/common/node_modules
+      - name: Install common dependencies
         working-directory: ./ui/common
-        run: yarn install --network-concurrency 1
+        run: yarn install --frozen-lockfile --network-concurrency 1
+      - name: Install dependencies
+        if: matrix.package != 'common'
+        working-directory: ./ui/${{ matrix.package }}
+        run: yarn install --frozen-lockfile --network-concurrency 1
+      # The webapp imports the generated wasm bindings, so tsc and Vitest need them
+      - name: Setup Rust
+        if: matrix.package == 'webapp'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+          targets: wasm32-unknown-unknown
+      # keep wasm-pack version in sync: ci.yml, .github/build-setup.yml, crates/cli/Dockerfile
+      - name: Install wasm-pack
+        if: matrix.package == 'webapp'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack@0.15.1
+      - name: Build wasm bindings
+        if: matrix.package == 'webapp'
+        run: |
+          wasm-pack build --target web --dev --out-dir ../../../ui/webapp/wasm/overlay crates/wasm/overlay --locked
+          wasm-pack build --target web --dev --out-dir ../../../ui/webapp/wasm/quiz crates/wasm/quiz --locked
       - name: Run prettier
-        working-directory: ./ui/common
+        working-directory: ./ui/${{ matrix.package }}
         run: yarn format:diff
       - name: Run eslint
-        working-directory: ./ui/common
+        working-directory: ./ui/${{ matrix.package }}
         run: yarn lint
+      - name: Run type checks
+        working-directory: ./ui/${{ matrix.package }}
+        run: yarn typecheck
+      - name: Run tests with coverage
+        working-directory: ./ui/${{ matrix.package }}
+        run: yarn test:coverage
+      - name: Add coverage summary
+        working-directory: ./ui/${{ matrix.package }}
+        env:
+          PACKAGE: ${{ matrix.package }}
+        shell: node {0}
+        run: |
+          const { appendFileSync, readFileSync } = require("node:fs");
 
-  lint-and-test-embed:
-    runs-on:
-      labels: ubuntu-latest-8-cores
-    env:
-      NODE_OPTIONS: --max_old_space_size=4096
+          const { total } = JSON.parse(readFileSync("coverage/coverage-summary.json", "utf8"));
+          const rows = ["statements", "branches", "functions", "lines"].map((metric) => {
+            const { covered, pct, total: count } = total[metric];
+            return `| ${metric} | ${covered} / ${count} | ${typeof pct === "number" ? `${pct}%` : pct} |`;
+          });
+          const summary = [`### ui/${process.env.PACKAGE} coverage`, "", "| Metric | Covered | % |", "| --- | --- | --- |", ...rows];
+          appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary.join("\n")}\n`);
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-ui-${{ matrix.package }}
+          path: ui/${{ matrix.package }}/coverage/lcov.info
+
+  lint-repo:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Install dependencies
-        working-directory: ./ui/embed
-        run: yarn install --network-concurrency 1
-      - name: Run prettier
-        working-directory: ./ui/embed
-        run: yarn format:diff
-      - name: Run eslint
-        working-directory: ./ui/embed
-        run: yarn lint
-
-  lint-embed-item:
-    runs-on:
-      labels: ubuntu-latest-8-cores
-    env:
-      NODE_OPTIONS: --max_old_space_size=4096
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Install dependencies
-        working-directory: ./ui/embed-item
-        run: yarn install --network-concurrency 1
-      - name: Run prettier
-        working-directory: ./ui/embed-item
-        run: yarn format:diff
-      - name: Run eslint
-        working-directory: ./ui/embed-item
-        run: yarn lint
+      - name: Run shellcheck
+        run: shellcheck scripts/*.sh
+      - name: Install dist
+        # bash provides pipefail, so a failing curl fails the step
+        shell: bash
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.30.0/cargo-dist-installer.sh | sh
+      # Fails when release.yml drifts from dist-workspace.toml
+      - name: Check release workflow is up to date
+        run: dist generate --check
+      - name: Check release plan
+        run: dist plan

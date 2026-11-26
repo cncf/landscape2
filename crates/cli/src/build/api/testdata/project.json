@@ -1,0 +1,94 @@
+{
+  "category": "App Definition",
+  "homepage_url": "https://github.com/org/project",
+  "id": "app-definition--database--project",
+  "logo_url": "https://landscape.example/landscape/logos/project.svg",
+  "name": "Project",
+  "subcategory": "Database",
+  "website": "https://website.example",
+  "accepted_at": "2024-01-02",
+  "additional_categories": [
+    {
+      "category": "Runtime",
+      "subcategory": "Container Runtime"
+    }
+  ],
+  "annotations": {
+    "key": "value"
+  },
+  "archived_at": "2024-01-02",
+  "artwork_url": "https://artwork.example",
+  "audits": [
+    {
+      "date": "2024-01-02",
+      "type": "security",
+      "url": "https://audit.example",
+      "vendor": "Vendor"
+    }
+  ],
+  "blog_url": "https://blog.example",
+  "bluesky_url": "https://bsky.app/profile/project",
+  "chat_channel": "#project",
+  "country": "Country",
+  "crunchbase_url": "https://www.crunchbase.com/organization/org",
+  "description": "Description",
+  "devstats_url": "https://devstats.example",
+  "discord_url": "https://discord.example",
+  "docker_url": "https://hub.docker.com/r/org/project",
+  "documentation_url": "https://docs.example",
+  "enduser": false,
+  "facebook_url": "https://facebook.com/project",
+  "funding_url": "https://funding.example",
+  "github_discussions_url": "https://github.com/org/project/discussions",
+  "gitter_url": "https://gitter.im/project",
+  "graduated_at": "2024-01-02",
+  "incubating_at": "2024-01-02",
+  "joined_at": "2024-01-02",
+  "latest_annual_review_at": "2024-01-02",
+  "latest_annual_review_url": "https://review.example",
+  "lfx_slug": "project",
+  "linkedin_url": "https://linkedin.com/company/project",
+  "mailing_list_url": "https://lists.example",
+  "maturity": "graduated",
+  "member_subcategory": "Gold",
+  "openssf_best_practices_url": "https://www.bestpractices.dev/projects/1",
+  "oss": true,
+  "other_links": [
+    {
+      "name": "Link",
+      "url": "https://link.example"
+    }
+  ],
+  "package_manager_url": "https://crates.io/crates/project",
+  "parent_project": "Parent",
+  "pinterest_url": "https://pinterest.com/project",
+  "reddit_url": "https://reddit.com/r/project",
+  "repositories": [
+    {
+      "url": "https://github.com/org/project",
+      "branch": "main",
+      "contributors": 10,
+      "languages": {
+        "Rust": 1000
+      },
+      "latest_release": "2024-03-02T10:00:00Z",
+      "license": "Apache-2.0",
+      "primary": true,
+      "stars": 100
+    }
+  ],
+  "slack_url": "https://slack.example",
+  "specification": false,
+  "stack_overflow_url": "https://stackoverflow.com/questions/tagged/project",
+  "summary": {
+    "use_case": "Use case"
+  },
+  "tag": [
+    "app-delivery"
+  ],
+  "training_certifications": "Certification",
+  "training_type": "Course",
+  "twitter_url": "https://twitter.com/project",
+  "unnamed_organization": false,
+  "youtube_url": "https://youtube.com/project"
+}

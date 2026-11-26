@@ -1,9 +1,9 @@
-import { cutString } from 'common';
+import { Breakpoint, cutString } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { DEFAULT_ZOOM_LEVELS, ZOOM_LEVELS } from '../../data';
-import { BaseItem, Breakpoint } from '../../types';
+import { BaseItem } from '../../types';
 import calculateGridItemsPerRow from '../../utils/calculateGridItemsPerRow';
 import getGridCategoryLayout, {
   GridCategoryLayout,
@@ -22,7 +22,7 @@ interface Props {
   categoryName: string;
   index: number;
   bgColor: string;
-  isOverriden: boolean;
+  isOverridden: boolean;
   subcategories: SubcategoryDetails[];
   categoryData: CategoryData;
 }
@@ -30,7 +30,6 @@ interface Props {
 interface ItemsProps {
   bgColor: string;
   items: BaseItem[];
-  name: string;
 }
 
 const ItemsList = (props: ItemsProps) => {
@@ -38,9 +37,10 @@ const ItemsList = (props: ItemsProps) => {
   const [items, setItems] = createSignal<BaseItem[]>();
 
   createEffect(
-    on(wrapper, () => {
-      if (isUndefined(items()) && !isUndefined(wrapper()) && wrapper()!.clientWidth > 0) {
-        const itemsPerRow = calculateGridItemsPerRow(100, wrapper()!.clientWidth, GRID_ITEM[0], true);
+    on(wrapper, (wrapperEl) => {
+      const wrapperWidth = wrapperEl?.clientWidth ?? 0;
+      if (isUndefined(items()) && wrapperWidth > 0) {
+        const itemsPerRow = calculateGridItemsPerRow(100, wrapperWidth, GRID_ITEM[0], true);
         const itemsInGrid = [];
         for (const item of new ItemIterator(props.items, itemsPerRow)) {
           if (item) {
@@ -61,7 +61,7 @@ const ItemsList = (props: ItemsProps) => {
         '--card-size-height': `${GRID_ITEM[1]}px`,
       }}
     >
-      <Show when={!isUndefined(items)}>
+      <Show when={!isUndefined(items())}>
         <For each={items()}>
           {(item: BaseItem) => {
             return (
@@ -86,9 +86,10 @@ const Grid = (props: Props) => {
   const [containerWidth, setContainerWidth] = createSignal<number>(0);
 
   createEffect(
-    on(wrapper, () => {
-      if (!isUndefined(wrapper()) && wrapper()!.clientWidth > 0) {
-        setContainerWidth(wrapper()!.clientWidth);
+    on(wrapper, (wrapperEl) => {
+      const wrapperWidth = wrapperEl?.clientWidth ?? 0;
+      if (wrapperWidth > 0) {
+        setContainerWidth(wrapperWidth);
       }
     })
   );
@@ -101,7 +102,7 @@ const Grid = (props: Props) => {
             containerWidth: containerWidth(),
             itemWidth: GRID_ITEM[0],
             categoryName: props.categoryName,
-            isOverriden: props.isOverriden,
+            isOverridden: props.isOverridden,
             subcategories: props.subcategories,
           })
         );
@@ -126,7 +127,7 @@ const Grid = (props: Props) => {
           <For each={grid()}>
             {(row, rowIndex) => {
               return (
-                <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid.length - 1 }}>
+                <div class="d-flex flex-nowrap w-100" classList={{ 'flex-grow-1': rowIndex() === grid()!.length - 1 }}>
                   <For each={row}>
                     {(subcat: LayoutColumn) => {
                       const items = props.categoryData[subcat.subcategoryName].items;
@@ -149,7 +150,7 @@ const Grid = (props: Props) => {
                             <div class="text-truncate">{subcat.subcategoryName}</div>
                           </div>
                           <div class={`flex-grow-1 ${styles.itemsContainer}`}>
-                            <ItemsList name={subcat.subcategoryName} bgColor={props.bgColor} items={sortedItems} />
+                            <ItemsList bgColor={props.bgColor} items={sortedItems} />
                           </div>
                         </div>
                       );

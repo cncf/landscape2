@@ -1,5 +1,6 @@
-import { createEffect, createSignal, For, on } from 'solid-js';
+import { createMemo, For, Show } from 'solid-js';
 
+import { cx } from '../utils/cx';
 import { formatPercentage } from '../utils/formatPercentage';
 import { sortObjectByValue } from '../utils/sortObjectByValue';
 import { Box } from './Box';
@@ -10,41 +11,30 @@ interface Props {
   class?: string;
 }
 
+// Maximum number of languages shown, the most used first
+const MAX_LANGUAGES = 5;
+
+/** Share of each of the most used languages of a repository; nothing renders when no bytes are reported. */
 export const LanguagesStats = (props: Props) => {
-  const languages = () => props.initialLanguages;
-  const [total, setTotal] = createSignal<number>(0);
-  const [popularLanguages, setPopularLanguages] = createSignal<string[]>([]);
-
-  const percentage = (partialValue: number) => {
-    return (100 * partialValue) / total();
-  };
-
-  createEffect(
-    on(languages, () => {
-      const totalBytes = Object.values(languages()).reduce((a, b) => a + b, 0);
-      setTotal(totalBytes);
-      const sortedLanguages = sortObjectByValue(languages());
-      setPopularLanguages(sortedLanguages.length > 5 ? sortedLanguages.slice(0, 3) : sortedLanguages);
-    })
-  );
+  const total = createMemo(() => Object.values(props.initialLanguages).reduce((a, b) => a + b, 0));
+  const popular = createMemo(() => sortObjectByValue(props.initialLanguages).slice(0, MAX_LANGUAGES));
+  const percentage = (lang: string) => (100 * props.initialLanguages[lang]) / total();
 
   return (
-    <div class={`row g-4 my-0 mb-2 justify-content-center justify-md-content-start ${props.class}`}>
-      <For each={popularLanguages()}>
-        {(lang: string) => {
-          const value = () => percentage(languages()[lang]);
-
-          return (
+    <Show when={total() > 0}>
+      <div class={cx('row g-4 my-0 mb-2 justify-content-center justify-content-md-start', props.class)}>
+        <For each={popular()}>
+          {(lang) => (
             <Box
               class={props.boxClass}
-              value={formatPercentage(value())}
+              value={formatPercentage(percentage(lang))}
               legend={lang}
-              fillBgPercentage={value()}
+              fillBgPercentage={percentage(lang)}
               description={`${lang} language percentage`}
             />
-          );
-        }}
-      </For>
-    </div>
+          )}
+        </For>
+      </div>
+    </Show>
   );
 };

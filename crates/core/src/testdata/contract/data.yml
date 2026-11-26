@@ -1,0 +1,84 @@
+landscape:
+  - category:
+    name: Category 1
+    subcategories:
+      - subcategory:
+        name: Subcategory 1-1
+        items:
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/member-1
+            description: This is the description of item 1
+            extra:
+              accepted: "2021-03-01"
+              graduated: "2023-09-01"
+              incubating: "2022-05-01"
+              summary_personas: Developer, Operator
+              summary_tags: networking, security
+              summary_use_case: Item 1 use case
+            homepage_url: https://item-1.example
+            logo: item-1.svg
+            name: Item 1
+            project: graduated
+            repo_url: https://github.com/example/item-1
+            twitter: https://twitter.com/item1
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/item-2
+            homepage_url: https://github.com/example/item-2
+            logo: item-2.svg
+            name: Item 2
+            repo_url: https://github.com/example/item-2
+      - subcategory:
+        name: Subcategory 1-2
+        items: []
+  - category:
+    name: Category 2
+    subcategories:
+      - subcategory:
+        name: Subcategory 2-1
+        items:
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/item-3
+            extra:
+              accepted: "2023-03-01"
+              annotations:
+                key: value
+              annual_review_date: "2024-03-01"
+              annual_review_url: https://example.com/item-3-annual-review
+              audits:
+                - date: "2024-02-10"
+                  type: security
+                  url: https://example.com/item-3-audit
+                  vendor: Audit vendor
+              chat_channel: "#item-3"
+              facebook_url: https://facebook.com/item3
+              gitter_url: https://gitter.im/item3
+              lfx_slug: item-3
+              other_links:
+                - name: Contact
+                  url: mailto:item-3@example.com
+              tag:
+                - observability
+                - security
+              training_certifications: Item 3 certification
+              training_type: Item 3 training
+            homepage_url: https://item-3.example
+            license: MIT
+            logo: item-3.svg
+            name: Item 3
+            project: Early Stage
+            repo_url: https://github.com/example/item-3
+            second_path:
+              - Category 1 / Subcategory 1-1
+            unnamed_organization: false
+  - category:
+    name: Members
+    subcategories:
+      - subcategory:
+        name: Gold
+        items:
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/member-1
+            homepage_url: https://member-1.example
+            joined: "2020-01-15"
+            logo: member-1.svg
+            name: Member 1

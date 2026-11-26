@@ -1,14 +1,10 @@
 import { capitalizeFirstLetter, formatTAGName } from 'common';
 import isUndefined from 'lodash/isUndefined';
 
-import { FilterCategory, FilterSection, Item, Repository } from '../types';
+import { FilterCategory, FilterSection, LandscapeItem } from '../types';
 import checkIfCategoryInGroup from './checkIfCategoryInGroup';
+import getRepositoryLicenses from './getRepositoryLicenses';
 import itemsDataGetter from './itemsDataGetter';
-
-const cleanValue = (t: string): string => {
-  // return encodeURIComponent(t);
-  return t;
-};
 
 export interface FiltersPerGroup {
   [key: string]: PreparedFilters;
@@ -24,6 +20,7 @@ interface PreparedFilters {
   options: FiltersOptions;
 }
 
+/** Prepares the filter sections and options of every group, from its grouped items. */
 const getFiltersPerGroup = () => {
   const groups: FiltersPerGroup = {};
 
@@ -35,7 +32,15 @@ const getFiltersPerGroup = () => {
   return groups;
 };
 
-const prepareFilters = (items: Item[], group: string): PreparedFilters => {
+/**
+ * Prepares the filter sections available for the items of a group, plus the flags
+ * that tell whether some items lack a maturity or a license.
+ *
+ * @param items - Items of the group
+ * @param group - Normalized name of the group, whose categories limit the Category section
+ * @returns The filter sections and options
+ */
+export const prepareFilters = (items: LandscapeItem[], group: string): PreparedFilters => {
   const filters: FilterSection[] = [];
 
   const maturityTypes: string[] = [];
@@ -46,11 +51,11 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
   const companyTypes: string[] = [];
   const extraTypes: string[] = [];
   const categories: string[] = [];
-  let industry: string[] = [];
+  const industry: string[] = [];
   let itemsWithoutMaturity: boolean = false;
   let nonOss: boolean = false;
 
-  items.forEach((i: Item) => {
+  items.forEach((i: LandscapeItem) => {
     if (i.maturity) {
       maturityTypes.push(i.maturity);
     } else {
@@ -93,7 +98,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       }
 
       if (i.crunchbase_data.categories) {
-        industry = [...industry, ...i.crunchbase_data.categories];
+        industry.push(...i.crunchbase_data.categories);
       }
 
       if (i.crunchbase_data.company_type) {
@@ -101,15 +106,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       }
     }
 
-    if (i.repositories) {
-      i.repositories.forEach((r: Repository) => {
-        if (r.license) {
-          licenses.push(r.license);
-        } else if (r.github_data && r.github_data.license) {
-          licenses.push(r.github_data.license);
-        }
-      });
-    }
+    licenses.push(...getRepositoryLicenses(i.repositories));
 
     if (isUndefined(i.oss)) {
       nonOss = true;
@@ -121,7 +118,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       value: FilterCategory.Maturity,
       title: 'Project',
       options: [...new Set(maturityTypes)].sort().map((pr: string) => ({
-        value: cleanValue(pr),
+        value: pr,
         name: capitalizeFirstLetter(pr),
       })),
     });
@@ -143,7 +140,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       value: FilterCategory.Organization,
       title: 'Organization',
       options: [...new Set(organizations)].sort().map((org: string) => ({
-        value: cleanValue(org),
+        value: org,
         name: org,
       })),
     });
@@ -157,8 +154,8 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       filters.push({
         value: FilterCategory.Category,
         title: 'Category',
-        options: [...new Set(categories)].sort().map((cat: string) => ({
-          value: cleanValue(cat),
+        options: cleanCategories.map((cat: string) => ({
+          value: cat,
           name: cat,
         })),
       });
@@ -170,7 +167,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       value: FilterCategory.License,
       title: 'License',
       options: [...new Set(licenses)].sort().map((license: string) => ({
-        value: cleanValue(license),
+        value: license,
         name: license,
       })),
     });
@@ -181,7 +178,7 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       value: FilterCategory.Country,
       title: 'Country',
       options: [...new Set(countries)].sort().map((country: string) => ({
-        value: cleanValue(country),
+        value: country,
         name: country,
       })),
     });
@@ -192,45 +189,45 @@ const prepareFilters = (items: Item[], group: string): PreparedFilters => {
       value: FilterCategory.Industry,
       title: 'Industry',
       options: [...new Set(industry)].sort().map((i: string) => ({
-        value: cleanValue(i),
+        value: i,
         name: i,
       })),
     });
-
-    if (companyTypes.length > 0) {
-      filters.push({
-        value: FilterCategory.OrgType,
-        title: 'Organization type',
-        options: [...new Set(companyTypes)].sort().map((ot: string) => ({
-          value: cleanValue(ot),
-          name: ot,
-        })),
-      });
-    }
-
-    if (extraTypes.length > 0) {
-      const options = [];
-      if (extraTypes.includes('enduser')) {
-        options.push({
-          value: 'enduser',
-          name: 'End user',
-        });
-      }
-      if (extraTypes.includes('specification')) {
-        options.push({
-          value: 'specification',
-          name: 'Specification',
-        });
-      }
-      filters.push({
-        value: FilterCategory.Extra,
-        title: 'Extra',
-        options: options,
-      });
-    }
   }
 
-  return { filters: filters, options: { itemsWithoutMaturity: itemsWithoutMaturity, itemsWithoutLicense: nonOss } };
+  if (companyTypes.length > 0) {
+    filters.push({
+      value: FilterCategory.OrgType,
+      title: 'Organization type',
+      options: [...new Set(companyTypes)].sort().map((ot: string) => ({
+        value: ot,
+        name: ot,
+      })),
+    });
+  }
+
+  if (extraTypes.length > 0) {
+    const options = [];
+    if (extraTypes.includes('enduser')) {
+      options.push({
+        value: 'enduser',
+        name: 'End user',
+      });
+    }
+    if (extraTypes.includes('specification')) {
+      options.push({
+        value: 'specification',
+        name: 'Specification',
+      });
+    }
+    filters.push({
+      value: FilterCategory.Extra,
+      title: 'Extra',
+      options,
+    });
+  }
+
+  return { filters, options: { itemsWithoutMaturity, itemsWithoutLicense: nonOss } };
 };
 
 export default getFiltersPerGroup;

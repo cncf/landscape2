@@ -1,0 +1,10 @@
+quiz:
+  questions:
+    - title: Which item is a graduated project?
+      options:
+        - item: Item 1
+          category: Category 1
+          subcategory: Subcategory 1-1
+          correct: true
+        - item: Item 2
+        - item: Item 3

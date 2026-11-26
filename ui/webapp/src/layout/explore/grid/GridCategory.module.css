@@ -31,16 +31,6 @@
   padding-bottom: 9px;
 }
 
-.icon {
-  margin-top: -2px;
-  font-size: 0.9rem;
-}
-
-.subcatTitle {
-  font-size: 0.8rem;
-  height: 2rem;
-}
-
 .ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -48,16 +38,4 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   padding-bottom: 9px;
-}
-
-.items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, var(--card-size-width));
-  grid-auto-rows: var(--card-size-height);
-  gap: var(--card-gap);
-  /* justify-content: center; */
-}
-
-.loading {
-  min-height: calc(var(--app-height) - 92px - 36px);
 }

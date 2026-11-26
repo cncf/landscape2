@@ -44,9 +44,9 @@ const Content = () => {
                 <Box data={stats()!.projects!.projects} label="Total" description="Number total of projects" />
 
                 <Show when={!isEmpty(stats()!.projects!.maturity)}>
-                  <For each={sortObjectByValue(stats()!.projects!.maturity, 'asc')}>
+                  <For each={sortObjectByValue(stats()!.projects!.maturity ?? {}, 'asc')}>
                     {(maturity: string) => {
-                      const num = stats()!.projects!.maturity[maturity];
+                      const num = (stats()!.projects!.maturity ?? {})[maturity];
                       const total = stats()!.projects!.projects;
 
                       return (
@@ -70,8 +70,8 @@ const Content = () => {
                 </div>
                 <ChartsGroup
                   name="Projects"
-                  data={stats()!.projects!.accepted_at}
-                  running_total={stats()!.projects!.accepted_at_rt}
+                  data={stats()!.projects!.accepted_at ?? {}}
+                  running_total={stats()!.projects!.accepted_at_rt ?? {}}
                 />
               </Show>
 
@@ -89,7 +89,7 @@ const Content = () => {
                         <HeatMapChart
                           name="From Sandbox to Incubating"
                           tooltipTitle="Projects"
-                          data={stats()!.projects!.sandbox_to_incubating}
+                          data={stats()!.projects!.sandbox_to_incubating ?? {}}
                         />
                       </div>
                     </Show>
@@ -99,7 +99,7 @@ const Content = () => {
                         <HeatMapChart
                           name="From Incubating to Graduated"
                           tooltipTitle="Projects"
-                          data={stats()!.projects!.incubating_to_graduated}
+                          data={stats()!.projects!.incubating_to_graduated ?? {}}
                         />
                       </div>
                     </Show>
@@ -111,8 +111,8 @@ const Content = () => {
                 <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Security audits</div>
                 <ChartsGroup
                   name="Projects"
-                  data={stats()!.projects!.audits}
-                  running_total={stats()!.projects!.audits_rt}
+                  data={stats()!.projects!.audits ?? {}}
+                  running_total={stats()!.projects!.audits_rt ?? {}}
                 />
               </Show>
               <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>
@@ -123,7 +123,7 @@ const Content = () => {
               <div class="py-4">
                 <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
                   <div class="col-12 col-sm-6">
-                    <CollapsableTable data={stats()!.projects!.category} />
+                    <CollapsableTable data={stats()!.projects!.category ?? {}} />
                   </div>
 
                   <Show when={!isEmpty(stats()!.projects!.tag)}>
@@ -170,9 +170,9 @@ const Content = () => {
                 <Box data={stats()!.members!.members} label="Total" description="Number total of members" />
 
                 <Show when={!isEmpty(stats()!.members!.subcategories)}>
-                  <For each={sortObjectByValue(stats()!.members!.subcategories, 'asc')}>
+                  <For each={sortObjectByValue(stats()!.members!.subcategories ?? {}, 'asc')}>
                     {(subcategory: string) => {
-                      const num = stats()!.members!.subcategories[subcategory];
+                      const num = (stats()!.members!.subcategories ?? {})[subcategory];
                       const total = stats()!.members!.members;
 
                       return (
@@ -196,8 +196,8 @@ const Content = () => {
                 </div>
                 <ChartsGroup
                   name="Members"
-                  data={stats()!.members!.joined_at}
-                  running_total={stats()!.members!.joined_at_rt}
+                  data={stats()!.members!.joined_at ?? {}}
+                  running_total={stats()!.members!.joined_at_rt ?? {}}
                 />
               </Show>
             </div>
@@ -222,7 +222,7 @@ const Content = () => {
                 <Box
                   data={prettifyNumber(stats()!.repositories!.contributors, 1)}
                   label="Contributors"
-                  description="Number os contributors"
+                  description="Number of contributors"
                 />
                 <Box
                   data={prettifyNumber(stats()!.repositories!.stars, 1)}
@@ -272,11 +272,12 @@ const Content = () => {
                 <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Activity</div>
                 <div class="py-4">
                   <div class="row gx-3 gx-lg-4 gx-xxl-5 justify-content-center">
-                    <div class="col-12" aria-hidden={true}>
+                    <div class="col-12">
                       <TimestampLineChart
                         tooltipTitle="Commits number"
                         name="Number of weekly commits during the last year"
                         data={stats()!.repositories!.participation_stats}
+                        referenceDate={stats()!.generated_at}
                       />
                     </div>
                   </div>
@@ -302,16 +303,16 @@ const Content = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <For each={sortObjectByValue(stats()!.repositories!.licenses)}>
+                        <For each={sortObjectByValue(stats()!.repositories!.licenses ?? {})}>
                           {(license: string) => {
-                            const num = stats()!.repositories!.licenses[license];
+                            const num = (stats()!.repositories!.licenses ?? {})[license];
                             const total = stats()!.repositories!.repositories;
 
                             return (
                               <Show when={!isUndefined(num) && !isUndefined(total)}>
                                 <tr>
-                                  <td>{license}</td>
-                                  <td class="text-end">{stats()!.repositories!.licenses[license]}</td>
+                                  <td class="text-break">{license}</td>
+                                  <td class="text-end">{(stats()!.repositories!.licenses ?? {})[license]}</td>
                                   <td class="fw-semibold text-end">
                                     <small>{((num * 100) / total).toFixed(2)}%</small>
                                   </td>
@@ -340,57 +341,73 @@ const Content = () => {
           >
             <div class={`text-dark fw-bold text-uppercase text-center mb-3 mb-lg-4 ${styles.title}`}>Organizations</div>
 
-            <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Funding rounds</div>
-
-            <div class="py-4">
-              <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
-                <Show when={!isEmpty(stats()!.organizations!.funding_rounds)}>
-                  <div class="col-12 col-sm-6" aria-hidden={true}>
-                    <VerticalBarChart
-                      name="Number of funding rounds per year"
-                      data={stats()!.organizations!.funding_rounds}
-                    />
-                  </div>
-                </Show>
-
-                <Show when={!isEmpty(stats()!.organizations!.funding_rounds_money_raised)}>
-                  <div class="col-12 col-sm-6" aria-hidden={true}>
-                    <VerticalBarChart
-                      name="Amount raised in funding rounds per year (excluding undisclosed)"
-                      shortName="Amount raised in funding rounds per year"
-                      data={stats()!.organizations!.funding_rounds_money_raised}
-                      dataType="money"
-                    />
-                  </div>
-                </Show>
+            <Show
+              when={
+                !isEmpty(stats()!.organizations!.funding_rounds) ||
+                !isEmpty(stats()!.organizations!.funding_rounds_money_raised)
+              }
+            >
+              {/* The funding rounds cover the last 5 calendar years (FUNDING_ROUNDS_YEARS in the core crate) */}
+              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>
+                Funding rounds (last 5 years)
               </div>
-            </div>
 
-            <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Acquisitions</div>
+              <div class="py-4">
+                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                  <Show when={!isEmpty(stats()!.organizations!.funding_rounds)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Number of funding rounds per year"
+                        data={stats()!.organizations!.funding_rounds}
+                      />
+                    </div>
+                  </Show>
 
-            <div class="pt-4">
-              <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
-                <Show when={!isEmpty(stats()!.organizations!.acquisitions)}>
-                  <div class="col-12 col-sm-6" aria-hidden={true}>
-                    <VerticalBarChart
-                      name="Number of acquisitions per year"
-                      data={stats()!.organizations!.acquisitions}
-                    />
-                  </div>
-                </Show>
-
-                <Show when={!isEmpty(stats()!.organizations!.acquisitions_price)}>
-                  <div class="col-12 col-sm-6" aria-hidden={true}>
-                    <VerticalBarChart
-                      name="Acquisitions cost per year (excluding undisclosed)"
-                      shortName="Acquisitions cost per year"
-                      data={stats()!.organizations!.acquisitions_price}
-                      dataType="money"
-                    />
-                  </div>
-                </Show>
+                  <Show when={!isEmpty(stats()!.organizations!.funding_rounds_money_raised)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Amount raised in funding rounds per year (excluding undisclosed)"
+                        shortName="Amount raised in funding rounds per year"
+                        data={stats()!.organizations!.funding_rounds_money_raised}
+                        dataType="money"
+                      />
+                    </div>
+                  </Show>
+                </div>
               </div>
-            </div>
+            </Show>
+
+            <Show
+              when={
+                !isEmpty(stats()!.organizations!.acquisitions) || !isEmpty(stats()!.organizations!.acquisitions_price)
+              }
+            >
+              <div class={`text-dark text-center my-0 my-lg-4 fw-bold ${styles.subtitle}`}>Acquisitions</div>
+
+              <div class="pt-4">
+                <div class="row g-3 g-lg-4 g-xxl-5 justify-content-center">
+                  <Show when={!isEmpty(stats()!.organizations!.acquisitions)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Number of acquisitions per year"
+                        data={stats()!.organizations!.acquisitions}
+                      />
+                    </div>
+                  </Show>
+
+                  <Show when={!isEmpty(stats()!.organizations!.acquisitions_price)}>
+                    <div class="col-12 col-sm-6">
+                      <VerticalBarChart
+                        name="Acquisitions cost per year (excluding undisclosed)"
+                        shortName="Acquisitions cost per year"
+                        data={stats()!.organizations!.acquisitions_price}
+                        dataType="money"
+                      />
+                    </div>
+                  </Show>
+                </div>
+              </div>
+            </Show>
           </Show>
         </div>
       </div>

@@ -8,9 +8,61 @@ landscape:
           - item:
             crunchbase: https://www.crunchbase.com/organization/cloud-native-computing-foundation
             description: This is the description of item 1
+            extra:
+              summary_intro_url: https://example.com/item-1-intro
+              summary_personas: Developer, Operator
+              summary_use_case: Item 1 use case
             homepage_url: https://cncf.io
             logo: cncf.svg
             name: Item 1
             project: graduated
             repo_url: https://github.com/cncf/landscape2
             twitter: https://twitter.com/CloudNativeFdn
+          - item:
+            crunchbase: https://www.crunchbase.com/organization/item-2
+            homepage_url: https://github.com/example/item-2
+            logo: item-2.svg
+            name: Item 2
+            repo_url: https://github.com/example/item-2
+  - category:
+    name: Category 2
+    subcategories:
+      - subcategory:
+        name: Subcategory 2-1
+        items:
+          - item:
+            additional_repos:
+              - repo_url: https://github.com/example/item-3-extra
+                branch: develop
+                license: MIT
+            branch: main
+            crunchbase: https://www.crunchbase.com/organization/item-3
+            enduser: false
+            extra:
+              accepted: "2022-03-01"
+              annual_review_date: "2023-03-01"
+              annual_review_url: https://example.com/item-3-annual-review
+              audits:
+                - date: "2023-05-10"
+                  type: security
+                  url: https://example.com/item-3-audit
+                  vendor: Audit vendor
+              incubating: "2023-06-01"
+              other_links:
+                - name: Contact
+                  url: mailto:item-3@example.com
+              summary_business_use_case: Item 3 business use case
+              summary_integrations: Item 1, Item 2
+              summary_release_rate: Every 3 months
+              summary_tags: security, observability
+              tag:
+                - observability
+            homepage_url: https://item-3.example
+            joined: "2021-01-15"
+            license: Apache-2.0
+            logo: item-3.svg
+            name: Item 3
+            project: incubating
+            repo_url: https://github.com/example/item-3
+            second_path:
+              - Category 1 / Subcategory 1-1

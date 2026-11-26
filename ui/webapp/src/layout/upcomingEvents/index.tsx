@@ -1,10 +1,9 @@
-import { ExternalLink, SVGIcon, SVGIconKind } from 'common';
+import { BANNER_ID, ExternalLink, SVGIcon, SVGIconKind } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import { createEffect, createSignal, on, Show } from 'solid-js';
 
-import { BANNER_ID } from '../../data';
 import { useActiveItemId } from '../stores/activeItem';
-import { useEventContent, useEventVisibleContent, useSetEventHiddenContent } from '../stores/upcomingEventData';
+import { useEventContent, useEventVisibleContent, useSetEventHiddenContent } from '../stores/upcomingEvent';
 import styles from './UpcomingEvents.module.css';
 
 const UpcomingEvents = () => {
@@ -18,7 +17,7 @@ const UpcomingEvents = () => {
 
   createEffect(
     on(image, () => {
-      if (!isUndefined(image()) && image()!.complete) {
+      if (image()?.complete) {
         setLoaded(true);
       }
     })
@@ -42,7 +41,8 @@ const UpcomingEvents = () => {
             ref={setImage}
             class={`d-block pe-none ${styles.image}`}
             src={upcomingEvent()!.banner_url}
-            title={upcomingEvent!.name}
+            title={upcomingEvent()!.name}
+            alt={upcomingEvent()!.name}
             onError={() => setError(true)}
             onLoad={() => setLoaded(true)}
           />

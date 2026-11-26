@@ -1,22 +1,20 @@
-import isUndefined from 'lodash/isUndefined';
-import { JSXElement } from 'solid-js';
+import { JSXElement, Show } from 'solid-js';
 import { css } from 'solid-styled-components';
 
+import { isSafeHref } from '../embed/isSafeHref';
 import { SVGIconKind } from '../types/types';
+import { cx } from '../utils/cx';
 import { SVGIcon } from './SVGIcon';
 
 interface Props {
   children: JSXElement | JSXElement[] | string;
   href: string;
   class?: string;
-  btnType?: boolean;
-  target?: string;
+  externalIconClass?: string;
+  // Accessible name for icon-only links; text links take their name from their content
   label?: string;
   title?: string;
-  ariaHidden?: boolean;
-  externalIconClassName?: string;
   visibleExternalIcon?: boolean;
-  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -24,72 +22,31 @@ const LinkClass = css`
   cursor: pointer;
 `;
 
+/** Link opening an external page; an href that is not `http`, `https` or `mailto` renders the children as plain text. */
 export const ExternalLink = (props: Props) => {
   const isMailtoLink = () => /^mailto:/i.test(props.href);
-  const linkRel = () => (isMailtoLink() ? undefined : 'noopener noreferrer');
-  const linkTarget = () => (isMailtoLink() ? undefined : props.target || '_blank');
-
-  const getData = () => {
-    return (
-      <>
-        {!isUndefined(props.visibleExternalIcon) && props.visibleExternalIcon ? (
-          <div class="d-flex flex-row align-items-center">
-            {props.children}
-            <SVGIcon kind={SVGIconKind.ExternalLink} class={`ms-1 icon ${props.externalIconClassName}`} />
-          </div>
-        ) : (
-          <>{props.children}</>
-        )}
-      </>
-    );
-  };
 
   return (
-    <>
-      {!isUndefined(props.btnType) && props.btnType ? (
-        <button
-          title={props.title}
-          type="button"
-          class={`btn p-0 link ${LinkClass} ${props.class}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            if (props.onClick) props.onClick();
-
-            if (isUndefined(props.disabled) || !props.disabled) {
-              if (isMailtoLink()) {
-                window.location.href = props.href;
-              } else {
-                window.open(props.href, linkTarget());
-              }
-            }
-          }}
-          aria-label={props.label || 'Open external link'}
-          aria-hidden={props.ariaHidden}
-          tabIndex={0}
-        >
-          {getData()}
-        </button>
-      ) : (
-        <a
-          title={props.title}
-          class={`link ${LinkClass} ${props.class}`}
-          href={props.href}
-          target={linkTarget()}
-          rel={linkRel()}
-          onClick={(e) => {
-            e.stopPropagation();
-
-            if (props.onClick) props.onClick();
-          }}
-          aria-label={props.label || 'Open external link'}
-          aria-hidden={props.ariaHidden}
-          tabIndex={0}
-        >
-          {getData()}
-        </a>
-      )}
-    </>
+    <Show when={isSafeHref(props.href)} fallback={<span class={props.class}>{props.children}</span>}>
+      <a
+        title={props.title}
+        class={cx('link', LinkClass, props.class)}
+        href={props.href}
+        target={isMailtoLink() ? undefined : '_blank'}
+        rel={isMailtoLink() ? undefined : 'noopener noreferrer'}
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onClick?.();
+        }}
+        aria-label={props.label}
+      >
+        <Show when={props.visibleExternalIcon} fallback={props.children}>
+          <div class="d-flex flex-row align-items-center">
+            {props.children}
+            <SVGIcon kind={SVGIconKind.ExternalLink} class={cx('ms-1 icon', props.externalIconClass)} />
+          </div>
+        </Show>
+      </a>
+    </Show>
   );
 };

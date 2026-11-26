@@ -5,8 +5,9 @@
 # This file allows defining the content of the landscape guide.
 #
 # The landscape guide is organized into categories and subcategories. Each of
-# these entities requires a name and some content. The content can be provided
-# in markdown format. Categories and subcategories names are not required to
+# these entities requires a name. Subcategories require some content as well,
+# while the content of categories is optional. The content can be provided in
+# markdown format. Categories and subcategories names are not required to
 # match the ones defined in the landscape data file but, when they do, those
 # categories/subcategories will be enriched with some extra information. So
 # whenever possible, it's highly recommended that they do.
@@ -18,7 +19,6 @@
 
 categories:
   - category: "Introduction"
-    keywords: []
     content: |
       If you've researched cloud native applications and technologies, you've probably come
       across the [CNCF cloud native landscape](https://landscape.cncf.io). Unsurprisingly,
@@ -73,7 +73,6 @@ categories:
           cloud-native innovation today!
 
   - category: "Provisioning"
-    keywords: []
     content: |
       Provisioning is the first layer in the cloud native landscape. It encompasses tools that
       are used to *create and harden* the foundation on which cloud native apps are built.

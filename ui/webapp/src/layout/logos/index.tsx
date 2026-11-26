@@ -1,13 +1,17 @@
 import { Image, Loading, NoData } from 'common';
 import isUndefined from 'lodash/isUndefined';
 import orderBy from 'lodash/orderBy';
+import uniqBy from 'lodash/uniqBy';
 import { createEffect, createSignal, For, on, Show } from 'solid-js';
 
 import { FilterOption, Item, Option } from '../../types';
 import itemsDataGetter, { LogosOptionsGroup, LogosPreviewOptions } from '../../utils/itemsDataGetter';
+import RequireFullData from '../common/RequireFullData';
 import Footer from '../navigation/Footer';
 import { useFullDataReady } from '../stores/fullData';
 import styles from './Logos.module.css';
+
+const NON_PUBLIC_ORG_PREFIX = 'Non-Public Organization';
 
 const Logos = () => {
   const fullDataReady = useFullDataReady();
@@ -19,32 +23,12 @@ const Logos = () => {
   const [items, setItems] = createSignal<Item[]>();
   const [hiddenNonPublicOrgs, setHiddenNonPublicOrgs] = createSignal<boolean>(false);
 
-  const cleanDuplicatedItems = (itemsList: Item[]): Item[] => {
-    const result: Item[] = [];
-    const images: string[] = [];
-    const sortedItems = orderBy(itemsList, [(item: Item) => item.name.toLowerCase().toString()], 'asc');
-
-    sortedItems.forEach((i: Item) => {
-      // Avoid duplicates checking images
-      if (!images.includes(i.logo)) {
-        result.push(i);
-        images.push(i.logo);
-      }
-    });
-
-    return result;
-  };
-
+  // Sorted by name, one item per logo, without the non-public organizations when hidden
   const cleanItems = (itemsList: Item[]): Item[] => {
-    let result = cleanDuplicatedItems(itemsList);
-
-    const items = cleanDuplicatedItems(itemsList);
-    if (hiddenNonPublicOrgs()) {
-      const nonPublicOrgs = items.filter((item) => !item.name.startsWith('Non-Public Organization'));
-      result = nonPublicOrgs;
-    }
-
-    return result;
+    const sortedItems = orderBy(itemsList, [(item: Item) => item.name.toLowerCase()], 'asc');
+    const uniqueItems = uniqBy(sortedItems, 'logo');
+    if (!hiddenNonPublicOrgs()) return uniqueItems;
+    return uniqueItems.filter((item) => !item.name.startsWith(NON_PUBLIC_ORG_PREFIX));
   };
 
   const filterItems = () => {
@@ -133,7 +117,7 @@ const Logos = () => {
   );
 
   return (
-    <>
+    <RequireFullData>
       <main class="flex-grow-1 container-fluid px-3 px-lg-4 mainPadding position-relative">
         <div class="d-flex flex-column my-2 my-md-3 py-1">
           <div class="fs-4 fw-semibold text-primary text-uppercase border-bottom mb-4">Logos preview</div>
@@ -242,7 +226,6 @@ const Logos = () => {
                     <input
                       onInput={() => setHiddenNonPublicOrgs(!hiddenNonPublicOrgs())}
                       checked={hiddenNonPublicOrgs()}
-                      aria-checked={hiddenNonPublicOrgs()}
                       class="form-check-input"
                       type="checkbox"
                       role="switch"
@@ -281,7 +264,7 @@ const Logos = () => {
         </div>
       </main>
       <Footer />
-    </>
+    </RequireFullData>
   );
 };
 

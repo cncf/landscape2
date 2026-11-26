@@ -1,0 +1,17 @@
+**/.DS_Store
+**/coverage
+**/dist
+**/lcov.info
+**/node_modules
+.git
+.github
+.jj
+crates/wasm/*/data
+crates/wasm/*/dist
+crates/wasm/*/sources
+docs
+target
+target-wasm
+ui/embed/static
+ui/webapp/static
+ui/webapp/wasm

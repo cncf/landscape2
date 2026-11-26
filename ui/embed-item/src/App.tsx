@@ -1,111 +1,72 @@
+import 'common/styles/colors.css';
+import './styles/bootstrap.scss';
 import './styles/App.css';
 
-import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
-import('../../webapp/src/styles/bootstrap.scss');
-
 import type { Item } from 'common';
+import {
+  HIDE_ITEM_DETAILS_MESSAGE_TYPE,
+  parseShowItemDetailsMessage,
+  SHOW_ITEM_DETAILS_MESSAGE_TYPE,
+  type ShowItemDetailsInput,
+} from 'common/embed';
+import { applyColors } from 'common/utils';
+import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from 'solid-js';
 
 import ItemModal, { type ItemLoadStatus } from './common/ItemModal';
-import { DEFAULT_COLOR_1, DEFAULT_COLOR_2, DEFAULT_COLOR_3, DEFAULT_COLOR_4 } from './types';
 import itemsDataGetter from './utils/itemsDataGetter';
 
-interface CurrrentItem {
-  foundation: string;
-  basePath: string;
-  classifyBy: string;
-  key: string;
-  itemId: string;
-  hideOrganizationSection?: boolean;
-  categories?: string[];
-}
-
 const App = () => {
-  const [currentItem, setCurrentItem] = createSignal<CurrrentItem | null>(null);
+  const [currentItem, setCurrentItem] = createSignal<ShowItemDetailsInput | null>(null);
   const [itemInfo, setItemInfo] = createSignal<Item | undefined>(undefined);
   const [itemLoadStatus, setItemLoadStatus] = createSignal<ItemLoadStatus>('loading');
+  const [parentInfo, setParentInfo] = createSignal<Item | undefined>(undefined);
   let activeRequestId = 0;
 
-  let COLOR_1 = DEFAULT_COLOR_1;
-  let COLOR_2 = DEFAULT_COLOR_2;
-  let COLOR_3 = DEFAULT_COLOR_3;
-  let COLOR_4 = DEFAULT_COLOR_4;
-
-  const loadColors = () => {
-    if (window.colors) {
-      if (window.colors.color1) {
-        COLOR_1 = window.colors.color1;
-      }
-      if (window.colors.color2) {
-        COLOR_2 = window.colors.color2;
-      }
-      if (window.colors.color3) {
-        COLOR_3 = window.colors.color3;
-      }
-      if (window.colors.color4) {
-        COLOR_4 = window.colors.color4;
-      }
-
-      const colors = [COLOR_1, COLOR_2, COLOR_3, COLOR_4];
-
-      colors.forEach((color: string, i: number) => {
-        document.documentElement.style.setProperty(`--color${i + 1}`, color);
-      });
-    }
-  };
-
   onMount(() => {
-    const handleMessage = (event: MessageEvent<Partial<CurrrentItem> & { type?: string }>) => {
-      if (event.source !== window.parent || event.data?.type !== 'showItemDetails') return;
+    // Only the host page (the parent window) can show items, and only with a valid message
+    const handleMessage = (event: MessageEvent<unknown>) => {
+      if (event.source !== window.parent) return;
 
-      const { basePath, classifyBy, foundation, itemId, key } = event.data;
-      if (
-        typeof basePath !== 'string' ||
-        typeof classifyBy !== 'string' ||
-        typeof foundation !== 'string' ||
-        typeof itemId !== 'string' ||
-        typeof key !== 'string'
-      ) {
+      const message = parseShowItemDetailsMessage(event.data);
+      if (message === null) {
+        // An invalid item request closes the item details view
+        if (isShowItemDetailsRequest(event.data)) onClose();
         return;
       }
 
-      setCurrentItem({
-        basePath,
-        categories: event.data.categories,
-        classifyBy,
-        foundation,
-        hideOrganizationSection: event.data.hideOrganizationSection,
-        itemId,
-        key,
-      });
+      setCurrentItem(message);
     };
 
     window.addEventListener('message', handleMessage);
-    loadColors();
+    if (window.colors) applyColors(window.colors);
 
     onCleanup(() => {
       window.removeEventListener('message', handleMessage);
     });
   });
 
-  const loadItem = async (selectedItem: CurrrentItem) => {
+  const loadItem = async (selectedItem: ShowItemDetailsInput) => {
     const requestId = ++activeRequestId;
     batch(() => {
       setItemInfo(undefined);
+      setParentInfo(undefined);
       setItemLoadStatus('loading');
     });
 
     try {
-      await itemsDataGetter.fetchItems(
-        selectedItem.classifyBy,
-        selectedItem.key,
-        selectedItem.basePath,
-        selectedItem.categories
-      );
+      await itemsDataGetter.fetchItems(selectedItem.classifyBy, selectedItem.key, selectedItem.categories);
       if (requestId !== activeRequestId) return;
 
-      const loadedItem = itemsDataGetter.getItemById(selectedItem.classifyBy, selectedItem.key, selectedItem.itemId);
+      const { classifyBy, itemId, key } = selectedItem;
+      const loadedItem = itemsDataGetter.getItemById(classifyBy, key, itemId);
+
+      // The parent of a subproject is shown with its logo when it is part of the loaded dataset
+      const parentName = loadedItem?.parent_project;
+      const loadedParent = parentName ? itemsDataGetter.getItemByName(classifyBy, key, parentName) : undefined;
+
       batch(() => {
         setItemInfo(loadedItem);
+        setParentInfo(loadedParent);
         setItemLoadStatus(loadedItem ? 'ready' : 'not-found');
       });
     } catch {
@@ -128,13 +89,9 @@ const App = () => {
     batch(() => {
       setCurrentItem(null);
       setItemInfo(undefined);
+      setParentInfo(undefined);
     });
-    window.parent.postMessage(
-      {
-        type: 'hideItemDetails',
-      },
-      '*'
-    );
+    window.parent.postMessage({ type: HIDE_ITEM_DETAILS_MESSAGE_TYPE }, '*');
   };
 
   return (
@@ -142,12 +99,12 @@ const App = () => {
       {(selectedItem) => (
         <ItemModal
           foundation={selectedItem().foundation}
-          activeItemId={selectedItem().itemId}
+          hideOrganizationSection={selectedItem().hideOrganizationSection}
           itemInfo={itemInfo()}
           itemLoadStatus={itemLoadStatus()}
           onClose={onClose}
           onRetry={() => void loadItem(selectedItem())}
-          hideOrganizationSection={selectedItem().hideOrganizationSection}
+          parentInfo={parentInfo()}
         />
       )}
     </Show>
@@ -155,3 +112,7 @@ const App = () => {
 };
 
 export default App;
+
+/** Checks whether the data of a message is an item request, valid or not. */
+const isShowItemDetailsRequest = (data: unknown): boolean =>
+  typeof data === 'object' && data !== null && (data as { type?: unknown }).type === SHOW_ITEM_DETAILS_MESSAGE_TYPE;

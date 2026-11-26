@@ -1,5 +1,5 @@
 import isUndefined from 'lodash/isUndefined';
-import { createSignal, onMount } from 'solid-js';
+import { createEffect, createSignal, on } from 'solid-js';
 
 import styles from './CardTitle.module.css';
 
@@ -15,18 +15,23 @@ const CardTitle = (props: Props) => {
   const [fontSize, setFontSize] = createSignal<string>(DEFAULT_FONT_SIZE);
 
   const updateTitleFont = () => {
-    if (!isUndefined(ref())) {
-      if (ref()!.offsetWidth < ref()!.scrollWidth) {
-        setFontSize('1rem');
-      } else {
-        setFontSize(DEFAULT_FONT_SIZE);
-      }
+    const titleEl = ref();
+    if (!isUndefined(titleEl)) {
+      setFontSize(titleEl.offsetWidth < titleEl.scrollWidth ? '1rem' : DEFAULT_FONT_SIZE);
     }
   };
 
-  onMount(() => {
-    updateTitleFont();
-  });
+  // A title mounted while hidden has no width, so it is measured again once it becomes visible
+  createEffect(
+    on(
+      () => props.isVisible ?? true,
+      (isVisible) => {
+        if (isVisible) {
+          updateTitleFont();
+        }
+      }
+    )
+  );
 
   return (
     <div ref={setRef} class={`fw-semibold text-truncate pb-1 ${styles.title}`} style={{ 'font-size': fontSize() }}>

@@ -1,107 +1,146 @@
-import getDownloadBlob from '../getDownloadBlob';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const fetchMock = jest.fn();
+const fetchMock = vi.fn();
 
 describe('getDownloadBlob', () => {
-  beforeAll(() => {
-    global.fetch = fetchMock;
-  });
-
   beforeEach(() => {
-    fetchMock.mockReset();
+    vi.stubGlobal('fetch', fetchMock);
   });
 
-  it('should return the downloaded response as a blob', async () => {
-    const expectedBlob = new Blob(['document'], { type: 'application/pdf' });
+  afterEach(() => {
+    fetchMock.mockReset();
+    vi.unstubAllGlobals();
+  });
+
+  it('requests the document with a GET that accepts its content type', async () => {
+    // Setup a PDF response
+    const getDownloadBlob = await loadGetDownloadBlob();
     fetchMock.mockResolvedValue({
-      blob: jest.fn().mockResolvedValue(expectedBlob),
+      blob: vi.fn().mockResolvedValue(new Blob(['document'])),
       headers: new Headers({ 'content-type': 'application/pdf' }),
       ok: true,
     });
 
-    const result = await getDownloadBlob({
+    // Download the PDF document
+    await getDownloadBlob({
+      accept: 'application/pdf',
       blobType: 'application/pdf',
-      contentType: 'application/pdf',
       responseAsBlob: true,
       url: './docs/landscape.pdf',
     });
 
+    // Check the request method and headers
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('./docs/landscape.pdf');
+    expect(init.method).toBe('get');
+    expect(new Headers(init.headers).get('accept')).toBe('application/pdf');
+    expect(new Headers(init.headers).has('content-type')).toBe(false);
+  });
+
+  it('returns a binary response as the downloaded blob', async () => {
+    // Setup a binary PDF response
+    const getDownloadBlob = await loadGetDownloadBlob();
+    const expectedBlob = new Blob(['document'], { type: 'application/pdf' });
+    fetchMock.mockResolvedValue({
+      blob: vi.fn().mockResolvedValue(expectedBlob),
+      headers: new Headers({ 'content-type': 'application/pdf' }),
+      ok: true,
+    });
+
+    // Download it as a blob
+    const result = await getDownloadBlob({
+      accept: 'application/pdf',
+      blobType: 'application/pdf',
+      responseAsBlob: true,
+      url: './docs/landscape.pdf',
+    });
+
+    // Check the response blob is returned as is
     expect(result).toBe(expectedBlob);
   });
 
-  it('should convert a text response to a blob with the requested type', async () => {
-    const textMock = jest.fn().mockResolvedValue('name,category\nProject,Database');
+  it('converts a text response to a blob of the requested type', async () => {
+    // Setup a CSV response read as text
+    const getDownloadBlob = await loadGetDownloadBlob();
+    const textMock = vi.fn().mockResolvedValue('name,category\nProject,Database');
     fetchMock.mockResolvedValue({
       headers: new Headers({ 'content-type': 'text/csv; charset=utf-8' }),
       ok: true,
       text: textMock,
     });
 
+    // Download it as a blob
     const result = await getDownloadBlob({
+      accept: 'text/csv;charset=UTF-8',
       blobType: 'text/csv',
-      contentType: 'text/csv;charset=UTF-8',
       responseAsBlob: false,
       url: './docs/items.csv',
     });
 
-    const reader = new FileReader();
-    const resultText = new Promise<string>((resolve, reject) => {
-      reader.addEventListener('load', () => resolve(reader.result as string), { once: true });
-      reader.addEventListener('error', () => reject(reader.error), { once: true });
-    });
-    reader.readAsText(result);
-
+    // Check the blob type and content
     expect(textMock).toHaveBeenCalledTimes(1);
     expect(result.type).toBe('text/csv');
-    await expect(resultText).resolves.toBe('name,category\nProject,Database');
+    await expect(readBlobText(result)).resolves.toBe('name,category\nProject,Database');
   });
 
-  it('should reject when the document does not exist', async () => {
+  it.each([
+    ['the document does not exist', 404],
+    ['the document is gone', 410],
+    ['the server fails, even with an HTML error page', 503],
+  ])('rejects with the HTTP status when %s', async (_, status) => {
+    // Setup an error response with an HTML body
+    const getDownloadBlob = await loadGetDownloadBlob();
     fetchMock.mockResolvedValue({
+      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
       ok: false,
-      status: 404,
+      status,
     });
 
+    // Check the download rejects with the status
     await expect(
       getDownloadBlob({
+        accept: 'application/pdf',
         blobType: 'application/pdf',
-        contentType: 'application/pdf',
         responseAsBlob: true,
         url: './docs/landscape.pdf',
       })
-    ).rejects.toThrow('Unable to download document: 404');
+    ).rejects.toThrow(`Unable to download document: ${status}`);
   });
 
-  it('should reject a successful HTML fallback response', async () => {
+  it('rejects a successful HTML fallback response', async () => {
+    // Setup a successful HTML response, like a SPA fallback page
+    const getDownloadBlob = await loadGetDownloadBlob();
     fetchMock.mockResolvedValue({
       headers: new Headers({ 'content-type': 'Text/HTML; charset=utf-8' }),
       ok: true,
     });
 
+    // Check the download rejects the HTML body
     await expect(
       getDownloadBlob({
+        accept: 'application/pdf',
         blobType: 'application/pdf',
-        contentType: 'application/pdf',
         responseAsBlob: true,
         url: './docs/html-fallback.pdf',
       })
     ).rejects.toThrow('Unable to download document: unexpected HTML response');
   });
-
-  it('should preserve the HTTP error for an HTML error response', async () => {
-    fetchMock.mockResolvedValue({
-      headers: new Headers({ 'content-type': 'text/html; charset=utf-8' }),
-      ok: false,
-      status: 503,
-    });
-
-    await expect(
-      getDownloadBlob({
-        blobType: 'application/pdf',
-        contentType: 'application/pdf',
-        responseAsBlob: true,
-        url: './docs/unavailable.pdf',
-      })
-    ).rejects.toThrow('Unable to download document: 503');
-  });
 });
+
+// Helpers.
+
+/** Imports a fresh copy of the module, so no state leaks between tests. */
+const loadGetDownloadBlob = async () => {
+  vi.resetModules();
+  return (await import('../getDownloadBlob')).default;
+};
+
+/** Reads the content of a blob as text. */
+const readBlobText = (blob: Blob): Promise<string> =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(reader.result as string), { once: true });
+    reader.addEventListener('error', () => reject(reader.error), { once: true });
+    reader.readAsText(blob);
+  });

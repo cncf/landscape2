@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,33 +8,22 @@ import { ViteEjsPlugin } from 'vite-plugin-ejs';
 import solid from 'vite-plugin-solid';
 
 const projectDir = fileURLToPath(new URL('.', import.meta.url));
-const bootstrapDir = [
-  path.resolve(projectDir, 'node_modules/bootstrap'),
-  path.resolve(projectDir, '../../node_modules/bootstrap'),
-].find((candidate) => fs.existsSync(candidate));
+const bootstrapDir = path.resolve(projectDir, 'node_modules/bootstrap');
 const CSS_HREF_PATTERN = /<link rel="stylesheet" crossorigin href="(.*?)">/;
 const DEVELOPMENT_PROXY_PATHS = ['/static/data', '/static/docs', '/static/images', '/static/logos'];
-const scssIncludePaths = [
-  path.resolve(projectDir, 'node_modules'),
-  path.resolve(projectDir, '../../node_modules'),
-].filter((candidate) => fs.existsSync(candidate));
+// Packages the common source shares with this app, resolved from this app so
+// the bundle carries a single copy of each (one Solid runtime).
+const SHARED_DEPENDENCIES = [
+  'solid-js',
+  'solid-js/web',
+  'solid-styled-components',
+  'goober',
+  '@solid-primitives/resize-observer',
+  'lodash',
+];
 
 export default defineConfig(({ mode }) => ({
   base: '', // Default '/', static path
-  build: {
-    rollupOptions: {
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
-      external: ['apexcharts'],
-      output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
-        globals: {
-          apexcharts: 'Apexcharts',
-        },
-      },
-    },
-  },
   plugins: [
     ViteEjsPlugin(),
     solid(),
@@ -62,13 +50,12 @@ export default defineConfig(({ mode }) => ({
   },
   server: getDevelopmentServerConfig(mode),
   resolve: {
-    dedupe: ['lodash', 'moment', 'solid-js', 'solid-js/web'],
-    ...(bootstrapDir ? { alias: { bootstrap: bootstrapDir } } : {}),
+    alias: { bootstrap: bootstrapDir },
+    dedupe: SHARED_DEPENDENCIES,
   },
   css: {
     preprocessorOptions: {
       scss: {
-        includePaths: scssIncludePaths,
         silenceDeprecations: ['color-functions', 'global-builtin', 'if-function', 'import'],
       },
     },

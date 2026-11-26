@@ -1,0 +1,25 @@
+{
+  "categories": [
+    {
+      "category": "Category 1",
+      "normalized_name": "category-1",
+      "content": "<p>Category 1 <strong>content</strong></p>",
+      "subcategories": [
+        {
+          "content": "<p>Subcategory 1-1 content</p>",
+          "normalized_name": "subcategory-1-1",
+          "subcategory": "Subcategory 1-1",
+          "keywords": [
+            "keyword 1",
+            "keyword 2"
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Category 2",
+      "normalized_name": "category-2",
+      "content": "<p>Category 2 content</p>"
+    }
+  ]
+}

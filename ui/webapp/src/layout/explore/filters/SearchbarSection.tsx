@@ -12,7 +12,6 @@ export interface Props {
   title?: string;
   placeholder?: string;
   section?: FilterSection;
-  extraOptions?: { [key: string]: FilterSection };
   initialActiveFilters: Accessor<ActiveFilters>;
   updateActiveFilters: (value: FilterCategory, options: string[]) => void;
   resetFilter: (value: FilterCategory) => void;
@@ -26,9 +25,10 @@ const SearchbarSection = (props: Props) => {
   const [searchTimeout, setSearchTimeout] = createSignal<ReturnType<typeof setTimeout> | null>(null);
   const [visibleOptions, setVisibleOptions] = createSignal<FilterOption[]>([]);
   const [activeFilters, setActiveFilters] = createSignal<string[]>([]);
+  const title = () => props.title || props.section?.title;
 
   const getActiveFilters = (): string[] => {
-    if (!isUndefined(props.initialActiveFilters) && !isUndefined(props.section)) {
+    if (!isUndefined(props.section)) {
       return props.initialActiveFilters()[props.section.value] || [];
     }
     return [];
@@ -38,7 +38,7 @@ const SearchbarSection = (props: Props) => {
     if (activeFilters().length === 0) {
       return opts;
     } else {
-      // eslint-disable-next-line solid/reactivity
+      // eslint-disable-next-line solid/reactivity -- sortBy calls the iteratee synchronously
       return sortBy(opts, (opt: FilterOption) => !activeFilters()!.includes(opt.value));
     }
   };
@@ -62,21 +62,10 @@ const SearchbarSection = (props: Props) => {
     forceFocus();
   };
 
-  const forceBlur = (): void => {
-    if (inputEl()) {
-      inputEl()!.blur();
-    }
-  };
-
   const forceFocus = (): void => {
     if (inputEl()) {
       inputEl()!.focus();
     }
-  };
-
-  const search = () => {
-    filterOptions();
-    forceBlur();
   };
 
   const filterOptions = () => {
@@ -136,7 +125,7 @@ const SearchbarSection = (props: Props) => {
       <div class="col-12 col-sm-6 col-lg-4">
         <div class="d-flex flex-column h-100">
           <div class="d-flex flex-row align-items-center pb-2">
-            <small class={`fw-semibold me-2 ${styles.title}`}>{props.title || props.section!.title}</small>
+            <small class={`fw-semibold me-2 ${styles.title}`}>{title()}</small>
             <Show when={activeFilters().length > 0}>
               <button
                 class={`btn btn-sm btn-link text-muted lh-1 align-baseline p-0 ${styles.resetBtn}`}
@@ -147,14 +136,14 @@ const SearchbarSection = (props: Props) => {
               </button>
             </Show>
           </div>
-          <div class={`postion-relative w-100 flex-grow-1 ${styles.section}`}>
+          <div class={`position-relative w-100 flex-grow-1 ${styles.section}`}>
             <div
               class={`d-flex align-items-center overflow-hidden position-relative searchBar lh-base bg-white ${styles.searchBar} search`}
             >
               <input
                 ref={setInputEl}
-                id={`searchbar-${props.title || props.section!.title}`}
-                class={`flex-grow-1 border-0 shadow-none bg-transparent lh-base ps-2 ${styles.input}`}
+                id={`searchbar-${title()}`}
+                class="flex-grow-1 border-0 shadow-none bg-transparent lh-base ps-2"
                 placeholder={props.placeholder || 'Search'}
                 type="text"
                 value={value()}
@@ -162,8 +151,13 @@ const SearchbarSection = (props: Props) => {
                 autocorrect="off"
                 autocapitalize="none"
                 spellcheck={false}
-                onBlur={() => setValue('')}
                 onInput={(e) => setValue(e.currentTarget.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterOptions();
+                  }
+                }}
               />
 
               <Show when={value() !== ''}>
@@ -182,7 +176,7 @@ const SearchbarSection = (props: Props) => {
                 title="Search text"
                 aria-label="Search text"
                 class={`btn btn-link lh-1 px-2 ${styles.btnIcon}`}
-                onClick={search}
+                onClick={filterOptions}
               >
                 <div class={`${styles.iconWrapper}`}>
                   <SVGIcon kind={SVGIconKind.Search} />
@@ -190,7 +184,7 @@ const SearchbarSection = (props: Props) => {
               </button>
             </div>
 
-            <div class={`overflow-auto ${styles.list} visibleScroll`} role="listbox">
+            <div class={`overflow-auto ${styles.list} visibleScroll`} role="group" aria-label={title()}>
               <div class="py-2 px-0 px-sm-3">
                 <Show
                   when={visibleOptions().length > 0}
@@ -201,38 +195,17 @@ const SearchbarSection = (props: Props) => {
                   }
                 >
                   <For each={visibleOptions()}>
-                    {(opt: FilterOption) => {
-                      return (
-                        <>
-                          <CheckBox
-                            name={props.section?.value as string}
-                            value={opt.value}
-                            labelClass={`mw-100 text-muted ${styles.label}`}
-                            class="my-1"
-                            label={opt.name}
-                            checked={activeFilters().includes(opt.value)}
-                            onChange={(value: string, checked: boolean) => onChange(value, checked)}
-                          />
-                          <Show when={!isUndefined(props.extraOptions) && props.extraOptions[opt.value]}>
-                            <div class="ms-3">
-                              <For each={props.extraOptions![opt.value].options}>
-                                {(subOpt: FilterOption) => (
-                                  <CheckBox
-                                    name={props.extraOptions![opt.value].value}
-                                    value={subOpt.value}
-                                    labelClass={`mw-100 text-muted ${styles.label}`}
-                                    class="my-1"
-                                    label={subOpt.name}
-                                    checked={activeFilters().includes(subOpt.value)}
-                                    onChange={(value: string, checked: boolean) => onChange(value, checked)}
-                                  />
-                                )}
-                              </For>
-                            </div>
-                          </Show>
-                        </>
-                      );
-                    }}
+                    {(opt: FilterOption) => (
+                      <CheckBox
+                        name={props.section?.value as string}
+                        value={opt.value}
+                        labelClass={`mw-100 text-muted ${styles.label}`}
+                        class="my-1"
+                        label={opt.name}
+                        checked={activeFilters().includes(opt.value)}
+                        onChange={(value: string, checked: boolean) => onChange(value, checked)}
+                      />
+                    )}
                   </For>
                 </Show>
               </div>
